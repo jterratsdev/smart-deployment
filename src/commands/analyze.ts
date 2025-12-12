@@ -18,6 +18,7 @@ import { getLogger } from '../utils/logger.js';
 import { DeploymentPlanManager } from '../utils/deployment-plan-manager.js';
 import { MetadataScannerService } from '../services/metadata-scanner-service.js';
 import { WaveBuilder } from '../waves/wave-builder.js';
+import type { PriorityOverride } from '../types/deployment-plan.js';
 
 const logger = getLogger('AnalyzeCommand');
 
@@ -118,11 +119,14 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
         }));
 
         // Extract priorities from components (if any)
-        const priorities: Record<string, number> = {};
+        const priorities: Record<string, PriorityOverride> = {};
         for (const component of scanResult.components) {
           if (component.priorityBoost > 0) {
             const nodeId = `${component.type}:${component.name}`;
-            priorities[nodeId] = component.priorityBoost;
+            priorities[nodeId] = {
+              priority: component.priorityBoost,
+              source: 'manual',
+            };
           }
         }
 

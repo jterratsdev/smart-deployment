@@ -83,10 +83,9 @@ export class AgentforceErrorHandler {
       this.stats.fallbackCount++;
       this.warnUserAboutFallback(context);
 
-      const fallbackResult = await fallback();
-
+      const fallbackResult = fallback();
       return {
-        result: fallbackResult,
+        result: fallbackResult instanceof Promise ? await fallbackResult : fallbackResult,
         usedFallback: true,
       };
     }
