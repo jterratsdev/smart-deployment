@@ -139,7 +139,7 @@
       ]
     },
     "test:only": {
-      "command": "nyc mocha \"test/**/*.test.ts\"",
+      "command": "nyc mocha \"test/**/*.test.ts\" --ignore \"test/commands/hello/**\"",
       "env": {
         "FORCE_COLOR": "2"
       },

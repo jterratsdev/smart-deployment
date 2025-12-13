@@ -4,7 +4,8 @@
     "outDir": "lib",
     "rootDir": "src",
     "skipLibCheck": true,
-    "types": []
+    "types": [],
+    "lib": ["ES2020", "DOM"]
   },
   "include": ["./src/**/*.ts"]
 }

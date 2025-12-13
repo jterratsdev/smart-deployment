@@ -102,10 +102,15 @@ export class NetworkHandler {
 
       const data = (await response.json()) as T;
 
+      const headersObj: Record<string, string> = {};
+      response.headers.forEach((value, key) => {
+        headersObj[key] = value;
+      });
+
       return {
         data,
         statusCode: response.status,
-        headers: Object.fromEntries(response.headers.entries()),
+        headers: headersObj,
         executionTime: Date.now() - Date.now(),
       };
     } catch (error) {

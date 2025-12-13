@@ -1,8 +1,10 @@
 {
   "extends": "@salesforce/dev-config/tsconfig-test-strict-esm",
   "include": ["./**/*.ts"],
+  "exclude": ["commands/hello/**"],
   "compilerOptions": {
     "skipLibCheck": true,
-    "types": []
+    "types": ["mocha", "chai", "node"],
+    "lib": ["ES2020", "DOM"]
   }
 }

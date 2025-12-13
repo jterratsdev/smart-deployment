@@ -25,7 +25,7 @@ const logger = {
  * Generate safe filename from cache key
  */
 function getCacheFileName(key: string): string {
-  const hash = Buffer.from(key).toString('base64').replaceAll(/[/+=]/g, '_');
+  const hash = Buffer.from(key).toString('base64').replace(/[/+=]/g, '_');
   return `cache_${hash}.json`;
 }
 
@@ -156,7 +156,7 @@ export class CacheManager {
       const lockDir = path.join(os.tmpdir(), 'sf-smart-deployment-locks');
       await fs.mkdir(lockDir, { recursive: true });
 
-      const lockFileName = `${orgAlias.replaceAll(/[^\w-]/g, '_')}.lock`;
+      const lockFileName = `${orgAlias.replace(/[^\w-]/g, '_')}.lock`;
       CacheManager.lockFilePath = path.join(lockDir, lockFileName);
 
       // Try to open lock file exclusively (fails if already locked)
@@ -220,7 +220,7 @@ export class CacheManager {
 
     try {
       const lockDir = path.join(os.tmpdir(), 'sf-smart-deployment-locks');
-      const lockFileName = `${orgAlias.replaceAll(/[^\w-]/g, '_')}.lock`;
+      const lockFileName = `${orgAlias.replace(/[^\w-]/g, '_')}.lock`;
       const lockFilePath = path.join(lockDir, lockFileName);
 
       const lockContent = await fs.readFile(lockFilePath, 'utf-8');

@@ -36,7 +36,6 @@ export interface ValidationReport {
  * @ac US-084-AC-1: Validate sfdx-project.json schema
  */
 export class ProjectValidator {
-
   /**
    * Validate project structure
    */
@@ -108,7 +107,12 @@ export class ProjectValidator {
     // Validate JSON structure
     try {
       const content = fs.readFileSync(sfdxProjectPath, 'utf-8');
-      const config = JSON.parse(content);
+      const config = JSON.parse(content) as {
+        packageDirectories?: unknown[];
+        namespace?: string;
+        sfdcLoginUrl?: string;
+        sourceApiVersion?: string;
+      };
 
       report.checkedItems.push('sfdx-project.json valid JSON');
 
@@ -208,7 +212,11 @@ export class ProjectValidator {
 
     const recommendedFiles = [
       { file: '.gitignore', severity: 'warning' as const, suggestion: 'Add .gitignore to exclude build artifacts' },
-      { file: '.forceignore', severity: 'warning' as const, suggestion: 'Add .forceignore to exclude files from deployment' },
+      {
+        file: '.forceignore',
+        severity: 'warning' as const,
+        suggestion: 'Add .forceignore to exclude files from deployment',
+      },
       { file: 'README.md', severity: 'info' as const, suggestion: 'Add README.md to document your project' },
     ];
 
@@ -282,4 +290,3 @@ export class ProjectValidator {
     return lines.join('\n');
   }
 }
-

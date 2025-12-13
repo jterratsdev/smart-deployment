@@ -130,7 +130,7 @@ export class PromptBuilder {
     for (const [key, value] of Object.entries(optimizedContext)) {
       const placeholder = `{{${key}}}`;
       const replacement = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
-      userPrompt = userPrompt.replaceAll(placeholder, replacement);
+      userPrompt = userPrompt.split(placeholder).join(replacement);
     }
 
     // Estimate tokens

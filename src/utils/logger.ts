@@ -126,7 +126,7 @@ export class Logger {
     }
 
     if (this.config.logToFile && this.config.logDirectory) {
-      const sanitizedComponent = this.config.component.replaceAll(/[^\w-]/g, '_').toLowerCase();
+      const sanitizedComponent = this.config.component.replace(/[^\w-]/g, '_').toLowerCase();
       const date = new Date().toISOString().split('T')[0];
       this.logFilePath = path.join(this.config.logDirectory, `${sanitizedComponent}-${date}.log`);
     }
