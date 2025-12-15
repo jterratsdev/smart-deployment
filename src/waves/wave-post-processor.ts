@@ -109,6 +109,9 @@ export class WavePostProcessor {
     // 8. Sync Visualforce Pages with Components that reference them
     processedWaves = this.syncVisualforcePagesWithComponents(processedWaves);
 
+    // 8b. Sync Custom Objects with FlexiPages they reference
+    processedWaves = this.syncCustomObjectsWithFlexiPages(processedWaves);
+
     // 9. Split large waves FIRST (before syncing test classes with direct coverage)
     // This ensures we know the final wave structure before moving tests
     if (this.options.splitLargeWaves) {
@@ -447,6 +450,112 @@ export class WavePostProcessor {
 
     if (movedFlexiPages > 0) {
       logger.info('FlexiPages synced with dependencies', { movedFlexiPages });
+    }
+
+    return filteredWaves;
+  }
+
+  /**
+   * Sync Custom Objects with FlexiPages they reference
+   *
+   * Moves Custom Objects that have actionOverrides referencing FlexiPages
+   * to the wave AFTER the latest wave containing those FlexiPages.
+   *
+   * Example: Case object has actionOverride referencing SC_GRG_CaseRecordPage FlexiPage
+   * - If Case is in Wave 12 and SC_GRG_CaseRecordPage is in Wave 20,
+   * move Case to Wave 21 (after FlexiPage)
+   *
+   * This ensures that when a Custom Object is deployed, its referenced FlexiPages exist.
+   */
+  public syncCustomObjectsWithFlexiPages(waves: Wave[]): Wave[] {
+    logger.debug('Syncing Custom Objects with FlexiPages');
+
+    // Create map of component -> wave index
+    const componentWaveMap = new Map<NodeId, number>();
+    waves.forEach((wave, idx) => {
+      wave.components.forEach((nodeId) => {
+        componentWaveMap.set(nodeId, idx);
+      });
+    });
+
+    let movedObjects = 0;
+    const newWaves = waves.map((w) => ({ ...w, components: [...w.components] }));
+
+    // Process each wave to find Custom Objects
+    for (let waveIdx = 0; waveIdx < newWaves.length; waveIdx++) {
+      const wave = newWaves[waveIdx];
+      const objectsToMove: Array<{ nodeId: NodeId; targetWave: number }> = [];
+
+      for (const nodeId of [...wave.components]) {
+        const component = this.componentMap.get(nodeId);
+        if (!component || component.type !== 'CustomObject') {
+          continue;
+        }
+
+        // Find FlexiPage dependencies
+        const flexiPageWaves: number[] = [];
+        for (const dep of component.dependencies) {
+          if (dep.startsWith('FlexiPage:')) {
+            const flexiPageWave = componentWaveMap.get(dep);
+            if (flexiPageWave !== undefined) {
+              flexiPageWaves.push(flexiPageWave);
+            }
+          }
+        }
+
+        if (flexiPageWaves.length > 0) {
+          // Find the latest wave containing FlexiPage dependencies
+          const maxFlexiPageWave = Math.max(...flexiPageWaves);
+
+          // Custom Object should be in the wave AFTER the latest FlexiPage wave
+          const targetWave = maxFlexiPageWave + 1;
+
+          // If Custom Object is already in a later wave, don't move it
+          if (waveIdx > maxFlexiPageWave) {
+            continue;
+          }
+
+          // If Custom Object is in the same wave or before any FlexiPage, move it
+          if (waveIdx <= maxFlexiPageWave) {
+            objectsToMove.push({ nodeId, targetWave });
+            movedObjects++;
+            logger.debug('Moving Custom Object after FlexiPage', {
+              object: component.name,
+              fromWave: waveIdx + 1,
+              toWave: targetWave + 1,
+              maxFlexiPageWave: maxFlexiPageWave + 1,
+            });
+          }
+        }
+      }
+
+      // Apply movements
+      for (const { nodeId, targetWave } of objectsToMove) {
+        wave.components = wave.components.filter((id) => id !== nodeId);
+        // Ensure target wave exists
+        while (targetWave >= newWaves.length) {
+          newWaves.push({
+            number: newWaves.length + 1,
+            components: [],
+            metadata: {
+              componentCount: 0,
+              types: [],
+              maxDepth: 0,
+              hasCircularDeps: false,
+              estimatedTime: 0,
+            },
+          });
+        }
+        newWaves[targetWave].components.push(nodeId);
+        componentWaveMap.set(nodeId, targetWave);
+      }
+    }
+
+    // Remove empty waves
+    const filteredWaves = newWaves.filter((wave) => wave.components.length > 0);
+
+    if (movedObjects > 0) {
+      logger.info('Custom Objects synced with FlexiPages', { movedObjects });
     }
 
     return filteredWaves;
