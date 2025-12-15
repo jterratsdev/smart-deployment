@@ -677,7 +677,7 @@ export class WavePostProcessor {
    * - Therefore, TestClass covers HandlerClass indirectly
    * - If HandlerClass is in Wave 1 and TestClass is in Wave 3,
    *   move TestClass to Wave 1
-   *
+   */
    * This ensures that Handler classes, Wrapper classes, and other classes that
    * receive indirect coverage are deployed with their test coverage available.
    */
@@ -966,25 +966,39 @@ export class WavePostProcessor {
       }
     }
 
+    // Build wavesWithTests array efficiently for logging
+    const wavesWithTests: number[] = [];
+    for (const waveIdx of wavesWithTestClasses.keys()) {
+      wavesWithTests.push(waveIdx + 1);
+    }
     logger.info('Waves with test classes identified', {
-      wavesWithTests: Array.from(wavesWithTestClasses.keys()).map(w => w + 1),
-      testClassesByWave: Array.from(testClassesByWave.entries()).map(([w, classes]) => ({
-        wave: w + 1,
-        testClasses: classes.slice(0, 5), // Limit for logging
-        total: classes.length,
-      })),
+      wavesWithTests,
+      testClassesByWave: (() => {
+        // Use iterator to avoid creating full array in memory
+        const result: Array<{ wave: number; testClasses: string[]; total: number }> = [];
+        for (const [w, classes] of testClassesByWave.entries()) {
+          result.push({
+            wave: w + 1,
+            testClasses: classes.slice(0, 5), // Limit for logging
+            total: classes.length,
+          });
+        }
+        return result;
+      })(),
     });
 
     // Debug: Log test classes locations to verify they were moved correctly
-    const testClassesInMap = Array.from(componentWaveMap.entries())
-      .filter(([nodeId]) => {
-        const component = this.componentMap.get(nodeId);
-        return component?.type === 'ApexClass' && this.isTestClass(component.name);
-      })
-      .map(([nodeId, waveIdx]) => ({
-        testClass: nodeId.split(':')[1],
-        wave: waveIdx + 1,
-      }));
+    // Use iterator to avoid creating full array in memory
+    const testClassesInMap: Array<{ testClass: string; wave: number }> = [];
+    for (const [nodeId, waveIdx] of componentWaveMap.entries()) {
+      const component = this.componentMap.get(nodeId);
+      if (component?.type === 'ApexClass' && this.isTestClass(component.name)) {
+        testClassesInMap.push({
+          testClass: nodeId.split(':')[1],
+          wave: waveIdx + 1,
+        });
+      }
+    }
 
     // Debug: Log specific test classes we're looking for
     const targetTestClasses = ['SC_SS_EntitlementsForCases_Test', 'SC_ContentVersion_Service_Test', 'SC_ContentDocument_Service_Test'];
@@ -1013,33 +1027,42 @@ export class WavePostProcessor {
     });
 
     // Debug: Check all entries in componentWaveMap that match our test classes
-    const allMatchingEntries = Array.from(componentWaveMap.entries())
-      .filter(([nodeId]) => {
-        const name = nodeId.split(':')[1];
-        return targetTestClasses.includes(name);
-      })
-      .map(([nodeId, waveIdx]) => ({ nodeId, wave: waveIdx + 1 }));
+    // Use iterator to avoid creating full array in memory
+    const allMatchingEntries: Array<{ nodeId: string; wave: number }> = [];
+    for (const [nodeId, waveIdx] of componentWaveMap.entries()) {
+      const name = nodeId.split(':')[1];
+      if (targetTestClasses.includes(name)) {
+        allMatchingEntries.push({ nodeId, wave: waveIdx + 1 });
+      }
+    }
 
     // Debug: Check all test class entries in componentWaveMap to see their actual nodeId format
-    const allTestClassEntries = Array.from(componentWaveMap.entries())
-      .filter(([nodeId]) => {
-        const component = this.componentMap.get(nodeId);
-        return component?.type === 'ApexClass' && this.isTestClass(component.name);
-      })
-      .slice(0, 20) // Limit to first 20 for logging
-      .map(([nodeId, waveIdx]) => ({
-        nodeId,
-        componentName: this.componentMap.get(nodeId)?.name || 'unknown',
-        wave: waveIdx + 1
-      }));
+    // Use iterator to avoid creating full array in memory, limit to first 20
+    const allTestClassEntries: Array<{ nodeId: string; componentName: string; wave: number }> = [];
+    for (const [nodeId, waveIdx] of componentWaveMap.entries()) {
+      if (allTestClassEntries.length >= 20) break;
+      const component = this.componentMap.get(nodeId);
+      if (component?.type === 'ApexClass' && this.isTestClass(component.name)) {
+        allTestClassEntries.push({
+          nodeId,
+          componentName: component.name || 'unknown',
+          wave: waveIdx + 1
+        });
+      }
+    }
 
     // Debug: Check componentWaveMap size and sample entries
+    // Use iterator to avoid creating full array in memory, limit to first 10
     const componentWaveMapSize = componentWaveMap.size;
-    const sampleEntries = Array.from(componentWaveMap.entries()).slice(0, 10).map(([nodeId, waveIdx]) => ({
-      nodeId,
-      wave: waveIdx + 1,
-      componentName: this.componentMap.get(nodeId)?.name || 'unknown',
-    }));
+    const sampleEntries: Array<{ nodeId: string; wave: number; componentName: string }> = [];
+    for (const [nodeId, waveIdx] of componentWaveMap.entries()) {
+      if (sampleEntries.length >= 10) break;
+      sampleEntries.push({
+        nodeId,
+        wave: waveIdx + 1,
+        componentName: this.componentMap.get(nodeId)?.name || 'unknown',
+      });
+    }
 
     logger.info('Target test classes locations after syncTestClassesWithIndirectCoverage', {
       foundTestClasses,
@@ -1089,13 +1112,15 @@ export class WavePostProcessor {
       });
 
       // Find all test classes in this wave
-      const testClassNodeIdsInWave = Array.from(componentWaveMap.entries())
-        .filter(([nodeId, wave]) => {
-          if (wave !== waveIdx) return false;
-          const component = this.componentMap.get(nodeId);
-          return component?.type === 'ApexClass' && this.isTestClass(component.name);
-        })
-        .map(([nodeId]) => nodeId);
+      // Use iterator to avoid creating full array in memory
+      const testClassNodeIdsInWave: NodeId[] = [];
+      for (const [nodeId, wave] of componentWaveMap.entries()) {
+        if (wave !== waveIdx) continue;
+        const component = this.componentMap.get(nodeId);
+        if (component?.type === 'ApexClass' && this.isTestClass(component.name)) {
+          testClassNodeIdsInWave.push(nodeId);
+        }
+      }
 
       // Process each test class in this wave
       for (const nodeId of testClassNodeIdsInWave) {
@@ -1199,8 +1224,15 @@ export class WavePostProcessor {
       const existing = dependencyConsolidation.get(dependencyId);
       if (!existing) {
         // Recalculate firstWave based on test classes (not the original depWave)
-        const testWaveNumbers = Array.from(testClasses.keys());
-        const actualFirstWave = testWaveNumbers.length > 0 ? Math.min(...testWaveNumbers) : firstWave;
+        // Use iterator to avoid creating intermediate array
+        let actualFirstWave = firstWave;
+        let hasTestWaves = false;
+        for (const waveIdx of testClasses.keys()) {
+          if (!hasTestWaves || waveIdx < actualFirstWave) {
+            actualFirstWave = waveIdx;
+            hasTestWaves = true;
+          }
+        }
         dependencyConsolidation.set(dependencyId, {
           lastWave,
           firstWave: actualFirstWave,
@@ -1220,9 +1252,14 @@ export class WavePostProcessor {
         }
         // Recalculate firstWave based on all test classes (minimum of all test class waves)
         // This must be done AFTER merging to ensure we have all test classes
-        const allTestWaves = Array.from(existing.testClasses.keys());
-        if (allTestWaves.length > 0) {
-          const earliestTestWave = Math.min(...allTestWaves);
+        // Use iterator to avoid creating intermediate array
+        let earliestTestWave: number | undefined;
+        for (const waveIdx of existing.testClasses.keys()) {
+          if (earliestTestWave === undefined || waveIdx < earliestTestWave) {
+            earliestTestWave = waveIdx;
+          }
+        }
+        if (earliestTestWave !== undefined) {
           existing.firstWave = earliestTestWave; // Always update to the earliest test wave
         }
       }
@@ -1266,13 +1303,18 @@ export class WavePostProcessor {
           });
 
           const firstWaveTestClasses = testClasses.get(firstWave) || [];
+          // Calculate total occurrences without creating temporary arrays
+          let totalOccurrences = 0;
+          for (const testClassArray of testClasses.values()) {
+            totalOccurrences += testClassArray.length;
+          }
           logger.debug('Moving critical dependency to first test wave', {
             dependency: depName,
             fromWave: depCurrentWave + 1,
             toWave: firstWave + 1,
             lastWave: lastWave + 1,
             testClasses: firstWaveTestClasses.slice(0, 3),
-            totalOccurrences: Array.from(testClasses.values()).flat().length,
+            totalOccurrences,
           });
         }
       }
@@ -1348,7 +1390,14 @@ export class WavePostProcessor {
 
     // Debug: Log critical deps map contents AFTER recalculation
     // Use finalComponentWaveMap and recalculated adjustments for accurate logging
-    const dataFactoryEntry = Array.from(dependencyConsolidation.entries()).find(([dep]) => dep.includes('DataFactory'));
+    // Use iterator to avoid creating full array in memory
+    let dataFactoryEntry: [NodeId, { lastWave: number; firstWave: number; testClasses: Map<number, string[]> }] | undefined;
+    for (const entry of dependencyConsolidation.entries()) {
+      if (entry[0].includes('DataFactory')) {
+        dataFactoryEntry = entry;
+        break;
+      }
+    }
     if (dataFactoryEntry) {
       const [depNodeId] = dataFactoryEntry;
       const adjustment = manifestAdjustments.find(a => a.componentId === depNodeId);
@@ -1589,15 +1638,22 @@ export class WavePostProcessor {
         totalComponentsAdded++;
       });
     });
+    // Use iterator to avoid creating full array in memory, limit to first 5
+    const sampleEntries: Array<{ nodeId: string; wave: number; componentName: string }> = [];
+    for (const [nodeId, waveIdx] of map.entries()) {
+      if (sampleEntries.length >= 5) break;
+      sampleEntries.push({
+        nodeId,
+        wave: waveIdx + 1,
+        componentName: this.componentMap.get(nodeId)?.name || 'unknown',
+      });
+    }
+
     logger.info('buildComponentWaveMap completed', {
       wavesProcessed: waves.length,
       totalComponentsAdded,
       mapSize: map.size,
-      sampleEntries: Array.from(map.entries()).slice(0, 5).map(([nodeId, waveIdx]) => ({
-        nodeId,
-        wave: waveIdx + 1,
-        componentName: this.componentMap.get(nodeId)?.name || 'unknown',
-      })),
+      sampleEntries,
     });
     return map;
   }
@@ -1605,19 +1661,24 @@ export class WavePostProcessor {
   /**
    * Build a mapping from old wave numbers to new wave numbers after splitLargeWaves
    * This finds where test classes that were in old waves ended up after splitting
+   *
+   * @deprecated Currently unused - kept for potential future use
    */
-  private buildWaveMappingAfterSplit(
-    splitWaves: Wave[],
-    manifestAdjustments: Array<{ componentId: NodeId; firstWave: number; lastWave: number }>
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // @ts-expect-error - Unused but kept for potential future use
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private _buildWaveMappingAfterSplit(
+    _splitWaves: Wave[],
+    _manifestAdjustments: Array<{ componentId: NodeId; firstWave: number; lastWave: number }>
   ): Map<number, number> {
     const mapping = new Map<number, number>();
 
     // Build component wave map from split waves
-    const componentWaveMap = this.buildComponentWaveMap(splitWaves);
+    const componentWaveMap = this.buildComponentWaveMap(_splitWaves);
 
     // For each adjustment, find where the test classes that need this component are now
     // firstWave and lastWave refer to where test classes are, not where the critical dependency is
-    for (const adjustment of manifestAdjustments) {
+    for (const adjustment of _manifestAdjustments) {
       const criticalDep = this.componentMap.get(adjustment.componentId);
       if (!criticalDep) continue;
 
@@ -1673,9 +1734,15 @@ export class WavePostProcessor {
       }
     }
 
+    // Use iterator to avoid creating full array in memory
+    const mappingArray: Array<{ old: number; new: number }> = [];
+    for (const [old, new_] of mapping.entries()) {
+      mappingArray.push({ old, new: new_ });
+    }
+
     logger.info('Built wave mapping after split', {
-      mapping: Array.from(mapping.entries()).map(([old, new_]) => ({ old, new: new_ })),
-      adjustmentsProcessed: manifestAdjustments.length,
+      mapping: mappingArray,
+      adjustmentsProcessed: _manifestAdjustments.length,
     });
 
     return mapping;
@@ -1685,21 +1752,23 @@ export class WavePostProcessor {
    * Adjust manifest adjustments after wave splitting
    * Updates firstWave and lastWave to reflect new wave numbers after splitLargeWaves
    */
-  private adjustManifestAdjustmentsForSplit(
-    manifestAdjustments: Array<{ componentId: NodeId; firstWave: number; lastWave: number }>,
-    waveMapping: Map<number, number>
+  // @ts-expect-error - Unused but kept for potential future use
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private _adjustManifestAdjustmentsForSplit(
+    _manifestAdjustments: Array<{ componentId: NodeId; firstWave: number; lastWave: number }>,
+    _waveMapping: Map<number, number>
   ): Array<{ componentId: NodeId; firstWave: number; lastWave: number }> {
-    if (waveMapping.size === 0) {
-      return manifestAdjustments;
+    if (_waveMapping.size === 0) {
+      return _manifestAdjustments;
     }
 
-    const adjusted = manifestAdjustments.map(adjustment => {
+    const adjusted = _manifestAdjustments.map(adjustment => {
       // Convert to 1-based for mapping lookup
       const oldFirstWave1Based = adjustment.firstWave + 1;
       const oldLastWave1Based = adjustment.lastWave + 1;
 
-      const newFirstWave1Based = waveMapping.get(oldFirstWave1Based) ?? oldFirstWave1Based;
-      const newLastWave1Based = waveMapping.get(oldLastWave1Based) ?? oldLastWave1Based;
+      const newFirstWave1Based = _waveMapping.get(oldFirstWave1Based) ?? oldFirstWave1Based;
+      const newLastWave1Based = _waveMapping.get(oldLastWave1Based) ?? oldLastWave1Based;
 
       if (newFirstWave1Based !== oldFirstWave1Based || newLastWave1Based !== oldLastWave1Based) {
         logger.info('Adjusting manifest adjustment after wave split', {
