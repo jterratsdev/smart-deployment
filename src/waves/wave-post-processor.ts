@@ -112,6 +112,9 @@ export class WavePostProcessor {
     // 8b. Sync Custom Objects with FlexiPages they reference
     processedWaves = this.syncCustomObjectsWithFlexiPages(processedWaves);
 
+    // 8c. Resolve dependency conflicts generically for all metadata types
+    processedWaves = this.resolveDependencyConflicts(processedWaves);
+
     // 9. Split large waves FIRST (before syncing test classes with direct coverage)
     // This ensures we know the final wave structure before moving tests
     if (this.options.splitLargeWaves) {
@@ -515,8 +518,26 @@ export class WavePostProcessor {
             continue;
           }
 
+          // Check if moving the Custom Object would break other dependencies
+          // Find components that depend on this Custom Object
+          let hasBlockingDependents = false;
+          const blockingDependents: Array<{ name: string; wave: number }> = [];
+
+          for (const [depNodeId, depComponent] of this.componentMap.entries()) {
+            if (depComponent.dependencies.has(nodeId)) {
+              const depWave = componentWaveMap.get(depNodeId);
+              if (depWave !== undefined && depWave < targetWave) {
+                // This dependent is in a wave before the target wave
+                // Moving the Custom Object would break this dependency
+                hasBlockingDependents = true;
+                blockingDependents.push({ name: depComponent.name, wave: depWave });
+              }
+            }
+          }
+
           // If Custom Object is in the same wave or before any FlexiPage, move it
-          if (waveIdx <= maxFlexiPageWave) {
+          // BUT only if it won't break other dependencies
+          if (waveIdx <= maxFlexiPageWave && !hasBlockingDependents) {
             objectsToMove.push({ nodeId, targetWave });
             movedObjects++;
             logger.debug('Moving Custom Object after FlexiPage', {
@@ -525,6 +546,85 @@ export class WavePostProcessor {
               toWave: targetWave + 1,
               maxFlexiPageWave: maxFlexiPageWave + 1,
             });
+          } else if (hasBlockingDependents) {
+            logger.warn('Cannot move Custom Object - would break dependencies', {
+              object: component.name,
+              currentWave: waveIdx + 1,
+              targetWave: targetWave + 1,
+              blockingDependents,
+              note: 'Custom Object must stay in current wave due to other dependencies',
+            });
+
+            // Alternative: Try to move FlexiPage earlier instead
+            // Find the FlexiPage dependencies and try to move them before the Custom Object
+            for (const dep of component.dependencies) {
+              if (dep.startsWith('FlexiPage:')) {
+                const flexiPageWave = componentWaveMap.get(dep);
+                if (flexiPageWave !== undefined && flexiPageWave > waveIdx) {
+                  // Try to move FlexiPage to the same wave as Custom Object or earlier
+                  // But only if FlexiPage doesn't have dependencies that require it to be later
+                  const flexiPageComponent = this.componentMap.get(dep);
+                  if (flexiPageComponent) {
+                    let canMoveFlexiPageEarlier = true;
+                    const flexiPageBlockingDeps: Array<{ name: string; wave: number }> = [];
+
+                    // Check FlexiPage dependencies (LWC, Flows)
+                    for (const flexiDep of flexiPageComponent.dependencies) {
+                      let flexiDepWave: number | undefined;
+
+                      // Check if it's an LWC (format: c:componentName)
+                      if (flexiDep.startsWith('c:')) {
+                        const lwcName = flexiDep.substring(2);
+                        const lwcNodeId = `LightningComponentBundle:${lwcName}`;
+                        flexiDepWave = componentWaveMap.get(lwcNodeId);
+                      } else {
+                        flexiDepWave = componentWaveMap.get(flexiDep);
+                      }
+
+                      if (flexiDepWave !== undefined && flexiDepWave > waveIdx) {
+                        // FlexiPage dependency is in a wave after Custom Object
+                        // Cannot move FlexiPage earlier
+                        canMoveFlexiPageEarlier = false;
+                        const depComponent = this.componentMap.get(flexiDep);
+                        if (depComponent) {
+                          flexiPageBlockingDeps.push({ name: depComponent.name, wave: flexiDepWave });
+                        }
+                      }
+                    }
+
+                    if (canMoveFlexiPageEarlier && flexiPageWave > waveIdx) {
+                      // Move FlexiPage to the same wave as Custom Object
+                      const flexiPageNodeId = dep;
+                      const flexiPageCurrentWave = newWaves[flexiPageWave];
+                      const flexiPageIndex = flexiPageCurrentWave.components.indexOf(flexiPageNodeId);
+
+                      if (flexiPageIndex > -1) {
+                        flexiPageCurrentWave.components.splice(flexiPageIndex, 1);
+                        newWaves[waveIdx].components.push(flexiPageNodeId);
+                        componentWaveMap.set(flexiPageNodeId, waveIdx);
+                        movedObjects++; // Count as moved for logging
+                        logger.info('Moved FlexiPage earlier to match Custom Object', {
+                          flexipage: flexiPageComponent.name,
+                          fromWave: flexiPageWave + 1,
+                          toWave: waveIdx + 1,
+                          object: component.name,
+                          reason: 'Custom Object cannot be moved due to dependencies',
+                        });
+                      }
+                    } else if (!canMoveFlexiPageEarlier) {
+                      logger.warn('Cannot move FlexiPage earlier - would break dependencies', {
+                        flexipage: flexiPageComponent.name,
+                        currentWave: flexiPageWave + 1,
+                        targetWave: waveIdx + 1,
+                        blockingDependencies: flexiPageBlockingDeps,
+                        object: component.name,
+                        note: 'Both Custom Object and FlexiPage have conflicting dependencies - deployment may fail',
+                      });
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -556,6 +656,212 @@ export class WavePostProcessor {
 
     if (movedObjects > 0) {
       logger.info('Custom Objects synced with FlexiPages', { movedObjects });
+    }
+
+    return filteredWaves;
+  }
+
+  /**
+   * Resolve dependency conflicts generically for all metadata types
+   *
+   * This function detects when a component needs to be in a later wave due to some dependencies
+   * but cannot be moved because other components depend on it and are in earlier waves.
+   *
+   * When such conflicts are detected, it attempts to resolve them by:
+   * 1. Moving the dependency to the same wave as the component (if possible)
+   * 2. Moving the component to the earliest possible wave that satisfies all constraints
+   * 3. Logging warnings for unresolvable conflicts
+   *
+   * This applies to any metadata type, not just Custom Objects and FlexiPages.
+   *
+   * @example
+   * - Component A needs to be after Component B (B is dependency)
+   * - But Component C depends on A and is in an earlier wave
+   * - Solution: Try to move B to the same wave as A, or move A to earliest wave that satisfies both
+   */
+  public resolveDependencyConflicts(waves: Wave[]): Wave[] {
+    logger.debug('Resolving dependency conflicts for all metadata types');
+
+    // Create map of component -> wave index
+    const componentWaveMap = new Map<NodeId, number>();
+    waves.forEach((wave, idx) => {
+      wave.components.forEach((nodeId) => {
+        componentWaveMap.set(nodeId, idx);
+      });
+    });
+
+    const newWaves = waves.map((w) => ({ ...w, components: [...w.components] }));
+    let resolvedConflicts = 0;
+    const unresolvedConflicts: Array<{
+      component: string;
+      componentType: string;
+      needsAfterWave: number;
+      blockedBy: Array<{ name: string; wave: number }>;
+    }> = [];
+
+    // Process each wave to find components with dependency conflicts
+    for (let waveIdx = 0; waveIdx < newWaves.length; waveIdx++) {
+      const wave = newWaves[waveIdx];
+      const componentsToMove: Array<{ nodeId: NodeId; targetWave: number; reason: string }> = [];
+
+      for (const nodeId of [...wave.components]) {
+        const component = this.componentMap.get(nodeId);
+        if (!component) {
+          continue;
+        }
+
+        // Find dependencies that require this component to be in a later wave
+        const dependencyWaves: number[] = [];
+        const dependencyDetails: Array<{ nodeId: NodeId; wave: number; name: string }> = [];
+
+        for (const dep of component.dependencies) {
+          const depWave = componentWaveMap.get(dep);
+          if (depWave !== undefined && depWave > waveIdx) {
+            dependencyWaves.push(depWave);
+            const depComponent = this.componentMap.get(dep);
+            if (depComponent) {
+              dependencyDetails.push({
+                nodeId: dep,
+                wave: depWave,
+                name: depComponent.name,
+              });
+            }
+          }
+        }
+
+        if (dependencyWaves.length > 0) {
+          // Component needs to be after its dependencies
+          const maxDepWave = Math.max(...dependencyWaves);
+          const targetWave = maxDepWave + 1;
+
+          // Check if moving would break other dependencies
+          let hasBlockingDependents = false;
+          const blockingDependents: Array<{ name: string; wave: number }> = [];
+
+          for (const [depNodeId, depComponent] of this.componentMap.entries()) {
+            if (depComponent.dependencies.has(nodeId)) {
+              const depWave = componentWaveMap.get(depNodeId);
+              if (depWave !== undefined && depWave < targetWave) {
+                hasBlockingDependents = true;
+                blockingDependents.push({ name: depComponent.name, wave: depWave });
+              }
+            }
+          }
+
+          if (!hasBlockingDependents) {
+            // Can move safely
+            if (waveIdx < maxDepWave) {
+              componentsToMove.push({
+                nodeId,
+                targetWave,
+                reason: `Needs to be after dependencies: ${dependencyDetails.map((d) => d.name).join(', ')}`,
+              });
+            }
+          } else {
+            // Conflict detected - try to resolve by moving dependencies earlier
+            let resolved = false;
+
+            for (const depDetail of dependencyDetails) {
+              const depComponent = this.componentMap.get(depDetail.nodeId);
+              if (!depComponent) {
+                continue;
+              }
+
+              // Check if dependency can be moved to the same wave as the component
+              let canMoveDependency = true;
+              const depBlockingDeps: Array<{ name: string; wave: number }> = [];
+
+              // Check dependency's own dependencies
+              for (const depDep of depComponent.dependencies) {
+                const depDepWave = componentWaveMap.get(depDep);
+                if (depDepWave !== undefined && depDepWave > waveIdx) {
+                  canMoveDependency = false;
+                  const depDepComponent = this.componentMap.get(depDep);
+                  if (depDepComponent) {
+                    depBlockingDeps.push({ name: depDepComponent.name, wave: depDepWave });
+                  }
+                }
+              }
+
+              if (canMoveDependency && depDetail.wave > waveIdx) {
+                // Move dependency to the same wave as the component
+                const depCurrentWave = newWaves[depDetail.wave];
+                const depIndex = depCurrentWave.components.indexOf(depDetail.nodeId);
+
+                if (depIndex > -1) {
+                  depCurrentWave.components.splice(depIndex, 1);
+                  newWaves[waveIdx].components.push(depDetail.nodeId);
+                  componentWaveMap.set(depDetail.nodeId, waveIdx);
+                  resolvedConflicts++;
+                  resolved = true;
+                  logger.info('Resolved dependency conflict by moving dependency earlier', {
+                    component: component.name,
+                    componentType: component.type,
+                    dependency: depComponent.name,
+                    dependencyType: depComponent.type,
+                    fromWave: depDetail.wave + 1,
+                    toWave: waveIdx + 1,
+                  });
+                  break; // Resolved one conflict, move on
+                }
+              }
+            }
+
+            if (!resolved) {
+              // Could not resolve - log warning
+              unresolvedConflicts.push({
+                component: component.name,
+                componentType: component.type,
+                needsAfterWave: maxDepWave + 1,
+                blockedBy: blockingDependents,
+              });
+              logger.warn('Unresolvable dependency conflict detected', {
+                component: component.name,
+                componentType: component.type,
+                currentWave: waveIdx + 1,
+                needsAfterWave: maxDepWave + 1,
+                blockingDependents,
+                note: 'Component cannot be moved due to conflicting dependencies',
+              });
+            }
+          }
+        }
+      }
+
+      // Apply movements
+      for (const { nodeId, targetWave } of componentsToMove) {
+        wave.components = wave.components.filter((id) => id !== nodeId);
+        while (targetWave >= newWaves.length) {
+          newWaves.push({
+            number: newWaves.length + 1,
+            components: [],
+            metadata: {
+              componentCount: 0,
+              types: [],
+              maxDepth: 0,
+              hasCircularDeps: false,
+              estimatedTime: 0,
+            },
+          });
+        }
+        newWaves[targetWave].components.push(nodeId);
+        componentWaveMap.set(nodeId, targetWave);
+        resolvedConflicts++;
+      }
+    }
+
+    // Remove empty waves
+    const filteredWaves = newWaves.filter((wave) => wave.components.length > 0);
+
+    if (resolvedConflicts > 0) {
+      logger.info('Dependency conflicts resolved', { resolvedConflicts });
+    }
+
+    if (unresolvedConflicts.length > 0) {
+      logger.warn('Unresolved dependency conflicts', {
+        count: unresolvedConflicts.length,
+        conflicts: unresolvedConflicts,
+      });
     }
 
     return filteredWaves;
