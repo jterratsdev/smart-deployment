@@ -542,6 +542,27 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
 
     this.log(`✅ Generated ${manifestResult.manifests.length} manifests`);
 
+    // Validate wave integrity before deployment
+    this.log('\n🔍 Validating wave integrity...');
+    const { WaveIntegrityValidator } = await import('../../waves/wave-integrity-validator.js');
+    const integrityValidator = new WaveIntegrityValidator(componentMap, orderedWaves);
+    const integrityResult = integrityValidator.validateWaves();
+
+    if (!integrityResult.isValid) {
+      const report = integrityValidator.generateReport(integrityResult);
+      this.log(report);
+
+      if (integrityResult.summary.errors > 0) {
+        this.warn(`\n⚠️  Found ${integrityResult.summary.errors} integrity error(s) that may cause deployment failures`);
+        this.warn('   Consider reviewing wave structure or using --dry-run to preview deployment');
+      }
+      if (integrityResult.summary.warnings > 0) {
+        this.log(`\nℹ️  Found ${integrityResult.summary.warnings} warning(s) - deployment may still succeed`);
+      }
+    } else {
+      this.log('✅ Wave integrity validation passed - all dependencies are satisfied');
+    }
+
     // Validate manifests against source
     this.log('\n🔍 Validating manifests against source...');
     const manifestValidator = new ManifestValidator();

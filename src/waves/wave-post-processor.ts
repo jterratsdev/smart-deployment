@@ -111,7 +111,7 @@ export class WavePostProcessor {
     // 9. Resolve dependency conflicts generically for all metadata types
     const conflictResolution = this.resolveDependencyConflicts(processedWaves);
     processedWaves = conflictResolution.waves;
-    
+
     // 10. Sync FlexiPages with dependencies AFTER resolving conflicts
     // This ensures FlexiPages are moved after all their dependencies (LWC, Flows) are positioned
     if (this.options.syncFlexiPages) {
