@@ -67,6 +67,7 @@ export class WavePostProcessor {
   public processWaves(waves: Wave[]): {
     waves: Wave[];
     manifestAdjustments: Array<{ componentId: NodeId; firstWave: number; lastWave: number }>;
+    componentsToSimplify: Map<NodeId, { unavailableDeps: NodeId[]; targetWave: number }>;
   } {
     logger.info('Starting wave post-processing', {
       initialWaves: waves.length,
@@ -86,34 +87,57 @@ export class WavePostProcessor {
       processedWaves = this.syncFlowsWithApexActions(processedWaves);
     }
 
-    // 3. Sync FlexiPages with dependencies
-    if (this.options.syncFlexiPages) {
-      processedWaves = this.syncFlexiPagesWithDependencies(processedWaves);
-    }
-
-    // 4. Sync LightningApps with FlexiPages they depend on (utilityBar)
+    // 3. Sync LightningApps with FlexiPages they depend on (utilityBar)
     processedWaves = this.syncLightningAppsWithFlexiPages(processedWaves);
 
-    // 5. Sync Custom Metadata Records with their Types
+    // 4. Sync Custom Metadata Records with their Types
     processedWaves = this.syncCustomMetadataRecordsWithTypes(processedWaves);
 
-    // 6. Sync test classes with classes they cover indirectly (before split)
+    // 5. Sync test classes with classes they cover indirectly (before split)
     if (this.options.syncTestClasses) {
       processedWaves = this.syncTestClassesWithIndirectCoverage(processedWaves);
     }
 
-    // 7. Sync Apex classes with their dependents (move classes referenced by later waves)
+    // 6. Sync Apex classes with their dependents (move classes referenced by later waves)
     // Skip critical dependencies as they're already handled above
     processedWaves = this.syncApexClassesWithDependents(processedWaves);
 
-    // 8. Sync Visualforce Pages with Components that reference them
+    // 7. Sync Visualforce Pages with Components that reference them
     processedWaves = this.syncVisualforcePagesWithComponents(processedWaves);
 
-    // 8b. Sync Custom Objects with FlexiPages they reference
+    // 8. Sync Custom Objects with FlexiPages they reference
     processedWaves = this.syncCustomObjectsWithFlexiPages(processedWaves);
 
-    // 8c. Resolve dependency conflicts generically for all metadata types
-    processedWaves = this.resolveDependencyConflicts(processedWaves);
+    // 9. Resolve dependency conflicts generically for all metadata types
+    const conflictResolution = this.resolveDependencyConflicts(processedWaves);
+    processedWaves = conflictResolution.waves;
+    
+    // 10. Sync FlexiPages with dependencies AFTER resolving conflicts
+    // This ensures FlexiPages are moved after all their dependencies (LWC, Flows) are positioned
+    if (this.options.syncFlexiPages) {
+      processedWaves = this.syncFlexiPagesWithDependencies(processedWaves);
+    }
+
+    // Store components that need preventive simplification
+    const componentsToSimplify = conflictResolution.componentsToSimplify;
+
+    if (componentsToSimplify.size > 0) {
+      logger.info('Components marked for preventive simplification', {
+        count: componentsToSimplify.size,
+        components: Array.from(componentsToSimplify.entries()).map(([nodeId, info]) => {
+          const comp = this.componentMap.get(nodeId);
+          return {
+            component: comp?.name || nodeId,
+            type: comp?.type,
+            unavailableDeps: info.unavailableDeps.map((d) => {
+              const depComp = this.componentMap.get(d);
+              return depComp?.name || d;
+            }),
+            targetWave: info.targetWave,
+          };
+        }),
+      });
+    }
 
     // 9. Split large waves FIRST (before syncing test classes with direct coverage)
     // This ensures we know the final wave structure before moving tests
@@ -145,7 +169,7 @@ export class WavePostProcessor {
       manifestAdjustments: manifestAdjustments.length,
     });
 
-    return { waves: processedWaves, manifestAdjustments };
+    return { waves: processedWaves, manifestAdjustments, componentsToSimplify };
   }
 
   /**
@@ -670,16 +694,19 @@ export class WavePostProcessor {
    * When such conflicts are detected, it attempts to resolve them by:
    * 1. Moving the dependency to the same wave as the component (if possible)
    * 2. Moving the component to the earliest possible wave that satisfies all constraints
-   * 3. Logging warnings for unresolvable conflicts
+   * 3. Marking components for preventive simplification when conflicts cannot be resolved
    *
    * This applies to any metadata type, not just Custom Objects and FlexiPages.
    *
    * @example
    * - Component A needs to be after Component B (B is dependency)
    * - But Component C depends on A and is in an earlier wave
-   * - Solution: Try to move B to the same wave as A, or move A to earliest wave that satisfies both
+   * - Solution: Try to move B to the same wave as A, or mark A for simplification
    */
-  public resolveDependencyConflicts(waves: Wave[]): Wave[] {
+  public resolveDependencyConflicts(waves: Wave[]): {
+    waves: Wave[];
+    componentsToSimplify: Map<NodeId, { unavailableDeps: NodeId[]; targetWave: number }>;
+  } {
     logger.debug('Resolving dependency conflicts for all metadata types');
 
     // Create map of component -> wave index
@@ -698,6 +725,7 @@ export class WavePostProcessor {
       needsAfterWave: number;
       blockedBy: Array<{ name: string; wave: number }>;
     }> = [];
+    const componentsToSimplify = new Map<NodeId, { unavailableDeps: NodeId[]; targetWave: number }>();
 
     // Process each wave to find components with dependency conflicts
     for (let waveIdx = 0; waveIdx < newWaves.length; waveIdx++) {
@@ -808,20 +836,37 @@ export class WavePostProcessor {
             }
 
             if (!resolved) {
-              // Could not resolve - log warning
+              // Could not resolve - mark for preventive simplification
+              const unavailableDeps = dependencyDetails
+                .filter((d) => d.wave > waveIdx)
+                .map((d) => d.nodeId);
+
               unresolvedConflicts.push({
                 component: component.name,
                 componentType: component.type,
                 needsAfterWave: maxDepWave + 1,
                 blockedBy: blockingDependents,
               });
-              logger.warn('Unresolvable dependency conflict detected', {
+
+              // Mark component for preventive simplification
+              // The component will be deployed in current wave without unavailable dependencies
+              // Full version will be deployed in targetWave
+              componentsToSimplify.set(nodeId, {
+                unavailableDeps,
+                targetWave: maxDepWave + 1, // Wave where full version should be deployed
+              });
+
+              logger.warn('Unresolvable dependency conflict - will simplify preventively', {
                 component: component.name,
                 componentType: component.type,
                 currentWave: waveIdx + 1,
                 needsAfterWave: maxDepWave + 1,
                 blockingDependents,
-                note: 'Component cannot be moved due to conflicting dependencies',
+                unavailableDeps: unavailableDeps.map((d) => {
+                  const depComp = this.componentMap.get(d);
+                  return depComp ? depComp.name : d;
+                }),
+                note: 'Component will be deployed without unavailable dependencies, full version in later wave',
               });
             }
           }
@@ -858,13 +903,17 @@ export class WavePostProcessor {
     }
 
     if (unresolvedConflicts.length > 0) {
-      logger.warn('Unresolved dependency conflicts', {
+      logger.warn('Unresolved dependency conflicts - marked for preventive simplification', {
         count: unresolvedConflicts.length,
         conflicts: unresolvedConflicts,
+        componentsToSimplify: componentsToSimplify.size,
       });
     }
 
-    return filteredWaves;
+    return {
+      waves: filteredWaves,
+      componentsToSimplify,
+    };
   }
 
   /**
