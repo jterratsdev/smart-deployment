@@ -12,7 +12,7 @@ const logger = getLogger('FlowParser');
 /**
  * Flow dependency types
  */
-export type FlowDependencyType = 'apex_action' | 'subflow' | 'record' | 'genai_prompt' | 'screen_field' | 'decision';
+export type FlowDependencyType = 'apex_action' | 'subflow' | 'record' | 'genai_prompt' | 'visualforce_page' | 'screen_field' | 'decision';
 
 /**
  * Re-export FlowProcessType and FlowStatus from Salesforce types
@@ -40,6 +40,7 @@ export type FlowParseResult = {
   subflows: string[];
   recordReferences: string[];
   genaiPrompts: string[];
+  visualforcePages: string[];
   dependencies: FlowDependency[];
   metadata?: FlowMetadata;
 };
@@ -235,6 +236,39 @@ function extractScreenFields(flowData: any): string[] {
 }
 
 /**
+ * Extract Visualforce Page references from Flow screen ComponentInstance fields
+ * ComponentInstance fields with extensionName that references Visualforce Pages
+ *
+ * @ac US-015-AC-5: Extract Visualforce Page dependencies from Flow screens
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractScreenVisualforcePages(flowData: any): string[] {
+  const pages: string[] = [];
+
+  const screens = Array.isArray(flowData.screens) ? flowData.screens : flowData.screens ? [flowData.screens] : [];
+
+  for (const screen of screens) {
+    if (screen.fields) {
+      const screenFields = Array.isArray(screen.fields) ? screen.fields : [screen.fields];
+
+      for (const screenField of screenFields) {
+        // Check if field is a ComponentInstance that references a Visualforce Page
+        // extensionName can be a Visualforce Page name (not flowruntime: components)
+        if (screenField.fieldType === 'ComponentInstance' && screenField.extensionName) {
+          const extensionName = String(screenField.extensionName || '');
+          // Skip flowruntime: components (standard Flow components)
+          if (extensionName && !extensionName.startsWith('flowruntime:') && !pages.includes(extensionName)) {
+            pages.push(extensionName);
+          }
+        }
+      }
+    }
+  }
+
+  return pages;
+}
+
+/**
  * Extract decision logic from Flow XML
  *
  * @ac US-015-AC-6: Extract decision logic
@@ -327,6 +361,7 @@ export function parseFlow(filePath: string, content: string): FlowParseResult {
     const genaiPrompts = extractGenAIPrompts(flowData);
     const screenFields = extractScreenFields(flowData);
     const decisions = extractDecisions(flowData);
+    const visualforcePages = extractScreenVisualforcePages(flowData);
 
     // Build dependencies array
     const dependencies: FlowDependency[] = [
@@ -334,6 +369,7 @@ export function parseFlow(filePath: string, content: string): FlowParseResult {
       ...subflows.map((name) => ({ type: 'subflow' as FlowDependencyType, name })),
       ...recordReferences.map((name) => ({ type: 'record' as FlowDependencyType, name })),
       ...genaiPrompts.map((name) => ({ type: 'genai_prompt' as FlowDependencyType, name })),
+      ...visualforcePages.map((name) => ({ type: 'visualforce_page' as FlowDependencyType, name })),
       ...screenFields.map((name) => ({ type: 'screen_field' as FlowDependencyType, name })),
       ...decisions.map((name) => ({ type: 'decision' as FlowDependencyType, name })),
     ];
@@ -346,6 +382,7 @@ export function parseFlow(filePath: string, content: string): FlowParseResult {
       subflows,
       recordReferences,
       genaiPrompts,
+      visualforcePages,
       dependencies,
     };
 

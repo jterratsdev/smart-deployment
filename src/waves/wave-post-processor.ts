@@ -97,7 +97,7 @@ export class WavePostProcessor {
     // 5. Sync Custom Metadata Records with their Types
     processedWaves = this.syncCustomMetadataRecordsWithTypes(processedWaves);
 
-    // 6. Sync test classes with classes they cover indirectly
+    // 6. Sync test classes with classes they cover indirectly (before split)
     if (this.options.syncTestClasses) {
       processedWaves = this.syncTestClassesWithIndirectCoverage(processedWaves);
     }
@@ -109,13 +109,19 @@ export class WavePostProcessor {
     // 8. Sync Visualforce Pages with Components that reference them
     processedWaves = this.syncVisualforcePagesWithComponents(processedWaves);
 
-    // 9. Split large waves FIRST (before syncing critical dependencies)
-    // This ensures we know the final wave structure before moving critical dependencies
+    // 9. Split large waves FIRST (before syncing test classes with direct coverage)
+    // This ensures we know the final wave structure before moving tests
     if (this.options.splitLargeWaves) {
       processedWaves = this.splitLargeWaves(processedWaves);
     }
 
-    // 10. Sync critical dependencies with test classes AFTER splitLargeWaves
+    // 10. Sync test classes with classes they cover DIRECTLY AFTER splitLargeWaves
+    // This ensures tests are moved to the correct waves after splitting
+    if (this.options.syncTestClasses) {
+      processedWaves = this.syncTestClassesWithDirectCoverage(processedWaves);
+    }
+
+    // 11. Sync critical dependencies with test classes AFTER splitLargeWaves
     // This ensures dependencies are moved to the correct waves after splitting
     // Only move dependencies to waves that actually have test classes
     if (this.options.syncTestClasses) {
@@ -668,6 +674,349 @@ export class WavePostProcessor {
   }
 
   /**
+   * Sync test classes with classes they cover DIRECTLY
+   *
+   * Moves test classes to the same wave as the classes they test directly.
+   * For example:
+   * - SC_Account_HandlerTest covers SC_Account_Handler directly
+   * - If SC_Account_HandlerTest is in Wave 8 and SC_Account_Handler is in Wave 19,
+   * move SC_Account_HandlerTest to Wave 19
+   *
+   * This ensures that when a wave is deployed, both the class and its test
+   * are available together.
+   */
+  public syncTestClassesWithDirectCoverage(waves: Wave[]): Wave[] {
+    logger.debug('Syncing test classes with direct coverage');
+
+    // Build component wave map - this should include ALL components from ALL waves
+    const componentWaveMap = this.buildComponentWaveMap(waves);
+
+    // Verify that key classes are in the map (for debugging)
+    const testClassesToCheck = [
+      'SC_Account_Handler',
+      'SC_Case_Service',
+      'SC_ContactPointDuplicateValidator',
+      'SC_ContentDocument_Service',
+      'SC_ContentVersion_Service',
+    ];
+
+    for (const className of testClassesToCheck) {
+      const nodeId = `ApexClass:${className}`;
+      if (this.componentMap.has(nodeId) && !componentWaveMap.has(nodeId)) {
+        logger.warn('Class exists in componentMap but not in componentWaveMap', {
+          className,
+          nodeId,
+        });
+      }
+    }
+
+    const newWaves = waves.map(w => ({ ...w, components: [...w.components] }));
+    let movedTests = 0;
+
+    // Process each wave to find test classes
+    for (let waveIdx = 0; waveIdx < newWaves.length; waveIdx++) {
+      const wave = newWaves[waveIdx];
+      const testsToMove: Array<{ nodeId: NodeId; targetWave: number; reason: string }> = [];
+
+      for (const nodeId of [...wave.components]) {
+        const component = this.componentMap.get(nodeId);
+        if (!component || component.type !== 'ApexClass') {
+          continue;
+        }
+
+        // Check if it's a test class
+        const className = component.name;
+        const isTest = this.isTestClass(className);
+        if (!isTest) {
+          continue;
+        }
+
+        // Find components this test covers directly (ApexClass and Flow dependencies)
+        const directlyCoveredClasses: Array<{ nodeId: NodeId; wave: number }> = [];
+        const coveredNodeIds = new Set<NodeId>();
+        let inferredCoveredClass: { nodeId: NodeId; wave: number } | null = null;
+
+        // 1. Infer covered component from test name FIRST (this is the primary class the test covers)
+        // This takes priority over direct dependencies
+        const testName = className;
+
+        // Pattern 1: ClassName_Test → ClassName (e.g., SC_Account_Handler_Test → SC_Account_Handler)
+        if (testName.endsWith('_Test')) {
+          const prodName = testName.slice(0, -5);
+          // Try ApexClass first
+          let prodNodeId: NodeId | undefined = `ApexClass:${prodName}`;
+          let prodComponent = this.componentMap.get(prodNodeId);
+
+          // If not found as ApexClass, try Flow
+          if (!prodComponent) {
+            prodNodeId = `Flow:${prodName}`;
+            prodComponent = this.componentMap.get(prodNodeId);
+          }
+
+          // Pattern 1b: If ClassName_Something_Test doesn't match, try ClassName
+          // e.g., SC_Case_Service_AComerClub_Test → SC_Case_Service
+          if (!prodComponent && prodName.includes('_')) {
+            // Try to find a base class name by removing the suffix
+            // Look for patterns like SC_Case_Service_Something → SC_Case_Service
+            const parts = prodName.split('_');
+            for (let i = parts.length - 1; i > 0; i--) {
+              const baseName = parts.slice(0, i).join('_');
+              prodNodeId = `ApexClass:${baseName}`;
+              prodComponent = this.componentMap.get(prodNodeId);
+              if (prodComponent && !this.isTestClass(prodComponent.name)) {
+                logger.debug('Inferred covered component from test name (pattern 1b)', {
+                  testClass: className,
+                  inferredComponent: prodComponent.name,
+                  componentType: prodComponent.type,
+                  triedFullName: prodName,
+                  matchedBaseName: baseName,
+                });
+                break;
+              }
+              // Try Flow too
+              if (!prodComponent) {
+                prodNodeId = `Flow:${baseName}`;
+                prodComponent = this.componentMap.get(prodNodeId);
+                if (prodComponent && !this.isTestClass(prodComponent.name)) {
+                  logger.debug('Inferred covered component from test name (pattern 1b - Flow)', {
+                    testClass: className,
+                    inferredComponent: prodComponent.name,
+                    componentType: prodComponent.type,
+                    triedFullName: prodName,
+                    matchedBaseName: baseName,
+                  });
+                  break;
+                }
+              }
+            }
+          }
+
+          if (prodComponent && !this.isTestClass(prodComponent.name) && !coveredNodeIds.has(prodNodeId)) {
+            const prodWave = componentWaveMap.get(prodNodeId);
+            if (prodWave !== undefined) {
+              inferredCoveredClass = { nodeId: prodNodeId, wave: prodWave };
+              coveredNodeIds.add(prodNodeId);
+              logger.debug('Inferred covered component from test name', {
+                testClass: className,
+                inferredComponent: prodComponent.name,
+                componentType: prodComponent.type,
+                componentWave: prodWave + 1,
+                testWave: waveIdx + 1,
+              });
+            } else {
+              // Component exists but not in wave map - might be in unplaced components
+              logger.warn('Inferred component not in wave map', {
+                testClass: className,
+                inferredComponent: prodComponent.name,
+                componentType: prodComponent.type,
+                nodeId: prodNodeId,
+                componentExists: true,
+              });
+            }
+          } else if (!prodComponent) {
+            logger.debug('Inferred component not found in component map', {
+              testClass: className,
+              inferredName: prodName,
+              pattern: 'endsWith(_Test)',
+              triedApexClass: `ApexClass:${prodName}`,
+              triedFlow: `Flow:${prodName}`,
+            });
+          }
+        }
+        // Pattern 2: ClassNameTest → ClassName (e.g., AccountHandlerTest → AccountHandler)
+        else if (testName.endsWith('Test') && !testName.endsWith('_Test')) {
+          const prodName = testName.slice(0, -4);
+          // Try ApexClass first
+          let prodNodeId: NodeId | undefined = `ApexClass:${prodName}`;
+          let prodComponent = this.componentMap.get(prodNodeId);
+
+          // If not found as ApexClass, try Flow
+          if (!prodComponent) {
+            prodNodeId = `Flow:${prodName}`;
+            prodComponent = this.componentMap.get(prodNodeId);
+          }
+
+          if (prodComponent && !this.isTestClass(prodComponent.name) && !coveredNodeIds.has(prodNodeId)) {
+            const prodWave = componentWaveMap.get(prodNodeId);
+            if (prodWave !== undefined) {
+              directlyCoveredClasses.push({ nodeId: prodNodeId, wave: prodWave });
+              coveredNodeIds.add(prodNodeId);
+              logger.debug('Inferred covered component from test name', {
+                testClass: className,
+                inferredComponent: prodComponent.name,
+                componentType: prodComponent.type,
+                componentWave: prodWave + 1,
+                testWave: waveIdx + 1,
+              });
+            } else {
+              logger.warn('Inferred component not in wave map', {
+                testClass: className,
+                inferredComponent: prodComponent.name,
+                componentType: prodComponent.type,
+                nodeId: prodNodeId,
+                componentExists: true,
+              });
+            }
+          } else if (!prodComponent) {
+            logger.debug('Inferred component not found in component map', {
+              testClass: className,
+              inferredName: prodName,
+              pattern: 'endsWith(Test)',
+              triedApexClass: `ApexClass:${prodName}`,
+              triedFlow: `Flow:${prodName}`,
+            });
+          }
+        }
+
+        // Add inferred class to directlyCoveredClasses if found (with highest priority)
+        if (inferredCoveredClass) {
+          directlyCoveredClasses.unshift(inferredCoveredClass); // Add at the beginning for priority
+        }
+
+        // If test covers classes in different waves, move it to the earliest wave
+        if (directlyCoveredClasses.length > 0) {
+          // Find the earliest wave where a covered class exists
+          const earliestWave = Math.min(...directlyCoveredClasses.map(c => c.wave));
+          const coveredClassNames = directlyCoveredClasses
+            .map(c => this.componentMap.get(c.nodeId)?.name || 'Unknown')
+            .join(', ');
+
+          logger.debug('Found covered classes for test', {
+            testClass: className,
+            currentWave: waveIdx + 1,
+            earliestWave: earliestWave + 1,
+            coveredClasses: coveredClassNames,
+            coveredClassesCount: directlyCoveredClasses.length,
+          });
+
+          // Only move if the test is not already in the same wave as the earliest covered class
+          if (earliestWave !== waveIdx) {
+            // Check if all dependencies are available
+            let canMove = true;
+            const blockingDeps: Array<{ name: string; wave: number }> = [];
+
+            // If moving to an earlier wave, allow it (dependencies will be deployed before)
+            // If moving to a later wave, check that dependencies are available
+            const isMovingEarlier = earliestWave < waveIdx;
+
+            logger.debug('Evaluating test class movement', {
+              testClass: className,
+              currentWave: waveIdx + 1,
+              targetWave: earliestWave + 1,
+              isMovingEarlier,
+              coveredClasses: coveredClassNames,
+            });
+
+            if (!isMovingEarlier) {
+              // Moving to a later wave - check dependencies
+              for (const dep of component.dependencies) {
+                const depWave = componentWaveMap.get(dep);
+                if (depWave !== undefined && depWave > earliestWave) {
+                  const depComponent = this.componentMap.get(dep);
+                  // Allow moving if the dependency is a test class or a utility class
+                  if (depComponent) {
+                    const depName = depComponent.name.toLowerCase();
+                    const isUtilityOrTest =
+                      this.isTestClass(depComponent.name) ||
+                      depName.includes('datafactory') ||
+                      depName.includes('helper') ||
+                      depName.includes('util') ||
+                      depName.includes('wrapper') ||
+                      depName.includes('mock');
+
+                    if (!isUtilityOrTest && depComponent.type === 'ApexClass') {
+                      // Non-utility dependency in later wave - can't move test yet
+                      canMove = false;
+                      blockingDeps.push({ name: depComponent.name, wave: depWave });
+                      logger.debug('Cannot move test class - dependency in later wave', {
+                        testClass: className,
+                        dependency: depComponent.name,
+                        dependencyWave: depWave + 1,
+                        targetWave: earliestWave + 1,
+                      });
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+            // If moving earlier, always allow (dependencies deploy in order)
+
+            if (!canMove && blockingDeps.length > 0) {
+              logger.debug('Test class movement blocked', {
+                testClass: className,
+                fromWave: waveIdx + 1,
+                toWave: earliestWave + 1,
+                blockingDependencies: blockingDeps,
+              });
+            }
+
+            if (canMove) {
+              const coveredClassNamesForMove = directlyCoveredClasses
+                .map(c => this.componentMap.get(c.nodeId)?.name || 'Unknown')
+                .join(', ');
+
+              testsToMove.push({
+                nodeId,
+                targetWave: earliestWave,
+                reason: `Covers ${coveredClassNamesForMove} directly`,
+              });
+
+              movedTests++;
+              logger.debug('Moving test class to match directly covered class', {
+                testClass: className,
+                fromWave: waveIdx + 1,
+                toWave: earliestWave + 1,
+                coveredClasses: coveredClassNames,
+              });
+            } else {
+              logger.debug('Cannot move test class - blocked by dependencies', {
+                testClass: className,
+                fromWave: waveIdx + 1,
+                targetWave: earliestWave + 1,
+                coveredClasses: directlyCoveredClasses
+                  .map(c => this.componentMap.get(c.nodeId)?.name || 'Unknown')
+                  .join(', '),
+              });
+            }
+          }
+        }
+      }
+
+      // Apply movements
+      for (const { nodeId, targetWave } of testsToMove) {
+        const currentWaveComponents = newWaves[waveIdx].components;
+        const index = currentWaveComponents.indexOf(nodeId);
+        if (index > -1) {
+          currentWaveComponents.splice(index, 1);
+
+          // Ensure target wave exists
+          while (targetWave >= newWaves.length) {
+            newWaves.push({
+              number: newWaves.length + 1,
+              components: [],
+              metadata: this.generateWaveMetadata([]),
+            });
+          }
+          newWaves[targetWave].components.push(nodeId);
+          componentWaveMap.set(nodeId, targetWave);
+        }
+      }
+    }
+
+    if (movedTests > 0) {
+      logger.info('Test classes synced with direct coverage', { movedTests });
+    }
+
+    // Filter empty waves and renumber to ensure wave.number matches array index + 1
+    const filteredWaves = newWaves.filter(w => w.components.length > 0);
+    return filteredWaves.map((wave, idx) => ({
+      ...wave,
+      number: idx + 1,
+    }));
+  }
+
+  /**
    * Sync test classes with classes they cover indirectly
    *
    * Moves test classes to the same wave as classes that receive indirect coverage.
@@ -676,8 +1025,8 @@ export class WavePostProcessor {
    * - HandlerClass depends on ServiceClass
    * - Therefore, TestClass covers HandlerClass indirectly
    * - If HandlerClass is in Wave 1 and TestClass is in Wave 3,
-   *   move TestClass to Wave 1
-   */
+   * move TestClass to Wave 1
+   *
    * This ensures that Handler classes, Wrapper classes, and other classes that
    * receive indirect coverage are deployed with their test coverage available.
    */
@@ -973,7 +1322,7 @@ export class WavePostProcessor {
     }
     logger.info('Waves with test classes identified', {
       wavesWithTests,
-      testClassesByWave: (() => {
+      testClassesByWave: ((): Array<{ wave: number; testClasses: string[]; total: number }> => {
         // Use iterator to avoid creating full array in memory
         const result: Array<{ wave: number; testClasses: string[]; total: number }> = [];
         for (const [w, classes] of testClassesByWave.entries()) {

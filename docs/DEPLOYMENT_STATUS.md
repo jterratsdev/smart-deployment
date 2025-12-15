@@ -142,3 +142,9 @@ La simplificación como fallback está implementada pero **no puede simplificar 
 - Los errores actuales son de tipos que requieren solución manual o adición de componentes faltantes
 - El deployment puede continuar una vez se resuelvan los componentes faltantes
 
+
+
+
+
+
+

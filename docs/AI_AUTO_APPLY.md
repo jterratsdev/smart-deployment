@@ -163,8 +163,8 @@ sf smart-deployment analyze --save-plan --use-ai --ai-auto
 sf smart-deployment start --use-plan deployment-plan.json --strict
 ```
 
-✅ **Best for:** Production deployments  
-✅ **Pros:** Deterministic, auditable, fast  
+✅ **Best for:** Production deployments
+✅ **Pros:** Deterministic, auditable, fast
 ✅ **Cons:** Requires plan generation step
 
 ### **Strategy 2: Auto-Apply in CI/CD**
@@ -174,8 +174,8 @@ sf smart-deployment start --use-plan deployment-plan.json --strict
 sf smart-deployment start --use-ai --ai-auto --ai-confidence-threshold 0.9
 ```
 
-⚠️ **Best for:** Staging, QA environments  
-⚠️ **Pros:** No plan generation needed  
+⚠️ **Best for:** Staging, QA environments
+⚠️ **Pros:** No plan generation needed
 ⚠️ **Cons:** Non-deterministic, slower
 
 ### **Strategy 3: Hybrid (AI + Verification)**
@@ -189,8 +189,8 @@ sf smart-deployment start \
   --max-diff 10%
 ```
 
-✅ **Best for:** Continuous deployment pipelines  
-✅ **Pros:** Catches drift while using AI  
+✅ **Best for:** Continuous deployment pipelines
+✅ **Pros:** Catches drift while using AI
 ✅ **Cons:** More complex setup
 
 ---
@@ -371,4 +371,10 @@ sf smart-deployment start --use-plan plan.json --strict
 - [AI Priority Weighting](./AGENTFORCE_INTEGRATION.md)
 - [CI/CD Deployment](./CI_CD_DEPLOYMENT.md)
 - [Configuration](./CONFIGURATION.md)
+
+
+
+
+
+
 

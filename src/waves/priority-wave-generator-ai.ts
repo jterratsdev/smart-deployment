@@ -93,6 +93,8 @@ export class AIEnhancedPriorityWaveGenerator extends PriorityWaveGenerator {
 
     // Get AI recommendations if available
     if (this.agentforceService) {
+      // Use iterator to avoid creating intermediate array if components is large
+      // Only convert to array if we need to pass it to AI service
       const componentList = Array.from(components.values());
 
       // Prioritize unknown types in AI analysis
@@ -160,8 +162,14 @@ export class AIEnhancedPriorityWaveGenerator extends PriorityWaveGenerator {
     let skippedCount = 0;
 
     for (const rec of this.aiAnalysisResult.recommendations) {
-      // Find component by name
-      const nodeId = Array.from(components.keys()).find((id) => id.endsWith(`:${rec.componentName}`));
+      // Find component by name - iterate directly instead of creating array
+      let nodeId: string | undefined;
+      for (const id of components.keys()) {
+        if (id.endsWith(`:${rec.componentName}`)) {
+          nodeId = id;
+          break;
+        }
+      }
 
       if (!nodeId) continue;
 

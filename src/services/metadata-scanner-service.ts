@@ -345,8 +345,14 @@ export class MetadataScannerService {
 
         const deps = new Set<string>();
         parsed.dependencies.forEach((d) => {
-          if (d.type === 'apex_action' || d.type === 'subflow') {
-            deps.add(d.name);
+          if (d.type === 'apex_action') {
+            deps.add(`ApexClass:${d.name}`);
+          } else if (d.type === 'subflow') {
+            deps.add(`Flow:${d.name}`);
+          } else if (d.type === 'genai_prompt') {
+            deps.add(`GenAiPromptTemplate:${d.name}`);
+          } else if (d.type === 'visualforce_page') {
+            deps.add(`VisualforcePage:${d.name}`);
           }
         });
 

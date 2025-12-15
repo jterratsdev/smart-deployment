@@ -95,7 +95,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     'run-wave-test': Flags.boolean({
       summary: 'Run only test classes included in each wave',
       description: 'Executes only the test classes that are part of the wave being deployed. Uses RunSpecifiedTests. In production, this is the recommended approach for faster deployments.',
-      default: false,
+      default: true,
     }),
     'use-ai': Flags.boolean({
       summary: 'Use Agentforce AI for intelligent priority weighting',

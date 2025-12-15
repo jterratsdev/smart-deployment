@@ -274,10 +274,13 @@ export class ManifestGenerator {
 
       // If we've already seen this component name, check which type is correct
       if (seenComponentNames.has(component.name)) {
-        // Find the existing component(s) with this name
-        const existingComponents = Array.from(options.componentMap.values()).filter(
-          c => c.name === component.name
-        );
+        // Find the existing component(s) with this name - iterate directly to avoid creating array
+        const existingComponents: MetadataComponent[] = [];
+        for (const c of options.componentMap.values()) {
+          if (c.name === component.name) {
+            existingComponents.push(c);
+          }
+        }
 
         // Determine correct type based on file extension
         const currentInferredType = inferTypeFromFile(component.filePath);
@@ -357,10 +360,16 @@ export class ManifestGenerator {
     const salesforceTypeMap = new Map<string, Set<string>>();
 
     // Map all types to Salesforce types (using type mapper)
-    const typeMappingPromises = Array.from(componentsByType.entries()).map(async ([metadataType, componentNames]) => {
-      const salesforceType = await this.typeMapper.mapToSalesforceType(metadataType);
-      return { metadataType, salesforceType, componentNames };
-    });
+    // Use iterator directly to avoid creating intermediate array
+    const typeMappingPromises: Array<Promise<{ metadataType: MetadataType; salesforceType: string | null; componentNames: Set<string> }>> = [];
+    for (const [metadataType, componentNames] of componentsByType.entries()) {
+      typeMappingPromises.push(
+        (async () => {
+          const salesforceType = await this.typeMapper.mapToSalesforceType(metadataType);
+          return { metadataType, salesforceType, componentNames };
+        })()
+      );
+    }
 
     const typeMappings = await Promise.all(typeMappingPromises);
 

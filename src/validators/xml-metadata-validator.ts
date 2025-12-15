@@ -114,7 +114,7 @@ export class XmlMetadataValidator {
   private async validateXmlSyntax(content: string, result: ValidationResult): Promise<void> {
     // Basic XML validation
     const lines = content.split('\n');
-    
+
     // Check for XML declaration
     if (!content.trim().startsWith('<?xml')) {
       result.errors.push({

@@ -376,3 +376,9 @@ However, critical gaps exist:
 **Priority**: Focus on creating unit tests for commands first, then enhance E2E coverage.
 
 
+
+
+
+
+
+

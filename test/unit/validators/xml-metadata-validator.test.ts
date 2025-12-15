@@ -75,17 +75,17 @@ describe('XmlMetadataValidator', () => {
       await fs.writeFile(testFile, xmlMissingStatus, 'utf-8');
 
       const result = await validator.validateFile(testFile);
-      
+
       // Should detect missing status field (schema validation)
       // The validator checks for required fields in Apex metadata
-      const hasSchemaError = result.errors.some((e) => 
+      const hasSchemaError = result.errors.some((e) =>
         e.type === 'schema' && e.message.includes('status')
       );
-      
+
       // Verify the validator ran and detected schema issues
       expect(result.errors).to.be.an('array');
       expect(result.filePath).to.equal(testFile);
-      
+
       // Schema validation should catch missing required fields
       if (hasSchemaError) {
         expect(hasSchemaError).to.be.true;

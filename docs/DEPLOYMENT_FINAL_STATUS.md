@@ -129,3 +129,9 @@ Excluir los componentes que referencian estos componentes estándar del deployme
 - Los errores restantes son por componentes estándar que deberían existir en el org
 - Una vez que se creen estos componentes estándar, el deployment debería completarse exitosamente
 
+
+
+
+
+
+
