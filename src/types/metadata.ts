@@ -45,6 +45,7 @@ export type MetadataType =
   | 'Document'
   | 'ContentAsset'
   | 'EmailTemplate'
+  | 'EmailTemplateFolder'
   | 'ApexClass'
   | 'VisualforceComponent'
   | 'VisualforcePage'
@@ -105,7 +106,7 @@ export type MetadataType =
  * Base interface for all metadata components
  */
 export interface MetadataComponent {
-  /** Component name (e.g., "SC_Account_Service") */
+  /** Component name (e.g., "AccountService") */
   name: string;
   /** Metadata type */
   type: MetadataType;

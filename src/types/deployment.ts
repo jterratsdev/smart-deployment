@@ -83,7 +83,7 @@ export interface DeploymentError {
 export interface Manifest {
   fileName: string;
   content: string; // XML
-  components: Record<MetadataType, string[]>; // Grouped by type
+  components: Record<string, string[]>; // Grouped by type (using string for flexibility)
   apiVersion: string;
 }
 

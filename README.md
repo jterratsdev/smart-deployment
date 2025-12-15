@@ -6,16 +6,15 @@ This directory contains the base files for developing the `@salesforce/plugin-sm
 
 ```
 smart-deployment/
-├── docs/
-│   ├── ARCHITECTURE.md                          # Layered architecture design
-│   ├── AGENTFORCE_INTEGRATION.md               # AI-powered dependency inference
-│   ├── PROJECT_AGNOSTIC_DESIGN.md              # Structure-agnostic scanning
-│   ├── TESTING_STRATEGY.md                     # TDD & BDD approach
-│   ├── ERROR_DRIVEN_DEVELOPMENT.md             # EDD methodology
-│   └── SF_SMART_DEPLOYMENT_PLUGIN_PROPOSAL.md  # Complete plugin proposal
-├── sf_dependency_analyzer.py                    # Core logic (Python - base for TypeScript)
-├── cleanup_old_flow_versions.py                 # Flow version management
-├── deploy_custom_metadata_smart_batches.py      # CMT batch deployment
+├── docs/                                        # Comprehensive documentation (29 files)
+│   ├── architecture/                            # Architecture documentation
+│   ├── guides/                                  # Implementation guides
+│   ├── methodology/                             # Development methodologies
+│   ├── proposals/                               # Project proposals
+│   ├── USER_STORIES.md                          # 90 user stories catalog
+│   ├── CI_CD_DEPLOYMENT.md                      # CI/CD deployment guide
+│   ├── PROVISIONING_CI_CD.md                    # Data provisioning guide
+│   └── ... (see docs/README.md for full index)
 ├── src/
 │   ├── commands/                                # CLI commands
 │   ├── core/                                    # Business logic
@@ -34,91 +33,183 @@ smart-deployment/
 
 ## ✅ Implementation Progress
 
-### Phase 1: Foundation (2/11 completed - 3/40 pts)
+### Current Status: Phase 4-6 (Waves, Deployment, Testing)
 
-- ✅ **Issue #4**: Salesforce Limits Constants (1 pt) - [PR #91](https://github.com/jterrats/smart-deployment/pull/91)
-- ✅ **Issue #5**: Deployment Order Constants (2 pts) - Current branch
-- ⏳ **Issue #6**: Metadata Type Definitions (2 pts)
-- ⏳ **Issue #1**: Functional Utilities (3 pts)
-- ⏳ **Issue #2**: Graph Algorithms (5 pts)
-- ⏳ **Issue #3**: File System Utilities (3 pts)
+The project has progressed significantly beyond Phase 1. Major features implemented:
 
-**Next**: Continue with remaining Phase 1 issues
+**✅ Completed Phases:**
+- **Phase 1**: Foundation (Constants, Types, Utils) - ✅ Complete
+- **Phase 2**: Metadata Parsers (15+ parsers) - ✅ Complete
+- **Phase 3**: Dependency Analysis - ✅ Complete
+- **Phase 4**: Wave Generation - ✅ Complete
+- **Phase 5**: Project Scanning - ✅ Complete
+- **Phase 6**: Deployment Execution - ✅ In Progress
+
+**📊 Key Metrics:**
+- **Commands**: 6 CLI commands implemented (`analyze`, `start`, `validate`, `status`, `resume`, `config`)
+- **Parsers**: 17+ metadata parsers (Apex, Flow, LWC, Custom Objects, etc.)
+- **Waves**: Complete wave generation system with splitting, merging, validation
+- **Deployment**: Manifest generation, SF CLI integration, state management
+- **AI Integration**: Agentforce integration for dependency inference and priority weighting
+- **Tests**: 1,900+ test cases across unit, integration, and E2E tests
 
 ## 🎯 Current Implementation
 
-### 1. ✅ Constants (2/3 completed)
+### 1. ✅ Constants & Types
 
 ```bash
 src/constants/
 ├── ✅ salesforce-limits.ts      # API limits and constraints
 ├── ✅ deployment-order.ts       # 78 metadata types prioritized
-└── ⏳ metadata-types.ts         # Type-specific configurations
+└── ✅ api-version.ts            # API version governance
+
+src/types/
+├── ✅ metadata.ts               # Metadata component types
+├── ✅ deployment.ts             # Deployment wave types
+├── ✅ deployment-plan.ts        # CI/CD plan types
+└── ✅ salesforce/               # Salesforce-specific types
 ```
 
-### 2. ⏳ Functional Utils
+### 2. ✅ Utilities
 
 ```bash
-# Create functional programming utilities
 src/utils/
-├── functional.ts         # pipe, compose, curry, memoize
-├── graph-algorithms.ts   # topological sort, cycle detection
-├── fs-utils.ts          # File system operations
-└── xml-utils.ts         # XML parsing/generation
+├── ✅ functional.ts             # pipe, compose, curry, memoize
+├── ✅ graph-algorithms.ts       # topological sort, cycle detection
+├── ✅ file-system.ts            # File system operations
+├── ✅ xml.ts                    # XML parsing/generation
+├── ✅ string.ts                 # String utilities
+├── ✅ cache-manager.ts          # Caching utilities
+├── ✅ logger.ts                 # Structured logging
+└── ✅ error-aggregator.ts       # Error collection
 ```
 
-### 3. ⏳ Parsers (Phase 2)
+### 3. ✅ Metadata Parsers (17+ parsers)
 
 ```bash
-# Create metadata parsers (50+ types)
 src/parsers/
-├── apex-parser.ts
-├── flow-parser.ts
-├── lwc-parser.ts
-├── permission-set-parser.ts
+├── ✅ apex-class-parser.ts
+├── ✅ apex-trigger-parser.ts
+├── ✅ flow-parser.ts
+├── ✅ lwc-parser.ts
+├── ✅ aura-parser.ts
+├── ✅ custom-object-parser.ts
+├── ✅ custom-metadata-parser.ts
+├── ✅ permission-set-parser.ts
+├── ✅ profile-parser.ts
+├── ✅ layout-parser.ts
+├── ✅ flexipage-parser.ts
+├── ✅ email-template-parser.ts
+├── ✅ visualforce-parser.ts
+├── ✅ bot-parser.ts
+├── ✅ genai-prompt-parser.ts
+├── ✅ error-resilient-parser.ts
 └── ... (more parsers)
 ```
 
-### 4. ⏳ Services (Phase 3-4)
+### 4. ✅ Dependency Analysis
 
 ```bash
-# Create service layer
-src/services/
-├── metadata-scanner.ts
-├── dependency-resolver.ts
-├── wave-generator.ts
-└── deployment-executor.ts
+src/dependencies/
+├── ✅ dependency-graph-builder.ts
+├── ✅ dependency-resolver.ts
+├── ✅ circular-dependency-detector.ts
+├── ✅ dependency-depth-calculator.ts
+├── ✅ dependency-impact-analyzer.ts
+├── ✅ dependency-validator.ts
+├── ✅ dependency-merger.ts
+├── ✅ dependency-cache.ts
+├── ✅ graph-visualizer.ts
+└── ✅ heuristic-inference.ts
 ```
 
-### 5. ⏳ Core Engine (Phase 3-4)
+### 5. ✅ Wave Generation
 
 ```bash
-# Create business logic
-src/core/
-├── dependency-engine.ts
-├── deployment-orchestrator.ts
-└── test-optimizer.ts
+src/waves/
+├── ✅ wave-builder.ts            # Core wave generation
+├── ✅ wave-splitter.ts           # Split large waves
+├── ✅ wave-merger.ts             # Merge small waves
+├── ✅ wave-validator.ts          # Validate wave integrity
+├── ✅ wave-executor.ts           # Execute waves in order
+├── ✅ priority-wave-generator.ts # Priority-based waves
+├── ✅ priority-wave-generator-ai.ts # AI-enhanced waves
+├── ✅ test-optimizer.ts          # Test optimization
+├── ✅ wave-metadata-generator.ts # Wave metadata
+└── ✅ wave-diff-generator.ts     # Wave comparison
 ```
 
-### 6. ⏳ CLI Commands (Phase 5)
+### 6. ✅ Project Scanning
 
 ```bash
-src/commands/smart-deployment/
-├── start.ts      # Main deployment command
-├── analyze.ts    # Analysis only
-├── validate.ts   # Dry-run
-├── status.ts     # Progress check
-└── resume.ts     # Resume from failure
+src/scanner/
+├── ✅ metadata-scanner-service.ts
+├── ✅ sfdx-project-detector.ts
+├── ✅ forceignore-parser.ts
+├── ✅ structure-validator.ts
+├── ✅ project-validator.ts
+├── ✅ metadata-format-scanner.ts
+├── ✅ custom-structure-scanner.ts
+└── ✅ monorepo-scanner.ts
 ```
 
-### 7. Testing
+### 7. ✅ Deployment Execution
 
 ```bash
-npm test                    # Unit tests
-npm run test:integration    # Integration tests
-npm run test:e2e           # E2E tests (BDD)
-npm run test:coverage      # Coverage report
+src/deployment/
+├── ✅ sf-cli-integration.ts      # SF CLI integration
+├── ✅ manifest-generator.ts      # package.xml generation
+├── ✅ manifest-validator.ts     # Manifest validation
+├── ✅ metadata-type-mapper.ts    # Type mapping
+├── ✅ state-manager.ts           # Deployment state
+├── ✅ deployment-tracker.ts      # Progress tracking
+├── ✅ deployment-error-handler.ts # Error handling
+├── ✅ retry-handler.ts           # Retry logic
+├── ✅ test-executor.ts           # Test execution
+└── ✅ deployment-reporter.ts     # Reporting
 ```
+
+### 8. ✅ AI Integration (Agentforce)
+
+```bash
+src/ai/
+├── ✅ agentforce-service.ts      # Core Agentforce service
+├── ✅ dependency-inference-service.ts # Dependency inference
+├── ✅ agentforce-priority-service.ts # Priority weighting
+├── ✅ wave-validation-service.ts # Wave validation
+├── ✅ prompt-builder.ts          # Prompt construction
+├── ✅ response-parser.ts         # AI response parsing
+├── ✅ circuit-breaker.ts         # Circuit breaker pattern
+└── ✅ agentforce-error-handler.ts # Error handling
+```
+
+### 9. ✅ CLI Commands
+
+```bash
+src/commands/
+├── ✅ analyze.ts                 # Analyze metadata and generate waves
+├── ✅ start.ts                   # Start deployment
+├── ✅ validate.ts                # Validate deployment
+├── ✅ status.ts                  # Check deployment status
+├── ✅ resume.ts                  # Resume failed deployment
+└── ✅ config.ts                  # Configuration management
+```
+
+### 10. Testing
+
+**Framework**: Mocha + Chai (not Jest + Cucumber as previously mentioned)
+
+```bash
+yarn test                   # Unit tests
+yarn test:coverage          # Coverage report
+# Integration and E2E tests via shell scripts
+```
+
+**Test Coverage**:
+- **1,900+ test cases** across unit, integration, and E2E tests
+- **Unit Tests**: Comprehensive coverage for all modules
+- **E2E Tests**: Shell script-based E2E tests (`scripts/e2e-test-grg.sh`)
+- **Coverage**: High coverage across parsers, services, and commands
 
 ### 8. Publication
 
@@ -227,13 +318,16 @@ The analyzer must use exact names expected by SF CLI in package.xml:
 
 ## 📊 Project Status
 
-**Status**: 🟡 Initial development
+**Status**: 🟢 Active Development (Phase 4-6)
 **Owner**: @jterrats
 **Created**: Dec 1, 2025
 **Language**: TypeScript
 **Framework**: OCLIF (Salesforce CLI Plugin Framework)
-**Testing**: Jest + Cucumber
-**CI/CD**: GitHub Actions (coming soon)
+**Testing**: Mocha + Chai
+**CI/CD**: ✅ GitHub Actions (Active)
+  - Unit tests on push
+  - Acceptance criteria validation on PRs
+  - Automated testing workflows
 
 ---
 

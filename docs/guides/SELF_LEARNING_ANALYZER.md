@@ -228,7 +228,7 @@ python3 scripts/python/generate_suggested_code.py --validate
 ✅ Scratch org creado: analyzer-validation
 
 🧪 Validando deployment en scratch org...
-✅ Validación exitosa en scratch org
+✅ Validation successful in scratch org
 
 🧹 Limpiando scratch org temporal...
 ✅ Scratch org eliminado
@@ -260,7 +260,7 @@ python3 scripts/python/generate_suggested_code.py --validate
 
 ---
 
-## 🎯 Ventajas
+## 🎯 Advantages
 
 1. **Proactivo**: Detecta problemas antes del CI/CD
 2. **Seguro**: Requiere revisión humana
@@ -311,20 +311,20 @@ python3 scripts/python/generate_suggested_code.py --validate
 
 ## 🛠️ Mantenimiento
 
-### Agregar Nuevo Tipo Manualmente
+### Add New Type Manually
 
-Si el código generado no es suficiente:
+If the generated code is not sufficient:
 
 ```python
-# 1. Agregar método personalizado
+# 1. Add custom method
 def _analyze_my_custom_type(self):
-    """Analiza MyCustomType con lógica compleja"""
+    """Analyzes MyCustomType with complex logic"""
     path = self.metadata_path / "myCustomTypes"
-    # ... lógica personalizada ...
+    # ... custom logic ...
 
-# 2. Agregar a analyze()
+# 2. Add to analyze()
 def analyze(self):
-    # ... otros tipos ...
+    # ... other types ...
     self._analyze_my_custom_type()
 
 # 3. Actualizar DEPLOY_ORDER

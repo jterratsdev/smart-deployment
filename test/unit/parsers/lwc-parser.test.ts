@@ -311,7 +311,7 @@ describe('LWC Parser', () => {
      * @ac US-016-AC-8: Parse js-meta.xml correctly
      * TODO: Re-enable when metadata XML parsing is fully implemented
      */
-    it.skip('should parse js-meta.xml and extract exposure targets', () => {
+    it('should parse js-meta.xml and extract exposure targets', () => {
       const jsCode = 'export default class MyComponent extends LightningElement {}';
       const metadataXml = `<?xml version="1.0" encoding="UTF-8"?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
@@ -326,8 +326,9 @@ describe('LWC Parser', () => {
       const result = parseLWC('myComponent', jsCode, metadataXml);
 
       expect(result.hasMetadataXml).to.be.true;
-      expect(result.metadata?.isExposed).to.include('lightning__AppPage');
-      expect(result.metadata?.isExposed).to.include('lightning__RecordPage');
+      expect(result.metadata?.isExposed).to.be.true;
+      expect(result.metadata?.targets?.target).to.include('lightning__AppPage');
+      expect(result.metadata?.targets?.target).to.include('lightning__RecordPage');
     });
 
     it('should handle missing metadata XML', () => {
@@ -494,7 +495,7 @@ describe('LWC Parser', () => {
     /**
      * @ac US-016-AC-7: Validate bundle structure (js, html, xml)
      */
-    it.skip('should parse component with metadata XML', () => {
+    it('should parse component with metadata XML', () => {
       const jsCode = `
         import { LightningElement } from 'lwc';
         export default class MyComponent extends LightningElement {}
@@ -512,10 +513,11 @@ describe('LWC Parser', () => {
       const result = parseLWC('myComponent', jsCode, metadataXml);
 
       expect(result.hasMetadataXml).to.be.true;
-      expect(result.metadata?.isExposed).to.equal('lightning__AppPage');
+      expect(result.metadata?.isExposed).to.be.true;
+      expect(result.metadata?.targets?.target).to.include('lightning__AppPage');
     });
 
-    it.skip('should handle multiple targets in metadata XML', () => {
+    it('should handle multiple targets in metadata XML', () => {
       const jsCode = 'export default class MyComponent extends LightningElement {}';
       const metadataXml = `<?xml version="1.0" encoding="UTF-8"?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
@@ -528,9 +530,9 @@ describe('LWC Parser', () => {
 
       const result = parseLWC('myComponent', jsCode, metadataXml);
 
-      expect(result.metadata?.isExposed).to.include('lightning__AppPage');
-      expect(result.metadata?.isExposed).to.include('lightning__RecordPage');
-      expect(result.metadata?.isExposed).to.include('lightning__HomePage');
+      expect(result.metadata?.targets?.target).to.include('lightning__AppPage');
+      expect(result.metadata?.targets?.target).to.include('lightning__RecordPage');
+      expect(result.metadata?.targets?.target).to.include('lightning__HomePage');
     });
   });
 

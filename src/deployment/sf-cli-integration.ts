@@ -18,13 +18,27 @@ import { getLogger } from '../utils/logger.js';
 const execAsync = promisify(exec);
 const logger = getLogger('SfCliIntegration');
 
+// Custom exec that captures stdout even on failure
+async function execWithOutput(command: string): Promise<{ stdout: string; stderr: string; code: number | null }> {
+  return new Promise((resolve) => {
+    exec(command, (error, stdout, stderr) => {
+      resolve({
+        stdout,
+        stderr,
+        code: error ? (error as any).code ?? 1 : 0,
+      });
+    });
+  });
+}
+
 export type TestLevel = 'NoTestRun' | 'RunSpecifiedTests' | 'RunLocalTests' | 'RunAllTestsInOrg';
 
 export interface DeploymentOptions {
   manifestPath: string;
   targetOrg: string;
-  testLevel?: TestLevel;
+  testLevel?: TestLevel; // undefined = use SF CLI default behavior
   tests?: string[];
+  testClasses?: string[]; // Alias for tests (for clarity)
   checkOnly?: boolean;
 }
 
@@ -51,21 +65,21 @@ export class SfCliIntegration {
 
     const command = this.buildDeployCommand(options);
 
-    try {
-      // AC-5: Capture output
-      const { stdout, stderr } = await execAsync(command);
-      const output = stdout + stderr;
+    // Use custom exec to capture stdout even on failure
+    const { stdout, stderr, code } = await execWithOutput(command);
+    const output = stdout + stderr;
+    const failed = code !== 0;
 
-      // AC-6: Parse deployment results
-      const result = this.parseDeploymentOutput(output);
+    // AC-6: Parse deployment results
+    const result = this.parseDeploymentOutput(output, failed);
 
+    if (failed) {
+      logger.error('Deployment failed', { code, output: output.substring(0, 500) });
+    } else {
       logger.info('Deployment completed', { result });
-      return result;
-    } catch (error) {
-      logger.error('Deployment failed', { error });
-      const output = error instanceof Error ? error.message : String(error);
-      return this.parseDeploymentOutput(output, true);
     }
+
+    return result;
   }
 
   private buildDeployCommand(options: DeploymentOptions): string {
@@ -77,12 +91,15 @@ export class SfCliIntegration {
       '--wait 60',
     ];
 
+    // Only specify test-level if explicitly provided
+    // If undefined, SF CLI uses its default behavior (requires tests in prod)
     if (options.testLevel) {
       parts.push(`--test-level ${options.testLevel}`);
     }
 
-    if (options.tests && options.tests.length > 0) {
-      parts.push(`--tests ${options.tests.join(' ')}`);
+    const testsToRun = options.tests || options.testClasses;
+    if (testsToRun && testsToRun.length > 0) {
+      parts.push(`--tests ${testsToRun.join(' ')}`);
     }
 
     if (options.checkOnly) {
@@ -105,8 +122,24 @@ export class SfCliIntegration {
             numberComponentErrors?: number;
             numberTestsTotal?: number;
             numberTestErrors?: number;
+            details?: {
+              componentFailures?: Array<{
+                componentType?: string;
+                fullName?: string;
+                problem?: string;
+              }>;
+            };
           };
         };
+
+        // Build detailed error output including component failures
+        let detailedOutput = output;
+        if (parsed.result?.details?.componentFailures && parsed.result.details.componentFailures.length > 0) {
+          const failures = parsed.result.details.componentFailures
+            .map(f => `${f.componentType}:${f.fullName} - ${f.problem}`)
+            .join('\n');
+          detailedOutput = `${output}\n\nComponent Failures:\n${failures}`;
+        }
 
         return {
           success: !failed && (parsed.result?.status === 'Succeeded' || parsed.result?.status === 'Success'),
@@ -116,7 +149,7 @@ export class SfCliIntegration {
           componentFailures: parsed.result?.numberComponentErrors ?? 0,
           testsRun: parsed.result?.numberTestsTotal,
           testFailures: parsed.result?.numberTestErrors,
-          output,
+          output: detailedOutput,
         };
       }
     } catch (parseError) {

@@ -15,6 +15,7 @@
 import { getLogger } from '../utils/logger.js';
 import type { NodeId, DependencyGraph, CircularDependency } from '../types/dependency.js';
 import type { MetadataType } from '../types/metadata.js';
+import { CircularDependencyDetector } from '../dependencies/circular-dependency-detector.js';
 
 const logger = getLogger('WaveBuilder');
 
@@ -176,14 +177,12 @@ export class WaveBuilder {
         }
       }
 
-      // No progress - circular dependency
+      // No progress - circular dependency detected
       if (currentWave.length === 0) {
-        // Detect circular dependencies
         const remaining: NodeId[] = [];
         for (const nodeId of graph.keys()) {
           if (!processed.has(nodeId)) {
             remaining.push(nodeId);
-            unplacedComponents.push(nodeId);
           }
         }
 
@@ -192,15 +191,40 @@ export class WaveBuilder {
         });
 
         if (this.options.handleCircularDeps) {
-          // Add remaining to final wave (will need manual resolution)
-          waves.push({
-            number: waveNumber,
-            components: remaining,
-            metadata: this.generateWaveMetadata(remaining, true),
-          });
-        }
+          // Try to automatically resolve cycles by breaking them
+          const resolved = this.resolveCircularDependencies(graph, remaining, processed, inDegree);
 
-        break;
+          if (resolved.broken) {
+            logger.info('Automatically resolved circular dependencies', {
+              cyclesBroken: resolved.cyclesBroken,
+              edgesBroken: resolved.edgesBroken.length,
+              componentsResolved: resolved.componentsResolved,
+            });
+
+            // Continue with topological sort after breaking cycles
+            // Don't break the loop, continue processing
+            continue;
+          } else {
+            // Could not resolve automatically - add remaining to final wave
+            for (const nodeId of remaining) {
+              unplacedComponents.push(nodeId);
+            }
+
+            waves.push({
+              number: waveNumber,
+              components: remaining,
+              metadata: this.generateWaveMetadata(remaining, true),
+            });
+
+            break;
+          }
+        } else {
+          // Not handling circular deps - mark as unplaced
+          for (const nodeId of remaining) {
+            unplacedComponents.push(nodeId);
+          }
+          break;
+        }
       }
 
       // Sort by type order if configured
@@ -272,6 +296,243 @@ export class WaveBuilder {
       unplacedComponents,
       circularDependencies: [],
       stats,
+    };
+  }
+
+  /**
+   * Resolve circular dependencies by automatically breaking cycles
+   *
+   * @param graph - The dependency graph
+   * @param remaining - Nodes that couldn't be placed
+   * @param processed - Set of already processed nodes
+   * @param inDegree - Map of in-degrees for each node
+   * @returns Object indicating if cycles were broken and how many
+   */
+  private resolveCircularDependencies(
+    graph: DependencyGraph,
+    remaining: NodeId[],
+    processed: Set<NodeId>,
+    inDegree: Map<NodeId, number>
+  ): {
+    broken: boolean;
+    cyclesBroken: number;
+    edgesBroken: Array<{ from: NodeId; to: NodeId }>;
+    componentsResolved: number;
+  } {
+    // Create a subgraph with only remaining nodes
+    const subgraph: DependencyGraph = new Map();
+    for (const nodeId of remaining) {
+      const deps = graph.get(nodeId);
+      if (deps) {
+        const filteredDeps = new Set<NodeId>();
+        for (const dep of deps) {
+          if (remaining.includes(dep)) {
+            filteredDeps.add(dep);
+          }
+        }
+        if (filteredDeps.size > 0) {
+          subgraph.set(nodeId, filteredDeps);
+        }
+      }
+    }
+
+    if (subgraph.size === 0) {
+      return { broken: false, cyclesBroken: 0, edgesBroken: [], componentsResolved: 0 };
+    }
+
+    // Detect cycles in the subgraph
+    const detector = new CircularDependencyDetector(subgraph, {
+      generateSuggestions: true,
+      maxDepth: 100, // Increase depth to find longer cycles
+    });
+
+    const cycles = detector.detectCycles();
+
+    if (cycles.length === 0) {
+      // No cycles detected - might be missing dependencies or the subgraph is too disconnected
+      // Try a different approach: break edges based on heuristics even without detected cycles
+      // This handles cases where components are stuck due to complex dependency patterns
+      logger.debug('No cycles detected in subgraph, trying heuristic-based breaking', {
+        subgraphSize: subgraph.size,
+        remainingSize: remaining.length,
+      });
+
+      // Use heuristic-based breaking: prioritize test classes, utility classes, etc.
+      return this.breakEdgesByHeuristics(graph, remaining, inDegree);
+    }
+
+    logger.debug('Detected cycles to resolve', {
+      cycleCount: cycles.length,
+      totalNodesInCycles: new Set(cycles.flatMap(c => c.cycle)).size,
+    });
+
+    // Collect all break suggestions, prioritizing by priority
+    const edgesToBreak: Array<{ from: NodeId; to: NodeId; priority: number }> = [];
+    const seenEdges = new Set<string>();
+
+    for (const cycle of cycles) {
+      for (const suggestion of cycle.breakSuggestions) {
+        const edgeKey = `${suggestion.from}->${suggestion.to}`;
+        if (!seenEdges.has(edgeKey)) {
+          seenEdges.add(edgeKey);
+          edgesToBreak.push({
+            from: suggestion.from,
+            to: suggestion.to,
+            priority: suggestion.priority,
+          });
+        }
+      }
+    }
+
+    // Sort by priority (highest first) and take top suggestions
+    edgesToBreak.sort((a, b) => b.priority - a.priority);
+
+    // Break edges by removing them from the graph
+    // We'll break up to 50% of cycles to avoid breaking too many dependencies
+    const maxBreaks = Math.min(edgesToBreak.length, Math.ceil(cycles.length * 0.5));
+    const edgesBroken: Array<{ from: NodeId; to: NodeId }> = [];
+
+    for (let i = 0; i < maxBreaks; i++) {
+      const edge = edgesToBreak[i];
+
+      // Remove edge from graph
+      const deps = graph.get(edge.from);
+      if (deps && deps.has(edge.to)) {
+        deps.delete(edge.to);
+        edgesBroken.push({ from: edge.from, to: edge.to });
+
+        // Update in-degree
+        const currentDegree = inDegree.get(edge.to) ?? 0;
+        if (currentDegree > 0) {
+          inDegree.set(edge.to, currentDegree - 1);
+        }
+
+        logger.debug('Broke cycle edge', {
+          from: edge.from,
+          to: edge.to,
+          priority: edge.priority,
+        });
+      }
+    }
+
+    // Count how many components can now be placed
+    let componentsResolved = 0;
+    for (const [nodeId, degree] of inDegree.entries()) {
+      if (degree === 0 && !processed.has(nodeId) && remaining.includes(nodeId)) {
+        componentsResolved++;
+      }
+    }
+
+    return {
+      broken: edgesBroken.length > 0,
+      cyclesBroken: cycles.length,
+      edgesBroken,
+      componentsResolved,
+    };
+  }
+
+  /**
+   * Break edges using heuristics when cycles are not clearly detected
+   * Prioritizes breaking edges that are safe to break (test classes, utilities, etc.)
+   */
+  private breakEdgesByHeuristics(
+    graph: DependencyGraph,
+    remaining: NodeId[],
+    inDegree: Map<NodeId, number>
+  ): {
+    broken: boolean;
+    cyclesBroken: number;
+    edgesBroken: Array<{ from: NodeId; to: NodeId }>;
+    componentsResolved: number;
+  } {
+    const edgesToBreak: Array<{ from: NodeId; to: NodeId; priority: number }> = [];
+
+    // Collect all edges in the remaining subgraph
+    for (const nodeId of remaining) {
+      const deps = graph.get(nodeId);
+      if (deps) {
+        for (const dep of deps) {
+          if (remaining.includes(dep)) {
+            // Calculate priority for breaking this edge
+            let priority = 50; // Base priority
+
+            // Test classes are high priority to break
+            if (nodeId.includes('Test') || nodeId.includes('_Test')) {
+              priority += 40;
+            }
+            if (dep.includes('Test') || dep.includes('_Test')) {
+              priority += 30;
+            }
+
+            // Utility/Helper classes
+            if (nodeId.includes('Helper') || nodeId.includes('Util') || nodeId.includes('Wrapper')) {
+              priority += 20;
+            }
+
+            // Handler -> Service edges
+            if (nodeId.includes('Handler') && dep.includes('Service')) {
+              priority += 15;
+            }
+
+            // Controller -> Service edges
+            if (nodeId.includes('Controller') && dep.includes('Service')) {
+              priority += 15;
+            }
+
+            // Avoid breaking core domain classes
+            if (nodeId.includes('Service') && dep.includes('Service')) {
+              priority -= 10;
+            }
+
+            edgesToBreak.push({ from: nodeId, to: dep, priority });
+          }
+        }
+      }
+    }
+
+    // Sort by priority and break top edges
+    edgesToBreak.sort((a, b) => b.priority - a.priority);
+
+    // Break up to 30% of edges to avoid breaking too many dependencies
+    const maxBreaks = Math.min(edgesToBreak.length, Math.max(1, Math.ceil(edgesToBreak.length * 0.3)));
+    const edgesBroken: Array<{ from: NodeId; to: NodeId }> = [];
+
+    for (let i = 0; i < maxBreaks; i++) {
+      const edge = edgesToBreak[i];
+
+      // Remove edge from graph
+      const deps = graph.get(edge.from);
+      if (deps && deps.has(edge.to)) {
+        deps.delete(edge.to);
+        edgesBroken.push({ from: edge.from, to: edge.to });
+
+        // Update in-degree
+        const currentDegree = inDegree.get(edge.to) ?? 0;
+        if (currentDegree > 0) {
+          inDegree.set(edge.to, currentDegree - 1);
+        }
+
+        logger.debug('Broke edge by heuristic', {
+          from: edge.from,
+          to: edge.to,
+          priority: edge.priority,
+        });
+      }
+    }
+
+    // Count how many components can now be placed
+    let componentsResolved = 0;
+    for (const [nodeId, degree] of inDegree.entries()) {
+      if (degree === 0 && remaining.includes(nodeId)) {
+        componentsResolved++;
+      }
+    }
+
+    return {
+      broken: edgesBroken.length > 0,
+      cyclesBroken: 0, // Not detected cycles, but heuristic-based breaking
+      edgesBroken,
+      componentsResolved,
     };
   }
 

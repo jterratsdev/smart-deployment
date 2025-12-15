@@ -1,0 +1,1294 @@
+/**
+ * smart-deployment:start command
+ * Main deployment command that orchestrates the entire workflow
+ *
+ * @ac US-046-AC-1: Analyzes metadata automatically
+ * @ac US-046-AC-2: Generates deployment waves
+ * @ac US-046-AC-3: Executes deployment sequentially
+ * @ac US-046-AC-4: Supports --target-org flag
+ * @ac US-046-AC-5: Supports --dry-run flag
+ * @ac US-046-AC-6: Supports --validate-only flag
+ * @ac US-046-AC-7: Supports --skip-tests flag
+ * @ac US-046-AC-8: Shows progress bar
+ * @ac US-046-AC-9: Generates deployment report
+ * @ac US-046-AC-10: Handles failures gracefully
+ *
+ * @issue #46
+ */
+
+import { Flags } from '@oclif/core';
+import { SfCommand } from '@salesforce/sf-plugins-core';
+import { Messages } from '@salesforce/core';
+import { getLogger } from '../../utils/logger.js';
+import { DeploymentPlanManager } from '../../utils/deployment-plan-manager.js';
+import { MetadataScannerService } from '../../services/metadata-scanner-service.js';
+import { initializeI18n } from '../../i18n/i18n-service.js';
+import type { SupportedLocale } from '../../i18n/locale-detector.js';
+import { WaveBuilder } from '../../waves/wave-builder.js';
+import { getWavesInExecutionOrder } from '../../waves/wave-executor.js';
+import { SfCliIntegration } from '../../deployment/sf-cli-integration.js';
+import { StateManager } from '../../deployment/state-manager.js';
+import { DeploymentTracker } from '../../deployment/deployment-tracker.js';
+import { ManifestGenerator } from '../../deployment/manifest-generator.js';
+import { ManifestValidator } from '../../deployment/manifest-validator.js';
+import { WaveValidationService } from '../../ai/wave-validation-service.js';
+import { AgentforceService } from '../../ai/agentforce-service.js';
+import { MetadataSimplifier } from '../../deployment/metadata-simplifier.js';
+import { Org } from '@salesforce/core';
+import * as path from 'node:path';
+import * as fs from 'node:fs/promises';
+import type { MetadataComponent } from '../../types/metadata.js';
+import type { Wave } from '../../waves/wave-builder.js';
+import type { ScanResult } from '../../services/metadata-scanner-service.js';
+
+Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
+const messages = Messages.loadMessages('smart-deployment', 'start');
+const logger = getLogger('StartCommand');
+
+/**
+ * @ac US-046-AC-1: Analyzes metadata automatically
+ * @ac US-046-AC-2: Generates deployment waves
+ * @ac US-046-AC-3: Executes deployment sequentially
+ */
+export default class Start extends SfCommand<{ success: boolean; waves: number }> {
+  public static readonly summary = messages.getMessage('summary');
+  public static readonly description = messages.getMessage('description');
+  public static readonly examples = messages.getMessages('examples');
+
+  /**
+   * @ac US-046-AC-4: Supports --target-org flag
+   * @ac US-046-AC-5: Supports --dry-run flag
+   * @ac US-046-AC-6: Supports --validate-only flag
+   * @ac US-046-AC-7: Supports --skip-tests flag
+   * @ac US-057-AC-1: Send component list to Agentforce
+   */
+  public static readonly flags = {
+    'target-org': Flags.string({
+      summary: messages.getMessage('flags.target-org.summary'),
+      char: 'o',
+      required: true,
+    }),
+    'dry-run': Flags.boolean({
+      summary: messages.getMessage('flags.dry-run.summary'),
+      char: 'd',
+      default: false,
+    }),
+    'validate-only': Flags.boolean({
+      summary: messages.getMessage('flags.validate-only.summary'),
+      char: 'v',
+      default: false,
+    }),
+    'skip-tests': Flags.boolean({
+      summary: messages.getMessage('flags.skip-tests.summary'),
+      char: 's',
+      default: false,
+      deprecated: {
+        message: 'Use --no-test-run instead',
+        version: '2.0.0',
+      },
+    }),
+    'no-test-run': Flags.boolean({
+      summary: 'Do not run any tests during deployment (sandbox only)',
+      description: 'Skips all test execution. IGNORED in production orgs (tests are required). Only works in sandboxes.',
+      default: false,
+    }),
+    'run-wave-test': Flags.boolean({
+      summary: 'Run only test classes included in each wave',
+      description: 'Executes only the test classes that are part of the wave being deployed. Uses RunSpecifiedTests. In production, this is the recommended approach for faster deployments.',
+      default: false,
+    }),
+    'use-ai': Flags.boolean({
+      summary: 'Use Agentforce AI for intelligent priority weighting',
+      description: 'Enables AI-powered analysis for deployment prioritization',
+      default: false,
+    }),
+    'ai-auto': Flags.boolean({
+      summary: 'Auto-apply AI recommendations with confidence > 80%',
+      description: 'Automatically applies AI priorities without prompting (requires --use-ai)',
+      default: false,
+    }),
+    'ai-confidence-threshold': Flags.string({
+      summary: 'Minimum AI confidence to auto-apply (0-1)',
+      description: 'Default: 0.8 (80%). Only used with --ai-auto',
+      default: '0.8',
+    }),
+    'org-type': Flags.string({
+      summary: 'Organization type (Production, Sandbox, Developer)',
+      description: 'Helps AI provide context-aware recommendations',
+      options: ['Production', 'Sandbox', 'Developer'],
+    }),
+    industry: Flags.string({
+      summary: 'Industry context for AI analysis (e.g., Fintech, Healthcare)',
+      description: 'Provides business context to AI for better prioritization',
+    }),
+    'use-plan': Flags.string({
+      summary: 'Use pre-approved deployment plan',
+    }),
+    strict: Flags.boolean({
+      summary: 'Strict mode for CI/CD',
+      default: false,
+    }),
+    locale: Flags.string({
+      summary: 'Language locale (en, es, fr, de, pt, ja)',
+      description: 'Override locale detection. Default: auto-detect from environment',
+      options: ['en', 'es', 'fr', 'de', 'pt', 'ja'],
+    }),
+    resume: Flags.boolean({
+      summary: 'Resume from last failed wave (default: true if previous state exists)',
+      description: 'If a previous deployment failed, automatically resume from the last completed wave. Set to false to start fresh.',
+      default: true,
+      allowNo: true,
+    }),
+  };
+
+  /**
+   * @ac US-046-AC-8: Shows progress bar
+   * @ac US-046-AC-9: Generates deployment report
+   * @ac US-046-AC-10: Handles failures gracefully
+   */
+  public async run(): Promise<{ success: boolean; waves: number }> {
+    const { flags } = await this.parse(Start);
+
+    // Initialize i18n with locale from flag or auto-detect
+    initializeI18n({
+      locale: flags.locale as SupportedLocale | undefined,
+      autoTranslate: true,
+    });
+
+    try {
+      logger.info('Starting smart deployment', { flags });
+
+      // Check for strict mode (CI/CD safety)
+      if (flags.strict && !flags['use-plan']) {
+        this.error('❌ Strict mode requires --use-plan\n💡 Run: sf smart-deployment analyze --save-plan');
+      }
+
+      // Load deployment plan if specified
+      if (flags['use-plan']) {
+        this.log('📋 Loading deployment plan...');
+        const plan = await DeploymentPlanManager.loadPlan(flags['use-plan']);
+        this.log(`✅ Using approved plan (version ${plan.metadata.version})`);
+        this.log(`   Generated: ${new Date(plan.metadata.generatedAt).toLocaleString()}`);
+        this.log(`   Components: ${plan.metadata.totalComponents}`);
+        this.log(`   Waves: ${plan.metadata.totalWaves}`);
+        if (plan.metadata.aiEnabled) {
+          this.log(`   AI-enhanced: Yes`);
+        }
+        this.log('');
+      }
+
+      // AC-1: Analyze metadata
+      this.log('📊 Analyzing metadata...');
+      const metadataCount = await this.analyzeMetadata();
+      this.log(`✅ Found ${metadataCount} metadata components`);
+
+
+      // AC-2: Generate waves
+      this.log('🌊 Generating deployment waves...');
+      const waves = await this.generateWaves(flags);
+      this.log(`✅ Generated ${waves} waves`);
+
+      // AC US-057-AC-6: Report AI decisions
+      if (flags['use-ai']) {
+        const threshold = parseFloat(flags['ai-confidence-threshold'] || '0.8');
+        const mode = flags['ai-auto'] ? 'auto' : 'manual-review';
+        this.log(`🤖 AI-enhanced prioritization enabled (mode: ${mode}, threshold: ${(threshold * 100).toFixed(0)}%)`);
+
+        if (!flags['ai-auto']) {
+          this.log('💡 Tip: Use --ai-auto to automatically apply high-confidence recommendations');
+        }
+      }
+
+      // AC-3: Execute deployment
+      if (!flags['dry-run']) {
+        this.log('🚀 Executing deployment...');
+        await this.executeDeployment(flags);
+      } else {
+        this.log('🔍 Dry-run mode: skipping actual deployment');
+      }
+
+      // AC-9: Generate report
+      this.log('📄 Generating deployment report...');
+      this.generateReport(waves);
+
+      return { success: true, waves };
+    } catch (error) {
+      // AC-10: Handle failures gracefully
+      logger.error('Deployment failed', { error });
+      this.error(`Deployment failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  private async analyzeMetadata(sourcePath?: string): Promise<number> {
+    const scanner = new MetadataScannerService();
+    const result = await scanner.scan({ sourcePath });
+
+    if (result.errors.length > 0) {
+      logger.error('Metadata scanning completed with errors', { errors: result.errors });
+      result.errors.forEach((err) => this.warn(err));
+    }
+    if (result.warnings.length > 0) {
+      logger.warn('Metadata scanning completed with warnings', { warnings: result.warnings });
+      result.warnings.forEach((warn) => this.warn(warn));
+    }
+
+    return result.components.length;
+  }
+
+  private async generateWaves(flags: Record<string, unknown>, sourcePath?: string): Promise<number> {
+    const scanner = new MetadataScannerService();
+    const scanResult = await scanner.scan({ sourcePath });
+
+    const waveBuilder = new WaveBuilder();
+    let waveResult = waveBuilder.generateWaves(scanResult.dependencyResult.graph);
+
+    // AI Priority Weighting (US-057) - if --use-ai is enabled
+    if (flags['use-ai']) {
+      this.log('  🤖 Using Agentforce for intelligent prioritization...');
+
+      try {
+        // Try to get access token from org if target-org is provided
+        let accessToken: string | undefined;
+        const targetOrg = flags['target-org'] as string | undefined;
+        if (targetOrg) {
+          try {
+            const org = await Org.create({ aliasOrUsername: targetOrg });
+            const connection = await org.getConnection();
+            const authFields = connection.getAuthInfoFields();
+            accessToken = authFields.accessToken;
+            logger.debug('Using access token from authenticated org for priority service');
+          } catch (error) {
+            logger.warn('Could not get access token from org, will use API key or mock', { error });
+          }
+        }
+
+        const { AgentforcePriorityService } = await import('../../ai/agentforce-priority-service.js');
+        const { AIEnhancedPriorityWaveGenerator } = await import('../../waves/priority-wave-generator-ai.js');
+
+        const priorityService = new AgentforcePriorityService({
+          enabled: true,
+          autoApply: false, // Don't auto-apply in start command (user controls via flags)
+          apiKey: accessToken,
+        });
+
+        const aiGenerator = new AIEnhancedPriorityWaveGenerator({
+          agentforceService: priorityService,
+          orgType: flags['org-type'] as string | undefined,
+          industry: flags.industry as string | undefined,
+        });
+
+        // Convert components to Map for AI generator
+        const componentsMap = new Map<string, MetadataComponent>();
+        for (const component of scanResult.components) {
+          const nodeId = `${component.type}:${component.name}`;
+          componentsMap.set(nodeId, component);
+        }
+
+        // Apply AI priorities
+        const prioritizedWaves = await aiGenerator.applyPriorityWavesAsync(
+          waveResult.waves,
+          componentsMap
+        );
+
+        waveResult = {
+          ...waveResult,
+          waves: prioritizedWaves,
+        };
+
+        const aiStats = aiGenerator.getAIStats();
+        if (aiStats && aiStats.aiAdjustments > 0) {
+          this.log(`   ✅ AI adjusted ${aiStats.aiAdjustments} component priorities`);
+        }
+      } catch (error) {
+        logger.warn('AI priority weighting failed, continuing with static priorities', { error });
+        this.warn('   ⚠️  Could not apply AI priorities, using static prioritization');
+      }
+    }
+
+    const orderedWaves = getWavesInExecutionOrder(waveResult);
+
+    logger.info('Waves generated', {
+      totalWaves: orderedWaves.length,
+      totalComponents: waveResult.totalComponents,
+      aiEnabled: !!flags['use-ai'],
+    });
+
+    return orderedWaves.length;
+  }
+
+  private async executeDeployment(flags: Record<string, unknown>, sourcePath?: string): Promise<void> {
+    const targetOrg = flags['target-org'] as string;
+    const dryRun = flags['dry-run'] as boolean;
+
+    // Check for existing deployment state (resume capability)
+    const stateManager = new StateManager();
+    const existingState = await stateManager.loadState();
+    let startFromWave = 1;
+    let completedWaveNumbers: number[] = [];
+
+    if (existingState && existingState.status === 'failed' && existingState.completedWaves.length > 0) {
+      const lastCompletedWave = Math.max(...existingState.completedWaves);
+      const failedWaveNumber = existingState.failedWave?.waveNumber || lastCompletedWave + 1;
+
+      this.log('');
+      this.log(`⚠️  Found previous deployment state:`);
+      this.log(`   Status: ${existingState.status}`);
+      this.log(`   Completed waves: ${existingState.completedWaves.length}/${existingState.totalWaves}`);
+      this.log(`   Last completed: Wave ${lastCompletedWave}`);
+      this.log(`   Failed at: Wave ${failedWaveNumber}`);
+      if (existingState.failedWave?.error) {
+        this.log(`   Error: ${existingState.failedWave.error.substring(0, 100)}...`);
+      }
+      this.log('');
+
+      // Auto-resume if --resume flag is true (default) or not set
+      const shouldResume = flags.resume !== false; // Default to true for auto-resume
+
+      if (shouldResume) {
+        this.log(`🔄 Resuming deployment from Wave ${failedWaveNumber}...`);
+        startFromWave = failedWaveNumber;
+        completedWaveNumbers = existingState.completedWaves;
+      } else {
+        this.log('🆕 Starting fresh deployment (ignoring previous state)...');
+        await stateManager.clearState();
+      }
+    }
+
+    const validateOnly = flags['validate-only'] as boolean;
+    const deploymentId = `deployment-${Date.now()}`;
+
+    if (dryRun || validateOnly) {
+      this.log('🔍 Dry-run/Validate mode: skipping actual deployment');
+      return;
+    }
+
+    // Scan and generate waves
+    const scanner = new MetadataScannerService();
+    const scanResult = await scanner.scan({ sourcePath });
+
+    if (scanResult.errors.length > 0) {
+      logger.error('Metadata scanning completed with errors', { errors: scanResult.errors });
+      scanResult.errors.forEach((err) => this.warn(err));
+    }
+    if (scanResult.warnings.length > 0) {
+      logger.warn('Metadata scanning completed with warnings', { warnings: scanResult.warnings });
+      scanResult.warnings.forEach((warn) => this.warn(warn));
+    }
+
+    const waveBuilder = new WaveBuilder();
+    let waveResult = waveBuilder.generateWaves(scanResult.dependencyResult.graph);
+
+    // Build component map (NodeId -> MetadataComponent)
+    const componentMap = new Map<string, MetadataComponent>();
+    for (const component of scanResult.components) {
+      const nodeId = `${component.type}:${component.name}`;
+      componentMap.set(nodeId, component);
+    }
+
+    // Apply post-processing to optimize waves and reduce need for simplification
+    const { WavePostProcessor } = await import('../../waves/wave-post-processor.js');
+    const postProcessor = new WavePostProcessor(componentMap, {
+      syncPSG: true,
+      syncFlows: true,
+      syncFlexiPages: true,
+      syncTestClasses: true,
+      splitLargeWaves: true,
+      maxComponentsPerWave: 300,
+    });
+    const postProcessResult = postProcessor.processWaves(waveResult.waves);
+    waveResult = {
+      ...waveResult,
+      waves: postProcessResult.waves,
+      stats: {
+        ...waveResult.stats,
+        totalWaves: postProcessResult.waves.length,
+      },
+    };
+    const manifestAdjustments = postProcessResult.manifestAdjustments;
+
+    // AI Priority Weighting (US-057) - if --use-ai is enabled
+    if (flags['use-ai']) {
+      this.log('\n🤖 Applying AI priority weighting...');
+
+      try {
+        // Try to get access token from org
+        let accessToken: string | undefined;
+        try {
+          const org = await Org.create({ aliasOrUsername: targetOrg });
+          const connection = await org.getConnection();
+          const authFields = connection.getAuthInfoFields();
+          accessToken = authFields.accessToken;
+          logger.debug('Using access token from authenticated org for priority service');
+        } catch (error) {
+          logger.warn('Could not get access token from org, will use API key or mock', { error });
+        }
+
+        const { AgentforcePriorityService } = await import('../../ai/agentforce-priority-service.js');
+        const { AIEnhancedPriorityWaveGenerator } = await import('../../waves/priority-wave-generator-ai.js');
+
+        const priorityService = new AgentforcePriorityService({
+          enabled: true,
+          autoApply: false,
+          apiKey: accessToken,
+        });
+
+        const aiGenerator = new AIEnhancedPriorityWaveGenerator({
+          agentforceService: priorityService,
+          orgType: flags['org-type'] as string | undefined,
+          industry: flags.industry as string | undefined,
+        });
+
+        // Apply AI priorities
+        const prioritizedWaves = await aiGenerator.applyPriorityWavesAsync(
+          waveResult.waves,
+          componentMap
+        );
+
+        waveResult = {
+          ...waveResult,
+          waves: prioritizedWaves,
+        };
+
+        const aiStats = aiGenerator.getAIStats();
+        if (aiStats && aiStats.aiAdjustments > 0) {
+          this.log(`   ✅ AI adjusted ${aiStats.aiAdjustments} component priorities`);
+        }
+      } catch (error) {
+        logger.warn('AI priority weighting failed, continuing with static priorities', { error });
+        this.warn('   ⚠️  Could not apply AI priorities, using static prioritization');
+      }
+    }
+
+    const orderedWaves = getWavesInExecutionOrder(waveResult);
+
+    // Filter waves to deploy based on previous state (if resuming)
+    let wavesToDeploy = orderedWaves;
+    if (startFromWave > 1 && completedWaveNumbers.length > 0) {
+      wavesToDeploy = orderedWaves.filter(wave => !completedWaveNumbers.includes(wave.number));
+      this.log(`\n📊 Deployment plan:`);
+      this.log(`   Total waves: ${orderedWaves.length}`);
+      this.log(`   Already completed: ${completedWaveNumbers.length} (${completedWaveNumbers.join(', ')})`);
+      this.log(`   Remaining to deploy: ${wavesToDeploy.length} (starting from Wave ${startFromWave})`);
+      this.log('');
+    }
+
+    // Generate manifests for all waves (needed for state tracking)
+    this.log('\n📄 Generating manifests...');
+
+    // Initialize AgentforceService if --use-ai is enabled
+    // Uses flexible model support - model can be configured via:
+    // 1. .smart-deployment.json (ai.model)
+    // 2. getRecommendedModel() for automatic selection based on org size
+    // 3. Environment variables or CLI flags
+    let agentforceService: AgentforceService | undefined;
+    if (flags['use-ai']) {
+      try {
+        let accessToken: string | undefined;
+        if (targetOrg) {
+          try {
+            const org = await Org.create({ aliasOrUsername: targetOrg });
+            const connection = await org.getConnection();
+            const authFields = connection.getAuthInfoFields();
+            accessToken = authFields.accessToken;
+          } catch (error) {
+            logger.warn('Could not get access token for manifest generation', { error });
+          }
+        }
+
+        // AgentforceService already supports flexible models
+        // Model selection is handled by the service based on config
+        agentforceService = new AgentforceService({
+          enabled: true,
+          apiKey: accessToken,
+          // Model comes from .smart-deployment.json or defaults to 'agentforce-1'
+          // Can be overridden via getRecommendedModel() if needed
+        });
+
+        if (accessToken) {
+          agentforceService.setApiKeyFromOrg(accessToken);
+        }
+
+        const model = agentforceService.getConfig().model;
+        this.log(`   🤖 Using Agentforce (model: ${model}) for metadata type mapping...`);
+      } catch (error) {
+        logger.warn('Could not initialize Agentforce for manifest generation', { error });
+      }
+    }
+
+    const manifestGenerator = new ManifestGenerator(agentforceService);
+    const manifestDir = path.join(scanResult.projectRoot, '.smart-deployment', 'manifests');
+    const manifestResult = await manifestGenerator.generateManifests(orderedWaves, {
+      projectRoot: scanResult.projectRoot,
+      componentMap,
+      outputDir: manifestDir,
+      validateFiles: true,
+      agentforceService,
+      manifestAdjustments,
+    });
+
+    if (manifestResult.errors.length > 0) {
+      logger.error('Manifest generation errors', { errors: manifestResult.errors });
+      manifestResult.errors.forEach((err) => this.warn(`⚠️  ${err}`));
+    }
+    if (manifestResult.warnings.length > 0) {
+      logger.warn('Manifest generation warnings', { warnings: manifestResult.warnings });
+      manifestResult.warnings.forEach((warn) => this.warn(`⚠️  ${warn}`));
+    }
+
+    if (manifestResult.manifests.length === 0) {
+      this.error('No manifests generated. Cannot proceed with deployment.');
+      return;
+    }
+
+    this.log(`✅ Generated ${manifestResult.manifests.length} manifests`);
+
+    // Validate manifests against source
+    this.log('\n🔍 Validating manifests against source...');
+    const manifestValidator = new ManifestValidator();
+    let allManifestsValid = true;
+
+    for (const manifest of manifestResult.manifests) {
+      const validation = await manifestValidator.validateManifest(manifest, componentMap, scanResult.projectRoot);
+      if (!validation.isValid) {
+        allManifestsValid = false;
+        logger.error('Manifest validation failed', { fileName: manifest.fileName, errors: validation.errors });
+        validation.errors.forEach((err) => this.warn(`❌ ${manifest.fileName}: ${err.message}`));
+      }
+      if (validation.warnings.length > 0) {
+        validation.warnings.forEach((warn) => this.warn(`⚠️  ${manifest.fileName}: ${warn.message}`));
+      }
+    }
+
+    if (!allManifestsValid) {
+      this.error('Manifest validation failed. Please fix errors before deploying.');
+      return;
+    }
+
+    this.log('✅ All manifests validated');
+
+    // AI Wave Validation (if --use-ai is enabled)
+    if (flags['use-ai']) {
+      this.log('');
+      this.log('🤖 Using Agentforce for wave validation...');
+
+      try {
+        // Try to get access token from org if target-org is provided
+        let accessToken: string | undefined;
+        if (targetOrg) {
+          try {
+            const org = await Org.create({ aliasOrUsername: targetOrg });
+            const connection = await org.getConnection();
+            const authFields = connection.getAuthInfoFields();
+            accessToken = authFields.accessToken;
+            logger.info('Using access token from authenticated org for wave validation');
+          } catch (error) {
+            logger.warn('Could not get access token from org, will use API key or mock', { error });
+          }
+        }
+
+        const agentforceService = new AgentforceService({
+          enabled: true,
+          apiKey: accessToken,
+        });
+
+        if (accessToken) {
+          agentforceService.setApiKeyFromOrg(accessToken);
+        }
+
+        const waveValidationService = new WaveValidationService(agentforceService);
+        const validationResult = await waveValidationService.validateWaves(orderedWaves);
+
+        if (validationResult.aiAnalyzed) {
+          this.log(`   ✅ Analyzed ${orderedWaves.length} waves`);
+          this.log(`   📊 Overall risk: ${validationResult.overallRisk.toUpperCase()}`);
+
+          if (validationResult.issues.length > 0) {
+            this.log(`   ⚠️  Found ${validationResult.issues.length} potential issues:`);
+            validationResult.issues.slice(0, 5).forEach((issue) => {
+              const icon = issue.severity === 'critical' ? '❌' : '⚠️';
+              this.log(`      ${icon} ${issue.message}`);
+            });
+            if (validationResult.issues.length > 5) {
+              this.log(`      ... and ${validationResult.issues.length - 5} more`);
+            }
+          }
+
+          if (validationResult.optimizations.length > 0) {
+            this.log(`   💡 ${validationResult.optimizations.length} optimization suggestions:`);
+            validationResult.optimizations.slice(0, 3).forEach((opt) => {
+              this.log(`      • ${opt.description}`);
+            });
+          }
+
+          if (validationResult.overallRisk === 'high' || validationResult.issues.some((i) => i.severity === 'critical')) {
+            this.warn('\n⚠️  High-risk deployment detected. Consider reviewing waves before proceeding.');
+          }
+        } else {
+          this.log('   ⚠️  Agentforce unavailable, skipping AI validation');
+        }
+      } catch (error) {
+        logger.warn('Wave validation with Agentforce failed', { error });
+        this.warn('   ⚠️  Could not validate waves with Agentforce, continuing with static validation only');
+      }
+
+      this.log('');
+    }
+
+    // Initialize deployment services (reuse stateManager from above)
+    const tracker = new DeploymentTracker();
+
+    // Execute waves sequentially
+    // Deploy only waves that haven't been completed yet
+    for (const wave of wavesToDeploy) {
+      this.log(`\n🌊 Deploying Wave ${wave.number}/${orderedWaves.length} (${wave.components.length} components)...`);
+
+      try {
+        // Find manifest for this wave
+        const manifest = manifestResult.manifests.find((m) => m.fileName.includes(`wave-${String(wave.number).padStart(3, '0')}`));
+        if (!manifest) {
+          throw new Error(`Manifest not found for wave ${wave.number}`);
+        }
+
+        const manifestPath = path.join(manifestDir, manifest.fileName);
+        this.log(`📦 Using manifest: ${manifest.fileName}`);
+        logger.debug('Manifest path prepared', { manifestPath, wave: wave.number });
+
+        // Execute deployment
+        const waveDeploymentId = `${deploymentId}-wave-${wave.number}`;
+        tracker.startTracking(waveDeploymentId, wave.number, orderedWaves.length);
+
+        // Execute actual SF CLI deployment
+        const sfCli = new SfCliIntegration();
+
+        // Detect org type to enforce production test requirements
+        const isProduction = await this.isProductionOrg(targetOrg);
+        const noTestRun = flags['no-test-run'] as boolean || flags['skip-tests'] as boolean;
+        const runWaveTest = flags['run-wave-test'] as boolean;
+
+        // Production orgs REQUIRE tests - ignore --no-test-run flag
+        if (isProduction && noTestRun) {
+          this.warn('⚠️  Production org detected: --no-test-run is ignored (tests are required in production)');
+        }
+
+        let testLevel: 'NoTestRun' | 'RunLocalTests' | 'RunSpecifiedTests' | 'RunAllTestsInOrg' | undefined;
+        let testClasses: string[] = [];
+
+        if (runWaveTest) {
+          // User explicitly wants to run only tests from this wave
+          testClasses = this.extractTestClassesFromWave(wave, componentMap);
+          if (testClasses.length > 0) {
+            // Use RunSpecifiedTests with only tests from this wave
+            testLevel = 'RunSpecifiedTests';
+            this.log(`   🧪 Running ${testClasses.length} specified test class(es) from wave: ${testClasses.join(', ')}`);
+            if (isProduction) {
+              this.log(`   ℹ️  Using RunSpecifiedTests in production - will test only components in this wave`);
+            }
+          } else {
+            // No test classes in wave - skip tests (user explicitly requested wave-specific tests only)
+            this.log('   ⏭️  No test classes found in wave - skipping tests (--run-wave-test with no tests in wave)');
+            // Don't set testLevel - let SF CLI handle it (may fail in production, but that's expected)
+          }
+        } else if (noTestRun && !isProduction) {
+          // User wants to skip tests (sandbox only)
+          testLevel = 'NoTestRun';
+          this.log('   ⏭️  Skipping tests (--no-test-run, sandbox only)');
+        } else {
+          // Default behavior: Don't specify test level, let SF CLI decide
+          // This allows SF CLI to use its default behavior which may be more lenient
+          if (isProduction) {
+            this.log('   📋 Using SF CLI default test behavior (may avoid strict 75% enforcement)');
+          } else {
+            this.log('   📋 Using SF CLI standard test behavior');
+          }
+        }
+
+        try {
+          const result = await sfCli.deploy({
+            manifestPath,
+            targetOrg,
+            testLevel,
+            tests: testLevel === 'RunSpecifiedTests' ? testClasses : undefined,
+            checkOnly: false,
+          });
+
+          if (!result.success) {
+            const errorMessage = `Deployment failed: ${result.status}\n${result.output}`;
+
+            // Check if errors are from Experience Bundle auto-generated components
+            // These components reference standard components that should exist in org
+            // If they fail only due to missing standard components, we can continue
+            const { isSafeToIgnoreExperienceBundleErrors } = await import('../../constants/standard-components.js');
+
+            // Parse component failures to check if Experience Bundle errors can be ignored
+            let experienceBundleErrors: string[] = [];
+            let otherErrors: string[] = [];
+
+            try {
+              // Try to parse JSON output to get component failures
+              const jsonMatch = result.output.match(/\{[\s\S]*\}/);
+              if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]) as {
+                  result?: {
+                    details?: {
+                      componentFailures?: Array<{
+                        componentType?: string;
+                        fullName?: string;
+                        problem?: string;
+                      }>;
+                    };
+                  };
+                };
+
+                const failures = parsed.result?.details?.componentFailures || [];
+
+                // Separate Experience Bundle errors from other errors
+                // Note: Salesforce propagates compilation errors to all classes in a wave
+                // So we need to check if the error is about auto-generated components
+                // and if ALL classes with that error actually reference those components
+
+                // Group failures by error message to detect propagated errors
+                const errorsByMessage = new Map<string, Array<{ componentId: string; failure: typeof failures[0] }>>();
+
+                for (const failure of failures) {
+                  if (!failure.fullName || !failure.problem) continue;
+
+                  const componentId = `${failure.componentType}:${failure.fullName}`;
+                  const errorKey = failure.problem.trim();
+
+                  if (!errorsByMessage.has(errorKey)) {
+                    errorsByMessage.set(errorKey, []);
+                  }
+                  errorsByMessage.get(errorKey)!.push({ componentId, failure });
+                }
+
+                // Process each unique error message
+                for (const [errorMessage, componentsWithError] of errorsByMessage.entries()) {
+                  // Check if this error is about auto-generated Visualforce Pages
+                  const isAutoGeneratedPageError = /Page\s+(ForgotPasswordConfirm|ForgotPassword|ChangePassword|SiteLogin|SiteRegister|CommunitiesLogin|CommunitiesLanding|CommunitiesSelfReg|MyProfilePage|MicrobatchSelfReg|BandwidthExceeded|Exception|FileNotFound|InMaintenance|StdExceptionTemplate|Unauthorized|UnderConstruction|AnswersHome|IdeasHome|SiteTemplate|CommunitiesTemplate)\s+does not exist/i.test(errorMessage);
+
+                  if (isAutoGeneratedPageError) {
+                    // Check if ALL components with this error are Experience Bundle components
+                    // or if they actually reference the missing page
+                    let allAreExperienceBundle = true;
+                    let allReferenceThePage = true;
+
+                    for (const { componentId } of componentsWithError) {
+                      const isExperienceBundle = isSafeToIgnoreExperienceBundleErrors(componentId, errorMessage);
+                      if (!isExperienceBundle) {
+                        allAreExperienceBundle = false;
+
+                        // Check if this component actually references the page
+                        // Extract page name from error message
+                        const pageMatch = errorMessage.match(/Page\s+([A-Za-z0-9_]+)\s+does not exist/i);
+                        if (pageMatch) {
+                          const pageName = pageMatch[1];
+                          // Check if component is in the wave and references this page
+                          const component = componentMap.get(componentId);
+                          if (component) {
+                            const referencesPage = Array.from(component.dependencies).some(dep =>
+                              dep === `VisualforcePage:${pageName}` || dep.includes(pageName)
+                            );
+                            if (!referencesPage) {
+                              allReferenceThePage = false;
+                            }
+                          } else {
+                            // Component not found in map - assume it doesn't reference
+                            allReferenceThePage = false;
+                          }
+                        }
+                      }
+                    }
+
+                    // If all are Experience Bundle OR all actually reference the page, it's safe to ignore
+                    if (allAreExperienceBundle || allReferenceThePage) {
+                      componentsWithError.forEach(({ componentId }) => {
+                        experienceBundleErrors.push(`${componentId} - ${errorMessage}`);
+                      });
+                    } else {
+                      // Some components have this error but shouldn't - it's a propagated error
+                      // Find the first Experience Bundle component as the real source
+                      const realSource = componentsWithError.find(({ componentId }) =>
+                        isSafeToIgnoreExperienceBundleErrors(componentId, errorMessage)
+                      );
+
+                      if (realSource) {
+                        // Mark the real source as Experience Bundle error
+                        experienceBundleErrors.push(`${realSource.componentId} - ${errorMessage}`);
+                        // Mark others as propagated (but still safe to ignore if they're in the same wave)
+                        componentsWithError.forEach(({ componentId }) => {
+                          if (componentId !== realSource.componentId) {
+                            // Check if component is in current wave
+                            const isInWave = wave.components.some(nodeId => nodeId === componentId);
+                            if (isInWave) {
+                              // It's a propagated error - safe to ignore
+                              experienceBundleErrors.push(`${componentId} - ${errorMessage} (propagated)`);
+                            } else {
+                              otherErrors.push(`${componentId} - ${errorMessage}`);
+                            }
+                          }
+                        });
+                      } else {
+                        // No Experience Bundle component found - all are real errors
+                        componentsWithError.forEach(({ componentId }) => {
+                          otherErrors.push(`${componentId} - ${errorMessage}`);
+                        });
+                      }
+                    }
+                  } else {
+                    // Not an auto-generated page error - check normally
+                    for (const { componentId, failure } of componentsWithError) {
+                      const isExperienceBundleError = isSafeToIgnoreExperienceBundleErrors(componentId, failure.problem || errorMessage);
+
+                      if (isExperienceBundleError) {
+                        experienceBundleErrors.push(`${componentId} - ${failure.problem}`);
+                      } else {
+                        otherErrors.push(`${componentId} - ${failure.problem}`);
+                      }
+                    }
+                  }
+                }
+              }
+            } catch (parseError) {
+              // If we can't parse, fall back to string matching
+              logger.debug('Could not parse deployment errors', { error: parseError });
+            }
+
+            // If there are Experience Bundle errors but no other errors, continue deployment
+            if (experienceBundleErrors.length > 0 && otherErrors.length === 0) {
+              this.warn(`   ⚠️  ${experienceBundleErrors.length} Experience Bundle component(s) failed due to missing standard components:`);
+              experienceBundleErrors.forEach(comp => this.warn(`      - ${comp}`));
+              this.warn(`   These components reference standard Experience Cloud components (SiteSamples, c:sitelogin, etc.)`);
+              this.warn(`   that should exist in the org. The components themselves are auto-generated by Experience Bundle.`);
+              this.warn(`   Continuing deployment - these errors are expected if standard components don't exist yet.`);
+              this.log(`   ✅ Wave ${wave.number} completed (with ${experienceBundleErrors.length} expected errors from Experience Bundle components)`);
+              // Continue to next wave instead of throwing error
+              continue;
+            }
+
+            // If there are other errors (non-Experience Bundle), report them
+            if (otherErrors.length > 0) {
+              if (experienceBundleErrors.length > 0) {
+                this.warn(`   ⚠️  ${experienceBundleErrors.length} Experience Bundle component(s) failed (safe to ignore):`);
+                experienceBundleErrors.forEach(comp => this.warn(`      - ${comp}`));
+                this.warn(`   However, there are ${otherErrors.length} other error(s) that must be fixed:`);
+                otherErrors.forEach(comp => this.error(`      ❌ ${comp}`));
+              } else {
+                // No Experience Bundle errors, just report other errors
+                this.error(`   ❌ ${otherErrors.length} component(s) failed:`);
+                otherErrors.forEach(comp => this.error(`      - ${comp}`));
+              }
+
+              // Check for missing metadata suggestions
+              const missingMetadataSuggestions = this.detectMissingMetadata(otherErrors, componentMap, scanResult);
+              if (missingMetadataSuggestions.length > 0) {
+                this.log('');
+                this.warn('   💡 Missing metadata detected in project:');
+                this.warn('   The following components are referenced but may not exist in the project:');
+                missingMetadataSuggestions.forEach(suggestion => {
+                  this.warn(`      - ${suggestion.componentId} (referenced by: ${suggestion.referencedBy.join(', ')})`);
+                  if (suggestion.suggestion) {
+                    this.warn(`        → ${suggestion.suggestion}`);
+                  }
+                });
+                this.log('');
+              }
+
+              throw new Error(errorMessage);
+            }
+
+            // Fallback: Check if error is about standard Experience Cloud components (string matching)
+            if (result.output.includes('SiteSamples') || result.output.includes('sitelogin') ||
+                result.output.includes('SiteLogin') || result.output.includes('SiteHeader') ||
+                result.output.includes('SiteFooter') || result.output.includes('SitePoweredBy')) {
+              this.warn(`   ⚠️  Deployment failed due to standard Experience Cloud components.`);
+              this.warn(`   These components should exist in the org (auto-generated with Experience Cloud sites).`);
+              this.warn(`   Please verify these components exist in the target org: SiteSamples (StaticResource), c:sitelogin (LWC)`);
+              this.warn(`   If they don't exist, create an Experience Cloud site first or retrieve them from another org.`);
+              throw new Error(errorMessage);
+            }
+
+            // Check if this is a missing reference error and try simplification fallback
+            const simplifier = new MetadataSimplifier();
+            if (simplifier.isMissingReferenceError(result.output)) {
+              this.log(`   ⚠️  Deployment failed due to missing references. Attempting simplification fallback...`);
+
+              try {
+                // Get available components from previous waves
+                const availableComponents = new Set<string>();
+                for (let i = 0; i < wave.number - 1; i++) {
+                  orderedWaves[i]?.components.forEach(nodeId => availableComponents.add(nodeId));
+                }
+
+                // Simplify metadata files
+                const simplificationResult = await simplifier.simplifyWaveMetadata(wave, {
+                  availableComponents,
+                  allWaves: orderedWaves,
+                  currentWaveNumber: wave.number,
+                  componentMap,
+                });
+
+                if (simplificationResult.simplified && simplificationResult.tempFiles.size > 0) {
+                  this.log(`   🔧 Simplified ${simplificationResult.simplifiedComponents.length} component(s)`);
+
+                  // Regenerate manifest with simplified files
+                  const tempManifestDir = path.join(manifestDir, `simplified-wave-${wave.number}`);
+                  await fs.mkdir(tempManifestDir, { recursive: true });
+
+                  // Create simplified wave with temp file paths
+                  const simplifiedWave: Wave = {
+                    ...wave,
+                    components: wave.components.map(nodeId => {
+                      const tempPath = simplificationResult.tempFiles.get(nodeId);
+                      return tempPath ? nodeId : nodeId; // Keep same nodeId, manifest generator will use tempPath
+                    }),
+                  };
+
+                  // Update component map with temp paths for simplified components
+                  const updatedComponentMap = new Map(componentMap);
+                  for (const [nodeId, tempPath] of simplificationResult.tempFiles.entries()) {
+                    const component = updatedComponentMap.get(nodeId);
+                    if (component) {
+                      updatedComponentMap.set(nodeId, {
+                        ...component,
+                        filePath: tempPath, // Use temp path for simplified file
+                      });
+                    }
+                  }
+
+                  const manifestGen = new ManifestGenerator();
+                  const simplifiedManifestResult = await manifestGen.generateManifests([simplifiedWave], {
+                    projectRoot: scanResult.projectRoot,
+                    componentMap: updatedComponentMap,
+                    outputDir: tempManifestDir,
+                    validateFiles: true,
+                  });
+
+                  if (simplifiedManifestResult.manifests.length > 0) {
+                    const simplifiedManifest = simplifiedManifestResult.manifests[0];
+                    const simplifiedManifestPath = path.join(tempManifestDir, simplifiedManifest.fileName);
+
+                    this.log(`   🔄 Retrying deployment with simplified metadata...`);
+
+                    // Retry deployment with simplified manifest
+                    const retryResult = await sfCli.deploy({
+                      manifestPath: simplifiedManifestPath,
+                      targetOrg,
+                      testLevel,
+                      tests: testLevel === 'RunSpecifiedTests' ? testClasses : undefined,
+                      checkOnly: false,
+                    });
+
+                    if (retryResult.success) {
+                      this.log(`   ✅ Deployed ${retryResult.componentSuccesses} components (with simplification)`);
+                      if (retryResult.testsRun) {
+                        this.log(`   ✅ Ran ${retryResult.testsRun} tests`);
+                      }
+
+                      // Note: Temp files will be cleaned up automatically or can be cleaned manually
+                      // Continue to next wave
+                      continue;
+                    } else {
+                      this.warn(`   ⚠️  Retry with simplified metadata also failed`);
+                      // Fall through to throw error
+                    }
+                  } else {
+                    this.warn(`   ⚠️  Could not generate simplified manifest`);
+                  }
+                } else {
+                  this.warn(`   ⚠️  Simplification did not produce any changes`);
+                }
+              } catch (simplifyError) {
+                logger.warn('Simplification fallback failed', { wave: wave.number, error: simplifyError });
+                this.warn(`   ⚠️  Simplification fallback failed: ${simplifyError instanceof Error ? simplifyError.message : String(simplifyError)}`);
+                // Fall through to throw original error
+              }
+            }
+
+            throw new Error(errorMessage);
+          }
+
+          this.log(`   ✅ Deployed ${result.componentSuccesses} components`);
+          if (result.testsRun) {
+            this.log(`   ✅ Ran ${result.testsRun} tests`);
+          }
+
+          // Check if this wave contains Experience Bundle components
+          const hasExperienceBundle = wave.components.some(nodeId => {
+            return nodeId.startsWith('DigitalExperience:') ||
+                   nodeId.includes('site/') ||
+                   wave.metadata.types.includes('DigitalExperience');
+          });
+
+          if (hasExperienceBundle) {
+            this.log('');
+            this.log('   📦 Experience Bundle detected in this wave');
+            this.log('   ⚠️  Experience Bundles require activation after deployment:');
+            this.log('');
+            this.log('   Option A - Salesforce Setup:');
+            this.log('      1. Go to Setup → Digital Experiences → All Sites');
+            this.log('      2. Find your site and click "Activate"');
+            this.log('');
+            this.log('   Option B - Salesforce CLI:');
+            this.log(`      sf community publish --name <SiteName> --target-org ${targetOrg}`);
+            this.log('');
+          }
+        } catch (deployError) {
+          logger.error('Deployment failed', { wave: wave.number, error: deployError });
+          throw deployError;
+        }
+
+        // Save state after each wave
+        await stateManager.saveState({
+          status: 'deploying',
+          deploymentId,
+          targetOrg,
+          timestamp: new Date().toISOString(),
+          totalWaves: orderedWaves.length,
+          completedWaves: Array.from({ length: wave.number }, (_, i) => i + 1),
+          currentWave: wave.number,
+        });
+
+        this.log(`✅ Wave ${wave.number} deployed successfully`);
+      } catch (error) {
+        logger.error('Wave deployment failed', { wave: wave.number, error });
+
+        // Save failed state
+        await stateManager.saveState({
+          status: 'failed',
+          deploymentId,
+          targetOrg,
+          timestamp: new Date().toISOString(),
+          totalWaves: orderedWaves.length,
+          completedWaves: Array.from({ length: wave.number - 1 }, (_, i) => i + 1),
+          currentWave: wave.number,
+          failedWave: {
+            waveNumber: wave.number,
+            error: error instanceof Error ? error.message : String(error),
+            timestamp: new Date().toISOString(),
+          },
+        });
+
+        this.error(`Wave ${wave.number} failed: ${error instanceof Error ? error.message : String(error)}`);
+        return; // Exit on failure
+      }
+    }
+
+    // Save completed state
+    await stateManager.saveState({
+      status: 'completed',
+      deploymentId,
+      targetOrg,
+      timestamp: new Date().toISOString(),
+      totalWaves: orderedWaves.length,
+      completedWaves: Array.from({ length: orderedWaves.length }, (_, i) => i + 1),
+      currentWave: orderedWaves.length,
+    });
+
+    // Clear state on success (transitions to IDLE)
+    await stateManager.clearState();
+    this.log('\n✅ All waves deployed successfully!');
+
+    // Check if any wave contained Experience Bundle components
+    const hasExperienceBundle = orderedWaves.some(wave =>
+      wave.components.some(nodeId =>
+        nodeId.startsWith('DigitalExperience:') || nodeId.includes('site/')
+      ) || wave.metadata.types.includes('DigitalExperience')
+    );
+
+    if (hasExperienceBundle) {
+      this.log('');
+      this.log('📦 Experience Bundle(s) were deployed');
+      this.log('⚠️  Remember: Experience Bundles require activation after deployment');
+      this.log('');
+      this.log('Option A - Salesforce Setup:');
+      this.log('  1. Go to Setup → Digital Experiences → All Sites');
+      this.log('  2. Find your site and click "Activate"');
+      this.log('');
+      this.log('Option B - Salesforce CLI:');
+      this.log(`  sf community publish --name <SiteName> --target-org ${targetOrg}`);
+      this.log('  (Replace <SiteName> with your actual site name)');
+      this.log('');
+    }
+  }
+
+  /**
+   * Extract test classes from a wave
+   */
+  private extractTestClassesFromWave(
+    wave: Wave,
+    componentMap: Map<string, MetadataComponent>
+  ): string[] {
+    const testClasses: string[] = [];
+
+    for (const nodeId of wave.components) {
+      if (!nodeId.startsWith('ApexClass:')) {
+        continue;
+      }
+
+      const component = componentMap.get(nodeId);
+      if (!component) {
+        continue;
+      }
+
+      // Check if it's a test class
+      const className = component.name;
+      const isTest = this.isTestClass(className);
+
+      if (isTest) {
+        testClasses.push(className);
+      }
+    }
+
+    return testClasses;
+  }
+
+  /**
+   * Check if a class name indicates it's a test class
+   */
+  private isTestClass(className: string): boolean {
+    const lowerName = className.toLowerCase();
+    return (
+      lowerName.includes('test') ||
+      lowerName.endsWith('_test') ||
+      lowerName.endsWith('test') ||
+      className.endsWith('Test')
+    );
+  }
+
+  /**
+   * Detect if org is production
+   * Production orgs require tests - cannot use NoTestRun
+   */
+  private async isProductionOrg(targetOrg: string): Promise<boolean> {
+    try {
+      const org = await Org.create({ aliasOrUsername: targetOrg });
+      const connection = await org.getConnection();
+
+      // Query org metadata to determine if it's production
+      const query = 'SELECT Id, IsSandbox FROM Organization LIMIT 1';
+      const result = await connection.query<{ IsSandbox: boolean }>(query);
+
+      if (result.records && result.records.length > 0) {
+        const orgRecord = result.records[0];
+        return !orgRecord.IsSandbox;
+      }
+
+      // Fallback: Check org username/alias patterns
+      const orgUsername = org.getUsername();
+      if (orgUsername) {
+        // Production orgs typically don't have .sandbox. in the username
+        // Sandbox orgs have patterns like: username.sandbox@example.com or username--sandbox@example.com
+        const lowerUsername = orgUsername.toLowerCase();
+        return !lowerUsername.includes('.sandbox.') &&
+               !lowerUsername.includes('sandbox') &&
+               !lowerUsername.includes('--');
+      }
+
+      return false; // Default to false (assume sandbox if uncertain)
+    } catch (error) {
+      logger.warn('Could not determine org type, assuming sandbox', { error });
+      return false; // Default to sandbox (safer - allows NoTestRun)
+    }
+  }
+
+  /**
+   * Detect missing metadata components that are referenced but don't exist in the project
+   *
+   * @param errors - List of error messages from deployment
+   * @param componentMap - Map of all components in the project
+   * @param scanResult - Full scan result with dependency graph
+   * @returns Array of suggestions for missing metadata
+   */
+  private detectMissingMetadata(
+    errors: string[],
+    componentMap: Map<string, MetadataComponent>,
+    scanResult: ScanResult
+  ): Array<{ componentId: string; referencedBy: string[]; suggestion?: string }> {
+    const suggestions: Array<{ componentId: string; referencedBy: string[]; suggestion?: string }> = [];
+    const missingComponents = new Map<string, Set<string>>(); // componentId -> set of components that reference it
+
+    // Extract component names from error messages
+    const missingPatterns = [
+      /(?:does not exist|not found|missing|invalid).*?:\s*([A-Za-z0-9_]+)/gi,
+      /(?:Page|Component|Class|Object|Flow|Label)\s+([A-Za-z0-9_]+)\s+(?:does not exist|not found)/gi,
+      /External string does not exist:\s*([A-Za-z0-9_]+)/gi,
+    ];
+
+    for (const error of errors) {
+      for (const pattern of missingPatterns) {
+        const matches = error.matchAll(pattern);
+        for (const match of matches) {
+          const componentName = match[1];
+
+          // Try to identify the component type from the error
+          let componentType: string | undefined;
+          if (error.includes('Page') && error.includes('does not exist')) {
+            componentType = 'VisualforcePage';
+          } else if (error.includes('Component') && error.includes('does not exist')) {
+            componentType = 'LightningComponentBundle'; // Could be LWC or Aura
+          } else if (error.includes('Class') && error.includes('does not exist')) {
+            componentType = 'ApexClass';
+          } else if (error.includes('External string') || error.includes('Label')) {
+            componentType = 'CustomLabels';
+          } else if (error.includes('Flow') && error.includes('does not exist')) {
+            componentType = 'Flow';
+          }
+
+          if (componentType) {
+            const componentId = `${componentType}:${componentName}`;
+
+            // Check if this component exists in the project
+            if (!componentMap.has(componentId)) {
+              // Find which components reference this missing component
+              const referencedBy: string[] = [];
+
+              // Check all components in the project for dependencies
+              for (const [nodeId, component] of componentMap.entries()) {
+                if (component.dependencies.has(componentId)) {
+                  referencedBy.push(nodeId);
+                }
+              }
+
+              if (referencedBy.length > 0) {
+                if (!missingComponents.has(componentId)) {
+                  missingComponents.set(componentId, new Set());
+                }
+                referencedBy.forEach(ref => missingComponents.get(componentId)!.add(ref));
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Build suggestions
+    for (const [componentId, referencedBySet] of missingComponents.entries()) {
+      const referencedBy = Array.from(referencedBySet);
+      let suggestion: string | undefined;
+
+      // Generate specific suggestions based on component type
+      const [type, name] = componentId.split(':');
+      if (type === 'VisualforcePage' && (name.includes('Site') || name.includes('Communities') || name.includes('ForgotPassword') || name.includes('ChangePassword'))) {
+        suggestion = 'This appears to be an auto-generated Experience Cloud page. Ensure Experience Cloud site metadata is included in the project.';
+      } else if (type === 'CustomLabels') {
+        suggestion = 'Custom Label may need to be retrieved from the org or created. Check if the label exists in the target org.';
+      } else if (type === 'ApexClass' && (name.includes('Controller') || name.includes('Test'))) {
+        suggestion = 'This may be an auto-generated Experience Cloud controller. Ensure Experience Bundle metadata is included.';
+      }
+
+      suggestions.push({
+        componentId,
+        referencedBy,
+        suggestion,
+      });
+    }
+
+    return suggestions;
+  }
+
+  private generateReport(waves: number): void {
+    this.log(`\n📊 Deployment Report:`);
+    this.log(`   - Waves: ${waves}`);
+    this.log(`   - Status: Success`);
+  }
+}

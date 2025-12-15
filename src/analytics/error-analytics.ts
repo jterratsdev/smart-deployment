@@ -134,7 +134,7 @@ export class ErrorAnalytics {
 
     const categoryBreakdown: Record<string, number> = {};
     for (const metric of this.metrics.values()) {
-      categoryBreakdown[metric.category] = (categoryBreakdown[metric.category] || 0) + metric.count;
+      categoryBreakdown[metric.category] = (categoryBreakdown[metric.category] ?? 0) + metric.count;
     }
 
     const timestamps = this.history.map((h) => h.timestamp.getTime());

@@ -1,13 +1,13 @@
 /**
  * GenAI Prompt Template Parser
  * Parses Salesforce GenAI Prompt Template metadata files (.genAiPromptTemplate-meta.xml)
- * 
+ *
  * @ac US-025-AC-1: Extract related object references
  * @ac US-025-AC-2: Extract field references in prompts
  * @ac US-025-AC-3: Extract model configurations
  * @ac US-025-AC-4: Detect circular dependencies with Flows
  * @ac US-025-AC-5: Link to dependent metadata
- * 
+ *
  * @issue #25
  */
 
@@ -48,12 +48,15 @@ export type GenAiPromptParseResult = {
   fields: string[];
   /** Data provider objects */
   dataProviderObjects: string[];
+  /** Visualforce Pages referenced */
+  visualforcePages: string[];
   /** All dependencies extracted from this prompt template */
   dependencies: {
     models: string[];
     sobjects: string[];
     fields: string[];
     dataProviders: string[];
+    visualforcePages: string[];
   };
 };
 
@@ -83,6 +86,53 @@ function extractFieldsFromContent(content: string): string[] {
 }
 
 /**
+ * Extract Visualforce Page references from prompt content
+ * Pattern: Page.PageName or PageReference('/apex/PageName')
+ *
+ * @ac US-025-AC-6: Extract Visualforce Page references from prompt content
+ */
+function extractVisualforcePageReferences(content: string): string[] {
+  const pages: string[] = [];
+  const seen = new Set<string>();
+
+  // Pattern 1: Page.PageName (most common)
+  // Examples: Page.MyPage, Page.CommunitiesSelfRegConfirm
+  // Exclude Page.currentPage() calls
+  const pagePattern = /Page\.([a-zA-Z][a-zA-Z0-9_]*)(?!\s*\.)/g;
+  const pageMatches = content.matchAll(pagePattern);
+
+  for (const match of pageMatches) {
+    const pageName = match[1];
+
+    // Skip if already seen or standard Page methods
+    if (seen.has(pageName) || ['currentPage', 'getParameters', 'setRedirect'].includes(pageName)) {
+      continue;
+    }
+
+    seen.add(pageName);
+    pages.push(pageName);
+  }
+
+  // Pattern 2: PageReference('/apex/PageName') or PageReference('/PageName')
+  // Examples: new PageReference('/apex/MyPage'), new PageReference('/CommunitiesSelfRegConfirm')
+  const pageRefPattern = /(?:new\s+)?PageReference\s*\(\s*['"]\/apex\/([a-zA-Z][a-zA-Z0-9_]*)['"]|(?:new\s+)?PageReference\s*\(\s*['"]\/([a-zA-Z][a-zA-Z0-9_]*)['"]/gi;
+  const pageRefMatches = content.matchAll(pageRefPattern);
+
+  for (const match of pageRefMatches) {
+    const pageName = match[1] || match[2]; // Could be from /apex/ or just /
+
+    if (!pageName || seen.has(pageName)) {
+      continue;
+    }
+
+    seen.add(pageName);
+    pages.push(pageName);
+  }
+
+  return pages;
+}
+
+/**
  * Extract objects and fields from data providers
  */
 function extractFromDataProviders(dataProviders: GenAiPromptTemplateDataProvider[]): {
@@ -109,11 +159,11 @@ function extractFromDataProviders(dataProviders: GenAiPromptTemplateDataProvider
 
 /**
  * Parse a GenAI Prompt Template metadata XML file
- * 
+ *
  * @param filePath - Path to the .genAiPromptTemplate-meta.xml file
  * @param promptName - Name of the prompt template (typically from filename)
  * @returns Parsed prompt template metadata with dependencies
- * 
+ *
  * @example
  * const result = await parseGenAiPrompt(
  *   'force-app/main/default/genAiPromptTemplates/CaseSummary.genAiPromptTemplate-meta.xml',
@@ -188,9 +238,11 @@ export async function parseGenAiPrompt(
 
   // Extract field references from prompt content
   const contentFields: string[] = [];
+  const visualforcePages: string[] = [];
   for (const version of versions) {
     if (version.content) {
       contentFields.push(...extractFieldsFromContent(version.content));
+      visualforcePages.push(...extractVisualforcePageReferences(version.content));
     }
   }
 
@@ -210,6 +262,7 @@ export async function parseGenAiPrompt(
   const uniqueDataProviders = [...new Set(dataProviderNames)];
   const uniqueModels = [...new Set(models)];
   const uniqueVariables = [...new Set(allVariables)];
+  const uniqueVisualforcePages = [...new Set(visualforcePages)];
 
   // Build result
   return {
@@ -226,11 +279,13 @@ export async function parseGenAiPrompt(
     sobjects: uniqueObjects,
     fields: uniqueFields,
     dataProviderObjects: uniqueDataProviders,
+    visualforcePages: uniqueVisualforcePages,
     dependencies: {
       models: uniqueModels,
       sobjects: uniqueObjects,
       fields: uniqueFields,
       dataProviders: uniqueDataProviders,
+      visualforcePages: uniqueVisualforcePages,
     },
   };
 }

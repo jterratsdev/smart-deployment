@@ -368,6 +368,18 @@ export async function parseCustomObject(objectName: string, metadataContent: str
       });
     }
 
+    // Add FlexiPage dependencies from action overrides
+    const actionOverrides = metadata.actionOverrides ?? [];
+    for (const override of actionOverrides) {
+      if (override.type === 'Flexipage' && override.content) {
+        dependencies.push({
+          type: 'custom_field', // Reuse type, will be handled as FlexiPage dependency
+          name: override.content,
+          fieldName: override.actionName,
+        });
+      }
+    }
+
     const result: CustomObjectParseResult = {
       ...metadata,
       fields,

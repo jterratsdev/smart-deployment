@@ -41,7 +41,7 @@ export interface InferenceResult {
  * @ac US-055-AC-2: Receive dependency inferences
  */
 export class DependencyInferenceService {
-  private readonly agentforceService: AgentforceService;
+  public readonly agentforceService: AgentforceService;
   private readonly cache: Map<string, InferredDependency[]> = new Map();
   private readonly confidenceThreshold: number;
 

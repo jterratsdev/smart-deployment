@@ -112,8 +112,11 @@ function extractComponentsFromItems(items: ItemInstance[]): {
         const criteria = normalizeArray(item.componentInstance.visibilityRule.criteria);
         for (const criterion of criteria) {
           // Check if criterion references RecordType
-          if (criterion.leftValue?.includes('RecordType') || criterion.rightValue?.includes('RecordType')) {
-            const rtValue = criterion.rightValue ?? criterion.leftValue;
+          const leftValueStr = typeof criterion.leftValue === 'string' ? criterion.leftValue : String(criterion.leftValue ?? '');
+          const rightValueStr = typeof criterion.rightValue === 'string' ? criterion.rightValue : String(criterion.rightValue ?? '');
+
+          if (leftValueStr.includes('RecordType') || rightValueStr.includes('RecordType')) {
+            const rtValue = rightValueStr || leftValueStr;
             if (rtValue && !rtValue.includes('RecordType')) {
               recordTypes.push(rtValue);
             }

@@ -11,10 +11,13 @@ export type ApexDependencyType =
   | 'extends'
   | 'implements'
   | 'static_method'
+  | 'static_property'
   | 'instantiation'
   | 'variable_declaration'
   | 'inner_class'
-  | 'dynamic_instantiation';
+  | 'dynamic_instantiation'
+  | 'visualforce_page'
+  | 'custom_label';
 
 /**
  * Represents a dependency found in an Apex class
@@ -88,6 +91,54 @@ const STANDARD_APEX_CLASSES = new Set([
   'TypeException',
   'CalloutException',
   'LimitException',
+  'DateTime', // Alias for Datetime
+  'Type', // Type.forName()
+  'RestRequest',
+  'RestResponse',
+  'RestContext',
+]);
+
+/**
+ * Common variable/parameter names that should not be treated as classes
+ * These are typically camelCase and are variables, not class names
+ */
+const COMMON_VARIABLE_NAMES = new Set([
+  'this',
+  'response',
+  'request',
+  'headers',
+  'body',
+  'result',
+  'results',
+  'records',
+  'record',
+  'config',
+  'configs',
+  'context',
+  'handler',
+  'handlers',
+  'processor',
+  'processors',
+  'batch',
+  'orders',
+  'orderStatus',
+  'orderMap',
+  'pedidos',
+  'allPedidos',
+  'responseWS',
+  'pedidoRequest',
+  'pedidoResponse',
+  'apiConfigs',
+  'loopCountMap',
+  'bypassedHandlers',
+  'selectorInstance',
+  'mergedBindings',
+  'allRecords',
+  'mdt',
+  'e',
+  'te',
+  'lc',
+  'h',
 ]);
 
 /**
@@ -122,6 +173,11 @@ function isStandardClass(className: string): boolean {
     return true;
   }
 
+  // Check if it's a common variable name (should not be treated as a class)
+  if (COMMON_VARIABLE_NAMES.has(cleanName)) {
+    return true;
+  }
+
   // Check if it starts with a standard prefix
   if (
     cleanName.startsWith('System.') ||
@@ -130,6 +186,11 @@ function isStandardClass(className: string): boolean {
     cleanName.startsWith('Test.') ||
     cleanName.startsWith('ApexPages.')
   ) {
+    return true;
+  }
+
+  // Skip single-letter or very short names that are likely variables
+  if (cleanName.length <= 2 && /^[a-z]$/i.test(cleanName)) {
     return true;
   }
 
@@ -200,21 +261,29 @@ function extractImplements(code: string): string[] {
 }
 
 /**
- * Extract static method calls
+ * Extract static method calls and static property references
  *
  * @ac US-013-AC-3: Extract static method calls
  */
 function extractStaticMethodCalls(code: string): ApexDependency[] {
-  const staticCallPattern = /([a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z][a-zA-Z0-9_]*)*)\s*\.\s*[a-zA-Z][a-zA-Z0-9_]*\s*\(/g;
-  const matches = code.matchAll(staticCallPattern);
   const dependencies: ApexDependency[] = [];
   const seen = new Set<string>();
 
-  for (const match of matches) {
+  // Pattern 1: ClassName.methodName() - static method calls
+  const staticCallPattern = /(?:^|[^a-zA-Z0-9_])([A-Z][a-zA-Z0-9_]*(?:\.[A-Z][a-zA-Z0-9_]*)*)\s*\.\s*[a-zA-Z][a-zA-Z0-9_]*\s*\(/g;
+  const methodMatches = code.matchAll(staticCallPattern);
+
+  for (const match of methodMatches) {
     const className = match[1];
 
     // Skip if already seen or is a standard class
     if (seen.has(className) || isStandardClass(className)) {
+      continue;
+    }
+
+    // Skip if it looks like a variable name (camelCase starting with lowercase)
+    const firstPart = className.split('.')[0];
+    if (COMMON_VARIABLE_NAMES.has(firstPart) || /^[a-z]/.test(firstPart)) {
       continue;
     }
 
@@ -223,6 +292,38 @@ function extractStaticMethodCalls(code: string): ApexDependency[] {
     seen.add(className);
     dependencies.push({
       type: 'static_method',
+      className: cleanName,
+      namespace,
+      isStandard: false,
+      isManagedPackage,
+    });
+  }
+
+  // Pattern 2: ClassName.propertyName (without parentheses) - static property references
+  // This handles cases like SC_DataFactory.customerFirstName (property access)
+  // Exclude if followed by ( to avoid duplicate detection with method calls
+  const staticPropertyPattern = /(?:^|[^a-zA-Z0-9_])([A-Z][a-zA-Z0-9_]*(?:\.[A-Z][a-zA-Z0-9_]*)*)\s*\.\s*[a-zA-Z][a-zA-Z0-9_]*(?!\s*\()/g;
+  const propertyMatches = code.matchAll(staticPropertyPattern);
+
+  for (const match of propertyMatches) {
+    const className = match[1];
+
+    // Skip if already seen or is a standard class
+    if (seen.has(className) || isStandardClass(className)) {
+      continue;
+    }
+
+    // Skip if it looks like a variable name (camelCase starting with lowercase)
+    const firstPart = className.split('.')[0];
+    if (COMMON_VARIABLE_NAMES.has(firstPart) || /^[a-z]/.test(firstPart)) {
+      continue;
+    }
+
+    const { namespace, cleanName, isManagedPackage } = extractNamespace(className);
+
+    seen.add(className);
+    dependencies.push({
+      type: 'static_property',
       className: cleanName,
       namespace,
       isStandard: false,
@@ -239,7 +340,9 @@ function extractStaticMethodCalls(code: string): ApexDependency[] {
  * @ac US-013-AC-4: Extract object instantiations
  */
 function extractInstantiations(code: string): ApexDependency[] {
-  const newPattern = /new\s+([a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z][a-zA-Z0-9_]*)*)\s*(?:<[^>]+>)?\s*\(/g;
+  // Pattern: new ClassName() or new ClassName<GenericType>()
+  // Extract the class name, ignoring generic types
+  const newPattern = /new\s+([A-Z][a-zA-Z0-9_]*(?:\.[A-Z][a-zA-Z0-9_]*)*)\s*(?:<[^>]+>)?\s*\(/g;
   const matches = code.matchAll(newPattern);
   const dependencies: ApexDependency[] = [];
   const seen = new Set<string>();
@@ -249,6 +352,12 @@ function extractInstantiations(code: string): ApexDependency[] {
 
     // Skip if already seen or is a standard class
     if (seen.has(className) || isStandardClass(className)) {
+      continue;
+    }
+
+    // Skip if it looks like a variable name
+    const firstPart = className.split('.')[0];
+    if (COMMON_VARIABLE_NAMES.has(firstPart) || /^[a-z]/.test(firstPart)) {
       continue;
     }
 
@@ -271,19 +380,45 @@ function extractInstantiations(code: string): ApexDependency[] {
  * Extract variable declarations
  *
  * @ac US-013-AC-5: Extract variable declarations
+ * Only extracts actual class types used in variable declarations, not variable names
  */
 function extractVariableDeclarations(code: string): ApexDependency[] {
-  // Pattern: ClassName variableName = ...
-  const varPattern = /(?:^|[;\s{])\s*([A-Z][a-zA-Z0-9_]*(?:\.[A-Z][a-zA-Z0-9_]*)*)\s+[a-z][a-zA-Z0-9_]*\s*[=;]/gm;
+  // Pattern: ClassName variableName = ... or ClassName<Generic> variableName = ...
+  // More precise: looks for type declarations followed by variable names (camelCase)
+  // Excludes: Map<String, Type> (handled separately), List<Type>, Set<Type>
+  const varPattern = /(?:^|[;\s{(])\s*([A-Z][a-zA-Z0-9_]*(?:\.[A-Z][a-zA-Z0-9_]*)*)\s*(?:<[^>]+>)?\s+[a-z][a-zA-Z0-9_]*\s*[=;]/gm;
   const matches = code.matchAll(varPattern);
   const dependencies: ApexDependency[] = [];
   const seen = new Set<string>();
 
   for (const match of matches) {
-    const className = match[1];
+    let className = match[1];
 
     // Skip if already seen or is a standard class
     if (seen.has(className) || isStandardClass(className)) {
+      continue;
+    }
+
+    // Handle generic types: Map<String, ValueType> -> extract ValueType
+    // But skip List, Set, Map themselves as they're standard
+    if (className === 'List' || className === 'Set' || className === 'Map') {
+      // Try to extract the generic type from the full match
+      const fullMatch = match[0];
+      const genericMatch = fullMatch.match(/<(?:[^,<]+,\s*)?([A-Z][a-zA-Z0-9_]*)>/);
+      if (genericMatch && genericMatch[1]) {
+        className = genericMatch[1];
+        // Skip if the generic type is standard
+        if (isStandardClass(className) || seen.has(className)) {
+          continue;
+        }
+      } else {
+        continue; // Skip List/Set/Map without generics
+      }
+    }
+
+    // Skip if it looks like a variable name (shouldn't happen but double-check)
+    const firstPart = className.split('.')[0];
+    if (COMMON_VARIABLE_NAMES.has(firstPart) || /^[a-z]/.test(firstPart)) {
       continue;
     }
 
@@ -355,6 +490,106 @@ function extractDynamicInstantiations(code: string): ApexDependency[] {
       namespace,
       isStandard: false,
       isManagedPackage,
+    });
+  }
+
+  return dependencies;
+}
+
+/**
+ * Extract Custom Label references from Apex code
+ * Pattern: Label.LabelName
+ *
+ * @ac US-013-AC-12: Extract Custom Label references
+ */
+function extractCustomLabelReferences(code: string): ApexDependency[] {
+  const dependencies: ApexDependency[] = [];
+  const seen = new Set<string>();
+
+  // Pattern: Label.LabelName
+  // Examples: Label.KnowledgeRelatedArticlesSummary, Label.MyLabel
+  const labelPattern = /Label\.([a-zA-Z][a-zA-Z0-9_]*)(?!\s*\.)/g;
+  const labelMatches = code.matchAll(labelPattern);
+
+  for (const match of labelMatches) {
+    const labelName = match[1];
+
+    // Skip if already seen
+    if (seen.has(labelName)) {
+      continue;
+    }
+
+    seen.add(labelName);
+    dependencies.push({
+      type: 'custom_label',
+      className: labelName,
+      namespace: undefined,
+      isStandard: false,
+      isManagedPackage: false,
+    });
+  }
+
+  return dependencies;
+}
+
+/**
+ * Extract Visualforce Page references from Apex code
+ * Pattern: Page.PageName or PageReference('/apex/PageName')
+ *
+ * @ac US-013-AC-11: Extract Visualforce Page references
+ */
+function extractVisualforcePageReferences(code: string, currentClassName: string): ApexDependency[] {
+  const dependencies: ApexDependency[] = [];
+  const seen = new Set<string>();
+
+  // Pattern 1: Page.PageName or System.Page.PageName (most common)
+  // Examples: Page.MyPage, System.Page.CommunitiesSelfRegConfirm
+  // Exclude PageReference class itself and Page.currentPage() calls
+  const pagePattern = /(?:System\.)?Page\.([a-zA-Z][a-zA-Z0-9_]*)(?!\s*\.)/g;
+  const pageMatches = code.matchAll(pagePattern);
+
+  for (const match of pageMatches) {
+    const pageName = match[1];
+
+    // Skip if already seen or if it's the current class name (self-reference)
+    if (seen.has(pageName) || pageName === currentClassName) {
+      continue;
+    }
+
+    // Skip standard Page methods like Page.currentPage()
+    if (['currentPage', 'getParameters', 'setRedirect'].includes(pageName)) {
+      continue;
+    }
+
+    seen.add(pageName);
+    dependencies.push({
+      type: 'visualforce_page',
+      className: pageName,
+      namespace: undefined,
+      isStandard: false,
+      isManagedPackage: false,
+    });
+  }
+
+  // Pattern 2: PageReference('/apex/PageName') or PageReference('/PageName')
+  // Examples: new PageReference('/apex/MyPage'), new PageReference('/CommunitiesSelfRegConfirm')
+  const pageRefPattern = /(?:new\s+)?PageReference\s*\(\s*['"]\/apex\/([a-zA-Z][a-zA-Z0-9_]*)['"]|(?:new\s+)?PageReference\s*\(\s*['"]\/([a-zA-Z][a-zA-Z0-9_]*)['"]/gi;
+  const pageRefMatches = code.matchAll(pageRefPattern);
+
+  for (const match of pageRefMatches) {
+    const pageName = match[1] || match[2]; // Could be from /apex/ or just /
+
+    if (!pageName || seen.has(pageName) || pageName === currentClassName) {
+      continue;
+    }
+
+    seen.add(pageName);
+    dependencies.push({
+      type: 'visualforce_page',
+      className: pageName,
+      namespace: undefined,
+      isStandard: false,
+      isManagedPackage: false,
     });
   }
 
@@ -439,6 +674,8 @@ export function parseApexClass(filePath: string, content: string): ApexParseResu
     dependencies.push(...extractInstantiations(cleanCode));
     dependencies.push(...extractVariableDeclarations(cleanCode));
     dependencies.push(...extractDynamicInstantiations(cleanCode));
+    dependencies.push(...extractVisualforcePageReferences(cleanCode, className));
+    dependencies.push(...extractCustomLabelReferences(cleanCode));
 
     // Extract inner classes
     const innerClasses = extractInnerClasses(cleanCode, className);

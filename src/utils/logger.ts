@@ -346,23 +346,23 @@ export class Logger {
       const files = await fs.readdir(dir);
 
       const rotatedFiles = files
-        .filter((file) => file.startsWith(`${baseFileName}.`) && file.endsWith('.log'))
-        .map((file) => {
+        .filter((file: string) => file.startsWith(`${baseFileName}.`) && file.endsWith('.log'))
+        .map((file: string) => {
           const match = /\.(\d+)\.log$/.exec(file);
           return {
             file,
             index: match ? Number.parseInt(match[1], 10) : 0,
           };
         })
-        .sort((a, b) => b.index - a.index);
+        .sort((a: { file: string; index: number }, b: { file: string; index: number }) => b.index - a.index);
 
       // Delete oldest files if we have too many
       const filesToDelete = rotatedFiles.slice(this.config.maxLogFiles - 1);
-      await Promise.all(filesToDelete.map((f) => fs.unlink(path.join(dir, f.file))));
+      await Promise.all(filesToDelete.map((f: { file: string; index: number }) => fs.unlink(path.join(dir, f.file))));
 
       // Rotate existing files in parallel
       await Promise.all(
-        rotatedFiles.slice(0, this.config.maxLogFiles - 1).map(({ file, index }) => {
+        rotatedFiles.slice(0, this.config.maxLogFiles - 1).map(({ file, index }: { file: string; index: number }) => {
           const oldPath = path.join(dir, file);
           const newPath = path.join(dir, `${baseFileName}.${index + 1}.log`);
           return fs.rename(oldPath, newPath);

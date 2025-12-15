@@ -74,6 +74,7 @@ export const DEPLOYMENT_ORDER: Readonly<Record<MetadataType, number>> = Object.f
   StaticResource: 27, // Static resources
   Document: 28, // Documents
   ContentAsset: 29, // Content assets
+  EmailTemplateFolder: 29, // Email template folders (before templates)
   EmailTemplate: 30, // Email templates
   ApexClass: 31, // Apex classes - deploy before triggers
   VisualforceComponent: 32, // VF components

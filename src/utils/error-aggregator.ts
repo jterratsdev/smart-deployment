@@ -349,3 +349,4 @@ export function getErrorAggregator(): ErrorAggregator {
 export function resetErrorAggregator(): void {
   globalAggregator = null;
 }
+

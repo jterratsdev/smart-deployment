@@ -2,64 +2,64 @@
 
 ## Current State
 
-Durante las fases iniciales del proyecto (Phase 1-2), los workflows de GitHub Actions han sido optimizados para **minimizar el consumo de minutos de CI** mientras se desarrollan solo tipos, constantes e interfaces base.
+During the initial phases of the project (Phase 1-2), GitHub Actions workflows have been optimized to **minimize CI minute consumption** while developing only types, constants, and base interfaces.
 
-## Workflows Simplificados
+## Simplified Workflows
 
-### 1. `test.yml` - Tests en Push
+### 1. `test.yml` - Tests on Push
 
-**Activo**: Solo unit tests
-**Comentado**: NUTs (Salesforce integration tests en Ubuntu + Windows)
+**Active**: Only unit tests
+**Commented**: NUTs (Salesforce integration tests on Ubuntu + Windows)
 
-**Razón**: En esta fase solo hay types y constants, no hay lógica Salesforce real que requiera integration tests.
+**Reason**: In this phase there are only types and constants, no real Salesforce logic that requires integration tests.
 
-**Rehabilitar cuando**:
+**Re-enable when**:
 
-- Se implemente el primer parser (Issue #13+)
-- Se implemente lógica de dependency analysis (Issue #28+)
-- Se implemente deployment real (Issue #85+)
+- First parser is implemented (Issue #13+) ✅ **COMPLETED**
+- Dependency analysis logic is implemented (Issue #28+) ✅ **COMPLETED**
+- Real deployment is implemented (Issue #85+) ✅ **COMPLETED**
 
-### 2. `acceptance-criteria-validation.yml` - Validación de AC en PRs
+### 2. `acceptance-criteria-validation.yml` - AC Validation in PRs
 
-**Activo**: Solo unit tests
-**Comentado**: Integration tests, E2E tests, NUTs
+**Active**: Only unit tests
+**Commented**: Integration tests, E2E tests, NUTs
 
-**Razón**: Los scripts `test:integration`, `test:e2e` aún no existen y no hay funcionalidad que requiera estos niveles de testing.
+**Reason**: The `test:integration`, `test:e2e` scripts do not exist yet and there is no functionality that requires these testing levels.
 
-**Rehabilitar cuando**:
+**Re-enable when**:
 
 - Integration tests: Phase 3 (Dependencies) - Issue #28+
 - E2E tests: Phase 5 (CLI Commands) - Issue #46+
 - NUTs: Phase 6 (Deployment) - Issue #85+
 
-## Tests Eliminados (Placeholders)
+## Removed Tests (Placeholders)
 
-Los siguientes archivos fueron eliminados porque eran placeholders vacíos que causaban errores de linting:
+The following files were removed because they were empty placeholders that caused linting errors:
 
-### Unit Tests Eliminados
+### Removed Unit Tests
 
-- `test/unit/utils/functional.test.ts` → **Recrear en Issue #1** (Functional Utils)
-- `test/unit/utils/functional.error.test.ts` → **Recrear en Issue #1** (Error Handling)
-- `test/unit/parsers/apex-parser.test.ts` → **Recrear en Issue #13** (Apex Parser)
+- `test/unit/utils/functional.test.ts` → **Recreate in Issue #1** (Functional Utils)
+- `test/unit/utils/functional.error.test.ts` → **Recreate in Issue #1** (Error Handling)
+- `test/unit/parsers/apex-parser.test.ts` → **Recreate in Issue #13** (Apex Parser)
 
-### E2E Tests Eliminados
+### Removed E2E Tests
 
-- `test/e2e/features/deployment.feature` → **Recrear en Issue #61** (E2E Testing)
-- `test/e2e/features/error-handling.feature` → **Recrear en Issue #62** (Error Scenarios)
+- `test/e2e/features/deployment.feature` → **Recreate in Issue #61** (E2E Testing)
+- `test/e2e/features/error-handling.feature` → **Recreate in Issue #62** (Error Scenarios)
 
-## Estrategia de Recreación (TDD)
+## Recreation Strategy (TDD)
 
-Cada test se recreará **ANTES** de implementar su funcionalidad correspondiente, siguiendo **Test-Driven Development**:
+Each test will be recreated **BEFORE** implementing its corresponding functionality, following **Test-Driven Development**:
 
-1. **Escribir el test** (debe fallar)
-2. **Implementar la funcionalidad mínima** para que pase
-3. **Refactorizar** si es necesario
-4. **Agregar anotaciones `@ac`** para vincular con acceptance criteria
+1. **Write the test** (must fail)
+2. **Implement the minimum functionality** to pass
+3. **Refactor** if necessary
+4. **Add `@ac` annotations** to link with acceptance criteria
 
-### Ejemplo de Workflow TDD
+### TDD Workflow Example
 
 ```bash
-# 1. Crear branch para Issue #13 (Apex Parser)
+# 1. Create branch for Issue #13 (Apex Parser)
 git checkout -b feat/13-apex-parser
 
 # 2. Crear test PRIMERO (TDD)
@@ -113,37 +113,37 @@ git push
 - ✅ Full CI/CD matrix (Ubuntu + Windows)
 - ✅ Pre-release testing completo
 
-## Estimación de Minutos Ahorrados
+## Estimated Minutes Saved
 
-### Configuración Actual (Simplificada)
+### Current Configuration (Simplified)
 
-- Push a branch: ~5 mins (solo unit tests)
-- PR a main: ~5 mins (solo unit tests + AC validation)
-- **Total por PR completo**: ~10 mins
+- Push to branch: ~5 mins (only unit tests)
+- PR to main: ~5 mins (only unit tests + AC validation)
+- **Total per complete PR**: ~10 mins
 
-### Configuración Completa (Full)
+### Full Configuration
 
-- Push a branch: ~25 mins (unit + NUTs en 2 OS)
-- PR a main: ~40 mins (unit + integration + E2E + NUTs)
-- **Total por PR completo**: ~65 mins
+- Push to branch: ~25 mins (unit + NUTs on 2 OS)
+- PR to main: ~40 mins (unit + integration + E2E + NUTs)
+- **Total per complete PR**: ~65 mins
 
-### Ahorro durante desarrollo inicial
+### Savings during initial development
 
-- **Estimado 11 PRs en Phase 1**: 11 × 55 mins = **605 minutos ahorrados** (~10 horas)
-- **Estimado 15 PRs en Phase 2**: 15 × 55 mins = **825 minutos ahorrados** (~14 horas)
+- **Estimated 11 PRs in Phase 1**: 11 × 55 mins = **605 minutes saved** (~10 hours)
+- **Estimated 15 PRs in Phase 2**: 15 × 55 mins = **825 minutes saved** (~14 hours)
 
-## Comandos para Rehabilitar
+## Commands to Re-enable
 
-### Paso 1: Descomentar en `test.yml`
+### Step 1: Uncomment in `test.yml`
 
 ```yaml
 nuts:
   needs: unit-tests
   uses: salesforcecli/github-workflows/.github/workflows/nut.yml@main
-  # ... resto del config
+  # ... rest of config
 ```
 
-### Paso 2: Descomentar en `acceptance-criteria-validation.yml`
+### Step 2: Uncomment in `acceptance-criteria-validation.yml`
 
 ```yaml
 - name: Run integration tests
@@ -151,10 +151,10 @@ nuts:
   run: |
     yarn test:integration --json --outputFile=test-results-integration.json || true
   continue-on-error: true
-# ... resto de los tests
+# ... rest of tests
 ```
 
-### Paso 3: Agregar scripts en `package.json` (cuando existan)
+### Step 3: Add scripts in `package.json` (when they exist)
 
 ```json
 {

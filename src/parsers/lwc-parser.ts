@@ -1,6 +1,7 @@
 import { getLogger } from '../utils/logger.js';
 import { ParsingError } from '../errors/parsing-error.js';
-import type { LWCMetadata } from '../types/salesforce/lwc.js';
+import { parseXml } from '../utils/xml.js';
+import type { LWCMetadata, LWCTarget } from '../types/salesforce/lwc.js';
 
 const logger = getLogger('LWCParser');
 
@@ -182,40 +183,50 @@ function isTypeScriptComponent(jsCode: string): boolean {
  * Parse LWC js-meta.xml file
  *
  * @ac US-016-AC-8: Parse js-meta.xml correctly
- * @deprecated - Will be refactored to return LWCMetadata type
- *
- * TODO: Refactor this function to properly parse and return LWCMetadata type
- * Currently commented out to avoid unused variable warnings during refactoring
  */
-/*
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function parseMetadataXml(metadataContent: string): { exposedAs?: string } {
+function parseMetadataXml(metadataContent: string): LWCMetadata | undefined {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-type-assertion
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
     const parsed = parseXml(metadataContent) as any;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
-    const metadata = parsed.LightningComponentBundle;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const bundle = parsed.LightningComponentBundle;
 
-    if (!metadata) {
-      return {};
+    if (!bundle) {
+      return undefined;
     }
 
-    // Extract targets (where the component is exposed)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
-    const targets = metadata.targets;
+    // Extract targets
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const targets = bundle.targets;
+    let targetList: LWCTarget[] = [];
     if (targets) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-      const targetList = Array.isArray(targets.target) ? targets.target : targets.target ? [targets.target] : [];
-      // Targets are extracted but we don't use exposedAs anymore
-      // Metadata will be parsed separately
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+      const targetArray = Array.isArray(targets.target) ? targets.target : targets.target ? [targets.target] : [];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      targetList = targetArray.map((t: any) => (typeof t === 'string' ? t : t['#text'] || t)).filter(Boolean) as LWCTarget[];
     }
 
-    return {};
-  } catch {
-    return {};
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const isExposed = bundle.isExposed === 'true' || bundle.isExposed === true;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+    const apiVersion = bundle.apiVersion || '60.0';
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const description = bundle.description;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const masterLabel = bundle.masterLabel;
+
+    return {
+      apiVersion: String(apiVersion),
+      description: description ? String(description) : undefined,
+      isExposed: Boolean(isExposed),
+      masterLabel: masterLabel ? String(masterLabel) : undefined,
+      targets: targetList.length > 0 ? { target: targetList } : undefined,
+    };
+  } catch (error) {
+    logger.warn('Failed to parse LWC metadata XML', { error });
+    return undefined;
   }
 }
-*/
 
 /**
  * Parse a Lightning Web Component and extract dependencies
@@ -260,8 +271,7 @@ export function parseLWC(componentName: string, jsCode: string, metadataXml?: st
 
     if (metadataXml) {
       hasMetadataXml = true;
-      // Parse the metadata but we don't have a parseMetadataXml that returns LWCMetadata yet
-      // For now, we'll skip this part
+      metadata = parseMetadataXml(metadataXml);
     }
 
     // Build dependencies array

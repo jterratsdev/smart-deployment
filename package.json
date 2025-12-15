@@ -24,6 +24,7 @@
     "oclif": "^4.14.0",
     "semantic-release": "^22.0.12",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.4.5"
   },
   "engines": {
@@ -53,6 +54,9 @@
       "@oclif/plugin-help"
     ],
     "topics": {
+      "smart-deployment": {
+        "description": "Intelligent Salesforce metadata deployment commands"
+      },
       "hello": {
         "description": "Commands to say hello."
       }
@@ -124,7 +128,10 @@
       "output": []
     },
     "test:compile": {
-      "command": "tsc -p \"./test\" --pretty",
+      "dependencies": [
+        "compile"
+      ],
+      "command": "tsc -p \"./test\" --pretty --noEmit",
       "files": [
         "test/**/*.ts",
         "**/tsconfig.json"

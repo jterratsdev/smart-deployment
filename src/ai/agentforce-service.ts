@@ -87,10 +87,23 @@ export class AgentforceService {
       rateLimit: config.rateLimit || 60, // 60 requests per minute
     };
 
-    logger.info('Agentforce service initialized', {
+    logger.debug('Agentforce service initialized', {
       endpoint: this.config.endpoint,
       model: this.config.model,
       enabled: this.config.enabled,
+      hasApiKey: !!this.config.apiKey,
+    });
+  }
+
+  /**
+   * Set API key from Salesforce org access token
+   * This allows using the authenticated org's session instead of a separate API key
+   */
+  public setApiKeyFromOrg(accessToken: string): void {
+    this.config.apiKey = accessToken;
+    logger.info('API key set from org access token', {
+      hasToken: !!accessToken,
+      tokenPrefix: accessToken ? accessToken.substring(0, 10) + '...' : 'none'
     });
   }
 

@@ -172,6 +172,135 @@ This is expected and handled gracefully - the script will reuse existing labels
 
 ---
 
+## 🧪 e2e-test.sh
+
+End-to-end test script that validates smart-deployment commands against a real Salesforce org.
+
+### Prerequisites
+
+1. **Salesforce CLI** installed and authenticated:
+   ```bash
+   sf --version
+   sf org list
+   ```
+
+2. **Plugin linked**:
+   ```bash
+   sf plugins link
+   ```
+
+3. **Authorized org** (preferably dev/qa, NOT prod/uat):
+   ```bash
+   sf org login web --alias dev
+   ```
+
+### Usage
+
+#### Basic Usage (Auto-detect org)
+
+The script will automatically find a suitable test org (prefers dev/qa, excludes prod/uat):
+
+```bash
+./scripts/e2e-test.sh
+```
+
+#### Specify Target Org
+
+Override org selection with environment variable:
+
+```bash
+export E2E_TARGET_ORG=your-org-alias
+./scripts/e2e-test.sh
+```
+
+### What It Tests
+
+1. **Test 1: Analyze command** - Validates metadata analysis without deployment
+2. **Test 2: Analyze with --save-plan** - Creates deployment plan JSON
+3. **Test 3: Validate command** - Check-only deployment validation
+4. **Test 4: Start with --dry-run** - Simulates deployment without executing
+5. **Test 5: Start with --validate-only** - Validates waves without deploying
+6. **Test 6: Analyze with --use-ai** - AI-powered analysis (if Agentforce available)
+7. **Test 7: Error handling** - Invalid orgs, missing flags, etc.
+
+### Safety Validations
+
+The script creates dummy metadata files (`DummyTest.cls`, `DummyObject__c`) and verifies they are **NEVER modified** by any smart-deployment command. This ensures:
+
+- ✅ Commands don't accidentally modify source metadata
+- ✅ Only analysis/plan files are created (`.smart-deployment/`)
+- ✅ Git safety (no unintended commits)
+
+### Test Project
+
+- **Location**: `test-project-e2e/` (created automatically)
+- **Cleanup**: Automatically removed after tests complete
+- **Git**: Initialized to validate git safety
+
+### Example Output
+
+```
+ℹ Fetching list of authorized orgs...
+✓ Using org: dev-org@example.com
+ℹ Creating SF project in: /path/to/test-project-e2e
+✓ Project created
+✓ Git repository initialized
+✓ Dummy metadata files created and committed
+
+═══════════════════════════════════════════
+Test 1: Analyze command (basic)
+═══════════════════════════════════════════
+ℹ Running: sf smart-deployment analyze...
+✓ Analyze command executed
+✓ No unexpected files modified (safe analyze confirmed)
+✓ DummyTest.cls unchanged
+✓ DummyObject__c unchanged
+🛡️  SAFETY VALIDATED: Only analysis files created, source metadata untouched
+
+...
+
+✓ All E2E tests completed successfully!
+```
+
+### Troubleshooting
+
+#### Error: "No suitable authorized orgs found"
+
+Authenticate to a dev/qa org:
+```bash
+sf org login web --alias dev
+export E2E_TARGET_ORG=dev
+./scripts/e2e-test.sh
+```
+
+#### Error: "Plugin smart-deployment is not installed"
+
+Link the plugin:
+```bash
+sf plugins link
+```
+
+#### Error: "Test failed! Cleaning up..."
+
+Check the output above the error for specific failure details. Common issues:
+- Org authentication expired
+- Insufficient permissions
+- Network connectivity issues
+
+### Integration with CI/CD
+
+The script can be used in CI/CD pipelines:
+
+```yaml
+# .github/workflows/e2e.yml
+- name: Run E2E Tests
+  env:
+    E2E_TARGET_ORG: ${{ secrets.E2E_TEST_ORG }}
+  run: ./scripts/e2e-test.sh
+```
+
+---
+
 ## 🔮 Future Scripts
 
 - `generate-changelog.js` - Generate CHANGELOG from git commits
@@ -181,4 +310,4 @@ This is expected and handled gracefully - the script will reuse existing labels
 
 ---
 
-**Last Updated**: December 1, 2025
+**Last Updated**: December 2, 2025

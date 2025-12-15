@@ -44,6 +44,7 @@ export class DeploymentErrorHandler {
 
     // Save state for resume
     await this.stateManager.saveState({
+      status: 'failed',
       deploymentId: `deploy-${Date.now()}`,
       targetOrg: 'unknown',
       timestamp: new Date().toISOString(),

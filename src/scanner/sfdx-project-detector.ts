@@ -325,3 +325,4 @@ export class SfdxProjectDetector {
     return result.detected ? result.projectRoot : null;
   }
 }
+

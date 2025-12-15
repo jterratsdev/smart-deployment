@@ -3,8 +3,8 @@
  * Handles loading, saving, and validating deployment plans for CI/CD
  */
 
-import { readFile, writeFile, access } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { readFile, writeFile, access, mkdir } from 'node:fs/promises';
+import { resolve, dirname } from 'node:path';
 import { getLogger } from './logger.js';
 import type {
   DeploymentPlan,
@@ -24,21 +24,25 @@ export class DeploymentPlanManager {
    * Save deployment plan to file
    */
   public static async savePlan(plan: DeploymentPlan, filePath?: string): Promise<void> {
-    const path = resolve(filePath || this.DEFAULT_PLAN_PATH);
+    const planPath = resolve(filePath || this.DEFAULT_PLAN_PATH);
+    const planDir = dirname(planPath);
 
-    logger.info('Saving deployment plan', { path });
+    logger.info('Saving deployment plan', { path: planPath });
 
     try {
+      // Ensure directory exists
+      await mkdir(planDir, { recursive: true });
+
       const json = JSON.stringify(plan, null, 2);
-      await writeFile(path, json, 'utf-8');
+      await writeFile(planPath, json, 'utf-8');
 
       logger.info('Deployment plan saved successfully', {
-        path,
+        path: planPath,
         components: plan.metadata.totalComponents,
         waves: plan.metadata.totalWaves,
       });
     } catch (error) {
-      logger.error('Failed to save deployment plan', { error, path });
+      logger.error('Failed to save deployment plan', { error, path: planPath });
       throw new Error(`Failed to save deployment plan: ${error instanceof Error ? error.message : String(error)}`);
     }
   }

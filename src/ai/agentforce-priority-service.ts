@@ -54,14 +54,25 @@ export class AgentforcePriorityService {
   private readonly enabled: boolean;
   private readonly autoApply: boolean;
   private readonly confidenceThreshold: number;
+  private apiKey: string | undefined;
 
-  constructor(private config: AgentforceConfig = {}) {
+  constructor(config: AgentforceConfig = {}) {
     this.endpoint = config.endpoint || 'https://api.salesforce.com/services/einstein/llm/v1';
     this.model = config.model || 'claude-sonnet';
     this.timeout = config.timeout || 30000;
     this.enabled = config.enabled ?? true;
     this.autoApply = config.autoApply ?? false;
     this.confidenceThreshold = config.confidenceThreshold ?? 0.8;
+    this.apiKey = config.apiKey || process.env.AGENTFORCE_API_KEY;
+  }
+
+  /**
+   * Set API key from Salesforce org access token
+   * This allows using the authenticated org's session instead of a separate API key
+   */
+  public setApiKeyFromOrg(accessToken: string): void {
+    this.apiKey = accessToken;
+    logger.debug('API key set from org access token');
   }
 
   /**
@@ -182,8 +193,9 @@ Respond ONLY with valid JSON (no markdown):
     logger.debug('Calling Agentforce API');
 
     // Mock response for testing (when no API key)
-    if (!this.config.apiKey) {
+    if (!this.apiKey) {
       logger.warn('No API key configured, using mock response');
+      logger.info('💡 Tip: Use --target-org to authenticate with your Salesforce org, or set AGENTFORCE_API_KEY');
       return this.getMockResponse(prompt);
     }
 
@@ -194,7 +206,7 @@ Respond ONLY with valid JSON (no markdown):
       const response = await fetch(this.endpoint, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${this.config.apiKey}`,
+          Authorization: `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -343,6 +355,17 @@ Respond ONLY with valid JSON (no markdown):
 
       if (autoApplied && autoAppliedRecs.length > 0) {
         lines.push(`\n✅ Auto-Applied (confidence > ${(this.confidenceThreshold * 100).toFixed(0)}%):`);
+        for (const rec of autoAppliedRecs.slice(0, 10)) {
+          lines.push(
+            `  ${rec.priority.toString().padStart(3)} | ${rec.componentName.padEnd(
+              30
+            )} | ${rec.businessCriticality.toUpperCase()} (${(rec.confidence * 100).toFixed(0)}%)`
+          );
+          lines.push(`      ${rec.reason}`);
+        }
+      } else if (!autoApplied && autoAppliedRecs.length > 0) {
+        // Show recommendations even when not auto-applied
+        lines.push(`\n📋 Recommendations (confidence > ${(this.confidenceThreshold * 100).toFixed(0)}%):`);
         for (const rec of autoAppliedRecs.slice(0, 10)) {
           lines.push(
             `  ${rec.priority.toString().padStart(3)} | ${rec.componentName.padEnd(

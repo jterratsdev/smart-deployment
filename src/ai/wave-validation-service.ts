@@ -470,3 +470,4 @@ Be conservative - only report issues with high confidence.`;
     return this.getRiskIcon(severity);
   }
 }
+
