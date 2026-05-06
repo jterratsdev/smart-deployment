@@ -6,18 +6,256 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'GitHub tag to publish (e.g. v1.0.0)'
+        description: 'Existing GitHub tag to publish (e.g. v1.0.0). Leave empty to create a new release.'
         type: string
+        required: false
+      bump:
+        description: 'Version bump to apply when tag and version are empty'
+        type: choice
         required: true
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+      version:
+        description: 'Exact version to release, without v prefix. Overrides bump when tag is empty.'
+        type: string
+        required: false
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
+  prepare-release:
+    name: Bump version, tag, and create release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && !inputs.tag
+
+    concurrency:
+      group: prepare-npm-release
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          cache: yarn
+
+      - name: Determine next version
+        id: version
+        env:
+          INPUT_BUMP: ${{ inputs.bump }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          node <<'NODE' >> "$GITHUB_OUTPUT"
+          const fs = require('node:fs');
+
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const current = pkg.version;
+          const explicit = process.env.INPUT_VERSION.trim();
+          const bump = process.env.INPUT_BUMP;
+          const semverPattern = /^\d+\.\d+\.\d+$/;
+
+          if (!semverPattern.test(current)) {
+            throw new Error(`package.json version must be x.y.z, received: ${current}`);
+          }
+
+          let next = explicit;
+          if (next) {
+            if (!semverPattern.test(next)) {
+              throw new Error(`version input must be x.y.z without v prefix, received: ${next}`);
+            }
+          } else {
+            const parts = current.split('.').map(Number);
+            if (bump === 'major') {
+              parts[0] += 1;
+              parts[1] = 0;
+              parts[2] = 0;
+            } else if (bump === 'minor') {
+              parts[1] += 1;
+              parts[2] = 0;
+            } else if (bump === 'patch') {
+              parts[2] += 1;
+            } else {
+              throw new Error(`Unsupported bump input: ${bump}`);
+            }
+            next = parts.join('.');
+          }
+
+          if (next === current) {
+            throw new Error(`Next version equals current version (${current})`);
+          }
+
+          console.log(`current=${current}`);
+          console.log(`next=${next}`);
+          console.log(`tag=v${next}`);
+          NODE
+
+      - name: Check release target
+        env:
+          NEXT_VERSION: ${{ steps.version.outputs.next }}
+          NEXT_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git fetch --tags --force
+
+          if git rev-parse "$NEXT_TAG" >/dev/null 2>&1; then
+            echo "Tag $NEXT_TAG already exists"
+            exit 1
+          fi
+
+          if NPM_CONFIG_CACHE="$RUNNER_TEMP/.npm" npm view "@jterrats/smart-deployment@$NEXT_VERSION" version >/dev/null 2>&1; then
+            echo "@jterrats/smart-deployment@$NEXT_VERSION is already published"
+            exit 1
+          fi
+
+      - name: Update package version
+        env:
+          NEXT_VERSION: ${{ steps.version.outputs.next }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkg.version = process.env.NEXT_VERSION;
+          fs.writeFileSync('package.json', `${JSON.stringify(pkg, null, 2)}\n`);
+          NODE
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build plugin
+        run: yarn build
+
+      - name: Run tests
+        run: yarn test
+
+      - name: Run linter
+        run: yarn lint
+
+      - name: Audit runtime dependencies
+        run: npm audit --omit=dev --json
+
+      - name: Verify package contents
+        run: |
+          PACK_OUTPUT="$(NPM_CONFIG_CACHE="$RUNNER_TEMP/.npm" npm pack --dry-run 2>&1)"
+          echo "$PACK_OUTPUT"
+          echo "$PACK_OUTPUT" | grep -q "lib/commands/start.js" || {
+            echo "Tarball is missing lib/commands/start.js"
+            exit 1
+          }
+          echo "$PACK_OUTPUT" | grep -q "lib/commands/analyze.js" || {
+            echo "Tarball is missing lib/commands/analyze.js"
+            exit 1
+          }
+          echo "$PACK_OUTPUT" | grep -q "lib/commands/validate.js" || {
+            echo "Tarball is missing lib/commands/validate.js"
+            exit 1
+          }
+
+      - name: Commit version bump and tag
+        env:
+          NEXT_VERSION: ${{ steps.version.outputs.next }}
+          NEXT_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "chore(release): bump version to $NEXT_VERSION"
+          git tag -a "$NEXT_TAG" -m "Release $NEXT_TAG"
+          git push origin HEAD:main
+          git push origin "$NEXT_TAG"
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXT_VERSION: ${{ steps.version.outputs.next }}
+          NEXT_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          gh release create "$NEXT_TAG" \
+            --title "$NEXT_TAG" \
+            --notes "Release $NEXT_TAG
+
+          This release was prepared by publish-npm.yml.
+
+          Verification:
+          - yarn install --frozen-lockfile
+          - yarn build
+          - yarn test
+          - yarn lint
+          - npm audit --omit=dev --json
+          - npm pack --dry-run
+
+          This workflow continues by publishing the package to npm with provenance." \
+            --verify-tag
+
+      - name: Check if version is already published
+        id: prepared-npm-version-check
+        env:
+          NEXT_VERSION: ${{ steps.version.outputs.next }}
+        run: |
+          if NPM_CONFIG_CACHE="$RUNNER_TEMP/.npm" npm view "@jterrats/smart-deployment@$NEXT_VERSION" version >/dev/null 2>&1; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "@jterrats/smart-deployment@$NEXT_VERSION is already published. Skipping npm publish."
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+            echo "@jterrats/smart-deployment@$NEXT_VERSION is not published yet. Continuing with npm publish."
+          fi
+
+      - name: Publish to npm with provenance
+        if: steps.prepared-npm-version-check.outputs.already_published != 'true'
+        run: NPM_CONFIG_CACHE="$RUNNER_TEMP/.npm" npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Verify publication
+        env:
+          NEXT_VERSION: ${{ steps.version.outputs.next }}
+          ALREADY_PUBLISHED: ${{ steps.prepared-npm-version-check.outputs.already_published }}
+        run: |
+          MAX_ATTEMPTS=30
+          DELAY_SECONDS=20
+
+          if [ "$ALREADY_PUBLISHED" = "true" ]; then
+            echo "@jterrats/smart-deployment@$NEXT_VERSION was already available on npm."
+            exit 0
+          fi
+
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            echo "Attempt $i of $MAX_ATTEMPTS: verifying @jterrats/smart-deployment@$NEXT_VERSION"
+            if NPM_CONFIG_CACHE="$RUNNER_TEMP/.npm" npm view "@jterrats/smart-deployment@$NEXT_VERSION" version; then
+              echo "Verified @jterrats/smart-deployment@$NEXT_VERSION is available on npm."
+              exit 0
+            fi
+            echo "Package not visible yet. Waiting ${DELAY_SECONDS}s before retry..."
+            sleep $DELAY_SECONDS
+          done
+
+          echo "Package publish step succeeded, but @jterrats/smart-deployment@$NEXT_VERSION was not visible in npm within the verification window."
+          exit 1
+
+      - name: Summary
+        run: |
+          echo "## Release Published" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Version: ${{ steps.version.outputs.next }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tag: ${{ steps.version.outputs.tag }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- npm: https://www.npmjs.com/package/@jterrats/smart-deployment/v/${{ steps.version.outputs.next }}" >> "$GITHUB_STEP_SUMMARY"
+
   publish-npm:
     name: Publish to npm Registry
     runs-on: ubuntu-latest
+    if: github.event_name == 'release' || inputs.tag
 
     steps:
       - name: Checkout code
