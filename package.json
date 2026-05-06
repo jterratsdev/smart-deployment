@@ -3,9 +3,9 @@
   "description": "Intelligent Salesforce metadata deployment plugin that automatically analyzes dependencies, generates optimal deployment",
   "version": "1.0.4",
   "dependencies": {
-    "@oclif/core": "^4.10.5",
-    "@salesforce/core": "^8.28.3",
-    "@salesforce/sf-plugins-core": "^12",
+    "@oclif/core": "^4.11.0",
+    "@salesforce/core": "^8.29.0",
+    "@salesforce/sf-plugins-core": "^12.2.13",
     "fast-xml-parser": "^5.7.1",
     "glob": "^11.0.0",
     "minimatch": "^10.2.5"
@@ -13,7 +13,7 @@
   "devDependencies": {
     "@commitlint/cli": "^18.4.3",
     "@commitlint/config-conventional": "^18.4.3",
-    "@cucumber/cucumber": "^12.6.0",
+    "@cucumber/cucumber": "^12.8.2",
     "@oclif/plugin-command-snapshot": "^5.3.9",
     "@salesforce/cli-plugins-testkit": "^5.3.41",
     "@salesforce/dev-scripts": "^11.0.4",
@@ -22,7 +22,7 @@
     "@types/chai": "^5.2.2",
     "@types/cucumber": "^7.0.3",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^24.9.1",
+    "@types/node": "^24.12.2",
     "baseline-browser-mapping": "2.10.25",
     "chai": "^4.5.0",
     "commitizen": "^4.3.1",
@@ -32,7 +32,7 @@
     "oclif": "^4.22.77",
     "semantic-release": "25.0.3",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -219,6 +219,18 @@
     }
   },
   "resolutions": {
-    "baseline-browser-mapping": "2.10.25"
+    "baseline-browser-mapping": "2.10.25",
+    "**/filelist/**/brace-expansion": "2.1.0",
+    "**/socks/**/ip-address": "10.2.0"
+  },
+  "overrides": {
+    "filelist": {
+      "minimatch": {
+        "brace-expansion": "2.1.0"
+      }
+    },
+    "socks": {
+      "ip-address": "10.2.0"
+    }
   }
 }
