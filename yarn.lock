@@ -1117,20 +1117,20 @@
   dependencies:
     regexp-match-indices "1.0.2"
 
-"@cucumber/cucumber@*", "@cucumber/cucumber@^12.6.0":
-  version "12.8.1"
-  resolved "https://registry.npmjs.org/@cucumber/cucumber/-/cucumber-12.8.1.tgz"
-  integrity sha512-hCXxiStjbZsRVZlV+CMywkqBtJ6RZTQeXSBZGPHm1YoIOI6YB8pCo0KlnJMmxfKfoeUKagtQMNPnpJBXwhkUjQ==
+"@cucumber/cucumber@*", "@cucumber/cucumber@^12.8.2":
+  version "12.8.2"
+  resolved "https://registry.yarnpkg.com/@cucumber/cucumber/-/cucumber-12.8.2.tgz#6f8ffbfdd5b135ce6625b8047c461721dc0cb4ec"
+  integrity sha512-IvprstODr0JYTtVG7CQbphN6AGRpzzAQ1EjG7TSumuS15uvVt0inWm8/9uzX8oJwEv5ReU7JruDFim4938omog==
   dependencies:
     "@cucumber/ci-environment" "13.0.0"
     "@cucumber/cucumber-expressions" "19.0.0"
     "@cucumber/gherkin" "38.0.0"
     "@cucumber/gherkin-streams" "6.0.0"
     "@cucumber/gherkin-utils" "11.0.0"
-    "@cucumber/html-formatter" "23.0.0"
+    "@cucumber/html-formatter" "23.1.0"
     "@cucumber/junit-xml-formatter" "0.13.3"
     "@cucumber/message-streams" "4.1.1"
-    "@cucumber/messages" "32.2.0"
+    "@cucumber/messages" "32.3.1"
     "@cucumber/pretty-formatter" "1.0.1"
     "@cucumber/tag-expressions" "9.1.0"
     assertion-error-formatter "^3.0.0"
@@ -1188,10 +1188,10 @@
   dependencies:
     "@cucumber/messages" ">=31.0.0 <33"
 
-"@cucumber/html-formatter@23.0.0":
-  version "23.0.0"
-  resolved "https://registry.npmjs.org/@cucumber/html-formatter/-/html-formatter-23.0.0.tgz"
-  integrity sha512-WwcRzdM8Ixy4e53j+Frm3fKM5rNuIyWUfy4HajEN+Xk/YcjA6yW0ACGTFDReB++VDZz/iUtwYdTlPRY36NbqJg==
+"@cucumber/html-formatter@23.1.0":
+  version "23.1.0"
+  resolved "https://registry.yarnpkg.com/@cucumber/html-formatter/-/html-formatter-23.1.0.tgz#6b9f759f9d50355b0cb28edde3ad3580d91f7081"
+  integrity sha512-DcCSFoGs6jbwzXPgX1CwgJKEE+ZMcIEzq/0Memg0o24maNn9NJizBFHmoFWG4iv/OxHza+mvc+56cTHetfHndw==
 
 "@cucumber/junit-xml-formatter@0.13.3":
   version "0.13.3"
@@ -1210,10 +1210,10 @@
   dependencies:
     mime "^3.0.0"
 
-"@cucumber/messages@32.2.0", "@cucumber/messages@>=31.0.0 <33", "@cucumber/messages@^32.0.0":
-  version "32.2.0"
-  resolved "https://registry.npmjs.org/@cucumber/messages/-/messages-32.2.0.tgz"
-  integrity sha512-oYp1dgL2TByYWL51Z+rNm+/mFtJhiPU9WS03goes9EALb8d9GFcXRbG1JluFLFaChF1YDqIzLac0kkC3tv1DjQ==
+"@cucumber/messages@32.3.1", "@cucumber/messages@>=31.0.0 <33", "@cucumber/messages@^32.0.0":
+  version "32.3.1"
+  resolved "https://registry.yarnpkg.com/@cucumber/messages/-/messages-32.3.1.tgz#8c6990554c35fb9bcff0b7f09fe52ddfd479dbce"
+  integrity sha512-yNQq1KoXRYaEKrWMFmpUQX7TdeQuU9jeGgJAZ3dArTsC/T4NpJ6DnqaJIIgwPnz/wtQIQTNX7/h0rOuF5xY4qQ==
   dependencies:
     class-transformer "0.5.1"
     reflect-metadata "0.2.2"
@@ -6026,16 +6026,7 @@ glob@^11.0.0, glob@^11.0.3:
     package-json-from-dist "^1.0.0"
     path-scurry "^2.0.0"
 
-glob@^13.0.0:
-  version "13.0.0"
-  resolved "https://registry.npmjs.org/glob/-/glob-13.0.0.tgz"
-  integrity sha512-tvZgpqk6fz4BaNZ66ZsRaZnbHvP/jG3uKJvAZOwEVUL4RTA5nJeeLYfyN9/VA8NX/V3IBG+hkeuGpKjvELkVhA==
-  dependencies:
-    minimatch "^10.1.1"
-    minipass "^7.1.2"
-    path-scurry "^2.0.0"
-
-glob@^13.0.6:
+glob@^13.0.0, glob@^13.0.6:
   version "13.0.6"
   resolved "https://registry.npmjs.org/glob/-/glob-13.0.6.tgz"
   integrity sha512-Wjlyrolmm8uDpm/ogGyXZXb1Z+Ca2B8NbJwqBVg0axK9GbBeoS7yGV6vjXnYdGm6X53iehEuxxbyiKp8QmN4Vw==
@@ -9926,14 +9917,14 @@ semver@7.5.4:
   dependencies:
     lru-cache "^6.0.0"
 
-semver@7.6.0, semver@^7.1.2, semver@^7.3.2, semver@^7.3.4, semver@^7.3.5, semver@^7.5.2, semver@^7.5.3, semver@^7.5.4, semver@^7.6.0:
+semver@7.6.0:
   version "7.6.0"
   resolved "https://registry.npmjs.org/semver/-/semver-7.6.0.tgz"
   integrity sha512-EnwXhrlwXMk9gKu5/flx5sv/an57AkRplG3hTK68W7FRDN+k+OWBj65M7719OkA82XLBxrcX0KSHj+X5COhOVg==
   dependencies:
     lru-cache "^6.0.0"
 
-semver@7.7.4, semver@^7.1.1, semver@^7.3.7, semver@^7.7.2, semver@^7.7.4:
+semver@7.7.4, semver@^7.1.1, semver@^7.1.2, semver@^7.3.2, semver@^7.3.4, semver@^7.3.5, semver@^7.3.7, semver@^7.5.2, semver@^7.5.3, semver@^7.5.4, semver@^7.6.0, semver@^7.7.2, semver@^7.7.3, semver@^7.7.4:
   version "7.7.4"
   resolved "https://registry.npmjs.org/semver/-/semver-7.7.4.tgz"
   integrity sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==
@@ -9942,11 +9933,6 @@ semver@^6.0.0, semver@^6.3.1:
   version "6.3.1"
   resolved "https://registry.npmjs.org/semver/-/semver-6.3.1.tgz"
   integrity sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==
-
-semver@^7.7.3:
-  version "7.7.3"
-  resolved "https://registry.npmjs.org/semver/-/semver-7.7.3.tgz"
-  integrity sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==
 
 sentence-case@^3.0.4:
   version "3.0.4"
