@@ -2,6 +2,8 @@
 tmp/
 # use yarn by default, so ignore npm
 package-lock.json
+!site/package-lock.json
+site/dist/
 
 # never checkin npm config
 .npmrc
