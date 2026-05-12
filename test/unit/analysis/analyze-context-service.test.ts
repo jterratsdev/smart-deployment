@@ -78,6 +78,8 @@ describe('AnalyzeContextService', () => {
       aiAdjustments: 0,
       inferredDependencies: 0,
       inferenceFallback: true,
+      waveChangesApplied: true,
+      rejectedSuggestions: 0,
     });
     expect(context.messages.logs).to.include('  🤖 Using AI priority weighting for wave ordering...');
   });

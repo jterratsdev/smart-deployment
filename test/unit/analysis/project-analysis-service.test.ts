@@ -147,6 +147,8 @@ describe('ProjectAnalysisService', () => {
       inferredDependencies: 1,
       inferenceFallback: false,
       fallback: false,
+      waveChangesApplied: true,
+      rejectedSuggestions: 0,
     });
     expect(analysis.messages.logs).to.include('  🤖 Using AI priority weighting for wave ordering...');
     expect(analysis.messages.logs).to.include('AI report');

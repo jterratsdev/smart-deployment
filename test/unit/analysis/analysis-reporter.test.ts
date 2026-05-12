@@ -148,6 +148,8 @@ describe('AnalysisReporter', () => {
       aiAdjustments: 1,
       inferredDependencies: 1,
       inferenceFallback: false,
+      waveChangesApplied: true,
+      rejectedSuggestions: 0,
     });
 
     expect(report.summary.dependencies).to.equal(3);
@@ -157,6 +159,15 @@ describe('AnalysisReporter', () => {
       inferred: 1,
     });
     expect(report.dependencyGraph.edges).to.have.lengthOf(3);
+    expect(report.ai?.effect).to.deep.include({
+      priorityAdjustments: 1,
+      inferredDependencies: 1,
+      fallbackApplied: false,
+      waveChangesApplied: true,
+      rejectedSuggestions: 0,
+      unknownTypeCount: 0,
+    });
+    expect(report.ai?.effect.summary).to.include('AI wave changes applied by explicit opt-in');
     expect(report.dependencyPrecision.summary).to.deep.equal({
       deterministic: 2,
       heuristicOrAI: 1,
@@ -210,7 +221,16 @@ describe('AnalysisReporter', () => {
 
   it('renders dependency edges and visualizations in html output', () => {
     const reporter = new AnalysisReporter();
-    const report = reporter.createReport(createScanResult(), createWaveResult());
+    const report = reporter.createReport(createScanResult(), createWaveResult(), {
+      enabled: true,
+      provider: 'openai',
+      model: 'gpt-test',
+      aiAdjustments: 1,
+      inferredDependencies: 1,
+      inferenceFallback: false,
+      waveChangesApplied: true,
+      rejectedSuggestions: 0,
+    });
     const html = reporter.toHTML(report);
 
     expect(html).to.include('Dependency Edges');
@@ -222,6 +242,8 @@ describe('AnalysisReporter', () => {
     expect(html).to.include('CustomObject:Account');
     expect(html).to.include('AI-inferred dependency');
     expect(html).to.include('Possible false positives');
+    expect(html).to.include('AI wave changes applied');
+    expect(html).to.include('Rejected AI suggestions');
     expect(html).to.include('graph TD');
     expect(html).to.include('digraph Dependencies');
   });

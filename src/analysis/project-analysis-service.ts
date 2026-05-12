@@ -18,6 +18,8 @@ export type ProjectAnalysisAIContext = {
   fallback?: boolean;
   inferredDependencies?: number;
   inferenceFallback?: boolean;
+  waveChangesApplied?: boolean;
+  rejectedSuggestions?: number;
 };
 
 export type ProjectAnalysisMessages = {
@@ -145,6 +147,8 @@ export class ProjectAnalysisService {
         fallback: aiStats?.usedFallback ?? false,
         inferredDependencies,
         inferenceFallback,
+        waveChangesApplied: true,
+        rejectedSuggestions: 0,
       };
     }
 

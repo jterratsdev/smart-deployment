@@ -13,12 +13,16 @@ export type AnalysisAIContext = {
   unknownTypes?: string[];
   inferredDependencies?: number;
   inferenceFallback?: boolean;
+  waveChangesApplied?: boolean;
+  rejectedSuggestions?: number;
 };
 
 export type AnalysisAIEffect = {
   priorityAdjustments: number;
   inferredDependencies: number;
   fallbackApplied: boolean;
+  waveChangesApplied: boolean;
+  rejectedSuggestions: number;
   unknownTypeCount: number;
   summary: string;
 };
@@ -154,10 +158,14 @@ export class AnalysisReporter {
     const priorityAdjustments = aiContext.aiAdjustments ?? 0;
     const inferredDependencies = aiContext.inferredDependencies ?? 0;
     const fallbackApplied = aiContext.inferenceFallback ?? false;
+    const waveChangesApplied = aiContext.waveChangesApplied ?? false;
+    const rejectedSuggestions = aiContext.rejectedSuggestions ?? 0;
     const unknownTypeCount = aiContext.unknownTypes?.length ?? 0;
     const summary = [
       `${priorityAdjustments} priority adjustment(s) applied`,
       `${inferredDependencies} inferred dependenc${inferredDependencies === 1 ? 'y' : 'ies'} accepted`,
+      `${rejectedSuggestions} AI suggestion(s) rejected`,
+      waveChangesApplied ? 'AI wave changes applied by explicit opt-in' : 'deterministic wave order preserved',
       fallbackApplied ? 'static fallback used for dependency inference' : 'no dependency inference fallback',
       `${unknownTypeCount} unknown type(s) flagged`,
     ].join('; ');
@@ -166,6 +174,8 @@ export class AnalysisReporter {
       priorityAdjustments,
       inferredDependencies,
       fallbackApplied,
+      waveChangesApplied,
+      rejectedSuggestions,
       unknownTypeCount,
       summary,
     };
@@ -339,6 +349,8 @@ export class AnalysisReporter {
   <p>Model: <strong>${escapeHtml(report.ai.model ?? 'default')}</strong></p>
   <p>Priority adjustments applied: <strong>${report.ai.effect.priorityAdjustments}</strong></p>
   <p>Inferred dependencies accepted: <strong>${report.ai.effect.inferredDependencies}</strong></p>
+  <p>Rejected AI suggestions: <strong>${report.ai.effect.rejectedSuggestions}</strong></p>
+  <p>AI wave changes applied: <strong>${report.ai.effect.waveChangesApplied ? 'Yes' : 'No'}</strong></p>
   <p>Inference fallback used: <strong>${report.ai.effect.fallbackApplied ? 'Yes' : 'No'}</strong></p>
   <p>AI effect summary: <strong>${escapeHtml(report.ai.effect.summary)}</strong></p>
   <p>Unknown types: <strong>${escapeHtml((report.ai.unknownTypes ?? []).join(', ') || 'None')}</strong></p>

@@ -9,7 +9,15 @@ import {
 
 export type AnalyzeAIContext = Pick<
   ProjectAnalysisAIContext,
-  'enabled' | 'provider' | 'model' | 'aiAdjustments' | 'unknownTypes' | 'inferredDependencies' | 'inferenceFallback'
+  | 'enabled'
+  | 'provider'
+  | 'model'
+  | 'aiAdjustments'
+  | 'unknownTypes'
+  | 'inferredDependencies'
+  | 'inferenceFallback'
+  | 'waveChangesApplied'
+  | 'rejectedSuggestions'
 >;
 
 export type AnalyzeContext = {
@@ -52,6 +60,8 @@ export class AnalyzeContextService {
             unknownTypes: analysis.aiContext.unknownTypes,
             inferredDependencies: analysis.aiContext.inferredDependencies,
             inferenceFallback: analysis.aiContext.inferenceFallback,
+            waveChangesApplied: analysis.aiContext.waveChangesApplied,
+            rejectedSuggestions: analysis.aiContext.rejectedSuggestions,
           }
         : undefined,
       messages: analysis.messages,
