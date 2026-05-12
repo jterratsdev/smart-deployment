@@ -134,6 +134,7 @@ See:
 - [AI configuration](docs/ai-configuration.md)
 - [Known limitations](docs/known-limitations.md)
 - [Release candidate checklist](docs/release-candidate-checklist.md)
+- [Release workflow](docs/release-workflow.md)
 - [Documentation index](docs/README.md)
 
 ## AI Providers

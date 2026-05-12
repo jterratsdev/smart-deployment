@@ -3,7 +3,7 @@
   "description": "Intelligent Salesforce metadata deployment plugin that automatically analyzes dependencies, generates optimal deployment",
   "version": "1.0.5",
   "dependencies": {
-    "@oclif/core": "^4.11.0",
+    "@oclif/core": "4.11.2",
     "@salesforce/core": "^8.29.0",
     "@salesforce/sf-plugins-core": "^12.2.13",
     "fast-xml-parser": "^5.7.1",
@@ -222,6 +222,7 @@
     }
   },
   "resolutions": {
+    "@oclif/core": "4.11.2",
     "baseline-browser-mapping": "2.10.25",
     "**/filelist/**/brace-expansion": "2.1.0",
     "**/socks/**/ip-address": "10.2.0"

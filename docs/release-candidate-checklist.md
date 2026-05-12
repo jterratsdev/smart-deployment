@@ -51,7 +51,9 @@ Run and verify at least these flows against a fixture Salesforce project:
 
 - target version does not already exist on npm
 - `NPM_TOKEN` has publish permission for `@jterrats/smart-deployment`
-- `auto-release` and `publish-npm` workflows are enabled and green on `main`
+- `publish-npm.yml` is enabled and green on `main`
+- release operators follow [Release Workflow](release-workflow.md)
+- npm publication evidence includes package visibility and `latest` dist-tag verification
 
 ## Known Non-Blockers For RC
 

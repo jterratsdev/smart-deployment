@@ -244,6 +244,24 @@ jobs:
           echo "Package publish step succeeded, but @jterrats/smart-deployment@$NEXT_VERSION was not visible in npm within the verification window."
           exit 1
 
+      - name: Verify latest dist-tag
+        env:
+          NEXT_VERSION: ${{ steps.version.outputs.next }}
+          ALREADY_PUBLISHED: ${{ steps.prepared-npm-version-check.outputs.already_published }}
+        run: |
+          if [ "$ALREADY_PUBLISHED" = "true" ]; then
+            echo "@jterrats/smart-deployment@$NEXT_VERSION was already published; skipping latest dist-tag assertion for safe rerun."
+            exit 0
+          fi
+
+          LATEST_VERSION="$(NPM_CONFIG_CACHE="$RUNNER_TEMP/.npm" npm view @jterrats/smart-deployment dist-tags.latest)"
+          echo "npm latest dist-tag: $LATEST_VERSION"
+
+          if [ "$LATEST_VERSION" != "$NEXT_VERSION" ]; then
+            echo "Expected npm latest dist-tag to be $NEXT_VERSION"
+            exit 1
+          fi
+
       - name: Summary
         run: |
           echo "## Release Published" >> "$GITHUB_STEP_SUMMARY"
@@ -371,6 +389,24 @@ jobs:
           done
           echo "Package publish step succeeded, but ${PKG_NAME}@${PKG_VERSION} was not visible in npm within the verification window."
           exit 1
+
+      - name: Verify latest dist-tag
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+
+          if [ "${{ steps.npm-version-check.outputs.already_published }}" = "true" ]; then
+            echo "${PKG_NAME}@${PKG_VERSION} was already published; skipping latest dist-tag assertion for safe rerun."
+            exit 0
+          fi
+
+          LATEST_VERSION="$(NPM_CONFIG_CACHE="$RUNNER_TEMP/.npm" npm view "${PKG_NAME}" dist-tags.latest)"
+          echo "npm latest dist-tag: $LATEST_VERSION"
+
+          if [ "$LATEST_VERSION" != "$PKG_VERSION" ]; then
+            echo "Expected npm latest dist-tag to be $PKG_VERSION"
+            exit 1
+          fi
 
       - name: Summary
         run: |
