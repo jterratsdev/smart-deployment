@@ -1,73 +1,31 @@
-/**
- * Dependency Graph Builder
- * Builds a dependency graph from parsed metadata components
- *
- * @ac US-028-AC-1: Add nodes for each component
- * @ac US-028-AC-2: Add edges for each dependency
- * @ac US-028-AC-3: Handle bidirectional dependencies
- * @ac US-028-AC-4: Track dependency types (hard, soft)
- * @ac US-028-AC-5: Support incremental graph building
- * @ac US-028-AC-6: Validate graph structure
- *
- * @issue #28
- */
-
 import { getLogger } from '../utils/logger.js';
-import type { MetadataComponent, MetadataDependencyKind, MetadataType } from '../types/metadata.js';
+import type { MetadataComponent, MetadataDependencyKind } from '../types/metadata.js';
 import type {
   NodeId,
   DependencyGraph,
   ReverseGraph,
   DependencyAnalysisResult,
   DependencyStats,
-  CircularDependency,
   DependencyEdge,
 } from '../types/dependency.js';
+import { getDependencySourceForKind } from './dependency-semantics.js';
 import {
-  DEFAULT_GRAPH_DEPENDENCY_KIND,
-  expandComponentDependencyReferences,
-  getDependencySourceForKind,
-} from './dependency-semantics.js';
+  createComponentIntake,
+  type ComponentIntake,
+  type ExpandedDependencyDetail,
+} from './dependency-graph-intake.js';
+import { countGraphEdges, generateDependencyGraphStats } from './dependency-graph-stats.js';
+import {
+  collectBuildAnnotations,
+  collectValidationSummary,
+  type BuildAnnotations,
+} from './dependency-graph-validation.js';
 
 const logger = getLogger('DependencyGraphBuilder');
-
-type ExpandedDependencyDetail = {
-  nodeId: NodeId;
-  kind: DependencyType;
-  reason?: string;
-  confidence?: number;
-};
-
-type ValidationSummary = {
-  selfLoopErrors: string[];
-};
-
-type GraphCounts = {
-  dependencyCounts: Map<NodeId, number>;
-  dependentCounts: Map<NodeId, number>;
-};
-
-type ComponentIntake = {
-  nodeId: NodeId;
-  dependencyDetails: ExpandedDependencyDetail[];
-};
-
-type BuildAnnotations = {
-  circularDependencies: CircularDependency[];
-  isolatedComponents: NodeId[];
-};
 
 type EdgeEndpoints = {
   from: NodeId;
   to: NodeId;
-};
-
-type GraphMetrics = {
-  totalComponents: number;
-  totalDependencies: number;
-  maxDepth: number;
-  componentsByType: Record<string, number>;
-  counts: GraphCounts;
 };
 
 /**
@@ -87,23 +45,7 @@ export type GraphBuilderOptions = {
   maxNodes?: number;
 };
 
-/**
- * Dependency Graph Builder
- *
- * Performance optimized for 10,000+ nodes:
- * - Uses Map/Set for O(1) lookups
- * - Lazy validation
- * - Incremental building support
- *
- * @example
- * const builder = new DependencyGraphBuilder();
- * builder.addComponent(apexClassComponent);
- * builder.addComponent(triggerComponent);
- * const result = builder.build();
- * console.log(result.stats.totalComponents); // 2
- */
 export class DependencyGraphBuilder {
-  // Private properties
   private components: Map<NodeId, MetadataComponent> = new Map();
   private graph: DependencyGraph = new Map();
   private reverseGraph: ReverseGraph = new Map();
@@ -111,7 +53,6 @@ export class DependencyGraphBuilder {
   private options: Required<GraphBuilderOptions>;
   private cachedBuildResult?: DependencyAnalysisResult;
 
-  // Constructor
   public constructor(options: GraphBuilderOptions = {}) {
     this.options = {
       trackDependencyTypes: options.trackDependencyTypes ?? true,
@@ -124,7 +65,6 @@ export class DependencyGraphBuilder {
     });
   }
 
-  // Public getters
   /**
    * Get current size of the graph
    */
@@ -139,15 +79,6 @@ export class DependencyGraphBuilder {
     return this.components.size === 0;
   }
 
-  // Private static methods
-  /**
-   * Create a node ID from type and name
-   */
-  private static createNodeId(type: MetadataType, name: string): NodeId {
-    return `${type}:${name}`;
-  }
-
-  // Public methods
   /**
    * Add a metadata component to the graph
    *
@@ -268,7 +199,7 @@ export class DependencyGraphBuilder {
     }
 
     const startTime = Date.now();
-    const totalEdges = this.countEdges();
+    const totalEdges = countGraphEdges(this.graph);
 
     logger.info('Building dependency analysis result', {
       components: this.components.size,
@@ -280,7 +211,7 @@ export class DependencyGraphBuilder {
     }
 
     const annotations = this.createBuildAnnotations();
-    const stats = this.generateStats();
+    const stats = generateDependencyGraphStats(this.components, this.graph, this.reverseGraph);
 
     const duration = Date.now() - startTime;
     logger.info('Dependency graph built successfully', {
@@ -327,24 +258,17 @@ export class DependencyGraphBuilder {
    * Collect non-statistical build annotations from the graph.
    */
   private createBuildAnnotations(): BuildAnnotations {
-    return {
-      circularDependencies: this.detectCircularDependencies(),
-      isolatedComponents: this.findIsolatedComponents(),
-    };
+    return collectBuildAnnotations(this.components, this.graph, this.reverseGraph);
   }
 
-  // Private methods
   /**
    * Stage 1: normalize node identity and typed dependency details for intake.
    */
   private normalizeComponentIntake(component: MetadataComponent): ComponentIntake {
-    const nodeId = this.intakeComponentNode(component);
-    const dependencyDetails = this.expandTypedDependencies(component);
+    const intake = createComponentIntake(component);
+    this.intakeComponentNode(intake.nodeId, component);
 
-    return {
-      nodeId,
-      dependencyDetails,
-    };
+    return intake;
   }
 
   /**
@@ -385,25 +309,10 @@ export class DependencyGraphBuilder {
   /**
    * Stage 1a: intake and register the component node.
    */
-  private intakeComponentNode(component: MetadataComponent): NodeId {
-    const nodeId = DependencyGraphBuilder.createNodeId(component.type, component.name);
+  private intakeComponentNode(nodeId: NodeId, component: MetadataComponent): void {
     this.warnIfGraphIsLarge();
     this.components.set(nodeId, component);
     this.initializeNodeEntries(nodeId);
-
-    return nodeId;
-  }
-
-  /**
-   * Stage 2: expand legacy dependency sets into typed dependency details.
-   */
-  private expandTypedDependencies(component: MetadataComponent): ExpandedDependencyDetail[] {
-    return expandComponentDependencyReferences(component, DEFAULT_GRAPH_DEPENDENCY_KIND).map((dependency) => ({
-      nodeId: dependency.nodeId,
-      kind: dependency.kind,
-      reason: dependency.reason,
-      confidence: dependency.confidence,
-    }));
   }
 
   /**
@@ -429,8 +338,8 @@ export class DependencyGraphBuilder {
    * @ac US-028-AC-6: Validate graph structure
    */
   private validate(): void {
-    this.reportDanglingReferences();
-    const summary = this.validateGraphStructure();
+    const summary = collectValidationSummary(this.components, this.graph);
+    this.reportDanglingReferences(summary.danglingReferences);
 
     if (summary.selfLoopErrors.length > 0) {
       logger.error('Graph validation failed', { errors: summary.selfLoopErrors });
@@ -438,155 +347,6 @@ export class DependencyGraphBuilder {
     }
 
     logger.debug('Graph validation passed');
-  }
-
-  /**
-   * Detect circular dependencies using DFS
-   */
-  private detectCircularDependencies(): CircularDependency[] {
-    const cycles: CircularDependency[] = [];
-    const visited = new Set<NodeId>();
-    const recursionStack = new Set<NodeId>();
-    const currentPath: NodeId[] = [];
-
-    const dfs = (nodeId: NodeId): void => {
-      visited.add(nodeId);
-      recursionStack.add(nodeId);
-      currentPath.push(nodeId);
-
-      const deps = this.graph.get(nodeId) ?? new Set();
-      for (const depId of deps) {
-        if (!visited.has(depId)) {
-          dfs(depId);
-        } else if (recursionStack.has(depId)) {
-          // Found a cycle
-          const cycleStart = currentPath.indexOf(depId);
-          const cycle = currentPath.slice(cycleStart);
-          cycles.push({
-            cycle,
-            severity: 'warning',
-            message: `Circular dependency detected: ${cycle.join(' → ')} → ${depId}`,
-          });
-        }
-      }
-
-      recursionStack.delete(nodeId);
-      currentPath.pop();
-    };
-
-    for (const nodeId of this.graph.keys()) {
-      if (!visited.has(nodeId)) {
-        dfs(nodeId);
-      }
-    }
-
-    return cycles;
-  }
-
-  /**
-   * Find components with no dependencies or dependents
-   */
-  private findIsolatedComponents(): NodeId[] {
-    const isolated: NodeId[] = [];
-
-    for (const nodeId of this.components.keys()) {
-      const deps = this.graph.get(nodeId)?.size ?? 0;
-      const dependents = this.reverseGraph.get(nodeId)?.size ?? 0;
-
-      if (deps === 0 && dependents === 0) {
-        isolated.push(nodeId);
-      }
-    }
-
-    return isolated;
-  }
-
-  /**
-   * Generate graph statistics
-   */
-  private generateStats(): DependencyStats {
-    const metrics = this.collectGraphMetrics();
-
-    return {
-      totalComponents: metrics.totalComponents,
-      totalDependencies: metrics.totalDependencies,
-      componentsByType: metrics.componentsByType,
-      maxDepth: metrics.maxDepth,
-      mostDepended: this.findMaxCountEntry(metrics.counts.dependentCounts),
-      mostDependencies: this.findMaxCountEntry(metrics.counts.dependencyCounts),
-    };
-  }
-
-  private collectGraphMetrics(): GraphMetrics {
-    return {
-      totalComponents: this.components.size,
-      totalDependencies: this.countEdges(),
-      maxDepth: this.calculateMaxDepth(),
-      componentsByType: this.collectComponentsByType(),
-      counts: this.collectGraphCounts(),
-    };
-  }
-
-  private collectComponentsByType(): Record<string, number> {
-    const componentsByType: Record<string, number> = {};
-
-    for (const component of this.components.values()) {
-      componentsByType[component.type] = (componentsByType[component.type] ?? 0) + 1;
-    }
-
-    return componentsByType;
-  }
-
-  /**
-   * Calculate maximum dependency depth (simplified BFS)
-   */
-  private calculateMaxDepth(): number {
-    let maxDepth = 0;
-
-    for (const startNode of this.components.keys()) {
-      const depth = this.bfsDepth(startNode);
-      maxDepth = Math.max(maxDepth, depth);
-    }
-
-    return maxDepth;
-  }
-
-  /**
-   * BFS to calculate depth from a starting node
-   */
-  private bfsDepth(startNode: NodeId): number {
-    const visited = new Set<NodeId>();
-    const queue: Array<{ node: NodeId; depth: number }> = [{ node: startNode, depth: 0 }];
-    let maxDepth = 0;
-
-    while (queue.length > 0) {
-      const { node, depth } = queue.shift()!;
-
-      if (visited.has(node)) continue;
-      visited.add(node);
-
-      maxDepth = Math.max(maxDepth, depth);
-
-      const deps = this.graph.get(node) ?? new Set();
-      for (const depId of deps) {
-        if (!visited.has(depId)) {
-          queue.push({ node: depId, depth: depth + 1 });
-        }
-      }
-    }
-
-    return maxDepth;
-  }
-
-  /**
-   * Count total edges in the graph
-   */
-  private countEdges(): number {
-    let count = 0;
-    for (const deps of this.graph.values()) {
-      count += deps.size;
-    }
-    return count;
   }
 
   private warnIfGraphIsLarge(): void {
@@ -625,55 +385,12 @@ export class DependencyGraphBuilder {
     }
   }
 
-  private reportDanglingReferences(): void {
-    for (const [nodeId, deps] of this.graph.entries()) {
-      for (const depId of deps) {
-        if (!this.components.has(depId) && !this.graph.has(depId)) {
-          logger.warn('Dangling reference detected', {
-            from: nodeId,
-            to: depId,
-          });
-        }
-      }
+  private reportDanglingReferences(danglingReferences: Array<{ from: NodeId; to: NodeId }>): void {
+    for (const reference of danglingReferences) {
+      logger.warn('Dangling reference detected', {
+        from: reference.from,
+        to: reference.to,
+      });
     }
-  }
-
-  private validateGraphStructure(): ValidationSummary {
-    const selfLoopErrors: string[] = [];
-
-    for (const [nodeId, deps] of this.graph.entries()) {
-      if (deps.has(nodeId)) {
-        selfLoopErrors.push(`Self-loop detected: ${nodeId}`);
-      }
-    }
-
-    return { selfLoopErrors };
-  }
-
-  private collectGraphCounts(): GraphCounts {
-    const dependencyCounts = new Map<NodeId, number>();
-    const dependentCounts = new Map<NodeId, number>();
-
-    for (const [nodeId, deps] of this.graph.entries()) {
-      dependencyCounts.set(nodeId, deps.size);
-    }
-
-    for (const [nodeId, dependents] of this.reverseGraph.entries()) {
-      dependentCounts.set(nodeId, dependents.size);
-    }
-
-    return { dependencyCounts, dependentCounts };
-  }
-
-  private findMaxCountEntry(counts: ReadonlyMap<NodeId, number>): { nodeId: NodeId; count: number } {
-    let maxEntry: { nodeId: NodeId; count: number } = { nodeId: '', count: 0 };
-
-    for (const [nodeId, count] of counts.entries()) {
-      if (count > maxEntry.count) {
-        maxEntry = { nodeId, count };
-      }
-    }
-
-    return maxEntry;
   }
 }
