@@ -23,6 +23,26 @@ export type AnalysisAIEffect = {
   summary: string;
 };
 
+export type DependencyPrecisionEdge = {
+  from: string;
+  to: string;
+  type: MetadataDependencyKind;
+  source: NonNullable<DependencyEdge['source']> | 'unknown';
+  confidence?: number;
+  reason?: string;
+};
+
+export type DependencyPrecisionReport = {
+  deterministic: DependencyPrecisionEdge[];
+  heuristicOrAI: DependencyPrecisionEdge[];
+  possibleFalsePositives: DependencyPrecisionEdge[];
+  summary: {
+    deterministic: number;
+    heuristicOrAI: number;
+    possibleFalsePositives: number;
+  };
+};
+
 export type AnalysisReport = {
   generatedAt: string;
   projectRoot: string;
@@ -46,6 +66,7 @@ export type AnalysisReport = {
       dot: string;
     };
   };
+  dependencyPrecision: DependencyPrecisionReport;
   issues: Array<{
     severity: 'error' | 'warning';
     message: string;
@@ -85,6 +106,7 @@ export class AnalysisReporter {
         }
       : undefined;
     const dependencyGraph = AnalysisReporter.createDependencyGraph(scanResult);
+    const dependencyPrecision = AnalysisReporter.createDependencyPrecisionReport(dependencyGraph.edges);
 
     return {
       generatedAt: new Date().toISOString(),
@@ -101,6 +123,7 @@ export class AnalysisReporter {
       ai: aiReportContext,
       componentsByType,
       dependencyGraph,
+      dependencyPrecision,
       issues: [
         ...scanResult.errors.map((message) => ({ severity: 'error' as const, message })),
         ...scanResult.warnings.map((message) => ({ severity: 'warning' as const, message })),
@@ -180,6 +203,43 @@ export class AnalysisReporter {
     };
   }
 
+  private static createDependencyPrecisionReport(edges: DependencyEdge[]): DependencyPrecisionReport {
+    const precisionEdges = edges.map((edge) => AnalysisReporter.toPrecisionEdge(edge));
+    const deterministic = precisionEdges.filter((edge) => AnalysisReporter.isDeterministicEdge(edge));
+    const heuristicOrAI = precisionEdges.filter((edge) => !AnalysisReporter.isDeterministicEdge(edge));
+    const possibleFalsePositives = heuristicOrAI.filter((edge) => AnalysisReporter.isPossibleFalsePositive(edge));
+
+    return {
+      deterministic,
+      heuristicOrAI,
+      possibleFalsePositives,
+      summary: {
+        deterministic: deterministic.length,
+        heuristicOrAI: heuristicOrAI.length,
+        possibleFalsePositives: possibleFalsePositives.length,
+      },
+    };
+  }
+
+  private static toPrecisionEdge(edge: DependencyEdge): DependencyPrecisionEdge {
+    return {
+      from: edge.from,
+      to: edge.to,
+      type: edge.type,
+      source: edge.source ?? 'unknown',
+      confidence: edge.confidence,
+      reason: edge.reason,
+    };
+  }
+
+  private static isDeterministicEdge(edge: DependencyPrecisionEdge): boolean {
+    return edge.type !== 'inferred' && (edge.source === 'parser' || edge.source === 'manual');
+  }
+
+  private static isPossibleFalsePositive(edge: DependencyPrecisionEdge): boolean {
+    return edge.type === 'inferred' || edge.source === 'ai' || edge.confidence === undefined || edge.confidence < 0.9;
+  }
+
   public toHTML(report: AnalysisReport): string {
     const issueItems =
       report.issues.length > 0
@@ -212,11 +272,28 @@ export class AnalysisReporter {
         <td>${escapeHtml(edge.type)}</td>
         <td>${escapeHtml(edge.source ?? 'parser')}</td>
         <td>${edge.confidence !== undefined ? edge.confidence.toFixed(2) : 'n/a'}</td>
+        <td>${escapeHtml(edge.reason ?? 'n/a')}</td>
       </tr>
     `
             )
             .join('')
-        : '<tr><td colspan="5">No dependency edges detected.</td></tr>';
+        : '<tr><td colspan="6">No dependency edges detected.</td></tr>';
+    const falsePositiveRows =
+      report.dependencyPrecision.possibleFalsePositives.length > 0
+        ? report.dependencyPrecision.possibleFalsePositives
+            .map(
+              (edge) => `
+      <tr>
+        <td><code>${escapeHtml(edge.from)}</code></td>
+        <td><code>${escapeHtml(edge.to)}</code></td>
+        <td>${escapeHtml(edge.source)}</td>
+        <td>${edge.confidence !== undefined ? edge.confidence.toFixed(2) : 'n/a'}</td>
+        <td>${escapeHtml(edge.reason ?? 'Review inferred or low-confidence dependency before acting on it.')}</td>
+      </tr>
+    `
+            )
+            .join('')
+        : '<tr><td colspan="5">No possible false positives detected.</td></tr>';
 
     return `
 <!DOCTYPE html>
@@ -245,6 +322,9 @@ export class AnalysisReporter {
     <div class="card"><strong>Hard / Soft / Inferred</strong><br>${report.summary.dependencyBreakdown.hard} / ${
       report.summary.dependencyBreakdown.soft
     } / ${report.summary.dependencyBreakdown.inferred}</div>
+    <div class="card"><strong>Deterministic / Heuristic-AI</strong><br>${
+      report.dependencyPrecision.summary.deterministic
+    } / ${report.dependencyPrecision.summary.heuristicOrAI}</div>
     <div class="card"><strong>Waves</strong><br>${report.summary.waves}</div>
     <div class="card"><strong>Circular Dependencies</strong><br>${report.summary.circularDependencies}</div>
     <div class="card"><strong>Unplaced Components</strong><br>${report.summary.unplacedComponents}</div>
@@ -292,9 +372,27 @@ export class AnalysisReporter {
         <th>Type</th>
         <th>Source</th>
         <th>Confidence</th>
+        <th>Reason</th>
       </tr>
     </thead>
     <tbody>${dependencyRows}</tbody>
+  </table>
+
+  <h2>Dependency Precision</h2>
+  <p>Deterministic dependencies: <strong>${report.dependencyPrecision.summary.deterministic}</strong></p>
+  <p>Heuristic or AI dependencies: <strong>${report.dependencyPrecision.summary.heuristicOrAI}</strong></p>
+  <p>Possible false positives: <strong>${report.dependencyPrecision.summary.possibleFalsePositives}</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>From</th>
+        <th>To</th>
+        <th>Source</th>
+        <th>Confidence</th>
+        <th>Reason</th>
+      </tr>
+    </thead>
+    <tbody>${falsePositiveRows}</tbody>
   </table>
 
   <h2>Dependency Visualizations</h2>

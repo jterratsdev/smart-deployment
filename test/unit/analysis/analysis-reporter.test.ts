@@ -157,6 +157,19 @@ describe('AnalysisReporter', () => {
       inferred: 1,
     });
     expect(report.dependencyGraph.edges).to.have.lengthOf(3);
+    expect(report.dependencyPrecision.summary).to.deep.equal({
+      deterministic: 2,
+      heuristicOrAI: 1,
+      possibleFalsePositives: 1,
+    });
+    expect(report.dependencyPrecision.deterministic.map((edge) => edge.source)).to.deep.equal(['parser', 'parser']);
+    expect(report.dependencyPrecision.heuristicOrAI[0]).to.include({
+      from: 'ApexClass:Service',
+      to: 'ApexClass:Utility',
+      source: 'ai',
+      confidence: 0.91,
+      reason: 'AI-inferred dependency',
+    });
     expect(report.dependencyGraph.visualizations.mermaid).to.include('-.->|soft|');
     expect(report.dependencyGraph.visualizations.mermaid).to.include('==>|inferred|');
     expect(report.dependencyGraph.visualizations.dot).to.include('label="soft"');
@@ -171,9 +184,26 @@ describe('AnalysisReporter', () => {
         edges: Array<{ type: string }>;
         visualizations: { mermaid: string; dot: string };
       };
+      dependencyPrecision: {
+        deterministic: Array<{ source: string; reason?: string }>;
+        heuristicOrAI: Array<{ source: string; reason?: string; confidence?: number }>;
+        possibleFalsePositives: Array<{ source: string; reason?: string; confidence?: number }>;
+      };
     };
 
     expect(parsed.dependencyGraph.edges.map((edge) => edge.type)).to.deep.equal(['hard', 'inferred', 'soft']);
+    expect(parsed.dependencyPrecision.deterministic).to.have.lengthOf(2);
+    expect(parsed.dependencyPrecision.heuristicOrAI).to.deep.equal([
+      {
+        from: 'ApexClass:Service',
+        to: 'ApexClass:Utility',
+        type: 'inferred',
+        source: 'ai',
+        confidence: 0.91,
+        reason: 'AI-inferred dependency',
+      },
+    ]);
+    expect(parsed.dependencyPrecision.possibleFalsePositives).to.deep.equal(parsed.dependencyPrecision.heuristicOrAI);
     expect(parsed.dependencyGraph.visualizations.mermaid).to.include('graph TD');
     expect(parsed.dependencyGraph.visualizations.dot).to.include('digraph Dependencies');
   });
@@ -184,10 +214,14 @@ describe('AnalysisReporter', () => {
     const html = reporter.toHTML(report);
 
     expect(html).to.include('Dependency Edges');
+    expect(html).to.include('Dependency Precision');
     expect(html).to.include('Dependency Visualizations');
     expect(html).to.include('Hard / Soft / Inferred');
+    expect(html).to.include('Deterministic / Heuristic-AI');
     expect(html).to.include('ApexClass:Service');
     expect(html).to.include('CustomObject:Account');
+    expect(html).to.include('AI-inferred dependency');
+    expect(html).to.include('Possible false positives');
     expect(html).to.include('graph TD');
     expect(html).to.include('digraph Dependencies');
   });
