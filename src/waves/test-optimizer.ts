@@ -12,110 +12,32 @@
  * @issue #40
  */
 
-import type { NodeId } from '../types/dependency.js';
 import { getLogger } from '../utils/logger.js';
+import type { NodeId } from '../types/dependency.js';
 import type { Wave } from './wave-builder.js';
+import { analyzeWave, collectAllTestClasses } from './test-optimizer-discovery.js';
+import { matchTestClasses } from './test-optimizer-matching.js';
+import type {
+  OptimizerOptions,
+  OptimizerPolicy,
+  OptimizationPlanningState,
+  OptimizationDecision,
+  OptimizedWave,
+  TestOptimizationResult,
+  WaveTestContext,
+  WaveTestPlan,
+} from './test-optimizer-model.js';
+import { calculateStats, collectOptimizationDecisions, scoreEstimatedCoverage } from './test-optimizer-scoring.js';
 
 const logger = getLogger('TestOptimizer');
 
-type OptimizerPolicy = {
-  alwaysRunAllTests: boolean;
-  minCoverageRequired: number;
-  includeRelatedTests: boolean;
-};
-
-type WaveTestContext = {
-  waveNumber: number;
-  waveComponents: NodeId[];
-  waveMetadata: Wave['metadata'];
-  codeClasses: NodeId[];
-  triggers: NodeId[];
-  needsTests: boolean;
-};
-
-type WaveTestPlan = {
-  testClasses: NodeId[];
-  estimatedCoverage: number;
-  decision: OptimizationDecision;
-};
-
-type OptimizationPlanningState = {
-  allTestClasses: NodeId[];
-  waveContexts: WaveTestContext[];
-  wavePlans: WaveTestPlan[];
-};
-
-/**
- * Test optimization result
- */
-export type TestOptimizationResult = {
-  /** Original waves */
-  originalWaves: Wave[];
-  /** Optimized waves with test classes */
-  optimizedWaves: OptimizedWave[];
-  /** Optimization decisions */
-  decisions: OptimizationDecision[];
-  /** Statistics */
-  stats: OptimizationStats;
-};
-
-/**
- * Optimized wave with test information
- */
-export type OptimizedWave = Wave & {
-  /** Test classes included in this wave */
-  testClasses: NodeId[];
-  /** Code classes in this wave */
-  codeClasses: NodeId[];
-  /** Triggers in this wave */
-  triggers: NodeId[];
-  /** Needs test execution */
-  needsTests: boolean;
-  /** Estimated test coverage % */
-  estimatedCoverage: number;
-};
-
-/**
- * Optimization decision
- */
-export type OptimizationDecision = {
-  /** Wave number */
-  waveNumber: number;
-  /** Decision type */
-  type: 'include-tests' | 'skip-tests' | 'sync-tests';
-  /** Reason for decision */
-  reason: string;
-  /** Tests affected */
-  testsAffected: number;
-};
-
-/**
- * Optimization statistics
- */
-export type OptimizationStats = {
-  /** Total waves */
-  totalWaves: number;
-  /** Waves with tests */
-  wavesWithTests: number;
-  /** Waves without tests */
-  wavesWithoutTests: number;
-  /** Total test classes added */
-  totalTestsAdded: number;
-  /** Estimated time saved (seconds) */
-  timeSaved: number;
-};
-
-/**
- * Optimizer options
- */
-export type OptimizerOptions = {
-  /** Always run all tests (disable optimization) */
-  alwaysRunAllTests?: boolean;
-  /** Minimum test coverage required (0-100) */
-  minCoverageRequired?: number;
-  /** Include related tests (not just direct) */
-  includeRelatedTests?: boolean;
-};
+export type {
+  OptimizerOptions,
+  OptimizationDecision,
+  OptimizationStats,
+  OptimizedWave,
+  TestOptimizationResult,
+} from './test-optimizer-model.js';
 
 /**
  * Test Optimizer
@@ -167,8 +89,8 @@ export class TestOptimizer {
     const optimizedWaves = planningState.waveContexts.map((context, index) =>
       this.createOptimizedWave(context, planningState.wavePlans[index])
     );
-    const decisions = this.collectOptimizationDecisions(planningState.wavePlans);
-    const stats = this.calculateStats(optimizedWaves, planningState.allTestClasses.length);
+    const decisions = collectOptimizationDecisions(planningState.wavePlans);
+    const stats = calculateStats(optimizedWaves, planningState.allTestClasses.length);
 
     const duration = Date.now() - startTime;
     logger.info('Test optimization completed', {
@@ -197,28 +119,14 @@ export class TestOptimizer {
 
   private createOptimizationPlanningState(waves: Wave[]): OptimizationPlanningState {
     const policy = this.getPolicy();
-    const allTestClasses = this.collectAllTestClasses(waves);
-    const waveContexts = waves.map((wave) => this.analyzeWave(wave));
+    const allTestClasses = collectAllTestClasses(waves);
+    const waveContexts = waves.map((wave) => analyzeWave(wave));
     const wavePlans = waveContexts.map((context) => this.createWaveTestPlan(context, allTestClasses, policy));
 
     return {
       allTestClasses,
       waveContexts,
       wavePlans,
-    };
-  }
-
-  private analyzeWave(wave: Wave): WaveTestContext {
-    const codeClasses = this.getCodeClasses(wave);
-    const triggers = this.getTriggers(wave);
-
-    return {
-      waveNumber: wave.number,
-      waveComponents: wave.components,
-      waveMetadata: wave.metadata,
-      codeClasses,
-      triggers,
-      needsTests: codeClasses.length > 0 || triggers.length > 0,
     };
   }
 
@@ -253,10 +161,10 @@ export class TestOptimizer {
       };
     }
 
-    const testClasses = this.matchTestClasses(context, allTestClasses, policy);
+    const testClasses = matchTestClasses(context, allTestClasses, policy);
     return {
       testClasses,
-      estimatedCoverage: this.scoreEstimatedCoverage(context, testClasses),
+      estimatedCoverage: scoreEstimatedCoverage(context, testClasses),
       decision: {
         waveNumber: context.waveNumber,
         type: 'sync-tests',
@@ -277,174 +185,6 @@ export class TestOptimizer {
       needsTests: context.needsTests,
       estimatedCoverage: plan.estimatedCoverage,
     };
-  }
-
-  private collectOptimizationDecisions(wavePlans: readonly WaveTestPlan[]): OptimizationDecision[] {
-    return wavePlans.map((plan) => plan.decision);
-  }
-
-  /**
-   * Collect all test classes from all waves
-   */
-  private collectAllTestClasses(waves: Wave[]): NodeId[] {
-    const testClasses = new Set<NodeId>();
-
-    for (const wave of waves) {
-      for (const component of wave.components) {
-        if (this.isTestClass(component)) {
-          testClasses.add(component);
-        }
-      }
-    }
-
-    return Array.from(testClasses);
-  }
-
-  /**
-   * Get code classes (non-test Apex classes)
-   */
-  private getCodeClasses(wave: Wave): NodeId[] {
-    return wave.components.filter((c) => c.startsWith('ApexClass:') && !this.isTestClass(c));
-  }
-
-  /**
-   * @ac US-040-AC-4: Ensure trigger tests are included
-   */
-  private getTriggers(wave: Wave): NodeId[] {
-    return wave.components.filter((c) => c.startsWith('ApexTrigger:'));
-  }
-
-  /**
-   * Check if component is a test class
-   */
-  private isTestClass(component: NodeId): boolean {
-    return (
-      component.startsWith('ApexClass:') &&
-      (component.toLowerCase().includes('test') || component.toLowerCase().endsWith('_test'))
-    );
-  }
-
-  /**
-   * Sync test classes with production classes
-   */
-  private syncTestClasses(codeClasses: NodeId[], triggers: NodeId[], allTestClasses: NodeId[]): NodeId[] {
-    const matchedTests = new Set<NodeId>();
-
-    // Match tests to code classes
-    for (const codeClass of codeClasses) {
-      const className = codeClass.split(':')[1];
-
-      for (const testClass of allTestClasses) {
-        const testName = testClass.split(':')[1].toLowerCase();
-        const codeName = className.toLowerCase();
-
-        // Match patterns:
-        // - AccountService → AccountServiceTest
-        // - AccountService → TestAccountService
-        // - AccountService → AccountService_Test
-        if (testName.includes(codeName) || codeName.includes(testName.replace('test', ''))) {
-          matchedTests.add(testClass);
-        }
-      }
-    }
-
-    // Match tests to triggers
-    for (const trigger of triggers) {
-      const triggerName = trigger.split(':')[1];
-
-      for (const testClass of allTestClasses) {
-        const testName = testClass.split(':')[1].toLowerCase();
-        const trgName = triggerName.toLowerCase();
-
-        // Match patterns:
-        // - AccountTrigger → AccountTriggerTest
-        // - AccountTrigger → TestAccountTrigger
-        if (testName.includes(trgName) || testName.includes('trigger')) {
-          matchedTests.add(testClass);
-        }
-      }
-    }
-
-    // If no tests matched and we have code, include related tests
-    if (matchedTests.size === 0 && this.options.includeRelatedTests) {
-      // Include a reasonable subset (e.g., first 10 test classes)
-      for (let i = 0; i < Math.min(10, allTestClasses.length); i++) {
-        matchedTests.add(allTestClasses[i]);
-      }
-    }
-
-    return Array.from(matchedTests);
-  }
-
-  private matchTestClasses(context: WaveTestContext, allTestClasses: NodeId[], policy: OptimizerPolicy): NodeId[] {
-    if (policy.includeRelatedTests !== this.options.includeRelatedTests) {
-      return this.syncTestClasses(context.codeClasses, context.triggers, allTestClasses);
-    }
-
-    return this.syncTestClasses(context.codeClasses, context.triggers, allTestClasses);
-  }
-
-  /**
-   * @ac US-040-AC-5: Calculate test coverage per wave
-   */
-  private estimateCoverage(codeClassCount: number, testClassCount: number): number {
-    if (codeClassCount === 0) return 100;
-    if (testClassCount === 0) return 0;
-
-    // Simple heuristic: assume each test class covers ~75% of one class
-    const coverage = Math.min(100, (testClassCount / codeClassCount) * 75);
-    return Math.round(coverage);
-  }
-
-  private scoreEstimatedCoverage(context: WaveTestContext, testClasses: NodeId[]): number {
-    return this.estimateCoverage(context.codeClasses.length, testClasses.length);
-  }
-
-  /**
-   * Calculate optimization statistics
-   */
-  private calculateStats(optimizedWaves: OptimizedWave[], totalAvailableTests: number): OptimizationStats {
-    const totals = this.collectWaveTestTotals(optimizedWaves);
-    const timeSaved = this.calculateTimeSaved(optimizedWaves.length, totalAvailableTests, totals.totalTestsAdded);
-
-    return {
-      totalWaves: optimizedWaves.length,
-      wavesWithTests: totals.wavesWithTests,
-      wavesWithoutTests: totals.wavesWithoutTests,
-      totalTestsAdded: totals.totalTestsAdded,
-      timeSaved,
-    };
-  }
-
-  private collectWaveTestTotals(optimizedWaves: readonly OptimizedWave[]): {
-    wavesWithTests: number;
-    wavesWithoutTests: number;
-    totalTestsAdded: number;
-  } {
-    let wavesWithTests = 0;
-    let wavesWithoutTests = 0;
-    let totalTestsAdded = 0;
-
-    for (const wave of optimizedWaves) {
-      if (wave.testClasses.length > 0) {
-        wavesWithTests++;
-        totalTestsAdded += wave.testClasses.length;
-        continue;
-      }
-
-      wavesWithoutTests++;
-    }
-
-    return {
-      wavesWithTests,
-      wavesWithoutTests,
-      totalTestsAdded,
-    };
-  }
-
-  private calculateTimeSaved(totalWaves: number, totalAvailableTests: number, totalTestsAdded: number): number {
-    const testsSkipped = totalWaves * totalAvailableTests - totalTestsAdded;
-    return testsSkipped * 5;
   }
 
   /**
