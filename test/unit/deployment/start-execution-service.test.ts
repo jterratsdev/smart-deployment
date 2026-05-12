@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { access, mkdtemp, readFile, rm } from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { expect } from 'chai';
@@ -11,7 +11,7 @@ import {
 } from '../../../src/deployment/sf-cli-integration.js';
 import { StateManager } from '../../../src/deployment/state-manager.js';
 import type { DeploymentContext } from '../../../src/deployment/deployment-context-service.js';
-import type { MetadataComponent } from '../../../src/types/metadata.js';
+import type { MetadataComponent, MetadataType } from '../../../src/types/metadata.js';
 
 class FailingSfCli extends SfCliIntegration {
   public readonly deployCalls: DeploymentOptions[] = [];
@@ -37,6 +37,23 @@ class FailingSfCli extends SfCliIntegration {
         },
       }),
     };
+  }
+}
+
+class SequencedSfCli extends SfCliIntegration {
+  public readonly deployCalls: DeploymentOptions[] = [];
+
+  public constructor(private readonly results: DeploymentResult[]) {
+    super();
+  }
+
+  public override async deploy(options: DeploymentOptions): Promise<DeploymentResult> {
+    this.deployCalls.push(options);
+    const result = this.results[this.deployCalls.length - 1];
+    if (!result) {
+      throw new Error(`Missing fake deployment result for call ${this.deployCalls.length}`);
+    }
+    return result;
   }
 }
 
@@ -108,61 +125,200 @@ describe('StartExecutionService', () => {
     expect(state.metadata?.lastKnownStatus).to.equal('Failed');
     expect(state.metadata?.testFailures).to.equal(1);
   });
+
+  it('clears persisted deployment state after all waves succeed', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-service-'));
+    const sfCli = new SequencedSfCli([
+      createDeploymentResult({ deploymentId: '0AfFakeDeployment001', status: 'Succeeded', success: true }),
+      createDeploymentResult({ deploymentId: '0AfFakeDeployment002', status: 'Succeeded', success: true }),
+    ]);
+    const classComponent = createComponent(tempDir, 'FirstClass');
+    const triggerComponent = createComponent(tempDir, 'SecondTrigger', 'ApexTrigger');
+    const context = createDeploymentContext(
+      [classComponent, triggerComponent],
+      [['ApexClass:FirstClass'], ['ApexTrigger:SecondTrigger']]
+    );
+    const service = new StartExecutionService({
+      createSfCli: () => sfCli,
+      createStateManager: (baseDir?: string) => new StateManager({ baseDir }),
+      createDeploymentId: () => 'deployment-fixture-002',
+    });
+
+    const result = await service.execute({
+      dryRun: false,
+      validateOnly: false,
+      allowCycleRemediation: false,
+      skipTests: true,
+      targetOrg: 'fixture@example.com',
+      sourcePath: tempDir,
+      deploymentContext: context,
+      log: () => {},
+    });
+
+    expect(result.kind).to.equal('executed');
+    expect(sfCli.deployCalls).to.have.lengthOf(2);
+    expect(sfCli.deployCalls.map((call) => path.basename(call.manifestPath))).to.deep.equal([
+      'wave-001.xml',
+      'wave-002.xml',
+    ]);
+    await expectMissingFile(path.join(tempDir, '.smart-deployment/deployment-state.json'));
+  });
+
+  it('persists completed waves when a later wave fails', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-service-'));
+    const sfCli = new SequencedSfCli([
+      createDeploymentResult({ deploymentId: '0AfFakeDeployment001', status: 'Succeeded', success: true }),
+      createDeploymentResult({
+        deploymentId: '0AfFakeDeployment002',
+        status: 'Failed',
+        success: false,
+        testFailures: 2,
+      }),
+    ]);
+    const classComponent = createComponent(tempDir, 'FirstClass');
+    const triggerComponent = createComponent(tempDir, 'SecondTrigger', 'ApexTrigger');
+    const context = createDeploymentContext(
+      [classComponent, triggerComponent],
+      [['ApexClass:FirstClass'], ['ApexTrigger:SecondTrigger']]
+    );
+    const service = new StartExecutionService({
+      createSfCli: () => sfCli,
+      createStateManager: (baseDir?: string) => new StateManager({ baseDir }),
+      createDeploymentId: () => 'deployment-fixture-003',
+    });
+
+    let thrownError: Error | undefined;
+    try {
+      await service.execute({
+        dryRun: false,
+        validateOnly: false,
+        allowCycleRemediation: false,
+        skipTests: true,
+        targetOrg: 'fixture@example.com',
+        sourcePath: tempDir,
+        deploymentContext: context,
+        log: () => {},
+      });
+    } catch (error) {
+      thrownError = error as Error;
+    }
+
+    expect(thrownError?.message).to.include('Wave 2 failed');
+    expect(sfCli.deployCalls).to.have.lengthOf(2);
+
+    const state = JSON.parse(await readFile(path.join(tempDir, '.smart-deployment/deployment-state.json'), 'utf8')) as {
+      currentWave?: number;
+      completedWaves: number[];
+      failedWave?: { waveNumber: number };
+      metadata?: Record<string, unknown>;
+    };
+
+    expect(state.currentWave).to.equal(2);
+    expect(state.completedWaves).to.deep.equal([1]);
+    expect(state.failedWave?.waveNumber).to.equal(2);
+    expect(state.metadata?.lastKnownStatus).to.equal('Failed');
+    expect(state.metadata?.testFailures).to.equal(2);
+  });
 });
 
-function createComponent(baseDir: string): MetadataComponent {
+function createComponent(baseDir: string, name = 'TestClass', type: MetadataType = 'ApexClass'): MetadataComponent {
   return {
-    name: 'TestClass',
-    type: 'ApexClass',
-    filePath: path.join(baseDir, 'force-app/main/default/classes/TestClass.cls'),
+    name,
+    type,
+    filePath: path.join(baseDir, `force-app/main/default/${type}/${name}.xml`),
     dependencies: new Set(),
     dependents: new Set(),
     priorityBoost: 0,
   };
 }
 
-function createDeploymentContext(component: MetadataComponent): DeploymentContext {
-  const nodeId = 'ApexClass:TestClass';
+function createDeploymentContext(
+  components: MetadataComponent | MetadataComponent[],
+  waveComponents?: string[][]
+): DeploymentContext {
+  const componentList = Array.isArray(components) ? components : [components];
+  const nodeIds = componentList.map((component) => `${component.type}:${component.name}`);
+  const waves = waveComponents ?? [nodeIds];
   return {
     scanResult: {
-      components: [component],
+      components: componentList,
       dependencyResult: {
-        components: new Map([[nodeId, component]]),
-        graph: new Map([[nodeId, new Set()]]),
-        reverseGraph: new Map([[nodeId, new Set()]]),
+        components: new Map(componentList.map((component, index) => [nodeIds[index], component])),
+        graph: new Map(nodeIds.map((nodeId) => [nodeId, new Set<string>()])),
+        reverseGraph: new Map(nodeIds.map((nodeId) => [nodeId, new Set<string>()])),
         edges: [],
         circularDependencies: [],
-        isolatedComponents: [nodeId],
+        isolatedComponents: nodeIds,
         stats: {
-          totalComponents: 1,
+          totalComponents: componentList.length,
           totalDependencies: 0,
-          componentsByType: { ApexClass: 1 },
+          componentsByType: componentList.reduce<Record<string, number>>(
+            (counts, component) => ({ ...counts, [component.type]: (counts[component.type] ?? 0) + 1 }),
+            {}
+          ),
           maxDepth: 0,
-          mostDepended: { nodeId, count: 0 },
-          mostDependencies: { nodeId, count: 0 },
+          mostDepended: { nodeId: nodeIds[0], count: 0 },
+          mostDependencies: { nodeId: nodeIds[0], count: 0 },
         },
       },
-      projectRoot: path.dirname(component.filePath),
+      projectRoot: path.dirname(componentList[0].filePath),
       executionTime: 0,
       errors: [],
       warnings: [],
     },
-    orderedWaves: [
-      {
-        number: 1,
-        components: [nodeId],
-        metadata: {
-          componentCount: 1,
-          types: ['ApexClass'],
-          maxDepth: 0,
-          hasCircularDeps: false,
-          estimatedTime: 0.5,
-        },
+    orderedWaves: waves.map((componentsInWave, index) => ({
+      number: index + 1,
+      components: componentsInWave,
+      metadata: {
+        componentCount: componentsInWave.length,
+        types: [...new Set(componentsInWave.map((nodeId) => nodeId.split(':')[0] as MetadataType))],
+        maxDepth: 0,
+        hasCircularDeps: false,
+        estimatedTime: 0.5,
       },
-    ],
+    })),
     messages: {
       logs: [],
       warnings: [],
     },
   };
+}
+
+function createDeploymentResult(options: {
+  deploymentId: string;
+  status: string;
+  success: boolean;
+  testFailures?: number;
+}): DeploymentResult {
+  const testFailures = options.testFailures ?? 0;
+  return {
+    success: options.success,
+    deploymentId: options.deploymentId,
+    status: options.status,
+    componentSuccesses: options.success ? 1 : 0,
+    componentFailures: options.success ? 0 : 1,
+    testsRun: 1,
+    testFailures,
+    output: JSON.stringify({
+      result: {
+        id: options.deploymentId,
+        status: options.status,
+        numberComponentsDeployed: options.success ? 1 : 0,
+        numberComponentErrors: options.success ? 0 : 1,
+        numberTestsTotal: 1,
+        numberTestErrors: testFailures,
+      },
+    }),
+  };
+}
+
+async function expectMissingFile(filePath: string): Promise<void> {
+  let exists = true;
+  try {
+    await access(filePath);
+  } catch {
+    exists = false;
+  }
+
+  expect(exists).to.equal(false);
 }
