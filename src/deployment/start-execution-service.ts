@@ -107,6 +107,7 @@ export class StartExecutionService {
         sfCli,
         skipTests: options.skipTests,
         componentMap: scanResult.dependencyResult.components,
+        apiVersion: scanResult.apiVersion,
         log: options.log,
       });
 
@@ -123,6 +124,7 @@ export class StartExecutionService {
       sourcePath: options.sourcePath,
       orderedWaves,
       componentMap: scanResult.dependencyResult.components,
+      apiVersion: scanResult.apiVersion,
       skipTests: options.skipTests,
       testExecutor,
       tracker,

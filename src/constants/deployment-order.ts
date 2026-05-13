@@ -103,6 +103,7 @@ export const DEPLOYMENT_ORDER: Readonly<Record<MetadataType, number>> = Object.f
   Layout: 50, // Page layouts
   Bot: 51, // Einstein Bots
   BotVersion: 52, // Bot versions
+  AiAuthoringBundle: 53, // Agentforce authoring bundles
   GenAiPlugin: 53, // Einstein plugins
   FlexiPage: 54, // Lightning pages
   QuickAction: 55, // Quick actions

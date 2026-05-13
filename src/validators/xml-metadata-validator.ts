@@ -31,7 +31,7 @@ const logger = getLogger('XmlMetadataValidator');
  */
 export class XmlMetadataValidator {
   private readonly minApiVersion = 40.0;
-  private readonly maxApiVersion = 61.0;
+  private readonly maxApiVersion = 66.0;
 
   /**
    * @ac US-091-AC-1: Validate XML syntax

@@ -8,6 +8,7 @@ export type WaveManifestParams = {
   waveNumber: number;
   components: NodeId[];
   componentMap: ReadonlyMap<NodeId, MetadataComponent>;
+  apiVersion?: string;
 };
 
 export class WaveManifestService {
@@ -44,7 +45,7 @@ export class WaveManifestService {
       '<?xml version="1.0" encoding="UTF-8"?>',
       '<Package xmlns="http://soap.sforce.com/2006/04/metadata">',
       typeBlocks,
-      '    <version>61.0</version>',
+      `    <version>${params.apiVersion ?? '66.0'}</version>`,
       '</Package>',
       '',
     ].join('\n');

@@ -66,7 +66,7 @@ export class StructureValidator {
           code: 'MISSING_API_VERSION',
           message: 'sourceApiVersion is recommended in sfdx-project.json',
           path: sfdxProjectPath,
-          suggestion: 'Add sourceApiVersion (e.g., "61.0")',
+          suggestion: 'Add sourceApiVersion (e.g., "66.0")',
         });
       }
 

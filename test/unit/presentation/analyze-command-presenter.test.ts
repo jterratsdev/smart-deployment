@@ -7,6 +7,7 @@ import type { WaveResult } from '../../../src/waves/wave-builder.js';
 function createScanResult(): ScanResult {
   return {
     projectRoot: '/tmp/analyze-presenter',
+    apiVersion: '61.0',
     components: [
       {
         name: 'Account',

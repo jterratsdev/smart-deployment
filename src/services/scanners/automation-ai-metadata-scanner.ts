@@ -52,6 +52,19 @@ export async function parseBotComponent(filePath: string): Promise<MetadataCompo
   };
 }
 
+export function parseAiAuthoringBundleComponent(filePath: string): MetadataComponent {
+  const bundleName = path.basename(filePath, '.agent');
+
+  return {
+    name: bundleName,
+    type: 'AiAuthoringBundle',
+    filePath,
+    dependencies: new Set<string>(),
+    dependents: new Set<string>(),
+    priorityBoost: 0,
+  };
+}
+
 export async function parseGenAiPromptComponent(filePath: string): Promise<MetadataComponent | undefined> {
   const promptName = path.basename(filePath, '.genAiPromptTemplate-meta.xml');
   const parsed = await parseGenAiPrompt(filePath, promptName);

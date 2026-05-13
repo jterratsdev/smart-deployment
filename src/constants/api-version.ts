@@ -33,11 +33,11 @@ export const MIN_API_VERSION = 40.0;
  * Recommended API version (latest stable).
  * This should be updated with each Salesforce release.
  *
- * Current: Spring '25 = 61.0
+ * Current: Spring '26 = 66.0
  *
  * @constant
  */
-export const RECOMMENDED_API_VERSION = 61.0;
+export const RECOMMENDED_API_VERSION = 66.0;
 
 /**
  * API versions that are officially deprecated (will be retired soon).

@@ -39,6 +39,7 @@ function createScanResult(projectRoot: string): ScanResult {
 
   return {
     projectRoot,
+    apiVersion: '61.0',
     executionTime: 1,
     errors: [],
     warnings: [],

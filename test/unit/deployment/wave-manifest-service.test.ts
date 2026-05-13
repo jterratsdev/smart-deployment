@@ -51,6 +51,7 @@ describe('WaveManifestService', () => {
       waveNumber: 7,
       components: ['ApexClass:BetaService', 'CustomObject:Invoice__c', 'ApexClass:AlphaService'],
       componentMap: components,
+      apiVersion: '66.0',
     });
 
     const content = await readFile(manifestPath, 'utf8');
@@ -62,6 +63,6 @@ describe('WaveManifestService', () => {
       content.indexOf('<members>BetaService</members>')
     );
     expect(content.indexOf('<name>ApexClass</name>')).to.be.lessThan(content.indexOf('<name>CustomObject</name>'));
-    expect(content).to.include('<version>61.0</version>');
+    expect(content).to.include('<version>66.0</version>');
   });
 });

@@ -43,6 +43,7 @@ describe('AnalysisReporter', () => {
 
     return {
       projectRoot: '/tmp/project',
+      apiVersion: '61.0',
       components,
       dependencyResult: {
         components: new Map(components.map((component) => [`${component.type}:${component.name}`, component])),

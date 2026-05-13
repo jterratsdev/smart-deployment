@@ -20,6 +20,7 @@ export type CycleRemediationRunnerParams = {
   sfCli: SfCliIntegration;
   skipTests: boolean;
   componentMap: ReadonlyMap<NodeId, MetadataComponent>;
+  apiVersion?: string;
   log: (message: string) => void;
 };
 
@@ -38,8 +39,19 @@ export class CycleRemediationRunner {
   }
 
   public async execute(params: CycleRemediationRunnerParams): Promise<void> {
-    const { deploymentId, targetOrg, sourcePath, stateManager, tracker, plan, sfCli, skipTests, componentMap, log } =
-      params;
+    const {
+      deploymentId,
+      targetOrg,
+      sourcePath,
+      stateManager,
+      tracker,
+      plan,
+      sfCli,
+      skipTests,
+      componentMap,
+      apiVersion,
+      log,
+    } = params;
     const editor = new CycleSourceEditor();
     const startedAt = new Date().toISOString();
     const editRecords: CycleSourceEditRecord[] = [];
@@ -91,6 +103,7 @@ export class CycleRemediationRunner {
         waveNumber: 1,
         components: phaseOneComponents,
         componentMap,
+        apiVersion,
       });
       const phaseOneTestPlan = this.testPlanService.resolveTestPlan(
         this.buildSyntheticWave(1, phaseOneComponents, componentMap),
@@ -170,6 +183,7 @@ export class CycleRemediationRunner {
         waveNumber: 2,
         components: phaseTwoComponents,
         componentMap,
+        apiVersion,
       });
       const phaseTwoTestPlan = this.testPlanService.resolveTestPlan(
         this.buildSyntheticWave(2, phaseTwoComponents, componentMap),

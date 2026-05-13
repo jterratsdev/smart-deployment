@@ -15,6 +15,7 @@ export type DeploymentRunnerParams = {
   sourcePath?: string;
   orderedWaves: Wave[];
   componentMap: ReadonlyMap<NodeId, MetadataComponent>;
+  apiVersion?: string;
   skipTests: boolean;
   testExecutor: TestExecutor;
   tracker: DeploymentTracker;
@@ -45,6 +46,7 @@ export class DeploymentRunner {
       sourcePath,
       orderedWaves,
       componentMap,
+      apiVersion,
       skipTests,
       testExecutor,
       tracker,
@@ -62,6 +64,7 @@ export class DeploymentRunner {
         waveNumber: wave.number,
         components: wave.components,
         componentMap,
+        apiVersion,
       });
       const testPlan = this.testPlanService.resolveTestPlan(wave, skipTests, testExecutor);
 

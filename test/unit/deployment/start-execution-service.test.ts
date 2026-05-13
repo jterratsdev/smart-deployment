@@ -262,6 +262,7 @@ function createDeploymentContext(
         },
       },
       projectRoot: path.dirname(componentList[0].filePath),
+      apiVersion: '61.0',
       executionTime: 0,
       errors: [],
       warnings: [],

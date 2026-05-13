@@ -70,6 +70,7 @@ export type MetadataType =
   | 'Layout'
   | 'Bot'
   | 'BotVersion'
+  | 'AiAuthoringBundle'
   | 'GenAiPlugin'
   | 'FlexiPage'
   | 'QuickAction'

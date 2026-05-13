@@ -55,6 +55,7 @@ function createScanResult(overrides: Partial<ScanResult> = {}): ScanResult {
     ],
     dependencyResult,
     projectRoot: process.cwd(),
+    apiVersion: '61.0',
     executionTime: 25,
     errors: [],
     warnings: [],

@@ -334,6 +334,36 @@ export default class AccountCard extends LightningElement {
     return projectRoot;
   }
 
+  async function createAgentforceFixture(): Promise<string> {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'metadata-scanner-agentforce-'));
+    tempDirectories.push(projectRoot);
+
+    await writeFile(
+      path.join(projectRoot, 'sfdx-project.json'),
+      JSON.stringify(
+        {
+          packageDirectories: [{ path: 'force-app', default: true }],
+          sourceApiVersion: '66.0',
+        },
+        null,
+        2
+      )
+    );
+
+    const agentDir = path.join(
+      projectRoot,
+      'force-app',
+      'main',
+      'default',
+      'aiAuthoringBundles',
+      'PHP_Pacific_Haven_Agent'
+    );
+    await mkdir(agentDir, { recursive: true });
+    await writeFile(path.join(agentDir, 'PHP_Pacific_Haven_Agent.agent'), 'agentType: customer');
+
+    return projectRoot;
+  }
+
   afterEach(async () => {
     await Promise.all(
       tempDirectories.splice(0).map(async (tempDirectory) => rm(tempDirectory, { recursive: true, force: true }))
@@ -463,5 +493,23 @@ export default class AccountCard extends LightningElement {
       'Account',
       'VisualforceComponent:c:ReusablePanel',
     ]);
+  });
+
+  it('scans Agentforce authoring bundles as AiAuthoringBundle components', async () => {
+    const projectRoot = await createAgentforceFixture();
+    const scanner = new MetadataScannerService();
+
+    const result = await scanner.scan({ sourcePath: projectRoot });
+
+    const component = result.components.find(
+      (metadataComponent) =>
+        metadataComponent.type === 'AiAuthoringBundle' && metadataComponent.name === 'PHP_Pacific_Haven_Agent'
+    );
+
+    expect(result.apiVersion).to.equal('66.0');
+    expect(component).to.exist;
+    expect(
+      result.components.map((metadataComponent) => `${metadataComponent.type}:${metadataComponent.name}`)
+    ).to.not.include('Bot:PHP_Pacific_Haven_Agent');
   });
 });

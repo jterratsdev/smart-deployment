@@ -11,6 +11,7 @@ function buildScanResult(components: MetadataComponent[]): ScanResult {
 
   return {
     projectRoot: '/tmp/analyze-context-service',
+    apiVersion: '61.0',
     components,
     dependencyResult: graphBuilder.build(),
     errors: [],

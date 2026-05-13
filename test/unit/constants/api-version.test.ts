@@ -12,8 +12,8 @@ describe('API Version Constants', () => {
     expect(MIN_API_VERSION).to.equal(40.0);
   });
 
-  it('should have RECOMMENDED_API_VERSION set to latest (61.0)', () => {
-    expect(RECOMMENDED_API_VERSION).to.equal(61.0);
+  it('should have RECOMMENDED_API_VERSION set to latest (66.0)', () => {
+    expect(RECOMMENDED_API_VERSION).to.equal(66.0);
     expect(RECOMMENDED_API_VERSION).to.be.greaterThan(MIN_API_VERSION);
   });
 
@@ -112,7 +112,7 @@ describe('getApiVersionRequirements', () => {
     const message = getApiVersionRequirements();
 
     expect(message).to.include('40');
-    expect(message).to.include('61');
+    expect(message).to.include('66');
     expect(message).to.include('sfdx-project.json');
     expect(message).to.include('Why this requirement?');
   });
@@ -129,7 +129,7 @@ describe('getApiVersionRequirements', () => {
     const message = getApiVersionRequirements();
 
     expect(message).to.include('sourceApiVersion');
-    expect(message).to.include('61');
+    expect(message).to.include('66');
   });
 });
 

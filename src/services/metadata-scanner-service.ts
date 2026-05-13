@@ -17,6 +17,7 @@ import type { MetadataComponent } from '../types/metadata.js';
 import type { DependencyAnalysisResult } from '../types/dependency.js';
 import { getLogger } from '../utils/logger.js';
 import {
+  parseAiAuthoringBundleComponent,
   parseBotComponent,
   parseFlowComponent,
   parseGenAiPromptComponent,
@@ -50,6 +51,7 @@ export type ScanResult = {
   components: MetadataComponent[];
   dependencyResult: DependencyAnalysisResult;
   projectRoot: string;
+  apiVersion: string;
   executionTime: number;
   errors: string[];
   warnings: string[];
@@ -133,6 +135,7 @@ export class MetadataScannerService {
       components,
       dependencyResult,
       projectRoot: projectInfo.projectRoot,
+      apiVersion: projectInfo.apiVersion,
       executionTime,
       errors,
       warnings,
@@ -319,7 +322,16 @@ export class MetadataScannerService {
       parseGenAiPromptComponent
     );
 
-    return [...botComponents, ...genAiPromptComponents];
+    const aiAuthoringBundleComponents = await scanMetadataFiles(
+      packagePath,
+      '**/aiAuthoringBundles/**/*.agent',
+      errors,
+      'AiAuthoringBundle',
+      this.shouldIgnorePath,
+      (filePath) => Promise.resolve(parseAiAuthoringBundleComponent(filePath))
+    );
+
+    return [...botComponents, ...genAiPromptComponents, ...aiAuthoringBundleComponents];
   }
 
   private async scanRegisteredFileMetadata(packagePath: string, errors: string[]): Promise<MetadataComponent[]> {
