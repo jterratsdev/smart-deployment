@@ -364,6 +364,76 @@ export default class AccountCard extends LightningElement {
     return projectRoot;
   }
 
+  async function createExpandedMetadataFixture(): Promise<string> {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'metadata-scanner-expanded-'));
+    tempDirectories.push(projectRoot);
+
+    await writeFile(
+      path.join(projectRoot, 'sfdx-project.json'),
+      JSON.stringify(
+        {
+          packageDirectories: [{ path: 'force-app', default: true }],
+          sourceApiVersion: '66.0',
+        },
+        null,
+        2
+      )
+    );
+
+    const baseDir = path.join(projectRoot, 'force-app', 'main', 'default');
+    await Promise.all([
+      mkdir(path.join(baseDir, 'standardValueSets'), { recursive: true }),
+      mkdir(path.join(baseDir, 'queues'), { recursive: true }),
+      mkdir(path.join(baseDir, 'brandingSets'), { recursive: true }),
+      mkdir(path.join(baseDir, 'sites'), { recursive: true }),
+      mkdir(path.join(baseDir, 'networks'), { recursive: true }),
+      mkdir(path.join(baseDir, 'EmbeddedServiceConfig'), { recursive: true }),
+      mkdir(path.join(baseDir, 'digitalExperiences', 'Pacific_Haven'), { recursive: true }),
+      mkdir(path.join(baseDir, 'aiAuthoringBundles', 'PHP_Pacific_Haven_Agent'), { recursive: true }),
+    ]);
+
+    await writeFile(
+      path.join(baseDir, 'standardValueSets', 'Lead.Status.standardValueSet-meta.xml'),
+      '<StandardValueSet xmlns="http://soap.sforce.com/2006/04/metadata" />'
+    );
+    await writeFile(
+      path.join(baseDir, 'queues', 'Case_Support.queue-meta.xml'),
+      '<Queue xmlns="http://soap.sforce.com/2006/04/metadata" />'
+    );
+    await writeFile(
+      path.join(baseDir, 'brandingSets', 'Pacific_Haven.brandingSet-meta.xml'),
+      '<BrandingSet xmlns="http://soap.sforce.com/2006/04/metadata" />'
+    );
+    await writeFile(
+      path.join(baseDir, 'sites', 'Pacific_Haven.site-meta.xml'),
+      '<CustomSite xmlns="http://soap.sforce.com/2006/04/metadata" />'
+    );
+    await writeFile(
+      path.join(baseDir, 'networks', 'Pacific_Haven.network-meta.xml'),
+      `<Network xmlns="http://soap.sforce.com/2006/04/metadata">
+  <site>Pacific_Haven</site>
+</Network>`
+    );
+    await writeFile(
+      path.join(baseDir, 'EmbeddedServiceConfig', 'Pacific_Haven.embeddedServiceConfig-meta.xml'),
+      `<EmbeddedServiceConfig xmlns="http://soap.sforce.com/2006/04/metadata">
+  <brandingSet>Pacific_Haven</brandingSet>
+  <site>Pacific_Haven</site>
+  <aiAuthoringBundle>PHP_Pacific_Haven_Agent</aiAuthoringBundle>
+</EmbeddedServiceConfig>`
+    );
+    await writeFile(
+      path.join(baseDir, 'digitalExperiences', 'Pacific_Haven', 'config.json'),
+      JSON.stringify({ site: 'Pacific_Haven', network: 'Pacific_Haven' }, null, 2)
+    );
+    await writeFile(
+      path.join(baseDir, 'aiAuthoringBundles', 'PHP_Pacific_Haven_Agent', 'PHP_Pacific_Haven_Agent.agent'),
+      'agentType: customer'
+    );
+
+    return projectRoot;
+  }
+
   afterEach(async () => {
     await Promise.all(
       tempDirectories.splice(0).map(async (tempDirectory) => rm(tempDirectory, { recursive: true, force: true }))
@@ -523,5 +593,63 @@ export default class AccountCard extends LightningElement {
     expect(
       result.components.map((metadataComponent) => `${metadataComponent.type}:${metadataComponent.name}`)
     ).to.not.include('AiAuthoringBundle:PHP_Pacific_Haven_Agent');
+  });
+
+  it('scans additional Salesforce metadata needed for wave generation', async () => {
+    const projectRoot = await createExpandedMetadataFixture();
+    const scanner = new MetadataScannerService();
+
+    const result = await scanner.scan({ sourcePath: projectRoot });
+    const componentIds = result.components.map(
+      (metadataComponent) => `${metadataComponent.type}:${metadataComponent.name}`
+    );
+
+    expect(componentIds).to.include.members([
+      'StandardValueSet:Lead.Status',
+      'EmbeddedServiceConfig:Pacific_Haven',
+      'Queue:Case_Support',
+      'BrandingSet:Pacific_Haven',
+      'DigitalExperienceBundle:Pacific_Haven',
+      'Network:Pacific_Haven',
+      'CustomSite:Pacific_Haven',
+    ]);
+
+    const embeddedServiceConfig = result.components.find(
+      (metadataComponent) => metadataComponent.type === 'EmbeddedServiceConfig'
+    );
+    const network = result.components.find((metadataComponent) => metadataComponent.type === 'Network');
+    const digitalExperience = result.components.find(
+      (metadataComponent) => metadataComponent.type === 'DigitalExperienceBundle'
+    );
+
+    expect([...embeddedServiceConfig!.dependencies]).to.include.members([
+      'BrandingSet:Pacific_Haven',
+      'CustomSite:Pacific_Haven',
+      'AiAuthoringBundle:PHP_Pacific_Haven_Agent',
+    ]);
+    expect([...network!.dependencies]).to.include('CustomSite:Pacific_Haven');
+    expect([...digitalExperience!.dependencies]).to.include.members([
+      'CustomSite:Pacific_Haven',
+      'Network:Pacific_Haven',
+    ]);
+  });
+
+  it('respects .forceignore directory patterns for additional metadata', async () => {
+    const projectRoot = await createExpandedMetadataFixture();
+    await writeFile(
+      path.join(projectRoot, '.forceignore'),
+      '**/standardValueSets/\n**/EmbeddedServiceConfig/\n',
+      'utf8'
+    );
+    const scanner = new MetadataScannerService();
+
+    const result = await scanner.scan({ sourcePath: projectRoot });
+    const componentIds = result.components.map(
+      (metadataComponent) => `${metadataComponent.type}:${metadataComponent.name}`
+    );
+
+    expect(componentIds).to.not.include('StandardValueSet:Lead.Status');
+    expect(componentIds).to.not.include('EmbeddedServiceConfig:Pacific_Haven');
+    expect(componentIds).to.include('Queue:Case_Support');
   });
 });

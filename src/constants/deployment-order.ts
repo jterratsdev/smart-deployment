@@ -117,15 +117,17 @@ export const DEPLOYMENT_ORDER: Readonly<Record<MetadataType, number>> = Object.f
   // ========== Tier 7: Experience Cloud (62-69) ==========
   BrandingSet: 62, // Branding sets
   DigitalExperienceConfig: 63, // Digital experience config
-  Site: 64, // Sites
-  DigitalExperience: 65, // Digital experiences
-  NetworkBranding: 66, // Network branding
-  Network: 67, // Networks (communities)
-  EmbeddedServiceConfig: 68, // Embedded service
-  MessagingChannel: 69, // Messaging channels
+  CustomSite: 64, // Force.com sites
+  Site: 65, // Sites
+  DigitalExperience: 66, // Digital experiences
+  DigitalExperienceBundle: 67, // Digital experience bundles
+  NetworkBranding: 68, // Network branding
+  Network: 69, // Networks (communities)
+  EmbeddedServiceConfig: 70, // Embedded service
+  MessagingChannel: 71, // Messaging channels
 
-  // ========== Tier 8: Advanced Configurations (70-74) ==========
-  OmniSupervisorConfig: 70, // Omni supervisor
+  // ========== Tier 8: Advanced Configurations (72-74) ==========
+  OmniSupervisorConfig: 72, // Omni supervisor
 
   // ========== Tier 9: Security & Access - LAST (75-79) ==========
   SharingRules: 75, // Sharing rules after everything

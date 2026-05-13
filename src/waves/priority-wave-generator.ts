@@ -24,10 +24,9 @@ const DEPLOYMENT_PRIORITY_ORDER: MetadataType[] = [
   'CustomField',
   'RecordType',
   'BusinessProcess',
+  'Queue',
   'CompactLayout',
   'Layout',
-  'Profile',
-  'PermissionSet',
   'CustomMetadata',
   'ApexClass',
   'ApexTrigger',
@@ -35,6 +34,13 @@ const DEPLOYMENT_PRIORITY_ORDER: MetadataType[] = [
   'ValidationRule',
   'WorkflowRule',
   'EmailTemplate',
+  'BrandingSet',
+  'CustomSite',
+  'Network',
+  'DigitalExperienceBundle',
+  'EmbeddedServiceConfig',
+  'Profile',
+  'PermissionSet',
 ];
 
 export type PriorityOptions = {

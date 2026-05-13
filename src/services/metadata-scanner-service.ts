@@ -38,6 +38,7 @@ import {
   scanRegisteredFileMetadata,
 } from './scanners/scanner-runtime.js';
 import { parsePermissionSetComponent, parseProfileComponent } from './scanners/security-metadata-scanner.js';
+import { scanAdditionalMetadata } from './scanners/additional-metadata-scanner.js';
 
 const logger = getLogger('MetadataScannerService');
 
@@ -184,6 +185,7 @@ export class MetadataScannerService {
       this.scanSecurityMetadata(packagePath, errors),
       this.scanExperienceMetadata(packagePath, errors),
       this.scanAIMetadata(packagePath, errors),
+      this.scanAdditionalMetadata(packagePath, errors),
     ]);
 
     return componentGroups.flat();
@@ -332,6 +334,10 @@ export class MetadataScannerService {
     );
 
     return [...botComponents, ...genAiPromptComponents, ...aiAuthoringBundleComponents];
+  }
+
+  private async scanAdditionalMetadata(packagePath: string, errors: string[]): Promise<MetadataComponent[]> {
+    return scanAdditionalMetadata(packagePath, errors, this.shouldIgnorePath);
   }
 
   private async scanRegisteredFileMetadata(packagePath: string, errors: string[]): Promise<MetadataComponent[]> {

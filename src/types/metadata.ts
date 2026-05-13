@@ -83,8 +83,10 @@ export type MetadataType =
   // Tier 7: Experience Cloud
   | 'BrandingSet'
   | 'DigitalExperienceConfig'
+  | 'CustomSite'
   | 'Site'
   | 'DigitalExperience'
+  | 'DigitalExperienceBundle'
   | 'NetworkBranding'
   | 'Network'
   | 'EmbeddedServiceConfig'

@@ -65,4 +65,48 @@ describe('WaveManifestService', () => {
     expect(content.indexOf('<name>ApexClass</name>')).to.be.lessThan(content.indexOf('<name>CustomObject</name>'));
     expect(content).to.include('<version>66.0</version>');
   });
+
+  it('includes expanded Salesforce metadata types in generated manifests', async () => {
+    const baseDir = await mkdtemp(path.join(os.tmpdir(), 'wave-manifest-expanded-'));
+    const service = new WaveManifestService();
+    const components = new Map<string, MetadataComponent>(
+      [
+        ['StandardValueSet', 'Lead.Status'],
+        ['EmbeddedServiceConfig', 'Pacific_Haven'],
+        ['Queue', 'Case_Support'],
+        ['BrandingSet', 'Pacific_Haven'],
+        ['DigitalExperienceBundle', 'Pacific_Haven'],
+        ['Network', 'Pacific_Haven'],
+        ['CustomSite', 'Pacific_Haven'],
+      ].map(([type, name]) => [
+        `${type}:${name}`,
+        {
+          name,
+          type: type as MetadataComponent['type'],
+          filePath: `force-app/main/default/${name}`,
+          dependencies: new Set<string>(),
+          dependents: new Set<string>(),
+          priorityBoost: 0,
+        },
+      ])
+    );
+
+    const manifestPath = await service.generateManifest({
+      baseDir,
+      waveNumber: 8,
+      components: [...components.keys()],
+      componentMap: components,
+      apiVersion: '66.0',
+    });
+
+    const content = await readFile(manifestPath, 'utf8');
+
+    expect(content).to.include('<name>StandardValueSet</name>');
+    expect(content).to.include('<name>EmbeddedServiceConfig</name>');
+    expect(content).to.include('<name>Queue</name>');
+    expect(content).to.include('<name>BrandingSet</name>');
+    expect(content).to.include('<name>DigitalExperienceBundle</name>');
+    expect(content).to.include('<name>Network</name>');
+    expect(content).to.include('<name>CustomSite</name>');
+  });
 });
