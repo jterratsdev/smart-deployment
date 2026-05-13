@@ -489,6 +489,132 @@ describe('Apex Class Parser', () => {
     });
   });
 
+  describe('Dynamic SOQL References', () => {
+    it('extracts field references from literal Database.query SOQL', () => {
+      const code = `
+        public class MyController {
+          public void doSomething() {
+            List<Account> records = Database.query('SELECT Id, Custom_Field__c, Name FROM Account');
+          }
+        }
+      `;
+
+      const result = parseApexClass('MyController.cls', code);
+
+      expect(result.dynamicQueryReferences).to.deep.equal([
+        {
+          objectName: 'Account',
+          fieldNames: ['Custom_Field__c', 'Name'],
+          rawQuery: 'SELECT Id, Custom_Field__c, Name FROM Account',
+          confidence: 'high',
+          origin: 'apex-string',
+        },
+      ]);
+    });
+
+    it('extracts multiple custom object fields from getQueryLocator SOQL', () => {
+      const code = `
+        public class MyBatch {
+          public Database.QueryLocator start(Database.BatchableContext context) {
+            return Database.getQueryLocator('SELECT External_Id__c, Status__c FROM Invoice__c WHERE Status__c = \\'Open\\'');
+          }
+        }
+      `;
+
+      const result = parseApexClass('MyBatch.cls', code);
+
+      expect(result.dynamicQueryReferences).to.have.lengthOf(1);
+      expect(result.dynamicQueryReferences[0]).to.include({
+        objectName: 'Invoice__c',
+        confidence: 'high',
+      });
+      expect(result.dynamicQueryReferences[0].fieldNames).to.deep.equal(['External_Id__c', 'Status__c']);
+    });
+
+    it('resolves simple string concatenation and constants used in dynamic SOQL', () => {
+      const code = `
+        public class MyController {
+          public void doSomething() {
+            String fields = 'Custom_Field__c, Other_Field__c';
+            String query = 'SELECT ' + fields + ' FROM Account';
+            Database.query(query);
+          }
+        }
+      `;
+
+      const result = parseApexClass('MyController.cls', code);
+
+      expect(result.dynamicQueryReferences).to.deep.equal([
+        {
+          objectName: 'Account',
+          fieldNames: ['Custom_Field__c', 'Other_Field__c'],
+          rawQuery: 'SELECT Custom_Field__c, Other_Field__c FROM Account',
+          confidence: 'high',
+          origin: 'apex-constant',
+        },
+      ]);
+    });
+
+    it('does not split plus characters inside SOQL string literals', () => {
+      const code = `
+        public class MyController {
+          public void doSomething() {
+            Database.query('SELECT Custom_Field__c FROM Account WHERE Name = \\'A+B\\'');
+          }
+        }
+      `;
+
+      const result = parseApexClass('MyController.cls', code);
+
+      expect(result.dynamicQueryReferences).to.deep.equal([
+        {
+          objectName: 'Account',
+          fieldNames: ['Custom_Field__c'],
+          rawQuery: "SELECT Custom_Field__c FROM Account WHERE Name = 'A+B'",
+          confidence: 'high',
+          origin: 'apex-string',
+        },
+      ]);
+    });
+
+    it('ignores non-SOQL strings passed to standard methods', () => {
+      const code = `
+        public class MyController {
+          public void doSomething() {
+            System.debug('SELECT-ish text without a FROM clause');
+            Database.query('Account');
+          }
+        }
+      `;
+
+      const result = parseApexClass('MyController.cls', code);
+
+      expect(result.dynamicQueryReferences).to.deep.equal([]);
+    });
+
+    it('marks unresolved dynamic SOQL as low confidence', () => {
+      const code = `
+        public class MyController {
+          public void doSomething(String fields) {
+            Database.query('SELECT ' + fields + ' FROM Account');
+          }
+        }
+      `;
+
+      const result = parseApexClass('MyController.cls', code);
+
+      expect(result.dynamicQueryReferences).to.deep.equal([
+        {
+          objectName: 'Account',
+          fieldNames: [],
+          rawQuery: 'SELECT {fields} FROM Account',
+          confidence: 'low',
+          origin: 'apex-string',
+        },
+      ]);
+    });
+  });
+
   describe('Complex Real-World Examples', () => {
     it('should parse a complex controller with multiple dependencies', () => {
       const code = `

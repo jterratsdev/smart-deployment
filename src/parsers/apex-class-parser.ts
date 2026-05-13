@@ -5,18 +5,30 @@ import {
   collectDependencyBuckets,
   flattenReferenceDependencies,
 } from './apex-class-dependencies.js';
+import { extractDynamicQueryReferences } from './apex-dynamic-query-analysis.js';
 import { createLexicalContext, detectTestMetadata } from './apex-class-lexical.js';
-import type { ApexDependency, ApexParseResult, ApexSymbolExtraction } from './apex-class-parser-model.js';
+import type {
+  ApexDependency,
+  ApexParseResult,
+  ApexSymbolExtraction,
+  DynamicQueryReference,
+} from './apex-class-parser-model.js';
 import { extractSymbols } from './apex-class-symbols.js';
 
-export type { ApexDependency, ApexDependencyType, ApexParseResult } from './apex-class-parser-model.js';
+export type {
+  ApexDependency,
+  ApexDependencyType,
+  ApexParseResult,
+  DynamicQueryReference,
+} from './apex-class-parser-model.js';
 
 const logger = getLogger('ApexClassParser');
 
 function buildParseResult(
   className: string,
   symbols: ApexSymbolExtraction,
-  dependencies: ApexDependency[]
+  dependencies: ApexDependency[],
+  dynamicQueryReferences: DynamicQueryReference[] = []
 ): ApexParseResult {
   return {
     className,
@@ -24,6 +36,7 @@ function buildParseResult(
     extends: symbols.extendsClass,
     implements: symbols.implementsList,
     dependencies,
+    dynamicQueryReferences,
     innerClasses: symbols.innerClasses,
   };
 }
@@ -54,13 +67,15 @@ export function parseApexClass(filePath: string, content: string): ApexParseResu
     const testMetadata = detectTestMetadata(lexicalContext);
     const dependencyBuckets = collectDependencyBuckets(lexicalContext, symbols);
     const dependencies = collectDependencies(dependencyBuckets);
-    const result = buildParseResult(lexicalContext.className, symbols, dependencies);
+    const dynamicQueryReferences = extractDynamicQueryReferences(lexicalContext.cleanCode);
+    const result = buildParseResult(lexicalContext.className, symbols, dependencies, dynamicQueryReferences);
 
     logger.debug(`Parsed Apex class: ${lexicalContext.className}`, {
       dependencies: dependencies.length,
       innerClasses: symbols.innerClasses.length,
       isTestClass: testMetadata.isTestClass,
       referenceDependencies: flattenReferenceDependencies(dependencyBuckets.referenceDependencies).length,
+      dynamicQueryReferences: dynamicQueryReferences.length,
     });
 
     return result;

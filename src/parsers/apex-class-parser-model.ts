@@ -24,6 +24,18 @@ export type ApexDependency = {
   namespace?: string;
 };
 
+export type DynamicQueryReferenceOrigin = 'apex-string' | 'apex-constant';
+
+export type DynamicQueryReferenceConfidence = 'high' | 'medium' | 'low';
+
+export type DynamicQueryReference = {
+  objectName?: string;
+  fieldNames: string[];
+  rawQuery: string;
+  confidence: DynamicQueryReferenceConfidence;
+  origin: DynamicQueryReferenceOrigin;
+};
+
 /**
  * Result of parsing an Apex class
  * Optionally includes metadata from .cls-meta.xml
@@ -34,6 +46,7 @@ export type ApexParseResult = {
   extends?: string;
   implements: string[];
   dependencies: ApexDependency[];
+  dynamicQueryReferences: DynamicQueryReference[];
   innerClasses: string[];
   metadata?: ApexClassMetadata;
 };
