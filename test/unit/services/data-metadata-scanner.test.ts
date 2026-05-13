@@ -72,6 +72,10 @@ describe('data-metadata-scanner helpers', () => {
     <field>Queue__c</field>
     <value>Support Queue</value>
   </values>
+  <values>
+    <field>Query__c</field>
+    <value>SELECT Id, External_Id__c FROM Invoice__c</value>
+  </values>
 </CustomMetadata>`
     );
 
@@ -111,6 +115,16 @@ describe('data-metadata-scanner helpers', () => {
 
     expect(customMetadataRecord).to.exist;
     expect(customMetadataRecord?.name).to.equal('RoutingConfig__mdt.Default');
-    expect([...customMetadataRecord!.dependencies]).to.have.members(['CustomMetadata:RoutingConfig__mdt']);
+    expect([...customMetadataRecord!.dependencies]).to.have.members([
+      'CustomMetadata:RoutingConfig__mdt',
+      'CustomField:Invoice__c.External_Id__c',
+    ]);
+    expect(customMetadataRecord!.dependencyDetails).to.deep.include({
+      nodeId: 'CustomField:Invoice__c.External_Id__c',
+      kind: 'hard',
+      source: 'parser',
+      reason: 'Dynamic SOQL configured in RoutingConfig__mdt.Default.Query__c',
+      confidence: 1,
+    });
   });
 });

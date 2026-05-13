@@ -107,6 +107,41 @@ describe('DependencyGraphBuilder', () => {
       expect(deps!.has('ApexClass:Logger')).to.be.true;
     });
 
+    it('should add graph edges from structured dynamic query dependency details', () => {
+      const builder = new DependencyGraphBuilder();
+      const service: MetadataComponent = {
+        name: 'AccountQueryService',
+        type: 'ApexClass',
+        filePath: 'force-app/main/default/classes/AccountQueryService.cls',
+        dependencies: new Set(['CustomField:Account.External_Id__c']),
+        dependencyDetails: [
+          {
+            nodeId: 'CustomField:Account.External_Id__c',
+            kind: 'hard',
+            source: 'parser',
+            reason: 'Dynamic SOQL apex-string reference',
+            confidence: 1,
+          },
+        ],
+        dependents: new Set(),
+        priorityBoost: 0,
+      };
+
+      builder.addComponent(service);
+
+      const result = builder.build();
+
+      expect(result.graph.get('ApexClass:AccountQueryService')!.has('CustomField:Account.External_Id__c')).to.be.true;
+      expect(result.edges).to.deep.include({
+        from: 'ApexClass:AccountQueryService',
+        to: 'CustomField:Account.External_Id__c',
+        type: 'hard',
+        reason: 'Dynamic SOQL apex-string reference',
+        confidence: 1,
+        source: 'parser',
+      });
+    });
+
     /**
      * @ac US-028-AC-3: Handle bidirectional dependencies
      */

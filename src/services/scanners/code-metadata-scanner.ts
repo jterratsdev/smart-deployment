@@ -3,8 +3,9 @@ import * as path from 'node:path';
 import { parseAura } from '../../parsers/aura-parser.js';
 import { parseApexClass } from '../../parsers/apex-class-parser.js';
 import { parseApexTrigger } from '../../parsers/apex-trigger-parser.js';
+import { buildDynamicQueryDependencyReferences } from '../../dependencies/dynamic-query-dependency-references.js';
 import { parseLWC } from '../../parsers/lwc-parser.js';
-import type { MetadataComponent } from '../../types/metadata.js';
+import type { MetadataComponent, MetadataDependencyReference } from '../../types/metadata.js';
 import { getLogger } from '../../utils/logger.js';
 
 const logger = getLogger('CodeMetadataScanner');
@@ -37,6 +38,18 @@ function toNodeIds(dependencies: Iterable<string>, defaultType: string): Set<str
   );
 }
 
+function buildDeclaredDependencyDetails(
+  dependencies: Iterable<string>,
+  defaultType: string
+): MetadataDependencyReference[] {
+  return [...toNodeIds(dependencies, defaultType)].map((nodeId) => ({
+    nodeId,
+    kind: 'hard',
+    source: 'parser',
+    reason: 'Declared dependency',
+  }));
+}
+
 function isApexTestClassContent(content: string, className: string): boolean {
   if (/@isTest\b/i.test(content) || /\btestMethod\b/i.test(content)) {
     return true;
@@ -53,15 +66,19 @@ export async function parseApexClassComponent(
   try {
     const content = await context.readFile(filePath, 'utf-8');
     const parsed = parseApexClass(filePath, content);
+    const declaredDependencyDetails = buildDeclaredDependencyDetails(
+      parsed.dependencies.map((dependency) => dependency.className),
+      'ApexClass'
+    );
+    const dynamicQueryDependencyDetails = buildDynamicQueryDependencyReferences(parsed.dynamicQueryReferences);
+    const dependencyDetails = [...declaredDependencyDetails, ...dynamicQueryDependencyDetails];
 
     return {
       name: parsed.className,
       type: 'ApexClass' as const,
       filePath,
-      dependencies: toNodeIds(
-        parsed.dependencies.map((dependency) => dependency.className),
-        'ApexClass'
-      ),
+      dependencies: new Set<string>(dependencyDetails.map((dependency) => dependency.nodeId)),
+      dependencyDetails,
       dependents: new Set<string>(),
       priorityBoost: 0,
       isTest: isApexTestClassContent(content, parsed.className),

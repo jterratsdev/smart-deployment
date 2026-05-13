@@ -55,6 +55,58 @@ private class ServiceValidationSpec {
     expect((component as { isTest?: boolean }).isTest).to.equal(true);
   });
 
+  it('adds dynamic SOQL field references as Apex class dependencies', async () => {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'code-scanner-apex-dq-'));
+    tempDirectories.push(projectRoot);
+
+    const classPath = path.join(projectRoot, 'AccountQueryService.cls');
+    await writeFile(
+      classPath,
+      `public class AccountQueryService {
+  public void load() {
+    Database.query('SELECT Id, External_Id__c FROM Account');
+  }
+}`
+    );
+
+    const component = await parseApexClassComponent(classPath, createContext([]));
+
+    expect(component).to.exist;
+    expect([...component!.dependencies]).to.include('CustomField:Account.External_Id__c');
+    expect(component!.dependencyDetails).to.deep.include({
+      nodeId: 'CustomField:Account.External_Id__c',
+      kind: 'hard',
+      source: 'parser',
+      reason: 'Dynamic SOQL apex-string reference',
+      confidence: 1,
+    });
+  });
+
+  it('preserves declared Apex class dependencies when dynamic SOQL references are present', async () => {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'code-scanner-apex-dq-static-'));
+    tempDirectories.push(projectRoot);
+
+    const classPath = path.join(projectRoot, 'AccountQueryService.cls');
+    await writeFile(
+      classPath,
+      `public class AccountQueryService {
+  private Logger logger;
+  public void load() {
+    Database.query('SELECT Custom_Field__c FROM Account');
+  }
+}`
+    );
+
+    const component = await parseApexClassComponent(classPath, createContext([]));
+
+    expect(component).to.exist;
+    expect([...component!.dependencies]).to.include.members([
+      'ApexClass:Logger',
+      'CustomField:Account.Custom_Field__c',
+    ]);
+    expect(component!.dependencyDetails?.map((dependency) => dependency.nodeId)).to.include('ApexClass:Logger');
+  });
+
   it('parses lwc bundles using metadata and code files together', async () => {
     const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'code-scanner-lwc-'));
     tempDirectories.push(projectRoot);

@@ -6,8 +6,9 @@ import {
   parseCustomMetadataRecord,
   parseCustomMetadataType,
 } from '../../parsers/custom-metadata-parser.js';
+import { buildDynamicQueryDependencyReferences } from '../../dependencies/dynamic-query-dependency-references.js';
 import { parseCustomObject } from '../../parsers/custom-object-parser.js';
-import type { MetadataComponent } from '../../types/metadata.js';
+import type { MetadataComponent, MetadataDependencyReference } from '../../types/metadata.js';
 
 export async function parseCustomObjectComponent(objectDir: string): Promise<MetadataComponent | undefined> {
   const objectName = path.basename(objectDir);
@@ -88,13 +89,33 @@ export async function parseCustomMetadataComponents(cmtDir: string): Promise<Met
       dependents: new Set<string>(),
       priorityBoost: 0,
     },
-    ...grouped.records.map((record) => ({
-      name: record.fullName,
-      type: 'CustomMetadataRecord' as const,
-      filePath: path.join(cmtDir, `${record.fullName}.md`),
-      dependencies: new Set<string>([`CustomMetadata:${typeName}`]),
-      dependents: new Set<string>(),
-      priorityBoost: 0,
-    })),
+    ...grouped.records.map((record) => {
+      const dependencyDetails = buildCustomMetadataRecordDependencyDetails(typeName, record);
+
+      return {
+        name: record.fullName,
+        type: 'CustomMetadataRecord' as const,
+        filePath: path.join(cmtDir, `${record.fullName}.md`),
+        dependencies: new Set<string>(dependencyDetails.map((dependency) => dependency.nodeId)),
+        dependencyDetails,
+        dependents: new Set<string>(),
+        priorityBoost: 0,
+      };
+    }),
+  ];
+}
+
+function buildCustomMetadataRecordDependencyDetails(
+  typeName: string,
+  record: { dynamicQueryReferences: Parameters<typeof buildDynamicQueryDependencyReferences>[0] }
+): MetadataDependencyReference[] {
+  return [
+    {
+      nodeId: `CustomMetadata:${typeName}`,
+      kind: 'hard',
+      source: 'parser',
+      reason: 'Declared custom metadata type dependency',
+    },
+    ...buildDynamicQueryDependencyReferences(record.dynamicQueryReferences),
   ];
 }
