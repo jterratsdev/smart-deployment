@@ -2,8 +2,13 @@ import { CycleRemediationPlanner } from '../dependencies/cycle-remediation-plann
 import { CycleRemediationRunner } from './cycle-remediation-runner.js';
 import { DeploymentContext } from './deployment-context-service.js';
 import { DeploymentRunner } from './deployment-runner.js';
+import {
+  DynamicQueryTargetValidator,
+  type DynamicQueryTargetValidationResult,
+} from './dynamic-query-target-validator.js';
 import { DeploymentTracker } from './deployment-tracker.js';
 import { SfCliIntegration } from './sf-cli-integration.js';
+import { SfCliMetadataLookup } from './sf-cli-metadata-lookup.js';
 import { StateManager } from './state-manager.js';
 import { TestPlanService } from './test-plan-service.js';
 
@@ -24,6 +29,7 @@ type StartExecutionServiceDependencies = {
   testPlanService?: TestPlanService;
   cycleRemediationRunner?: CycleRemediationRunner;
   deploymentRunner?: DeploymentRunner;
+  dynamicQueryTargetValidator?: DynamicQueryTargetValidator;
   createSfCli?: () => SfCliIntegration;
   createStateManager?: (baseDir?: string) => StateManager;
   createTracker?: () => DeploymentTracker;
@@ -34,6 +40,7 @@ export class StartExecutionService {
   private readonly testPlanService: TestPlanService;
   private readonly cycleRemediationRunner: CycleRemediationRunner;
   private readonly deploymentRunner: DeploymentRunner;
+  private readonly dynamicQueryTargetValidator: DynamicQueryTargetValidator;
   private readonly createSfCli: NonNullable<StartExecutionServiceDependencies['createSfCli']>;
   private readonly createStateManager: NonNullable<StartExecutionServiceDependencies['createStateManager']>;
   private readonly createTracker: NonNullable<StartExecutionServiceDependencies['createTracker']>;
@@ -43,6 +50,8 @@ export class StartExecutionService {
     this.testPlanService = dependencies.testPlanService ?? new TestPlanService();
     this.cycleRemediationRunner = dependencies.cycleRemediationRunner ?? new CycleRemediationRunner();
     this.deploymentRunner = dependencies.deploymentRunner ?? new DeploymentRunner();
+    this.dynamicQueryTargetValidator =
+      dependencies.dynamicQueryTargetValidator ?? new DynamicQueryTargetValidator(new SfCliMetadataLookup());
     this.createSfCli = dependencies.createSfCli ?? ((): SfCliIntegration => new SfCliIntegration());
     this.createStateManager =
       dependencies.createStateManager ??
@@ -92,11 +101,13 @@ export class StartExecutionService {
     const tracker = this.createTracker();
     const deploymentId = this.createDeploymentId();
 
-    if (remediationPlan.cycles.length > 0) {
-      if (!options.targetOrg) {
-        throw new Error('The --target-org flag is required for cycle remediation deployments.');
-      }
+    if (!options.targetOrg) {
+      throw new Error('The --target-org flag is required for real deployments.');
+    }
 
+    await this.assertDynamicQueryFieldsAreSafe(scanResult.dependencyResult, options.targetOrg);
+
+    if (remediationPlan.cycles.length > 0) {
       await this.cycleRemediationRunner.execute({
         deploymentId,
         targetOrg: options.targetOrg,
@@ -112,10 +123,6 @@ export class StartExecutionService {
       });
 
       return { kind: 'executed' };
-    }
-
-    if (!options.targetOrg) {
-      throw new Error('The --target-org flag is required for real deployments.');
     }
 
     await this.deploymentRunner.execute({
@@ -135,5 +142,28 @@ export class StartExecutionService {
     });
 
     return { kind: 'executed' };
+  }
+
+  private async assertDynamicQueryFieldsAreSafe(
+    dependencyResult: DeploymentContext['scanResult']['dependencyResult'],
+    targetOrg: string
+  ): Promise<void> {
+    const validation = await this.dynamicQueryTargetValidator.validate(dependencyResult, targetOrg);
+    if (validation.missingFields.length === 0) {
+      return;
+    }
+
+    throw new Error(this.formatDynamicQueryFieldError(validation));
+  }
+
+  private formatDynamicQueryFieldError(validation: DynamicQueryTargetValidationResult): string {
+    return [
+      'Dynamic SOQL prerequisites are missing in the target org.',
+      ...validation.missingFields.map(
+        (field) =>
+          `- ${field.consumerNodeId} requires ${field.fieldNodeId} (${field.reason ?? 'dynamic query reference'}).`
+      ),
+      'Install the missing CustomField metadata in an earlier wave or deploy it to the target org before this consumer.',
+    ].join('\n');
   }
 }
