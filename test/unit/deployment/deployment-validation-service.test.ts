@@ -18,7 +18,7 @@ describe('DeploymentValidationService', () => {
     createdRoots.clear();
   });
 
-  it('validates a healthy project without executing deployment', async () => {
+  it('validates a healthy project wave plan', async () => {
     const fixture = await fixtures.createStandardProject('validation-service-valid');
     createdRoots.add(fixture.structure.root);
 

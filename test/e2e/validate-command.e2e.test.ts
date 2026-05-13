@@ -25,7 +25,7 @@ describe('E2E: Validate Command - US-067', () => {
     createdRoots.clear();
   });
 
-  it('validates deployment without executing it', async () => {
+  it('validates a local wave plan', async () => {
     const fixture = await fixtures.createStandardProject('validate-e2e-valid');
     createdRoots.add(fixture.structure.root);
 

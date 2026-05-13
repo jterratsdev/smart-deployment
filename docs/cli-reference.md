@@ -59,7 +59,7 @@ Important:
 
 ## `sf smart-deployment validate`
 
-Validate deployment without executing it.
+Validate the local wave plan without deploying.
 
 Supported flags:
 
@@ -72,7 +72,7 @@ Behavior:
 - validates the scanned project structure and generated waves
 - reports issues and summary data
 - can enrich validation with AI wave analysis
-- does not execute deployment
+- does not execute Salesforce deployment validation
 - focuses on deployment readiness and risk reporting, not on rehearsing the full `start` command flow
 
 Difference from `start --dry-run`:

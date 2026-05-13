@@ -99,6 +99,7 @@ describe('NUT: start command', () => {
 
     const result = execNutCommand('start --help', homeDir);
 
+    expect(result.shellOutput.stdout).to.include('--source-path');
     expect(result.shellOutput.stdout).to.include('--use-ai');
     expect(result.shellOutput.stdout).to.include('--org-type');
     expect(result.shellOutput.stdout).to.include('--industry');

@@ -49,7 +49,7 @@ export class DeploymentValidationError extends DeploymentError {
       validationError: true,
     });
 
-    this.suggestions.push('Run validation before deploying: sf project deploy validate');
+    this.suggestions.push('Run wave plan validation before deploying: sf smart-deployment validate');
     this.suggestions.push('Fix validation errors and retry');
   }
 }

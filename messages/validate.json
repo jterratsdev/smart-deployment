@@ -1,5 +1,5 @@
 {
-  "summary": "Validate deployment without executing it",
+  "summary": "Validate the local wave plan without deploying",
   "examples": [
     "<%= config.bin %> <%= command.id %> --source-path force-app",
     "<%= config.bin %> <%= command.id %> --source-path force-app --use-ai"

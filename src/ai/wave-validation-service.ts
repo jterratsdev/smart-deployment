@@ -109,7 +109,7 @@ export class WaveValidationService {
 
   /**
    * @ac US-056-AC-1: Send wave structure to Agentforce
-   * Validate deployment waves using AI
+   * Validate a local wave plan using AI
    */
   public async validateWaves(waves: Wave[]): Promise<WaveValidationResult> {
     const startTime = Date.now();

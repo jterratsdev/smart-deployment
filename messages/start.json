@@ -2,14 +2,14 @@
   "summary": "Deploy Salesforce metadata intelligently with automatic wave generation",
   "description": "Analyzes your Salesforce metadata, generates deployment waves based on dependencies, and executes the deployment sequentially. This command orchestrates the entire smart deployment workflow.",
   "examples": [
-    "<%= config.bin %> <%= command.id %> --target-org myorg",
-    "<%= config.bin %> <%= command.id %> --target-org myorg --dry-run",
-    "<%= config.bin %> <%= command.id %> --target-org myorg --validate-only",
-    "<%= config.bin %> <%= command.id %> --target-org myorg --skip-tests"
+    "<%= config.bin %> <%= command.id %> --source-path force-app --target-org myorg",
+    "<%= config.bin %> <%= command.id %> --source-path force-app --target-org myorg --dry-run",
+    "<%= config.bin %> <%= command.id %> --source-path force-app --target-org myorg --validate-only",
+    "<%= config.bin %> <%= command.id %> --source-path force-app --target-org myorg --skip-tests"
   ],
   "flags.target-org.summary": "Target Salesforce org for deployment",
   "flags.dry-run.summary": "Preview deployment without executing",
-  "flags.validate-only.summary": "Validate deployment without committing changes",
+  "flags.validate-only.summary": "Validate the local wave plan without deploying",
   "flags.skip-tests.summary": "Skip running tests during deployment",
   "flags.source-path.summary": "Path to the Salesforce project to analyze and deploy",
   "flags.source-path.description": "Defaults to the current working directory when omitted",

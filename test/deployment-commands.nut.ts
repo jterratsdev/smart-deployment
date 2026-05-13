@@ -18,7 +18,7 @@ describe('NUT: validate, status, and resume commands', () => {
     await cleanupNutContexts(tempDirs);
   });
 
-  it('validate succeeds against a standard project without executing deployment', async () => {
+  it('validate succeeds against a standard project wave plan', async () => {
     const { tempDir, homeDir } = await createNutContext();
     tempDirs.push(tempDir);
     const projectRoot = await createSalesforceProject(tempDir, 'validate-project', {

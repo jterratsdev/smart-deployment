@@ -143,7 +143,7 @@ export class DeploymentValidationService {
 
     const valid = issues.every((issue) => issue.severity !== 'error');
 
-    logger.info('Deployment validation completed', {
+    logger.info('Wave plan validation completed', {
       components: scanResult.components.length,
       totalWaves: waveResult.waves.length,
       xmlFilesValidated: xmlFiles.length,

@@ -90,7 +90,7 @@ sf smart-deployment start \
   --allow-cycle-remediation
 ```
 
-Validate without executing deployment:
+Validate the local wave plan:
 
 ```bash
 sf smart-deployment validate \
@@ -100,7 +100,7 @@ sf smart-deployment validate \
 
 When to use each:
 
-- use `validate` for a readiness and risk check
+- use `validate` for local wave plan readiness and risk checks
 - use `start --dry-run` to rehearse the real deployment command flow without executing the deploy
 
 Show persisted deployment state:
