@@ -1,4 +1,5 @@
-import type { DynamicQueryReference, DynamicQueryReferenceOrigin } from './apex-class-parser-model.js';
+import { parseSoqlReference } from './dynamic-query-reference.js';
+import type { DynamicQueryReference, DynamicQueryReferenceOrigin } from './dynamic-query-reference.js';
 
 const DYNAMIC_QUERY_CALL_PATTERN = /\b(?:Database\.(?:query|getQueryLocator)|Search\.query)\s*\(/g;
 const STRING_ASSIGNMENT_PATTERN = /\bString\s+([a-zA-Z][a-zA-Z0-9_]*)\s*=\s*([^;]+);/g;
@@ -175,54 +176,13 @@ function readStringLiteral(expression: string): string | null {
 }
 
 function parseDynamicQueryReference(resolved: ResolvedExpression): DynamicQueryReference | null {
-  const query = normalizeQueryWhitespace(resolved.value);
-  if (!/\bselect\b/i.test(query) || !/\bfrom\b/i.test(query)) {
+  const reference = parseSoqlReference(resolved.value, resolved.origin);
+  if (!reference) {
     return null;
   }
 
-  const soql = /\bselect\s+(.+?)\s+from\s+([a-zA-Z][a-zA-Z0-9_]*(?:__c|__mdt)?)/i.exec(query);
-  if (!soql) {
-    return {
-      rawQuery: query,
-      fieldNames: [],
-      confidence: 'low',
-      origin: resolved.origin,
-    };
-  }
-
-  const objectName = soql[2];
-  const fieldNames = extractFieldNames(soql[1]);
-
   return {
-    objectName,
-    fieldNames,
-    rawQuery: query,
-    confidence: resolved.fullyResolved && fieldNames.length > 0 ? 'high' : 'low',
-    origin: resolved.origin,
+    ...reference,
+    confidence: resolved.fullyResolved ? reference.confidence : 'low',
   };
-}
-
-function extractFieldNames(selectClause: string): string[] {
-  const fields: string[] = [];
-  const seen = new Set<string>();
-
-  for (const candidate of selectClause.split(',')) {
-    const fieldName = candidate.trim().split(/\s+/)[0];
-    if (!isSimpleFieldReference(fieldName) || seen.has(fieldName)) {
-      continue;
-    }
-
-    seen.add(fieldName);
-    fields.push(fieldName);
-  }
-
-  return fields;
-}
-
-function isSimpleFieldReference(fieldName: string): boolean {
-  return fieldName !== 'Id' && /^[a-zA-Z][a-zA-Z0-9_]*(?:__c)?$/.test(fieldName);
-}
-
-function normalizeQueryWhitespace(query: string): string {
-  return query.replace(/\s+/g, ' ').trim();
 }

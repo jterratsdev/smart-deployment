@@ -225,6 +225,66 @@ describe('Custom Metadata Parser', () => {
       expect(result.values['TargetObject__c']).to.equal('Account');
       expect(result.values['IsEnabled__c']).to.equal(true);
     });
+
+    it('extracts SOQL references from configurable query values', async () => {
+      const metadata = `<?xml version="1.0" encoding="UTF-8"?>
+        <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata">
+          <label>Account Query</label>
+          <values>
+            <field>Query__c</field>
+            <value>SELECT Id, External_Id__c, Status__c FROM Account WHERE Status__c = 'Open'</value>
+          </values>
+        </CustomMetadata>
+      `;
+
+      const result = await parseCustomMetadataRecord('Dynamic_Query__mdt.Account', metadata);
+
+      expect(result.dynamicQueryReferences).to.deep.equal([
+        {
+          objectName: 'Account',
+          fieldNames: ['External_Id__c', 'Status__c'],
+          rawQuery: "SELECT Id, External_Id__c, Status__c FROM Account WHERE Status__c = 'Open'",
+          confidence: 'high',
+          origin: 'custom-metadata-value',
+          source: {
+            recordName: 'Dynamic_Query__mdt.Account',
+            fieldName: 'Query__c',
+          },
+        },
+      ]);
+    });
+
+    it('extracts field-list references from configurable object and field values', async () => {
+      const metadata = `<?xml version="1.0" encoding="UTF-8"?>
+        <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata">
+          <label>Field List Query</label>
+          <values>
+            <field>TargetObject__c</field>
+            <value>Invoice__c</value>
+          </values>
+          <values>
+            <field>FieldList__c</field>
+            <value>External_Id__c, Amount__c, Name</value>
+          </values>
+        </CustomMetadata>
+      `;
+
+      const result = await parseCustomMetadataRecord('Dynamic_Query__mdt.Invoice', metadata);
+
+      expect(result.dynamicQueryReferences).to.deep.equal([
+        {
+          objectName: 'Invoice__c',
+          fieldNames: ['External_Id__c', 'Amount__c', 'Name'],
+          rawQuery: 'External_Id__c, Amount__c, Name',
+          confidence: 'medium',
+          origin: 'custom-metadata-value',
+          source: {
+            recordName: 'Dynamic_Query__mdt.Invoice',
+            fieldName: 'FieldList__c',
+          },
+        },
+      ]);
+    });
   });
 
   describe('Grouping Type with Records', () => {
@@ -294,6 +354,7 @@ describe('Custom Metadata Parser', () => {
         fullName: `SmallConfig.Record${i + 1}`,
         label: `Record ${i + 1}`,
         values: {},
+        dynamicQueryReferences: [],
       }));
 
       const grouped = groupCustomMetadataWithRecords(typeResult, records);
@@ -318,6 +379,7 @@ describe('Custom Metadata Parser', () => {
         fullName: `LargeConfig.Record${i + 1}`,
         label: `Record ${i + 1}`,
         values: {},
+        dynamicQueryReferences: [],
       }));
 
       const grouped = groupCustomMetadataWithRecords(typeResult, records);
@@ -342,6 +404,7 @@ describe('Custom Metadata Parser', () => {
         fullName: `HugeConfig.Record${i + 1}`,
         label: `Record ${i + 1}`,
         values: {},
+        dynamicQueryReferences: [],
       }));
 
       const grouped = groupCustomMetadataWithRecords(typeResult, records);
@@ -360,8 +423,8 @@ describe('Custom Metadata Parser', () => {
 
       const typeResult = await parseCustomMetadataType('Config__mdt', typeMetadata);
       const records = [
-        { fullName: 'Config.Record1', label: 'Record 1', values: {} },
-        { fullName: 'Config.Record2', label: 'Record 2', values: {} },
+        { fullName: 'Config.Record1', label: 'Record 1', values: {}, dynamicQueryReferences: [] },
+        { fullName: 'Config.Record2', label: 'Record 2', values: {}, dynamicQueryReferences: [] },
       ];
 
       const grouped = groupCustomMetadataWithRecords(typeResult, records);

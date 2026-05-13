@@ -3,6 +3,8 @@ import type { ApexClassMetadata } from '../types/salesforce/apex.js';
 /**
  * Apex class dependency types
  */
+import type { DynamicQueryReference } from './dynamic-query-reference.js';
+
 export type ApexDependencyType =
   | 'extends'
   | 'implements'
@@ -22,18 +24,6 @@ export type ApexDependency = {
   isStandard: boolean;
   isManagedPackage: boolean;
   namespace?: string;
-};
-
-export type DynamicQueryReferenceOrigin = 'apex-string' | 'apex-constant';
-
-export type DynamicQueryReferenceConfidence = 'high' | 'medium' | 'low';
-
-export type DynamicQueryReference = {
-  objectName?: string;
-  fieldNames: string[];
-  rawQuery: string;
-  confidence: DynamicQueryReferenceConfidence;
-  origin: DynamicQueryReferenceOrigin;
 };
 
 /**

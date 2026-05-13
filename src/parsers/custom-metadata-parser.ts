@@ -7,6 +7,8 @@ import type {
   CustomMetadataRecord as CMDRecord,
   CustomMetadataFieldType,
 } from '../types/salesforce/custom-metadata.js';
+import { extractCustomMetadataDynamicQueryReferences } from './custom-metadata-dynamic-query-analysis.js';
+import type { DynamicQueryReference } from './dynamic-query-reference.js';
 
 const logger = getLogger('CustomMetadataParser');
 
@@ -31,6 +33,7 @@ export type CustomMetadataDependency = {
 export type CustomMetadataRecord = Omit<CMDRecord, 'values'> & {
   fullName: string;
   values: Record<string, unknown>; // Simplified from CustomMetadataRecordValue[] for easier access
+  dynamicQueryReferences: DynamicQueryReference[];
 };
 
 /**
@@ -230,10 +233,12 @@ export async function parseCustomMetadataRecord(
       label,
       protected: protectedFlag,
       values,
+      dynamicQueryReferences: extractCustomMetadataDynamicQueryReferences(recordName, values),
     };
 
     logger.debug(`Parsed custom metadata record: ${recordName}`, {
       valuesCount: Object.keys(values).length,
+      dynamicQueryReferences: record.dynamicQueryReferences.length,
     });
 
     return record;

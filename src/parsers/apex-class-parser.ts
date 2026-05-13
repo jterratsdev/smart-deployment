@@ -7,20 +7,12 @@ import {
 } from './apex-class-dependencies.js';
 import { extractDynamicQueryReferences } from './apex-dynamic-query-analysis.js';
 import { createLexicalContext, detectTestMetadata } from './apex-class-lexical.js';
-import type {
-  ApexDependency,
-  ApexParseResult,
-  ApexSymbolExtraction,
-  DynamicQueryReference,
-} from './apex-class-parser-model.js';
+import type { ApexDependency, ApexParseResult, ApexSymbolExtraction } from './apex-class-parser-model.js';
 import { extractSymbols } from './apex-class-symbols.js';
+import type { DynamicQueryReference } from './dynamic-query-reference.js';
+export type { DynamicQueryReference } from './dynamic-query-reference.js';
 
-export type {
-  ApexDependency,
-  ApexDependencyType,
-  ApexParseResult,
-  DynamicQueryReference,
-} from './apex-class-parser-model.js';
+export type { ApexDependency, ApexDependencyType, ApexParseResult } from './apex-class-parser-model.js';
 
 const logger = getLogger('ApexClassParser');
 
