@@ -13,28 +13,14 @@
 
 import { getLogger } from '../utils/logger.js';
 import type { NodeId, DependencyGraph } from '../types/dependency.js';
-import { DEFAULT_GRAPH_DEPENDENCY_KIND, shouldTraverseDependencyKind } from './dependency-semantics.js';
+import { calculateOverallImpactLevel, calculateRiskScore, getImpactLevel } from './dependency-impact-scoring.js';
+import { DependencyImpactTraversal } from './dependency-impact-traversal.js';
 
 const logger = getLogger('DependencyImpactAnalyzer');
-
-type TraversalNode = {
-  nodeId: NodeId;
-  depth: number;
-};
-
-type DistanceNode = {
-  nodeId: NodeId;
-  distance: number;
-};
 
 type ImpactAggregate = {
   impacts: Map<NodeId, ComponentImpact>;
   allAffected: Set<NodeId>;
-};
-
-type ImpactTraversal = {
-  affected: Set<NodeId>;
-  impactRadius: number;
 };
 
 type TestBuckets = {
@@ -124,6 +110,7 @@ export class DependencyImpactAnalyzer {
   private graph: DependencyGraph;
   private reverseGraph: DependencyGraph;
   private options: Required<ImpactAnalysisOptions>;
+  private traversal: DependencyImpactTraversal;
 
   public constructor(graph: DependencyGraph, reverseGraph: DependencyGraph, options: ImpactAnalysisOptions = {}) {
     this.graph = graph;
@@ -133,6 +120,10 @@ export class DependencyImpactAnalyzer {
       includeTests: options.includeTests ?? true,
       criticalThreshold: options.criticalThreshold ?? 10,
     };
+    this.traversal = new DependencyImpactTraversal(this.reverseGraph, {
+      maxDepth: this.options.maxDepth,
+      includeTests: this.options.includeTests,
+    });
 
     logger.debug('Initialized DependencyImpactAnalyzer', {
       nodes: this.graph.size,
@@ -151,7 +142,7 @@ export class DependencyImpactAnalyzer {
     const startTime = Date.now();
     const aggregate = this.collectImpactAggregate(changedComponents);
     const criticalComponents = this.identifyCriticalComponents();
-    const overallImpactLevel = this.calculateOverallImpactLevel(aggregate.impacts);
+    const overallImpactLevel = calculateOverallImpactLevel(aggregate.impacts);
     const testScope = this.generateTestScope(Array.from(aggregate.allAffected), aggregate.impacts);
 
     const duration = Date.now() - startTime;
@@ -178,9 +169,13 @@ export class DependencyImpactAnalyzer {
    */
   private calculateImpact(nodeId: NodeId): ComponentImpact {
     const directDependents = Array.from(this.reverseGraph.get(nodeId) ?? []);
-    const traversal = this.analyzeDependentTraversal(nodeId);
-    const riskScore = this.calculateRiskScore(directDependents.length, traversal.affected.size);
-    const impactLevel = DependencyImpactAnalyzer.getImpactLevel(riskScore);
+    const traversal = this.traversal.analyzeDependents(nodeId);
+    const riskScore = calculateRiskScore(
+      directDependents.length,
+      traversal.affected.size,
+      this.options.criticalThreshold
+    );
+    const impactLevel = getImpactLevel(riskScore);
 
     return {
       nodeId,
@@ -191,100 +186,6 @@ export class DependencyImpactAnalyzer {
       riskScore,
       isCritical: directDependents.length >= this.options.criticalThreshold,
     };
-  }
-
-  private analyzeDependentTraversal(nodeId: NodeId): ImpactTraversal {
-    const affected = this.findAllDependents(nodeId);
-    return {
-      affected,
-      impactRadius: this.calculateImpactRadius(nodeId, affected),
-    };
-  }
-
-  /**
-   * Find all dependents (transitive closure) of a component using BFS
-   */
-  private findAllDependents(nodeId: NodeId): Set<NodeId> {
-    const affected = new Set<NodeId>();
-    const queue: TraversalNode[] = [{ nodeId, depth: 0 }];
-    const visited = new Set<NodeId>();
-
-    while (queue.length > 0) {
-      const { nodeId: current, depth } = queue.shift()!;
-
-      if (visited.has(current) || depth > this.options.maxDepth) {
-        continue;
-      }
-
-      visited.add(current);
-      affected.add(current);
-
-      const dependents = this.collectTraversableDependents(current);
-      for (const dependent of dependents) {
-        if (!visited.has(dependent)) {
-          queue.push({ nodeId: dependent, depth: depth + 1 });
-        }
-      }
-    }
-
-    // Remove the original node from affected set
-    affected.delete(nodeId);
-
-    return affected;
-  }
-
-  /**
-   * Calculate impact radius (maximum distance to affected component)
-   */
-  private calculateImpactRadius(nodeId: NodeId, affected: Set<NodeId>): number {
-    let maxRadius = 0;
-    const queue: DistanceNode[] = [{ nodeId, distance: 0 }];
-    const visited = new Set<NodeId>();
-
-    while (queue.length > 0) {
-      const { nodeId: current, distance } = queue.shift()!;
-
-      if (visited.has(current)) {
-        continue;
-      }
-
-      visited.add(current);
-      maxRadius = Math.max(maxRadius, distance);
-
-      const dependents = this.reverseGraph.get(current) ?? new Set();
-      for (const dependent of dependents) {
-        if (affected.has(dependent) && !visited.has(dependent)) {
-          queue.push({ nodeId: dependent, distance: distance + 1 });
-        }
-      }
-    }
-
-    return maxRadius;
-  }
-
-  /**
-   * Calculate risk score (0-100) based on number of affected components
-   */
-  private calculateRiskScore(directDependents: number, totalAffected: number): number {
-    // Risk factors:
-    // - Direct dependents (40% weight)
-    // - Total affected (60% weight)
-
-    const directScore = Math.min((directDependents / this.options.criticalThreshold) * 40, 40);
-    const totalScore = Math.min((totalAffected / (this.options.criticalThreshold * 3)) * 60, 60);
-
-    return Math.round(directScore + totalScore);
-  }
-
-  /**
-   * Get impact level based on risk score
-   */
-  private static getImpactLevel(riskScore: number): ImpactLevel {
-    if (riskScore >= 80) return 'critical';
-    if (riskScore >= 60) return 'high';
-    if (riskScore >= 40) return 'medium';
-    if (riskScore >= 20) return 'low';
-    return 'minimal';
   }
 
   /**
@@ -302,19 +203,6 @@ export class DependencyImpactAnalyzer {
     });
 
     return critical;
-  }
-
-  /**
-   * Calculate overall impact level from individual impacts
-   */
-  private calculateOverallImpactLevel(impacts: Map<NodeId, ComponentImpact>): ImpactLevel {
-    let maxScore = 0;
-
-    for (const impact of impacts.values()) {
-      maxScore = Math.max(maxScore, impact.riskScore);
-    }
-
-    return DependencyImpactAnalyzer.getImpactLevel(maxScore);
   }
 
   /**
@@ -386,29 +274,10 @@ export class DependencyImpactAnalyzer {
     impacts.set(nodeId, impact);
     allAffected.add(nodeId);
 
-    const transitiveAffected = this.findAllDependents(nodeId);
+    const transitiveAffected = this.traversal.findAllDependents(nodeId);
     for (const affectedNode of transitiveAffected) {
       allAffected.add(affectedNode);
     }
-  }
-
-  private collectTraversableDependents(nodeId: NodeId): NodeId[] {
-    const dependents = this.reverseGraph.get(nodeId) ?? new Set();
-    const traversable: NodeId[] = [];
-
-    for (const dependent of dependents) {
-      if (!shouldTraverseDependencyKind(DEFAULT_GRAPH_DEPENDENCY_KIND)) {
-        continue;
-      }
-
-      if (!this.options.includeTests && this.isTestClass(dependent)) {
-        continue;
-      }
-
-      traversable.push(dependent);
-    }
-
-    return traversable;
   }
 
   private collectCriticalComponentCandidates(): NodeId[] {
