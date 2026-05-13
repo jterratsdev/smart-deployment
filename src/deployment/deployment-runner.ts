@@ -72,6 +72,7 @@ export class DeploymentRunner {
       const result = await sfCli.deploy({
         manifestPath,
         targetOrg,
+        workingDirectory: sourcePath,
         testLevel: testPlan.testLevel,
         tests: testPlan.testLevel === 'RunSpecifiedTests' ? testPlan.tests : undefined,
       });

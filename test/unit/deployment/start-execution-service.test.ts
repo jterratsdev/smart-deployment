@@ -98,6 +98,7 @@ describe('StartExecutionService', () => {
     expect(sfCli.deployCalls).to.have.lengthOf(1);
     expect(sfCli.deployCalls[0]).to.include({
       targetOrg: 'fixture@example.com',
+      workingDirectory: tempDir,
     });
     expect(sfCli.deployCalls[0].manifestPath).to.match(/wave-001\.xml$/);
 
@@ -161,6 +162,7 @@ describe('StartExecutionService', () => {
       'wave-001.xml',
       'wave-002.xml',
     ]);
+    expect(sfCli.deployCalls.map((call) => call.workingDirectory)).to.deep.equal([tempDir, tempDir]);
     await expectMissingFile(path.join(tempDir, '.smart-deployment/deployment-state.json'));
   });
 

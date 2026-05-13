@@ -117,7 +117,7 @@ export default class Start extends SfCommand<StartResult> {
     const sourcePath = typeof flags['source-path'] === 'string' ? flags['source-path'] : undefined;
 
     try {
-      logger.info('Starting smart deployment', { flags });
+      logger.info('Starting smart deployment', { flags: this.toLoggableFlags(flags) });
 
       this.log('📊 Analyzing metadata...');
       const deploymentContext = await deploymentContextService.buildContext({
@@ -176,5 +176,19 @@ export default class Start extends SfCommand<StartResult> {
     }
 
     return undefined;
+  }
+
+  private toLoggableFlags(flags: Record<string, unknown>): Record<string, string | boolean | undefined> {
+    return {
+      'target-org': this.getTargetOrgIdentifier(flags['target-org']),
+      'dry-run': flags['dry-run'] === true,
+      'validate-only': flags['validate-only'] === true,
+      'skip-tests': flags['skip-tests'] === true,
+      'source-path': typeof flags['source-path'] === 'string' ? flags['source-path'] : undefined,
+      'allow-cycle-remediation': flags['allow-cycle-remediation'] === true,
+      'use-ai': flags['use-ai'] === true,
+      'org-type': typeof flags['org-type'] === 'string' ? flags['org-type'] : undefined,
+      industry: typeof flags.industry === 'string' ? flags.industry : undefined,
+    };
   }
 }

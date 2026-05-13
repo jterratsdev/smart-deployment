@@ -113,6 +113,7 @@ export class CycleRemediationRunner {
       const phaseOneResult = await sfCli.deploy({
         manifestPath: phaseOneManifestPath,
         targetOrg,
+        workingDirectory: sourcePath,
         testLevel: phaseOneTestPlan.testLevel,
         tests: phaseOneTestPlan.testLevel === 'RunSpecifiedTests' ? phaseOneTestPlan.tests : undefined,
       });
@@ -193,6 +194,7 @@ export class CycleRemediationRunner {
       const phaseTwoResult = await sfCli.deploy({
         manifestPath: phaseTwoManifestPath,
         targetOrg,
+        workingDirectory: sourcePath,
         testLevel: phaseTwoTestPlan.testLevel,
         tests: phaseTwoTestPlan.testLevel === 'RunSpecifiedTests' ? phaseTwoTestPlan.tests : undefined,
       });

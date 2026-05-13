@@ -224,6 +224,42 @@ describe('StartCommand', () => {
     await rm(tempDir, { recursive: true, force: true });
   });
 
+  it('logs a target-org object without serializing Salesforce connection internals', async () => {
+    const { projectRoot } = await createProjectWithRelatedTest(tempDir);
+    const command = new Start([], {} as never);
+    const targetOrg = {
+      getUsername: (): string => 'test-org@example.com',
+    } as { getUsername: () => string; self?: unknown };
+    targetOrg.self = targetOrg;
+
+    (command as unknown as StartCommandTestDouble).parse = async () => ({
+      flags: {
+        'target-org': targetOrg,
+        'dry-run': true,
+        'validate-only': false,
+        'skip-tests': true,
+        'use-ai': false,
+        'allow-cycle-remediation': false,
+        'source-path': projectRoot,
+      },
+      args: {},
+      argv: [],
+      raw: [],
+      metadata: { flags: {}, args: {} },
+      nonExistentFlags: [],
+      _runtime: {},
+    });
+    (command as unknown as StartCommandTestDouble).log = () => undefined;
+    (command as unknown as StartCommandTestDouble).warn = () => undefined;
+    (command as unknown as StartCommandTestDouble).error = (message: string) => {
+      throw new Error(message);
+    };
+
+    const result = await command.run();
+
+    expect(result.success).to.equal(true);
+  });
+
   it('fails fast on circular dependencies unless remediation is explicitly enabled', async () => {
     const { projectRoot } = await createCircularProject(tempDir);
     const command = new Start([], {} as never);

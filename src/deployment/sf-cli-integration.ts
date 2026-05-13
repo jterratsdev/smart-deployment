@@ -23,6 +23,7 @@ export type TestLevel = 'NoTestRun' | 'RunSpecifiedTests' | 'RunLocalTests' | 'R
 export type DeploymentOptions = {
   manifestPath: string;
   targetOrg: string;
+  workingDirectory?: string;
   testLevel?: TestLevel;
   tests?: string[];
   checkOnly?: boolean;
@@ -53,7 +54,7 @@ export class SfCliIntegration {
 
     try {
       // AC-5: Capture output
-      const { stdout, stderr } = await execAsync(command);
+      const { stdout, stderr } = await execAsync(command, { cwd: options.workingDirectory });
       const output = stdout + stderr;
 
       // AC-6: Parse deployment results
