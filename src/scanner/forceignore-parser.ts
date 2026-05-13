@@ -149,18 +149,20 @@ export class ForceIgnoreParser {
       return false;
     }
 
-    // Get relative path from project root
     const relativePath = this.getRelativePath(filePath);
+    const matchCandidates = this.getMatchCandidates(relativePath);
 
     let ignored = false;
 
     // Apply rules in order (later rules override earlier ones)
     for (const rule of this.rules) {
       // Use minimatch for glob matching (industry standard)
-      const matches = minimatch(relativePath, rule.pattern, {
-        dot: true, // Match dotfiles
-        matchBase: true, // Match basename
-      });
+      const matches = matchCandidates.some((candidate) =>
+        minimatch(candidate, rule.pattern, {
+          dot: true, // Match dotfiles
+          matchBase: true, // Match basename
+        })
+      );
 
       if (matches) {
         ignored = !rule.isNegation;
@@ -194,6 +196,20 @@ export class ForceIgnoreParser {
     relativePath = relativePath.split(sep).join('/');
 
     return relativePath;
+  }
+
+  private getMatchCandidates(relativePath: string): string[] {
+    const normalizedPath = relativePath.split(sep).join('/');
+    const candidates = new Set<string>([normalizedPath]);
+    const parts = normalizedPath.split('/').filter((part) => part.length > 0);
+
+    for (let index = 1; index < parts.length; index++) {
+      const ancestor = parts.slice(0, index).join('/');
+      candidates.add(ancestor);
+      candidates.add(`${ancestor}/`);
+    }
+
+    return [...candidates];
   }
 
   /**

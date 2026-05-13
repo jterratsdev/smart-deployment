@@ -1,6 +1,9 @@
 /**
  * Tests for .forceignore Parser - US-083
  */
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { ForceIgnoreParser } from '../../../src/scanner/forceignore-parser.js';
@@ -97,6 +100,70 @@ describe('ForceIgnoreParser', () => {
   });
 
   describe('Filter Operations', () => {
+    it('should respect Salesforce-style directory ignore patterns for Agentforce bundles', async () => {
+      const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'forceignore-agentforce-'));
+      try {
+        await writeFile(
+          path.join(projectRoot, '.forceignore'),
+          [
+            '**/aiAuthoringBundles/',
+            'force-app/main/default/aiAuthoringBundles/*',
+            'force-app/main/default/aiAuthoringBundles/PHP_Pacific_Haven_Agent/*',
+            '',
+          ].join('\n'),
+          'utf8'
+        );
+
+        const parser = new ForceIgnoreParser();
+        await parser.load(projectRoot);
+
+        const agentFile = path.join(
+          projectRoot,
+          'force-app',
+          'main',
+          'default',
+          'aiAuthoringBundles',
+          'PHP_Pacific_Haven_Agent',
+          'PHP_Pacific_Haven_Agent.agent'
+        );
+
+        expect(parser.isIgnored(agentFile)).to.be.true;
+      } finally {
+        await rm(projectRoot, { recursive: true, force: true });
+      }
+    });
+
+    it('should allow later negation rules to unignore files inside ignored directories', async () => {
+      const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'forceignore-negation-'));
+      try {
+        await writeFile(
+          path.join(projectRoot, '.forceignore'),
+          [
+            'force-app/main/default/aiAuthoringBundles/*',
+            '!force-app/main/default/aiAuthoringBundles/Keep/Keep.agent',
+            '',
+          ].join('\n'),
+          'utf8'
+        );
+
+        const parser = new ForceIgnoreParser();
+        await parser.load(projectRoot);
+
+        expect(
+          parser.isIgnored(
+            path.join(projectRoot, 'force-app', 'main', 'default', 'aiAuthoringBundles', 'Skip', 'Skip.agent')
+          )
+        ).to.be.true;
+        expect(
+          parser.isIgnored(
+            path.join(projectRoot, 'force-app', 'main', 'default', 'aiAuthoringBundles', 'Keep', 'Keep.agent')
+          )
+        ).to.be.false;
+      } finally {
+        await rm(projectRoot, { recursive: true, force: true });
+      }
+    });
+
     it('should filter array of paths', async () => {
       const parser = new ForceIgnoreParser();
       await parser.load(process.cwd());
@@ -178,4 +245,3 @@ describe('ForceIgnoreParser', () => {
     });
   });
 });
-

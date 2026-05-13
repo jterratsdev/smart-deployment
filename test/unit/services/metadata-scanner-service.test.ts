@@ -512,4 +512,16 @@ export default class AccountCard extends LightningElement {
       result.components.map((metadataComponent) => `${metadataComponent.type}:${metadataComponent.name}`)
     ).to.not.include('Bot:PHP_Pacific_Haven_Agent');
   });
+
+  it('respects .forceignore directory patterns for Agentforce authoring bundles', async () => {
+    const projectRoot = await createAgentforceFixture();
+    await writeFile(path.join(projectRoot, '.forceignore'), '**/aiAuthoringBundles/\n', 'utf8');
+    const scanner = new MetadataScannerService();
+
+    const result = await scanner.scan({ sourcePath: projectRoot });
+
+    expect(
+      result.components.map((metadataComponent) => `${metadataComponent.type}:${metadataComponent.name}`)
+    ).to.not.include('AiAuthoringBundle:PHP_Pacific_Haven_Agent');
+  });
 });
