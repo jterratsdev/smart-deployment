@@ -24,7 +24,9 @@ jobs:
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        uses: salesforcecli/github-workflows/.github/actions/retry@main
+        with:
+          command: yarn install --frozen-lockfile --network-timeout 600000
 
       - name: Build
         run: yarn build
@@ -49,7 +51,9 @@ jobs:
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        uses: salesforcecli/github-workflows/.github/actions/retry@main
+        with:
+          command: yarn install --frozen-lockfile --network-timeout 600000
 
       - name: Build
         run: yarn build

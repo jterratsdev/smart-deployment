@@ -132,7 +132,9 @@ jobs:
           NODE
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        uses: salesforcecli/github-workflows/.github/actions/retry@main
+        with:
+          command: yarn install --frozen-lockfile --network-timeout 600000
 
       - name: Build plugin
         run: yarn build
@@ -305,7 +307,9 @@ jobs:
           fi
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        uses: salesforcecli/github-workflows/.github/actions/retry@main
+        with:
+          command: yarn install --frozen-lockfile --network-timeout 600000
 
       - name: Build plugin
         run: yarn build
