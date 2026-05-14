@@ -1,12 +1,40 @@
 {
   "version": "2.0.2",
   "mode": "project",
-  "profiles": ["architect", "ba", "pm"],
+  "profiles": [
+    "architect",
+    "ba",
+    "pm",
+    "devops",
+    "qa",
+    "crma",
+    "data360",
+    "sfmc",
+    "security",
+    "service",
+    "omnistudio",
+    "ai",
+    "tableau"
+  ],
   "tools": ["codex"],
   "orchestration": {
     "enabled": true,
     "engine": "native",
     "mode": "project",
-    "profiles": ["architect", "ba", "pm"]
+    "profiles": [
+      "architect",
+      "ba",
+      "pm",
+      "devops",
+      "qa",
+      "crma",
+      "data360",
+      "sfmc",
+      "security",
+      "service",
+      "omnistudio",
+      "ai",
+      "tableau"
+    ]
   }
 }

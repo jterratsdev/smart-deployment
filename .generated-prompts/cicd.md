@@ -1,61 +1,41 @@
-<!-- open-orchestra: prompt-registry-v1 -->
+<!-- setup-agents: 2.0.2 -->
 
-# CI/CD and Infrastructure Prompts
+# CI/CD & Pipeline Prompts
 
-> Prompt register for workflow YAML, deployment scripts, IaC, runtime config, observability, and rollback automation.
-> Commit this file so generated artifacts can be traced back to their prompt intent.
-> Keep one entry per artifact or component; store only the latest prompt. Git history keeps prior versions.
+> AI prompt register for Pipeline YAML, deployment scripts, GitHub Actions workflows, Azure Pipelines, MuleSoft deployment descriptors in this project.
+> Maintained by the agent — one entry per component, latest prompt only.
+> Commit this file so the team can trace every generated artifact back to its origin.
 
-## Agent Protocol
+## Format
 
-### Before creating or substantially changing an artifact
-
-1. Read the full relevant register file in `.generated-prompts/`.
-2. Search for an existing `## <ArtifactName>` entry.
-3. Use prior entries to preserve project conventions, constraints, decisions, and known risks.
-4. If a related entry exists, adapt the new work to fit that established context unless an explicit decision changes it.
-
-### After creating or substantially changing an artifact
-
-1. Add or update the matching `## <ArtifactName>` entry.
-2. Increment **Iterations** on substantial updates.
-3. Replace **Prompt** with the final prompt or a concise summary when the prompt is long.
-4. Record key decisions and evidence links that explain why the artifact changed.
-5. Do not update the register for typos, formatting-only edits, or single-line mechanical fixes.
-
-## Usage
-
-- Read this file before changing CI/CD, infra, environments, release, or runtime configuration.
-- Preserve secret naming, gate order, rollback assumptions, and deployment safety constraints.
-- Update entries for new pipelines, deployment stages, infrastructure modules, or operational gates.
-
-## Entry Format
-
-```markdown
-## <ArtifactName>
-
+```
+## <ComponentName>
 - **Created:** YYYY-MM-DD
-- **Updated:** YYYY-MM-DD
-- **Iterations:** N
-- **Task:** TASK-ID or backlog item
-- **Role:** active role that generated or changed the artifact
+- **Updated:** YYYY-MM-DD   ← omit if never updated
+- **Iterations:** N          ← increment on each substantial change
 
 ### Key decisions
-
-- <Pattern, constraint, trade-off, or risk that shaped the artifact>
-
-### Evidence
-
-- <Command, test, review, screenshot, trace, or decision link>
+- <Pattern / constraint / design choice that shaped the component>
 
 ### Prompt
 ```
 
-<final prompt, or summary of the prompt key instructions if over 500 words>
-
-````
+<the final prompt that produced or substantially changed this component>
+```
 ---
 ```
 
-<!-- Entries below this line are maintained by agents -->
-````
+**Substantial change** = new method, new business requirement, pattern change, architectural refactor.
+Minor fixes (typos, formatting, single-line corrections) do NOT update the prompt entry.
+
+---
+
+## Usage
+
+When creating or modifying pipeline configuration, the agent reads this file for
+existing stage structure, secret/variable naming, deployment target conventions,
+and test gate thresholds already established in the project.
+
+---
+
+<!-- Entries below this line are maintained by the agent -->

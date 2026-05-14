@@ -162,7 +162,7 @@
     "title": "[NEXT-002] Show wave graph execution state in status",
     "ownerRole": "product_owner",
     "dependencies": [],
-    "status": "pending",
+    "status": "done",
     "backlogItem": "https://github.com/jterrats/smart-deployment/issues/220",
     "goal": "Show deployment wave graph execution state in the status command by reusing the existing waveGraph model and persisted DeploymentState.",
     "acceptanceCriteria": [
@@ -182,7 +182,7 @@
       "If historical state lacks wave component details, the first iteration may render execution sequence/state only until future deployments persist richer graph context."
     ],
     "createdAt": "2026-05-14T08:44:24.077Z",
-    "updatedAt": "2026-05-14T08:44:33.856Z",
+    "updatedAt": "2026-05-14T16:48:35.672Z",
     "scope": "Status command/service/presenter integration for waveGraph output; no deployment execution, no wave generation semantic changes.",
     "paths": [
       "src/commands/status.ts",
@@ -212,9 +212,9 @@
     "title": "[PO] NEXT-002",
     "ownerRole": "product_owner",
     "dependencies": ["NEXT-002-pm-1-c9oj"],
-    "status": "pending",
+    "status": "done",
     "createdAt": "2026-05-14T08:44:42.440Z",
-    "updatedAt": "2026-05-14T08:44:42.440Z"
+    "updatedAt": "2026-05-14T16:48:35.644Z"
   },
   {
     "id": "NEXT-002-architect-1-c9oj",
@@ -239,9 +239,9 @@
     "title": "[QA] NEXT-002",
     "ownerRole": "qa",
     "dependencies": ["NEXT-002-developer-1-c9oj"],
-    "status": "pending",
+    "status": "done",
     "createdAt": "2026-05-14T08:45:08.262Z",
-    "updatedAt": "2026-05-14T08:45:08.262Z"
+    "updatedAt": "2026-05-14T16:48:35.648Z"
   },
   {
     "id": "NEXT-002-release-1-c9oj",
@@ -306,9 +306,9 @@
     "title": "[PO] NEXT-002-STATUS",
     "ownerRole": "product_owner",
     "dependencies": ["NEXT-002-STATUS-pm-3-3t56"],
-    "status": "pending",
+    "status": "done",
     "createdAt": "2026-05-14T09:00:45.852Z",
-    "updatedAt": "2026-05-14T09:00:45.852Z"
+    "updatedAt": "2026-05-14T16:48:35.675Z"
   },
   {
     "id": "NEXT-002-STATUS-architect-3-3t56",
@@ -333,9 +333,9 @@
     "title": "[QA] NEXT-002-STATUS",
     "ownerRole": "qa",
     "dependencies": ["NEXT-002-STATUS-developer-3-3t56"],
-    "status": "pending",
+    "status": "done",
     "createdAt": "2026-05-14T09:02:27.305Z",
-    "updatedAt": "2026-05-14T09:02:27.305Z"
+    "updatedAt": "2026-05-14T16:48:35.699Z"
   },
   {
     "id": "NEXT-002-STATUS-release-3-3t56",
@@ -345,5 +345,228 @@
     "status": "done",
     "createdAt": "2026-05-14T09:02:53.394Z",
     "updatedAt": "2026-05-14T09:02:53.399Z"
+  },
+  {
+    "id": "NEXT-003",
+    "title": "feat: orchestrate Agentforce + LWR publish phases alongside metadata deploy",
+    "ownerRole": "product_owner",
+    "dependencies": [],
+    "status": "done",
+    "backlogItem": "https://github.com/jterrats/smart-deployment/issues/221",
+    "goal": "*As a** Salesforce release engineer running a project that mixes regular metadata, Agentforce agents, and Experience Cloud (LWR) sites,; *I want** `smart-deployment` to orchestrate `sf project deploy` + `sf agent publish authoring-bundle` + `sf community publish` as a single coordinated pipeline,; *so that** I do not have to hand-craft manifests, partition metadata across lifecycle phases, or chase \\\"Can't edit an active bot version\\\" / \\\"viewType must have a matching routeType\\\" / \\\"BotVersion not found\\\" errors that the regular deploy emits when these three component families share a single push.",
+    "acceptanceCriteria": [
+      "1. **Detection** — `smart-deployment` scans the input source/manifest and produces a *plan* enumerating each phase and the components it will handle. The plan is printable (`--dry-run`) and machine-readable (`--json`).",
+      "2. **Auto-exclusion** — Phase 1 (`project deploy`) automatically excludes `Bot`, `BotVersion`, `GenAiPlannerBundle`, and `AiAuthoringBundle` types so the deploy never trips \\\"Can't edit active bot version\\\".",
+      "3. **Change detection** — Phases 2, 3, 5 fire only when the corresponding source paths changed since the previous green deploy SHA. Detection uses `git diff --name-only PREV_SHA HEAD -- <path>`.",
+      "4. **Idempotent agent publish** — `sf agent publish authoring-bundle` is called per changed `aiAuthoringBundles/<name>/` with `--skip-retrieve` to avoid polluting the source tree during CI.",
+      "5. **Activation gate** — `sf agent activate -n <bundle> --version <N>` is optional behind `--auto-activate` (default off). Newly published versions land **inactive**; humans approve activation explicitly.",
+      "6. **Eval dependency precheck** — Before phase 4, fail fast if any `AiEvaluationDefinition/*.xml`'s `<subjectName>` does not exist either in source or in the org. Emits the offending file + missing subject name.",
+      "7. **Community publish** — `sf community publish -n <site>` is called once per `digitalExperiences/site/<site>/` directory whose contents changed.",
+      "8. **Rollback semantics** — If any phase fails, subsequent phases are skipped and the failure is reported with the phase name + underlying CLI exit code. No partial silent success.",
+      "9. **CI-mode shorthand** — A single `smart-deployment ci-publish --since <SHA>` orchestrates phases 1-5 with safe defaults (no `--auto-activate`, exclude eval files for not-yet-deployed bots).",
+      "Plan phases are explicit and JSON-printable; metadata deploy excludes Agentforce lifecycle-owned types; changed Agentforce bundles publish with --skip-retrieve; activation is gated by --auto-activate; eval subject precheck fails fast; changed LWR sites publish once; ci-publish orchestrates safe defaults with phase failure reporting."
+    ],
+    "risks": [
+      "enhancement",
+      "epic:agentforce",
+      "priority:should-have",
+      "Large cross-cutting deployment behavior; must keep CLI orchestration separate from scanners/domain planning; real org command execution needs mockable adapters and focused integration tests.",
+      "Large cross-cutting deployment behavior; must keep CLI orchestration separate from scanners/domain planning; real org command execution needs mockable adapters and focused integration tests; OmniStudio has multiple packaging modes, so detection and phase routing must be explicit."
+    ],
+    "createdAt": "2026-05-14T15:55:32.091Z",
+    "updatedAt": "2026-05-14T16:47:44.672Z",
+    "scope": "First testable NEXT-003 slice is complete for alternate-project validation: provider registry/planner, dry-run/json ci-publish command, core metadata exclusions, Agentforce publish/activation planning, AiEvaluationDefinition source precheck, LWR publish planning, and OmniStudio vlocity planning. Live execution adapters remain intentionally deferred until dry-run validation confirms provider behavior.",
+    "testStrategy": "Use deterministic unit tests for phase planning, manifest exclusion, change detection, command construction, precheck failures, and rollback semantics; add command/e2e coverage for dry-run/json before live org execution.",
+    "assumptions": [
+      "Existing metadata scanning already recognizes AiAuthoringBundle, DigitalExperienceBundle, BotVersion, and GenAiPlannerBundle; Salesforce CLI commands are available in target CI/runtime environments; activation remains opt-in by default.",
+      "Existing metadata scanning already recognizes AiAuthoringBundle, DigitalExperienceBundle, BotVersion, and GenAiPlannerBundle; Salesforce CLI commands are available in target CI/runtime environments; activation remains opt-in by default; OmniStudio may be core metadata or managed-package DataPacks, and managed-package paths require vlocity CLI instead of sf project deploy."
+    ]
+  },
+  {
+    "id": "NEXT-003-OMNI",
+    "title": "Support OmniStudio managed-package publish phase with vlocity CLI",
+    "ownerRole": "product_owner",
+    "dependencies": [],
+    "goal": "Define and implement an optional OmniStudio phase that detects managed-package OmniStudio artifacts and routes them through vlocity CLI instead of Salesforce core metadata deploy.",
+    "acceptanceCriteria": [
+      "Planner identifies managed-package OmniStudio artifacts as a dedicated optional phase; dry-run/json reports vlocity operations; execution checks for vlocity CLI availability; failures report the OmniStudio phase and skip later phases; core metadata deploy excludes artifacts assigned to the vlocity phase."
+    ],
+    "assumptions": [
+      "Target projects may contain managed-package OmniStudio/Vlocity DataPacks; vlocity CLI may be installed separately and should be detected or validated before execution; core Salesforce metadata deploy must not silently attempt unsupported managed-package OmniStudio artifacts."
+    ],
+    "risks": [
+      "There are multiple OmniStudio packaging modes, including managed package and core metadata variants; detection must avoid false positives and command execution must be mockable to avoid requiring real org credentials in unit tests."
+    ],
+    "paths": ["src/deployment", "src/commands", "test/unit/deployment", "test/unit/commands"],
+    "status": "done",
+    "createdAt": "2026-05-14T15:55:55.759Z",
+    "updatedAt": "2026-05-14T16:46:49.219Z",
+    "scope": "Covered by NEXT-003-PLAN first slice: changed OmniStudio/Vlocity DataPack paths plan an optional vlocity packDeploy phase separate from core metadata deploy.",
+    "testStrategy": "Add unit tests for OmniStudio artifact detection, phase planning, vlocity command construction, missing CLI preflight failure, and rollback skip semantics; add dry-run/json command coverage before any real org execution."
+  },
+  {
+    "id": "NEXT-003-PROVIDER-RESEARCH",
+    "title": "Research special deployment provider implications by Salesforce product",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "goal": "Use setup-agents architect and product profiles to identify Salesforce product families that require special deployment providers, exclusions, preflights, or lifecycle phases before implementing NEXT-003.",
+    "acceptanceCriteria": [
+      "Provider candidate matrix exists; immediate vs later provider scope is explicit; setup-agents advisory tasks are linked; architecture recommendation is recorded before developer implementation starts."
+    ],
+    "assumptions": [
+      "Not every Salesforce product family should be implemented immediately; the first implementation should prioritize provider registry shape and high-risk families from issue #221. Some products may require external CLIs or APIs and should be represented as optional providers with dry-run/preflight behavior."
+    ],
+    "risks": [
+      "Over-scoping NEXT-003 could turn a focused Agentforce/LWR feature into a broad Salesforce ALM platform rewrite; research must separate immediate release scope from future provider backlog."
+    ],
+    "paths": ["src/deployment", "src/types", "src/constants", "test/unit/deployment"],
+    "status": "done",
+    "createdAt": "2026-05-14T16:00:02.343Z",
+    "updatedAt": "2026-05-14T16:47:10.968Z",
+    "scope": "Advisory architecture and product-specialist research before implementation. Inputs come from setup-agents architect plus ai, omnistudio, sfmc, crma, data360, tableau, security, and service profiles. Output should define provider registry boundaries, detection rules, exclusions, preflight checks, execution semantics, and non-goals.",
+    "testStrategy": "No product code changes in this task. Validate by producing documented provider recommendations, child tasks, and architecture decision records; implementation tasks will own unit/e2e tests."
+  },
+  {
+    "id": "NEXT-003-PLAN",
+    "title": "Build special deployment provider registry and phase planner",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Implement a dry-run/json phase planner that detects Agentforce, LWR, OmniStudio, and future provider candidates without executing external deploy commands.",
+    "acceptanceCriteria": [],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/deployment", "src/commands", "test/unit/deployment", "test/unit/commands"],
+    "status": "done",
+    "createdAt": "2026-05-14T16:38:19.563Z",
+    "updatedAt": "2026-05-14T16:46:41.381Z"
+  },
+  {
+    "id": "NEXT-003-MANIFEST",
+    "title": "Exclude lifecycle-owned metadata from core deploy phase",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Ensure phase 1 core metadata deploy excludes Agentforce lifecycle-owned types and provider-owned artifacts.",
+    "acceptanceCriteria": [],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/deployment", "src/waves", "test/unit/deployment"],
+    "status": "done",
+    "createdAt": "2026-05-14T16:38:19.586Z",
+    "updatedAt": "2026-05-14T16:46:41.409Z",
+    "scope": "Covered by NEXT-003-PLAN first slice: core metadata phase excludes Bot, BotVersion, GenAiPlannerBundle, and AiAuthoringBundle from the generated plan."
+  },
+  {
+    "id": "NEXT-003-AGENT",
+    "title": "Plan Agentforce publish and optional activation phases",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Plan changed aiAuthoringBundles for sf agent publish authoring-bundle --skip-retrieve and optional activation behind --auto-activate.",
+    "acceptanceCriteria": [],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/deployment", "src/commands", "test/unit/deployment"],
+    "status": "done",
+    "createdAt": "2026-05-14T16:38:19.613Z",
+    "updatedAt": "2026-05-14T16:46:41.437Z",
+    "scope": "Covered by NEXT-003-PLAN first slice: changed aiAuthoringBundles plan sf agent publish authoring-bundle --skip-retrieve; activation remains opt-in via --auto-activate."
+  },
+  {
+    "id": "NEXT-003-EVAL",
+    "title": "Precheck AiEvaluationDefinition subject dependencies",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Fail fast before evaluation deployment when AiEvaluationDefinition subjectName does not exist in source or target org lookup.",
+    "acceptanceCriteria": [],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/deployment", "src/services", "src/parsers", "test/unit/deployment"],
+    "status": "done",
+    "createdAt": "2026-05-14T16:38:29.854Z",
+    "updatedAt": "2026-05-14T16:46:49.189Z",
+    "scope": "Covered by NEXT-003-PLAN first slice: changed AiEvaluationDefinition files are planned after Agentforce phases and subjectName is prechecked against source Agentforce bundles/Bots in dry-run."
+  },
+  {
+    "id": "NEXT-003-LWR",
+    "title": "Plan Experience Cloud LWR community publish phase",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Detect changed digitalExperiences/site directories and plan sf community publish -n <site> once per changed site.",
+    "acceptanceCriteria": [],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/deployment", "src/services", "test/unit/deployment"],
+    "status": "done",
+    "createdAt": "2026-05-14T16:38:29.856Z",
+    "updatedAt": "2026-05-14T16:46:49.192Z",
+    "scope": "Covered by NEXT-003-PLAN first slice: changed digitalExperiences/site/<site> paths plan one sf community publish -n <site> command per site."
+  },
+  {
+    "id": "NEXT-003-CI",
+    "title": "Add ci-publish command for coordinated safe defaults",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Expose smart-deployment ci-publish --since <SHA> with dry-run/json support and safe provider orchestration defaults.",
+    "acceptanceCriteria": [],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/commands", "src/deployment", "messages", "test/unit/commands", "test"],
+    "status": "done",
+    "createdAt": "2026-05-14T16:38:29.861Z",
+    "updatedAt": "2026-05-14T16:46:54.994Z",
+    "scope": "Covered by NEXT-003-PLAN first slice: ci-publish command exposes --source-path, --since, --dry-run/--no-dry-run, --auto-activate, and JSON output for coordinated provider plan validation."
+  },
+  {
+    "id": "NEXT-003-PLAN-pm-5-qs4x",
+    "title": "[PM] NEXT-003-PLAN",
+    "ownerRole": "product_manager",
+    "dependencies": [],
+    "status": "done",
+    "createdAt": "2026-05-14T16:38:36.039Z",
+    "updatedAt": "2026-05-14T16:38:36.044Z"
+  },
+  {
+    "id": "NEXT-003-PLAN-po-5-qs4x",
+    "title": "[PO] NEXT-003-PLAN",
+    "ownerRole": "product_owner",
+    "dependencies": ["NEXT-003-PLAN-pm-5-qs4x"],
+    "status": "done",
+    "createdAt": "2026-05-14T16:38:36.044Z",
+    "updatedAt": "2026-05-14T16:48:01.072Z"
+  },
+  {
+    "id": "NEXT-003-PLAN-architect-5-qs4x",
+    "title": "[ARCHITECT] NEXT-003-PLAN",
+    "ownerRole": "architect",
+    "dependencies": ["NEXT-003-PLAN-po-5-qs4x"],
+    "status": "done",
+    "createdAt": "2026-05-14T16:38:48.898Z",
+    "updatedAt": "2026-05-14T16:38:48.905Z"
+  },
+  {
+    "id": "NEXT-003-PLAN-developer-5-qs4x",
+    "title": "[DEVELOPER] NEXT-003-PLAN",
+    "ownerRole": "developer",
+    "dependencies": ["NEXT-003-PLAN-architect-5-qs4x"],
+    "status": "done",
+    "createdAt": "2026-05-14T16:38:48.906Z",
+    "updatedAt": "2026-05-14T16:38:48.911Z"
+  },
+  {
+    "id": "NEXT-003-PLAN-qa-5-qs4x",
+    "title": "[QA] NEXT-003-PLAN",
+    "ownerRole": "qa",
+    "dependencies": ["NEXT-003-PLAN-developer-5-qs4x"],
+    "status": "done",
+    "createdAt": "2026-05-14T16:38:48.912Z",
+    "updatedAt": "2026-05-14T16:48:01.076Z"
+  },
+  {
+    "id": "NEXT-003-PLAN-release-5-qs4x",
+    "title": "[RELEASE] NEXT-003-PLAN",
+    "ownerRole": "release_manager",
+    "dependencies": ["NEXT-003-PLAN-qa-5-qs4x"],
+    "status": "done",
+    "createdAt": "2026-05-14T16:46:33.665Z",
+    "updatedAt": "2026-05-14T16:46:33.670Z"
   }
 ]

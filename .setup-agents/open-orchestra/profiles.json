@@ -1,0 +1,131 @@
+{
+  "profiles": [
+    {
+      "id": "architect",
+      "label": "Architect",
+      "ruleFile": "architect-standards.mdc",
+      "suggestedRole": "architect",
+      "activationCriteria": ["architecture decision, ADR, integration pattern, data model, or cross-cutting concern"],
+      "expectedEvidence": ["ADR or design note", "diagram or option comparison", "Well-Architected assessment"],
+      "gates": ["architecture", "security", "governance"]
+    },
+    {
+      "id": "ba",
+      "label": "Business / Solution Analyst",
+      "ruleFile": "ba-standards.mdc",
+      "suggestedRole": "business_analyst",
+      "activationCriteria": [
+        "requirements, user story, acceptance criteria, process mapping, or stakeholder clarification"
+      ],
+      "expectedEvidence": ["refined story", "acceptance criteria", "process notes"],
+      "gates": ["scope", "traceability"]
+    },
+    {
+      "id": "pm",
+      "label": "Project Manager",
+      "ruleFile": "pm-standards.mdc",
+      "suggestedRole": "product_manager",
+      "activationCriteria": ["roadmap, milestone, release scope, dependency, risk, or stakeholder status"],
+      "expectedEvidence": ["priority decision", "release or sprint plan", "risk and dependency summary"],
+      "gates": ["scope", "readiness"]
+    },
+    {
+      "id": "devops",
+      "label": "DevOps / Release Manager",
+      "ruleFile": "devops-standards.mdc",
+      "suggestedRole": "devops",
+      "activationCriteria": ["pipeline, deployment, package, scratch org, CI, environment, or release automation work"],
+      "expectedEvidence": ["pipeline result", "deployment validation", "rollback note"],
+      "gates": ["release", "environment", "rollback"]
+    },
+    {
+      "id": "qa",
+      "label": "QA / Test Automation (Playwright)",
+      "ruleFile": "qa-standards.mdc",
+      "suggestedRole": "qa",
+      "activationCriteria": [
+        "test strategy, regression, Playwright, acceptance validation, or defect reproduction work"
+      ],
+      "expectedEvidence": ["test plan", "execution result", "defect evidence or trace"],
+      "gates": ["qa", "regression"]
+    },
+    {
+      "id": "crma",
+      "label": "CRM Analytics Engineer (CRMA)",
+      "ruleFile": "analytics-standards.mdc",
+      "suggestedRole": "crma",
+      "activationCriteria": ["CRM Analytics recipe, dataflow, dashboard, SAQL, dataset, or security predicate work"],
+      "expectedEvidence": ["recipe or dataflow validation", "dashboard screenshot", "security predicate review"],
+      "gates": ["analytics", "data security"]
+    },
+    {
+      "id": "data360",
+      "label": "Data Cloud Architect / Engineer (Data 360)",
+      "ruleFile": "data360-standards.mdc",
+      "suggestedRole": "data360",
+      "activationCriteria": [
+        "Data Cloud stream, DMO, identity resolution, calculated insight, segment, or activation work"
+      ],
+      "expectedEvidence": ["data mapping", "identity or segment validation", "activation result"],
+      "gates": ["data quality", "privacy"]
+    },
+    {
+      "id": "sfmc",
+      "label": "Marketing Cloud (SFMC)",
+      "ruleFile": "sfmc-standards.mdc",
+      "suggestedRole": "sfmc",
+      "activationCriteria": [
+        "Marketing Cloud journey, email, automation, data extension, personalization, or consent work"
+      ],
+      "expectedEvidence": ["journey validation", "send preview", "consent or data extension review"],
+      "gates": ["marketing", "consent"]
+    },
+    {
+      "id": "security",
+      "label": "Security / Compliance",
+      "ruleFile": "security-standards.mdc",
+      "suggestedRole": "security",
+      "activationCriteria": ["FLS, sharing, secrets, threat model, compliance, privacy, or vulnerability concern"],
+      "expectedEvidence": ["security review", "threat model note", "scan or permission evidence"],
+      "gates": ["security", "privacy", "compliance"]
+    },
+    {
+      "id": "service",
+      "label": "Service Cloud",
+      "ruleFile": "service-standards.mdc",
+      "suggestedRole": "service",
+      "activationCriteria": [
+        "Service Cloud case, entitlement, omni-channel, knowledge, console, or service process work"
+      ],
+      "expectedEvidence": ["case flow validation", "service process note", "agent console review"],
+      "gates": ["service process", "operability"]
+    },
+    {
+      "id": "omnistudio",
+      "label": "OmniStudio / Vlocity",
+      "ruleFile": "omnistudio-standards.mdc",
+      "suggestedRole": "omnistudio",
+      "activationCriteria": ["OmniScript, DataRaptor, Integration Procedure, FlexCard, or Industries work"],
+      "expectedEvidence": ["OmniStudio preview", "DataRaptor or IP test result", "deployment note"],
+      "gates": ["industries", "integration"]
+    },
+    {
+      "id": "ai",
+      "label": "AI / Agentforce Specialist",
+      "ruleFile": "ai-standards.mdc",
+      "suggestedRole": "ai",
+      "activationCriteria": ["Agentforce, prompt, topic, action, grounding, model behavior, or evaluation work"],
+      "expectedEvidence": ["prompt or topic review", "eval result", "grounding/source review"],
+      "gates": ["ai behavior", "safety", "grounding"]
+    },
+    {
+      "id": "tableau",
+      "label": "Tableau / Analytics Cloud",
+      "ruleFile": "tableau-standards.mdc",
+      "suggestedRole": "tableau",
+      "activationCriteria": ["Tableau dashboard, datasource, extract, permission, VizQL, or analytics embedding work"],
+      "expectedEvidence": ["dashboard screenshot", "datasource validation", "permission review"],
+      "gates": ["analytics", "data access"]
+    }
+  ]
+}

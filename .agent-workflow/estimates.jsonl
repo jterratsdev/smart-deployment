@@ -1,0 +1,3 @@
+{"id":"est-1778774167647-mn3y","taskId":"NEXT-003-OMNI","sizingLabel":"m","soloEstimateDays":2,"aiUnguidedEstimateDays":1,"confidence":"medium","declaredBy":"product_owner","declaredAt":"2026-05-14T15:56:07.646Z"}
+{"id":"est-1778774415036-us6u","taskId":"NEXT-003-PROVIDER-RESEARCH","sizingLabel":"s","soloEstimateDays":1,"aiUnguidedEstimateDays":0.5,"confidence":"medium","declaredBy":"architect","declaredAt":"2026-05-14T16:00:15.036Z"}
+{"id":"est-1778776713035-7too","taskId":"NEXT-003-PLAN","sizingLabel":"m","soloEstimateDays":2,"aiUnguidedEstimateDays":1,"confidence":"medium","declaredBy":"architect","declaredAt":"2026-05-14T16:38:33.035Z"}

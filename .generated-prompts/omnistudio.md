@@ -1,8 +1,8 @@
 <!-- setup-agents: 2.0.2 -->
 
-# Generated Documentation Prompts
+# OmniStudio Prompts
 
-> AI prompt register for ADRs, architecture review docs, runbooks, data model docs, user guides, release notes in this project.
+> AI prompt register for OmniScripts, FlexCards, and Integration Procedures (OmniStudio / Core) in this project.
 > Maintained by the agent — one entry per component, latest prompt only.
 > Commit this file so the team can trace every generated artifact back to its origin.
 
@@ -32,9 +32,9 @@ Minor fixes (typos, formatting, single-line corrections) do NOT update the promp
 
 ## Usage
 
-When generating documentation, the agent reads this file to understand the existing
-documentation structure, naming conventions, and audience (technical, business, operations).
-Always updates rather than duplicates an existing doc.
+When creating OmniStudio artifacts, the agent reads this file for existing data source
+patterns, action naming, and activation settings. It notes the deployment target:
+OmniStudio managed package or OmniStudio for Core (Vlocity migration path).
 
 ---
 

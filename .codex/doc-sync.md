@@ -2,6 +2,8 @@
 
 ## <!-- setup-agents:block:start id="doc-sync-skill" version="2.0.2" -->
 
+---
+
 name: doc-sync
 description: >-
 Update project documentation after task completion. USE FOR: sync docs, update ADR,
@@ -36,6 +38,18 @@ After any `sf setup-agents task done` or `orchestra task done` call completes su
 - [ ] `docs/architecture.md` — update integration points section if new integrations were added
 - [ ] `docs/diagrams/` — reference new Mermaid diagrams produced in this task
 - [ ] `docs/reviews/` — append architecture review findings if a review record exists
+
+### QA
+
+- [ ] `docs/testing/` — append test coverage delta and any new test patterns introduced
+- [ ] `docs/testing/known-failures.md` — document any known failures or flaky tests discovered
+- [ ] `docs/testing/regression-notes.md` — note regressions caught and how they were resolved
+
+### DevOps
+
+- [ ] `docs/deployment/runbook.md` — update deployment steps if pipeline changed
+- [ ] `docs/deployment/env-vars.md` — document new environment variables introduced
+- [ ] `docs/deployment/cicd.md` — update CI/CD workflow descriptions if changed
 
 ## Rules
 
