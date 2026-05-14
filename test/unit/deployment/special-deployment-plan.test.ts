@@ -84,12 +84,18 @@ describe('SpecialDeploymentPlanService', () => {
     });
 
     const corePhase = plan.phases.find((phase) => phase.kind === 'core-metadata');
-    expect(corePhase?.components).to.deep.equal(['ApexClass:AccountService', 'DigitalExperienceBundle:CustomerPortal']);
-    expect(corePhase?.excludedTypes).to.include.members([
-      'Bot',
-      'BotVersion',
-      'GenAiPlannerBundle',
-      'AiAuthoringBundle',
+    expect(corePhase?.components).to.deep.equal([
+      'ApexClass:AccountService',
+      'DigitalExperienceBundle:CustomerPortal',
+      'GenAiPlannerBundle:SupportPlanner',
+    ]);
+    expect(corePhase?.excludedTypes).to.deep.equal(['Bot', 'BotVersion', 'AiAuthoringBundle']);
+    expect(corePhase?.commands[0]?.args).to.deep.equal([
+      'project',
+      'deploy',
+      'start',
+      '--manifest',
+      '<generated-core-manifest>',
     ]);
 
     const agentPublish = plan.phases.find((phase) => phase.kind === 'agentforce-publish');

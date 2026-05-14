@@ -71,7 +71,7 @@ type SpecialDeploymentProvider = {
   plan(context: ProviderContext): Promise<SpecialDeploymentPhase>;
 };
 
-const CORE_EXCLUDED_TYPES = ['Bot', 'BotVersion', 'GenAiPlannerBundle', 'AiAuthoringBundle'];
+const CORE_EXCLUDED_TYPES = ['Bot', 'BotVersion', 'AiAuthoringBundle'];
 
 export class SpecialDeploymentPlanService {
   public async buildPlan(options: SpecialDeploymentPlanOptions = {}): Promise<SpecialDeploymentPlan> {
