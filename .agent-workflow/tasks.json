@@ -254,17 +254,27 @@
   },
   {
     "id": "NEXT-002-STATUS",
-    "title": "Implement wave graph execution state in status",
+    "title": "[NEXT-002] Show wave graph execution state in status",
     "ownerRole": "developer",
     "dependencies": [],
     "acceptanceCriteria": [
-      "status output includes a wave graph view when state has enough wave context; wave nodes show completed/current/failed/pending; no-state and stale-state cases are graceful; implementation reuses src/waves/wave-graph.ts; unit tests cover presenter/service behavior and status mapping."
+      "status output includes a wave graph view when state has enough wave context; wave nodes show completed/current/failed/pending; no-state and stale-state cases are graceful; implementation reuses src/waves/wave-graph.ts; unit tests cover presenter/service behavior and status mapping.",
+      "status loads the persisted deployment state and renders a wave graph view when a deployment state exists.",
+      "Wave nodes are marked as completed, current, failed, or pending based on DeploymentState.",
+      "The graph uses the existing wave graph model instead of duplicating status-specific graph logic.",
+      "Output remains useful in terminal mode and can expose structured JSON for automation if the command supports JSON output.",
+      "Missing or stale deployment state is handled gracefully without stack traces.",
+      "Unit tests cover completed/current/failed status mapping and no-state behavior."
     ],
     "assumptions": [
       "Existing deployment-state.json may not contain dependency graph details; an initial implementation may show sequence/state graph unless richer wave context is persisted by start."
     ],
     "risks": [
-      "Adding graph data to persisted state can affect resume compatibility if not kept optional and backward compatible."
+      "Adding graph data to persisted state can affect resume compatibility if not kept optional and backward compatible.",
+      "priority:should-have",
+      "epic:deployment",
+      "user-story",
+      "points:3"
     ],
     "paths": [
       "src/commands/status.ts",
@@ -277,8 +287,8 @@
     ],
     "status": "done",
     "createdAt": "2026-05-14T08:57:51.752Z",
-    "updatedAt": "2026-05-14T09:11:53.121Z",
-    "goal": "Implement status command support for showing deployment wave graph execution state using the existing waveGraph model and persisted DeploymentState.",
+    "updatedAt": "2026-05-14T09:14:35.209Z",
+    "goal": "As a release engineer, I want the status command to show the deployment wave graph with applied, current, pending, and failed wave states, so that I can understand how the generated wave plan is progressing during a real deployment.",
     "scope": "Wire status service/presenter output to waveGraph execution state; persist or recover minimum wave context only if required; no Salesforce deploy validation, no wave generation semantic changes.",
     "testStrategy": "Run focused status/deployment/presentation tests, npm run build, and npm test before handoff."
   },
