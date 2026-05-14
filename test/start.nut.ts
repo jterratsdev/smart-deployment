@@ -126,7 +126,7 @@ describe('NUT: start command', () => {
     const result = execNutCommand(`start --source-path ${projectRoot} --allow-cycle-remediation`, homeDir, 'nonZero');
 
     expect(result.shellOutput.stderr).to.include('--target-org');
-    expect(result.shellOutput.stderr).to.include('cycle remediation deployments');
+    expect(result.shellOutput.stderr).to.include('real deployments');
     expect(await readFile(alphaPath, 'utf8')).to.equal(originalAlpha);
 
     let stateFileExists = true;
