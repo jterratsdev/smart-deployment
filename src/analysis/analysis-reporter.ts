@@ -2,6 +2,7 @@ import { writeFile } from 'node:fs/promises';
 import { GraphVisualizer } from '../dependencies/graph-visualizer.js';
 import type { ScanResult } from '../services/metadata-scanner-service.js';
 import type { WaveResult } from '../waves/wave-builder.js';
+import { buildWaveGraph, type WaveGraph } from '../waves/wave-graph.js';
 import type { DependencyEdge } from '../types/dependency.js';
 import type { MetadataDependencyKind } from '../types/metadata.js';
 
@@ -86,6 +87,7 @@ export type AnalysisReport = {
       estimatedTime: number;
     };
   }>;
+  waveGraph: WaveGraph;
 };
 
 export class AnalysisReporter {
@@ -147,6 +149,7 @@ export class AnalysisReporter {
           estimatedTime: wave.metadata.estimatedTime,
         },
       })),
+      waveGraph: buildWaveGraph(waveResult.waves, scanResult.dependencyResult.graph),
     };
   }
 
@@ -412,6 +415,12 @@ export class AnalysisReporter {
   <pre>${escapeHtml(report.dependencyGraph.visualizations.mermaid)}</pre>
   <h3>DOT</h3>
   <pre>${escapeHtml(report.dependencyGraph.visualizations.dot)}</pre>
+
+  <h2>Wave Graph</h2>
+  <h3>Mermaid</h3>
+  <pre>${escapeHtml(report.waveGraph.visualizations.mermaid)}</pre>
+  <h3>DOT</h3>
+  <pre>${escapeHtml(report.waveGraph.visualizations.dot)}</pre>
 </body>
 </html>
     `.trim();
