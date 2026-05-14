@@ -1,10 +1,12 @@
 import { getLogger } from '../utils/logger.js';
+import type { WaveGraph } from '../waves/wave-graph.js';
 import {
   type CycleRemediationStatusSummary,
   formatDeploymentStatus,
   summarizeDeploymentState,
 } from './deployment-state-summary.js';
 import { StateManager } from './state-manager.js';
+import { buildWaveGraphFromState } from './wave-graph-state.js';
 
 const logger = getLogger('DeploymentStatusService');
 
@@ -23,6 +25,7 @@ export type DeploymentStatusSummary = {
   testStatus: 'unknown' | 'pending' | 'not-run';
   testStatusText: string;
   cycleRemediation?: CycleRemediationStatusSummary;
+  waveGraph?: WaveGraph;
   timestamp?: string;
   stateFilePath: string;
 };
@@ -81,6 +84,7 @@ export class DeploymentStatusService {
       testStatus: this.normalizeTestStatus(summary.testStatus),
       testStatusText: summary.testStatus,
       cycleRemediation: summary.cycleRemediation,
+      waveGraph: buildWaveGraphFromState(state),
       timestamp: summary.lastUpdated,
       stateFilePath: this.stateManager.getStateFilePath(),
     };

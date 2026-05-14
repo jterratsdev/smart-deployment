@@ -40,11 +40,45 @@ describe('StatusCommandPresenter', () => {
         resumable: false,
         testStatus: 'pending',
         testStatusText: 'Tests run: 12 (1 failures)',
+        waveGraph: {
+          nodes: [
+            {
+              waveNumber: 1,
+              componentCount: 1,
+              components: ['CustomObject:Account'],
+              status: 'completed',
+            },
+            {
+              waveNumber: 2,
+              componentCount: 1,
+              components: ['ApexClass:AccountService'],
+              status: 'current',
+            },
+          ],
+          edges: [
+            { fromWave: 1, toWave: 2, kind: 'sequence' },
+            { fromWave: 1, toWave: 2, kind: 'dependency', dependencyCount: 1 },
+          ],
+          visualizations: {
+            mermaid: 'graph LR',
+            dot: 'digraph WaveGraph {}',
+          },
+        },
         stateFilePath: '.smart-deployment/deployment-state.json',
       },
       'Status: in-progress\nCurrent Wave: 3/5'
     );
 
-    expect(logs).to.deep.equal(['ℹ️ No deployment state found.', 'Status: in-progress', 'Current Wave: 3/5']);
+    expect(logs).to.deep.equal([
+      'ℹ️ No deployment state found.',
+      'Status: in-progress',
+      'Current Wave: 3/5',
+      '',
+      'Wave Graph:',
+      '  Wave 1 [completed] - 1 component(s)',
+      '  Wave 2 [current] - 1 component(s)',
+      'Wave Dependencies:',
+      '  Wave 1 -> Wave 2 (1 dependency edge(s))',
+    ]);
   });
 });

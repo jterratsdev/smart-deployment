@@ -59,6 +59,59 @@ describe('DeploymentStatusService', () => {
     expect(summary.testStatus).to.equal('pending');
   });
 
+  it('rebuilds a wave graph from persisted wave context', async () => {
+    await stateManager.saveState({
+      deploymentId: 'deploy-wave-graph',
+      targetOrg: 'test@example.com',
+      timestamp: '2026-04-20T00:00:00.000Z',
+      totalWaves: 3,
+      completedWaves: [1],
+      currentWave: 2,
+      failedWave: {
+        waveNumber: 3,
+        error: 'FIELD_INTEGRITY_EXCEPTION',
+        timestamp: '2026-04-20T00:00:10.000Z',
+      },
+      metadata: {
+        waveGraphContext: {
+          waves: [
+            { number: 1, components: ['CustomObject:Account'] },
+            { number: 2, components: ['CustomField:Account.External_Id__c'] },
+            { number: 3, components: ['ApexClass:AccountService'] },
+          ],
+          dependencies: [
+            { from: 'CustomField:Account.External_Id__c', to: 'CustomObject:Account' },
+            { from: 'ApexClass:AccountService', to: 'CustomField:Account.External_Id__c' },
+          ],
+        },
+      },
+    });
+
+    const summary = await service.getStatus();
+
+    expect(summary.waveGraph?.nodes.map((node) => node.status)).to.deep.equal(['completed', 'current', 'failed']);
+    expect(summary.waveGraph?.edges).to.include.deep.members([
+      { fromWave: 1, toWave: 2, kind: 'dependency', dependencyCount: 1 },
+      { fromWave: 2, toWave: 3, kind: 'dependency', dependencyCount: 1 },
+    ]);
+  });
+
+  it('omits the wave graph for legacy state without wave context', async () => {
+    await stateManager.saveState({
+      deploymentId: 'deploy-legacy',
+      targetOrg: 'test@example.com',
+      timestamp: '2026-04-20T00:00:00.000Z',
+      totalWaves: 2,
+      completedWaves: [1],
+      currentWave: 2,
+    });
+
+    const summary = await service.getStatus();
+
+    expect(summary.hasState).to.equal(true);
+    expect(summary.waveGraph).to.equal(undefined);
+  });
+
   it('returns a resume summary for failed deployments', async () => {
     await stateManager.saveState({
       deploymentId: 'deploy-456',

@@ -125,6 +125,10 @@ describe('StartExecutionService', () => {
     expect(state.failedWave?.error).to.include('"status":"Failed"');
     expect(state.metadata?.lastKnownStatus).to.equal('Failed');
     expect(state.metadata?.testFailures).to.equal(1);
+    expect(state.metadata?.waveGraphContext).to.deep.equal({
+      waves: [{ number: 1, components: ['ApexClass:TestClass'] }],
+      dependencies: [],
+    });
   });
 
   it('clears persisted deployment state after all waves succeed', async () => {
@@ -220,6 +224,13 @@ describe('StartExecutionService', () => {
     expect(state.failedWave?.waveNumber).to.equal(2);
     expect(state.metadata?.lastKnownStatus).to.equal('Failed');
     expect(state.metadata?.testFailures).to.equal(2);
+    expect(state.metadata?.waveGraphContext).to.deep.equal({
+      waves: [
+        { number: 1, components: ['ApexClass:FirstClass'] },
+        { number: 2, components: ['ApexTrigger:SecondTrigger'] },
+      ],
+      dependencies: [],
+    });
   });
 });
 

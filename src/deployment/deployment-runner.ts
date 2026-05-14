@@ -1,4 +1,4 @@
-import type { NodeId } from '../types/dependency.js';
+import type { DependencyGraph, NodeId } from '../types/dependency.js';
 import type { MetadataComponent } from '../types/metadata.js';
 import type { Wave } from '../waves/wave-builder.js';
 import { DeploymentTracker } from './deployment-tracker.js';
@@ -8,12 +8,14 @@ import { TestPlanService } from './test-plan-service.js';
 import { WaveManifestService } from './wave-manifest-service.js';
 import type { TestExecutor } from './test-executor.js';
 import type { DeploymentAIContext } from './deployment-context-service.js';
+import { buildPersistedWaveGraphContext } from './wave-graph-state.js';
 
 export type DeploymentRunnerParams = {
   deploymentId: string;
   targetOrg: string;
   sourcePath?: string;
   orderedWaves: Wave[];
+  dependencyGraph?: DependencyGraph;
   componentMap: ReadonlyMap<NodeId, MetadataComponent>;
   apiVersion?: string;
   skipTests: boolean;
@@ -45,6 +47,7 @@ export class DeploymentRunner {
       targetOrg,
       sourcePath,
       orderedWaves,
+      dependencyGraph,
       componentMap,
       apiVersion,
       skipTests,
@@ -96,6 +99,7 @@ export class DeploymentRunner {
             testsRun: result.testsRun,
             testFailures: result.testFailures,
             testLevel: testPlan.testLevel,
+            waveGraphContext: buildPersistedWaveGraphContext(orderedWaves, dependencyGraph),
             ...this.buildAIMetadata(aiContext),
           },
         });
@@ -114,6 +118,7 @@ export class DeploymentRunner {
           testsRun: result.testsRun,
           testFailures: result.testFailures,
           testLevel: testPlan.testLevel,
+          waveGraphContext: buildPersistedWaveGraphContext(orderedWaves, dependencyGraph),
           ...this.buildAIMetadata(aiContext),
         },
       });

@@ -275,9 +275,9 @@
       "test/unit/deployment/deployment-status-service.test.ts",
       "test/unit/presentation/status-command-presenter.test.ts"
     ],
-    "status": "pending",
+    "status": "done",
     "createdAt": "2026-05-14T08:57:51.752Z",
-    "updatedAt": "2026-05-14T08:57:58.530Z",
+    "updatedAt": "2026-05-14T09:11:53.121Z",
     "goal": "Implement status command support for showing deployment wave graph execution state using the existing waveGraph model and persisted DeploymentState.",
     "scope": "Wire status service/presenter output to waveGraph execution state; persist or recover minimum wave context only if required; no Salesforce deploy validation, no wave generation semantic changes.",
     "testStrategy": "Run focused status/deployment/presentation tests, npm run build, and npm test before handoff."

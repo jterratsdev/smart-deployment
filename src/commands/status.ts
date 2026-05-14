@@ -17,6 +17,7 @@ import { DeploymentStatusService } from '../deployment/deployment-status-service
 import { StatusCommandPresenter } from '../presentation/status-command-presenter.js';
 import { getLogger } from '../utils/logger.js';
 import { StateManager } from '../deployment/state-manager.js';
+import type { WaveGraph } from '../waves/wave-graph.js';
 
 const logger = getLogger('StatusCommand');
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
@@ -30,6 +31,7 @@ type StatusResult = {
   remainingWaves: number;
   status: string;
   canResume: boolean;
+  waveGraph?: WaveGraph;
   ai?: {
     provider?: string;
     model?: string;
@@ -90,6 +92,7 @@ export default class Status extends SfCommand<StatusResult> {
             ? 'Completed'
             : 'Not Started',
         canResume: summary.resumable,
+        waveGraph: summary.waveGraph,
       };
 
       if (summary.hasState && summary.status !== 'not-started') {

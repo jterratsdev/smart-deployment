@@ -130,6 +130,7 @@ export class StartExecutionService {
       targetOrg: options.targetOrg,
       sourcePath: options.sourcePath,
       orderedWaves,
+      dependencyGraph: scanResult.dependencyResult.graph,
       componentMap: scanResult.dependencyResult.components,
       apiVersion: scanResult.apiVersion,
       skipTests: options.skipTests,

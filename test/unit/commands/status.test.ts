@@ -43,6 +43,19 @@ describe('StatusCommand', () => {
           estimatedTimeRemainingSeconds: 180,
           testsRun: 12,
           testFailures: 1,
+          waveGraphContext: {
+            waves: [
+              { number: 1, components: ['CustomObject:Account'] },
+              { number: 2, components: ['CustomField:Account.External_Id__c'] },
+              { number: 3, components: ['ApexClass:AccountService'] },
+              { number: 4, components: ['PermissionSet:Sales'] },
+              { number: 5, components: ['Profile:Admin'] },
+            ],
+            dependencies: [
+              { from: 'CustomField:Account.External_Id__c', to: 'CustomObject:Account' },
+              { from: 'ApexClass:AccountService', to: 'CustomField:Account.External_Id__c' },
+            ],
+          },
         },
       };
     };
@@ -71,8 +84,16 @@ describe('StatusCommand', () => {
     expect(result.remainingWaves).to.equal(3);
     expect(result.status).to.equal('In Progress');
     expect(result.canResume).to.be.false;
+    expect(result.waveGraph?.nodes.map((node) => node.status)).to.deep.equal([
+      'completed',
+      'completed',
+      'current',
+      'pending',
+      'pending',
+    ]);
     expect(logs.some((message) => message.includes('Estimated Time Remaining: 180s'))).to.be.true;
     expect(logs.some((message) => message.includes('Test Status: Tests run: 12 (1 failures)'))).to.be.true;
+    expect(logs.some((message) => message.includes('Wave Graph:'))).to.be.true;
   });
 
   it('US-050: returns a not-started status when no state exists', async () => {
