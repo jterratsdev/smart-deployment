@@ -156,5 +156,100 @@
     "goal": "Extract high-confidence field references from dynamic SOQL embedded in Apex classes so deployment ordering can account for fields used only through runtime query strings.",
     "scope": "Detect Database.query, Database.getQueryLocator, Search.query where SOQL appears in string literals, simple concatenations, or class constants. Produce a structured dynamic query reference model with object, fields, raw query, confidence, and origin. Non-goals: arbitrary symbolic execution or runtime variable reconstruction.",
     "testStrategy": "Add focused unit tests for literal SOQL, simple concatenation, constants, non-SOQL strings, custom object fields, and ambiguous low-confidence cases."
+  },
+  {
+    "id": "NEXT-002",
+    "title": "[NEXT-002] Show wave graph execution state in status",
+    "ownerRole": "product_owner",
+    "dependencies": [],
+    "status": "pending",
+    "backlogItem": "https://github.com/jterrats/smart-deployment/issues/220",
+    "goal": "Show deployment wave graph execution state in the status command by reusing the existing waveGraph model and persisted DeploymentState.",
+    "acceptanceCriteria": [
+      "status loads the persisted deployment state and renders a wave graph view when a deployment state exists.",
+      "Wave nodes are marked as completed, current, failed, or pending based on DeploymentState.",
+      "The graph uses the existing wave graph model instead of duplicating status-specific graph logic.",
+      "Output remains useful in terminal mode and can expose structured JSON for automation if the command supports JSON output.",
+      "Missing or stale deployment state is handled gracefully without stack traces.",
+      "Unit tests cover completed/current/failed status mapping and no-state behavior.",
+      "status renders a wave graph when deployment state exists; completed/current/failed/pending statuses are derived from DeploymentState; no state is graceful; graph logic is reused from src/waves/wave-graph.ts; unit tests cover state mapping and no-state behavior."
+    ],
+    "risks": [
+      "priority:should-have",
+      "epic:deployment",
+      "user-story",
+      "points:3",
+      "If historical state lacks wave component details, the first iteration may render execution sequence/state only until future deployments persist richer graph context."
+    ],
+    "createdAt": "2026-05-14T08:44:24.077Z",
+    "updatedAt": "2026-05-14T08:44:33.856Z",
+    "scope": "Status command/service/presenter integration for waveGraph output; no deployment execution, no wave generation semantic changes.",
+    "paths": [
+      "src/commands/status.ts",
+      "src/deployment/deployment-status-service.ts",
+      "src/presentation/status-command-presenter.ts",
+      "src/waves/wave-graph.ts",
+      "test/unit/commands/status.test.ts",
+      "test/unit/deployment/deployment-status-service.test.ts",
+      "test/unit/presentation/status-command-presenter.test.ts"
+    ],
+    "testStrategy": "Run focused status/deployment/presentation unit tests plus npm test before handoff.",
+    "assumptions": [
+      "A deployment state file may not include the original dependency graph; implementation may need to persist or recover enough wave context to render meaningful graph output."
+    ]
+  },
+  {
+    "id": "NEXT-002-pm-1-c9oj",
+    "title": "[PM] NEXT-002",
+    "ownerRole": "product_manager",
+    "dependencies": [],
+    "status": "done",
+    "createdAt": "2026-05-14T08:44:42.434Z",
+    "updatedAt": "2026-05-14T08:44:42.439Z"
+  },
+  {
+    "id": "NEXT-002-po-1-c9oj",
+    "title": "[PO] NEXT-002",
+    "ownerRole": "product_owner",
+    "dependencies": ["NEXT-002-pm-1-c9oj"],
+    "status": "pending",
+    "createdAt": "2026-05-14T08:44:42.440Z",
+    "updatedAt": "2026-05-14T08:44:42.440Z"
+  },
+  {
+    "id": "NEXT-002-architect-1-c9oj",
+    "title": "[ARCHITECT] NEXT-002",
+    "ownerRole": "architect",
+    "dependencies": ["NEXT-002-po-1-c9oj"],
+    "status": "done",
+    "createdAt": "2026-05-14T08:45:08.250Z",
+    "updatedAt": "2026-05-14T08:45:08.256Z"
+  },
+  {
+    "id": "NEXT-002-developer-1-c9oj",
+    "title": "[DEVELOPER] NEXT-002",
+    "ownerRole": "developer",
+    "dependencies": ["NEXT-002-architect-1-c9oj"],
+    "status": "done",
+    "createdAt": "2026-05-14T08:45:08.257Z",
+    "updatedAt": "2026-05-14T08:45:08.261Z"
+  },
+  {
+    "id": "NEXT-002-qa-1-c9oj",
+    "title": "[QA] NEXT-002",
+    "ownerRole": "qa",
+    "dependencies": ["NEXT-002-developer-1-c9oj"],
+    "status": "pending",
+    "createdAt": "2026-05-14T08:45:08.262Z",
+    "updatedAt": "2026-05-14T08:45:08.262Z"
+  },
+  {
+    "id": "NEXT-002-release-1-c9oj",
+    "title": "[RELEASE] NEXT-002",
+    "ownerRole": "release_manager",
+    "dependencies": ["NEXT-002-qa-1-c9oj"],
+    "status": "done",
+    "createdAt": "2026-05-14T08:55:32.088Z",
+    "updatedAt": "2026-05-14T08:55:32.092Z"
   }
 ]
