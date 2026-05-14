@@ -1,6 +1,11 @@
 name: Publish to npm with Provenance
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - package.json
   release:
     types: [published]
   workflow_dispatch:
@@ -29,9 +34,9 @@ permissions:
 
 jobs:
   prepare-release:
-    name: Bump version, tag, and create release
+    name: Prepare release from package version
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && !inputs.tag
+    if: (github.event_name == 'workflow_dispatch' && !inputs.tag) || github.event_name == 'push'
 
     concurrency:
       group: prepare-npm-release
@@ -63,16 +68,20 @@ jobs:
 
           const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
           const current = pkg.version;
-          const explicit = process.env.INPUT_VERSION.trim();
+          const explicit = (process.env.INPUT_VERSION || '').trim();
           const bump = process.env.INPUT_BUMP;
+          const isPackagePush = process.env.GITHUB_EVENT_NAME === 'push';
           const semverPattern = /^\d+\.\d+\.\d+$/;
 
           if (!semverPattern.test(current)) {
             throw new Error(`package.json version must be x.y.z, received: ${current}`);
           }
 
-          let next = explicit;
-          if (next) {
+          let next = current;
+          if (isPackagePush) {
+            console.log(`Using package.json version from push event: ${current}`);
+          } else if (explicit) {
+            next = explicit;
             if (!semverPattern.test(next)) {
               throw new Error(`version input must be x.y.z without v prefix, received: ${next}`);
             }
@@ -93,7 +102,7 @@ jobs:
             next = parts.join('.');
           }
 
-          if (next === current) {
+          if (!isPackagePush && next === current) {
             throw new Error(`Next version equals current version (${current})`);
           }
 
@@ -120,6 +129,7 @@ jobs:
           fi
 
       - name: Update package version
+        if: github.event_name == 'workflow_dispatch'
         env:
           NEXT_VERSION: ${{ steps.version.outputs.next }}
         run: |
@@ -172,10 +182,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json
-          git commit -m "chore(release): bump version to $NEXT_VERSION"
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            git add package.json
+            git commit -m "chore(release): bump version to $NEXT_VERSION"
+            git push origin HEAD:main
+          fi
+
           git tag -a "$NEXT_TAG" -m "Release $NEXT_TAG"
-          git push origin HEAD:main
           git push origin "$NEXT_TAG"
 
       - name: Create GitHub Release
