@@ -1,0 +1,16 @@
+# Decision NEXT-002-STATUS: Story sizing
+
+- Status: accepted
+- Owner: architect
+
+## Context
+
+architect completed architect
+
+## Decision
+
+m [3 points]
+
+## Consequences
+
+architect output is ready for the next phase.

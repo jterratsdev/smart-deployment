@@ -251,5 +251,89 @@
     "status": "done",
     "createdAt": "2026-05-14T08:55:32.088Z",
     "updatedAt": "2026-05-14T08:55:32.092Z"
+  },
+  {
+    "id": "NEXT-002-STATUS",
+    "title": "Implement wave graph execution state in status",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "acceptanceCriteria": [
+      "status output includes a wave graph view when state has enough wave context; wave nodes show completed/current/failed/pending; no-state and stale-state cases are graceful; implementation reuses src/waves/wave-graph.ts; unit tests cover presenter/service behavior and status mapping."
+    ],
+    "assumptions": [
+      "Existing deployment-state.json may not contain dependency graph details; an initial implementation may show sequence/state graph unless richer wave context is persisted by start."
+    ],
+    "risks": [
+      "Adding graph data to persisted state can affect resume compatibility if not kept optional and backward compatible."
+    ],
+    "paths": [
+      "src/commands/status.ts",
+      "src/deployment/deployment-status-service.ts",
+      "src/presentation/status-command-presenter.ts",
+      "src/waves/wave-graph.ts",
+      "test/unit/commands/status.test.ts",
+      "test/unit/deployment/deployment-status-service.test.ts",
+      "test/unit/presentation/status-command-presenter.test.ts"
+    ],
+    "status": "pending",
+    "createdAt": "2026-05-14T08:57:51.752Z",
+    "updatedAt": "2026-05-14T08:57:58.530Z",
+    "goal": "Implement status command support for showing deployment wave graph execution state using the existing waveGraph model and persisted DeploymentState.",
+    "scope": "Wire status service/presenter output to waveGraph execution state; persist or recover minimum wave context only if required; no Salesforce deploy validation, no wave generation semantic changes.",
+    "testStrategy": "Run focused status/deployment/presentation tests, npm run build, and npm test before handoff."
+  },
+  {
+    "id": "NEXT-002-STATUS-pm-3-3t56",
+    "title": "[PM] NEXT-002-STATUS",
+    "ownerRole": "product_manager",
+    "dependencies": [],
+    "status": "done",
+    "createdAt": "2026-05-14T09:00:45.847Z",
+    "updatedAt": "2026-05-14T09:00:45.851Z"
+  },
+  {
+    "id": "NEXT-002-STATUS-po-3-3t56",
+    "title": "[PO] NEXT-002-STATUS",
+    "ownerRole": "product_owner",
+    "dependencies": ["NEXT-002-STATUS-pm-3-3t56"],
+    "status": "pending",
+    "createdAt": "2026-05-14T09:00:45.852Z",
+    "updatedAt": "2026-05-14T09:00:45.852Z"
+  },
+  {
+    "id": "NEXT-002-STATUS-architect-3-3t56",
+    "title": "[ARCHITECT] NEXT-002-STATUS",
+    "ownerRole": "architect",
+    "dependencies": ["NEXT-002-STATUS-po-3-3t56"],
+    "status": "done",
+    "createdAt": "2026-05-14T09:02:27.292Z",
+    "updatedAt": "2026-05-14T09:02:27.298Z"
+  },
+  {
+    "id": "NEXT-002-STATUS-developer-3-3t56",
+    "title": "[DEVELOPER] NEXT-002-STATUS",
+    "ownerRole": "developer",
+    "dependencies": ["NEXT-002-STATUS-architect-3-3t56"],
+    "status": "done",
+    "createdAt": "2026-05-14T09:02:27.299Z",
+    "updatedAt": "2026-05-14T09:02:27.304Z"
+  },
+  {
+    "id": "NEXT-002-STATUS-qa-3-3t56",
+    "title": "[QA] NEXT-002-STATUS",
+    "ownerRole": "qa",
+    "dependencies": ["NEXT-002-STATUS-developer-3-3t56"],
+    "status": "pending",
+    "createdAt": "2026-05-14T09:02:27.305Z",
+    "updatedAt": "2026-05-14T09:02:27.305Z"
+  },
+  {
+    "id": "NEXT-002-STATUS-release-3-3t56",
+    "title": "[RELEASE] NEXT-002-STATUS",
+    "ownerRole": "release_manager",
+    "dependencies": ["NEXT-002-STATUS-qa-3-3t56"],
+    "status": "done",
+    "createdAt": "2026-05-14T09:02:53.394Z",
+    "updatedAt": "2026-05-14T09:02:53.399Z"
   }
 ]
