@@ -1,0 +1,518 @@
+[
+  {
+    "id": "parent",
+    "name": "Parent Agent / Orchestrator",
+    "description": "Coordinates task decomposition, role activation, gates, locks, handoffs, escalation, and final integration.",
+    "capabilities": ["orchestration", "task_graph", "handoff_routing", "status", "integration"],
+    "requiredHandoffFields": ["status", "decisions", "risks", "evidence"],
+    "blockingAuthority": ["readiness", "integration"],
+    "activationCriteria": ["all orchestrated work", "multi-role tasks", "blocked or risky tasks"],
+    "expectedEvidence": ["execution plan", "selected roles", "handoff summary", "final integration summary"],
+    "gateParticipation": ["readiness", "release-readiness"]
+  },
+  {
+    "id": "product_manager",
+    "name": "Product Manager",
+    "description": "Owns product strategy, outcome framing, prioritization, roadmap trade-offs, and success metrics.",
+    "capabilities": ["product_strategy", "prioritization", "metrics", "roadmap"],
+    "requiredHandoffFields": ["userValue", "priority", "successMetrics", "tradeoffs"],
+    "blockingAuthority": ["scope", "priority"],
+    "activationCriteria": ["new product capability", "scope or priority ambiguity", "roadmap impact"],
+    "expectedEvidence": ["problem statement", "success metrics", "priority rationale"],
+    "gateParticipation": ["readiness"]
+  },
+  {
+    "id": "product_owner",
+    "name": "Product Owner",
+    "description": "Owns backlog clarity, acceptance criteria, user value, and final business acceptance.",
+    "capabilities": ["backlog_refinement", "acceptance_criteria", "business_acceptance"],
+    "requiredHandoffFields": ["backlogItem", "acceptanceCriteria", "businessRules"],
+    "blockingAuthority": ["readiness", "business_acceptance"],
+    "activationCriteria": ["new backlog item", "unclear acceptance criteria", "business rule changes"],
+    "expectedEvidence": ["refined story", "acceptance criteria", "business acceptance note"],
+    "gateParticipation": ["readiness", "release-readiness"]
+  },
+  {
+    "id": "business_analyst",
+    "name": "Business Analyst",
+    "description": "Owns requirements analysis, process rules, edge cases, constraints, and stakeholder alignment.",
+    "capabilities": ["requirements_analysis", "process_modeling", "edge_cases"],
+    "requiredHandoffFields": ["requirements", "rules", "edgeCases", "assumptions"],
+    "blockingAuthority": ["requirements"],
+    "activationCriteria": ["ambiguous workflow", "domain rules", "multi-stakeholder requirements"],
+    "expectedEvidence": ["requirements notes", "rule matrix", "open questions"],
+    "gateParticipation": ["readiness"]
+  },
+  {
+    "id": "planner",
+    "name": "Planner",
+    "description": "Decomposes epics and stories into executable task plans, dependencies, sequencing, and role assignments.",
+    "capabilities": ["planning", "dependency_mapping", "role_selection", "work_breakdown"],
+    "requiredHandoffFields": ["plan", "dependencies", "selectedRoles", "nonGoals"],
+    "blockingAuthority": ["planning"],
+    "activationCriteria": ["multi-step work", "unclear sequencing", "parallelizable tasks"],
+    "expectedEvidence": ["execution plan", "dependency graph", "role activation rationale"],
+    "gateParticipation": ["readiness"]
+  },
+  {
+    "id": "architect",
+    "name": "Architect",
+    "description": "Owns system boundaries, data flow, integration contracts, and architecture trade-offs.",
+    "capabilities": ["architecture", "adr", "design_review"],
+    "requiredHandoffFields": ["decision", "tradeoffs", "risks"],
+    "blockingAuthority": ["architecture"],
+    "activationCriteria": ["non-trivial design change", "cross-module contract change", "new integration"],
+    "expectedEvidence": ["architecture proposal", "ADR", "trade-off analysis"],
+    "gateParticipation": ["architecture", "release-readiness"]
+  },
+  {
+    "id": "developer",
+    "name": "Developer",
+    "description": "Owns implementation quality, unit tests, integration changes, and developer handoff.",
+    "capabilities": ["implementation", "unit_tests", "integration_tests", "handoff"],
+    "requiredHandoffFields": ["changedComponents", "behaviorChanged", "unitTests", "commandsRun"],
+    "blockingAuthority": [],
+    "activationCriteria": ["code change", "bug fix", "test implementation"],
+    "expectedEvidence": ["unit test results", "commands run", "changed files", "known gaps"],
+    "gateParticipation": ["qa-release", "release-readiness"]
+  },
+  {
+    "id": "tech_lead",
+    "name": "Tech Lead / Engineering Lead",
+    "description": "Owns implementation direction, code ownership boundaries, technical sequencing, review standards, and integration quality for delivery teams.",
+    "capabilities": [
+      "technical_leadership",
+      "implementation_strategy",
+      "code_ownership",
+      "integration_review",
+      "engineering_standards"
+    ],
+    "requiredHandoffFields": ["implementationPlan", "ownershipBoundaries", "reviewFocus", "integrationRisks"],
+    "blockingAuthority": ["implementation", "integration_quality"],
+    "activationCriteria": [
+      "multi-developer work",
+      "cross-module implementation",
+      "technical sequencing ambiguity",
+      "high change coordination risk"
+    ],
+    "expectedEvidence": ["implementation plan", "ownership map", "review checklist", "integration risk notes"],
+    "gateParticipation": ["architecture", "risk-review", "release-readiness"]
+  },
+  {
+    "id": "frontend_specialist",
+    "name": "Frontend Specialist",
+    "description": "Owns browser behavior, component architecture, responsive UI, accessibility implementation, client performance, and visual regression risk.",
+    "capabilities": [
+      "frontend_architecture",
+      "component_design",
+      "responsive_ui",
+      "client_performance",
+      "accessibility_implementation"
+    ],
+    "requiredHandoffFields": ["userFlow", "states", "accessibility", "browserEvidence"],
+    "blockingAuthority": ["frontend_quality", "accessibility"],
+    "activationCriteria": [
+      "user-facing web UI",
+      "component architecture change",
+      "responsive or mobile layout risk",
+      "client-side performance risk"
+    ],
+    "expectedEvidence": [
+      "responsive screenshots",
+      "accessibility notes",
+      "component test result",
+      "browser smoke evidence"
+    ],
+    "gateParticipation": ["qa-release", "risk-review"]
+  },
+  {
+    "id": "backend_specialist",
+    "name": "Backend Specialist",
+    "description": "Owns service boundaries, API contracts, persistence integration, concurrency, reliability behavior, and server-side test coverage.",
+    "capabilities": [
+      "backend_architecture",
+      "api_contracts",
+      "service_boundaries",
+      "concurrency",
+      "server_reliability"
+    ],
+    "requiredHandoffFields": ["apiContract", "dataFlow", "failureModes", "serviceTests"],
+    "blockingAuthority": ["backend_quality", "api_contract"],
+    "activationCriteria": [
+      "API or service contract change",
+      "business logic or domain service change",
+      "concurrency or transaction risk",
+      "server-side reliability impact"
+    ],
+    "expectedEvidence": [
+      "API contract notes",
+      "unit or integration test result",
+      "failure mode review",
+      "observability notes"
+    ],
+    "gateParticipation": ["architecture", "qa-release", "risk-review"]
+  },
+  {
+    "id": "mobile_specialist",
+    "name": "Mobile Specialist",
+    "description": "Owns mobile UX, native or hybrid runtime constraints, offline behavior, device compatibility, store readiness, and mobile test evidence.",
+    "capabilities": ["mobile_ux", "device_compatibility", "offline_behavior", "mobile_performance", "store_readiness"],
+    "requiredHandoffFields": ["devices", "mobileFlow", "offlineBehavior", "releaseConstraints"],
+    "blockingAuthority": ["mobile_quality", "release"],
+    "activationCriteria": [
+      "mobile application change",
+      "responsive behavior cannot cover native constraints",
+      "offline or device capability change",
+      "app store release impact"
+    ],
+    "expectedEvidence": [
+      "device matrix",
+      "mobile screenshots or recordings",
+      "offline test notes",
+      "store readiness checklist"
+    ],
+    "gateParticipation": ["qa-release", "risk-review", "release-readiness"]
+  },
+  {
+    "id": "reviewer_critic",
+    "name": "Reviewer / Critic",
+    "description": "Challenges agent outputs for correctness, completeness, regression risk, and missing evidence before handoff or release.",
+    "capabilities": ["critical_review", "regression_analysis", "evidence_review"],
+    "requiredHandoffFields": ["findings", "risk", "recommendation"],
+    "blockingAuthority": ["review"],
+    "activationCriteria": ["high-risk output", "cross-role handoff", "release candidate"],
+    "expectedEvidence": ["review findings", "risk notes", "approval or change request"],
+    "gateParticipation": ["risk-review", "release-readiness"]
+  },
+  {
+    "id": "qa",
+    "name": "QA",
+    "description": "Owns test planning, verification, regression risk, Playwright evidence, and release confidence.",
+    "capabilities": ["test_plan", "manual_testing", "playwright_review", "regression_testing"],
+    "requiredHandoffFields": ["testPlan", "results", "evidence"],
+    "blockingAuthority": ["qa"],
+    "activationCriteria": ["user-facing change", "bug fix", "release candidate", "acceptance criteria present"],
+    "expectedEvidence": ["test plan", "test results", "Playwright trace or screenshot", "defect notes"],
+    "gateParticipation": ["qa-release", "release-readiness"]
+  },
+  {
+    "id": "sdet",
+    "name": "SDET / Test Automation Engineer",
+    "description": "Owns reliable automated test strategy, Playwright architecture, fixtures, page objects, CI test stability, and automation evidence.",
+    "capabilities": ["test_automation", "playwright_architecture", "fixtures", "page_objects", "ci_test_reliability"],
+    "requiredHandoffFields": ["automationScope", "selectors", "fixtures", "evidenceArtifacts"],
+    "blockingAuthority": ["test_automation", "qa"],
+    "activationCriteria": [
+      "new browser automation",
+      "flaky or brittle E2E tests",
+      "critical regression path",
+      "CI test reliability risk"
+    ],
+    "expectedEvidence": ["automation plan", "Playwright trace or screenshot", "locator strategy", "CI stability notes"],
+    "gateParticipation": ["qa-release", "release-readiness"]
+  },
+  {
+    "id": "ux_ui_designer",
+    "name": "UX/UI Designer",
+    "description": "Owns user flows, responsive behavior, visual hierarchy, UI copy, and usability quality.",
+    "capabilities": ["ux_review", "ui_design", "responsive", "copy_review"],
+    "requiredHandoffFields": ["flow", "states", "evidence"],
+    "blockingAuthority": ["ux"],
+    "activationCriteria": ["user-facing UI", "new flow", "mobile behavior", "copy-sensitive interaction"],
+    "expectedEvidence": ["flow review", "responsive screenshots", "state coverage", "copy notes"],
+    "gateParticipation": ["risk-review", "qa-release"]
+  },
+  {
+    "id": "ux_researcher_accessibility",
+    "name": "UX Researcher / Accessibility Reviewer",
+    "description": "Validates user fit, mobile-first experience, accessibility, onboarding, tooltips, and player guidance for games.",
+    "capabilities": ["ux_research", "accessibility", "mobile_first", "onboarding", "game_guidance"],
+    "requiredHandoffFields": ["userFlow", "accessibility", "guidance", "findings"],
+    "blockingAuthority": ["accessibility", "ux"],
+    "activationCriteria": ["new user flow", "accessibility risk", "onboarding", "game tutorial or player assistance"],
+    "expectedEvidence": ["accessibility checklist", "mobile screenshots", "user-flow notes", "guidance review"],
+    "gateParticipation": ["qa-release", "release-readiness"]
+  },
+  {
+    "id": "accessibility_reviewer",
+    "name": "Accessibility Reviewer",
+    "description": "Owns WCAG-oriented accessibility review, keyboard navigation, semantic structure, assistive technology behavior, and inclusive interaction risk.",
+    "capabilities": [
+      "accessibility_review",
+      "keyboard_navigation",
+      "semantic_html",
+      "assistive_technology",
+      "inclusive_design"
+    ],
+    "requiredHandoffFields": ["accessibilityScope", "keyboardFlow", "assistiveTechRisk", "evidence"],
+    "blockingAuthority": ["accessibility"],
+    "activationCriteria": [
+      "accessibility risk",
+      "keyboard or focus behavior",
+      "semantic structure change",
+      "public user-facing UI"
+    ],
+    "expectedEvidence": [
+      "accessibility checklist",
+      "keyboard navigation notes",
+      "screen reader risk notes",
+      "responsive screenshots"
+    ],
+    "gateParticipation": ["risk-review", "qa-release", "release-readiness"]
+  },
+  {
+    "id": "game_designer",
+    "name": "Game Designer",
+    "description": "Owns gameplay loops, progression, difficulty, tutorialization, player feedback, and fun/clarity trade-offs.",
+    "capabilities": ["gameplay_design", "tutorialization", "player_feedback", "difficulty_tuning"],
+    "requiredHandoffFields": ["loop", "playerGoal", "feedback", "balanceRisk"],
+    "blockingAuthority": ["gameplay"],
+    "activationCriteria": ["gameplay change", "tutorial or guidance", "difficulty tuning", "player-facing mechanic"],
+    "expectedEvidence": ["playtest notes", "mechanic rationale", "tutorial coverage", "balance notes"],
+    "gateParticipation": ["qa-release", "risk-review"]
+  },
+  {
+    "id": "technical_writer",
+    "name": "Content / Technical Writer",
+    "description": "Owns user docs, technical docs, runbooks, release notes, help content, and support-facing copy.",
+    "capabilities": ["documentation", "runbooks", "release_notes", "help_content"],
+    "requiredHandoffFields": ["docsUpdated", "audience", "links"],
+    "blockingAuthority": ["documentation"],
+    "activationCriteria": ["user-visible behavior", "API change", "operational runbook", "release notes"],
+    "expectedEvidence": ["doc diff", "release note", "runbook link"],
+    "gateParticipation": ["release-readiness"]
+  },
+  {
+    "id": "security",
+    "name": "Security",
+    "description": "Owns threat modeling, secrets, auth, input handling, dependency risk, and security review.",
+    "capabilities": ["security_review", "threat_modeling", "secrets", "sast"],
+    "requiredHandoffFields": ["risk", "finding", "recommendation"],
+    "blockingAuthority": ["security"],
+    "activationCriteria": ["auth change", "secret handling", "network boundary", "dependency or supply-chain change"],
+    "expectedEvidence": ["threat notes", "SAST result", "dependency scan", "risk acceptance"],
+    "gateParticipation": ["risk-review", "release-readiness"]
+  },
+  {
+    "id": "policy_governance",
+    "name": "Policy / Governance Agent",
+    "description": "Enforces workflow policy, approvals, issue refinement, budget guardrails, evidence rules, and compliance gates.",
+    "capabilities": ["policy_enforcement", "approval_control", "budget_guardrails", "workflow_audit"],
+    "requiredHandoffFields": ["policy", "decision", "evidence", "exceptions"],
+    "blockingAuthority": ["governance", "budget", "approval"],
+    "activationCriteria": ["approval required", "budget fallback", "policy exception", "release readiness"],
+    "expectedEvidence": ["approval record", "policy decision", "exception rationale"],
+    "gateParticipation": ["readiness", "release-readiness"]
+  },
+  {
+    "id": "data_privacy_officer",
+    "name": "Data / Privacy Officer",
+    "description": "Owns data classification, PII, retention, encryption, access policy, residency, and data compliance.",
+    "capabilities": ["data_classification", "pii_review", "retention", "encryption", "access_control"],
+    "requiredHandoffFields": ["dataTypes", "classification", "retention", "controls"],
+    "blockingAuthority": ["privacy", "data_compliance"],
+    "activationCriteria": ["PII or sensitive data", "retention change", "data export", "cross-region data movement"],
+    "expectedEvidence": ["data classification", "privacy review", "retention decision", "access review"],
+    "gateParticipation": ["risk-review", "release-readiness"]
+  },
+  {
+    "id": "compliance_privacy",
+    "name": "Compliance / Privacy",
+    "description": "Owns regulatory requirements, policy conformance, consent, auditability, and compliance evidence.",
+    "capabilities": ["privacy_review", "compliance", "retention", "audit"],
+    "requiredHandoffFields": ["dataImpact", "policy", "risk"],
+    "blockingAuthority": ["compliance"],
+    "activationCriteria": ["regulated domain", "audit requirement", "policy exception", "privacy impact"],
+    "expectedEvidence": ["policy mapping", "audit note", "compliance approval"],
+    "gateParticipation": ["risk-review", "release-readiness"]
+  },
+  {
+    "id": "domain_expert",
+    "name": "Domain Expert",
+    "description": "Provides project-specific business, legal, industry, gameplay, medical, financial, or operational expertise.",
+    "capabilities": ["domain_review", "business_rules", "specialist_judgment"],
+    "requiredHandoffFields": ["domainRules", "assumptions", "risks", "decision"],
+    "blockingAuthority": ["domain"],
+    "activationCriteria": [
+      "specialized domain rules",
+      "regulated workflow",
+      "game design nuance",
+      "business-critical decision"
+    ],
+    "expectedEvidence": ["domain review", "rule clarification", "assumption validation"],
+    "gateParticipation": ["readiness", "risk-review"]
+  },
+  {
+    "id": "toolsmith",
+    "name": "Toolsmith / Integration Engineer",
+    "description": "Owns tools, MCPs, adapters, provider integrations, automation surfaces, and tool safety contracts.",
+    "capabilities": ["tooling", "mcp", "provider_adapters", "automation", "tool_guardrails"],
+    "requiredHandoffFields": ["toolContract", "permissions", "risk", "tests"],
+    "blockingAuthority": ["tooling"],
+    "activationCriteria": ["new tool", "provider adapter", "automation integration", "tool permission change"],
+    "expectedEvidence": ["tool contract", "adapter tests", "permission review"],
+    "gateParticipation": ["architecture", "risk-review"]
+  },
+  {
+    "id": "context_curator",
+    "name": "Context Curator / Memory Manager",
+    "description": "Owns shared context hygiene, decisions, assumptions, stale context, and durable memory quality.",
+    "capabilities": ["context_management", "memory_hygiene", "decision_tracking", "staleness_review"],
+    "requiredHandoffFields": ["currentContext", "decisions", "assumptions", "staleItems"],
+    "blockingAuthority": ["context"],
+    "activationCriteria": ["long-running work", "multiple agents", "conflicting decisions", "stale assumptions"],
+    "expectedEvidence": ["context summary", "decision links", "stale context notes"],
+    "gateParticipation": ["readiness", "release-readiness"]
+  },
+  {
+    "id": "devops",
+    "name": "DevOps",
+    "description": "Owns CI/CD, deployment, runtime config, rollback, infrastructure automation, and operational readiness.",
+    "capabilities": ["cicd", "deployment", "rollback", "iac", "observability"],
+    "requiredHandoffFields": ["deployment", "rollback", "monitoring"],
+    "blockingAuthority": ["deployment"],
+    "activationCriteria": ["deployment change", "CI/CD change", "runtime config", "infrastructure change"],
+    "expectedEvidence": ["pipeline result", "deployment plan", "rollback plan", "config diff"],
+    "gateParticipation": ["risk-review", "release-readiness"]
+  },
+  {
+    "id": "platform_engineer",
+    "name": "Platform Engineer",
+    "description": "Owns internal developer platform capabilities, golden paths, self-service workflows, reusable templates, and platform guardrails.",
+    "capabilities": ["developer_platform", "golden_paths", "self_service", "templates", "platform_guardrails"],
+    "requiredHandoffFields": ["platformCapability", "developerExperience", "guardrails", "adoptionPlan"],
+    "blockingAuthority": ["platform", "developer_experience"],
+    "activationCriteria": [
+      "new reusable platform capability",
+      "CI/CD or environment template",
+      "developer self-service workflow",
+      "cross-repo standardization"
+    ],
+    "expectedEvidence": [
+      "golden path documentation",
+      "template validation",
+      "self-service smoke test",
+      "adoption notes"
+    ],
+    "gateParticipation": ["architecture", "risk-review", "release-readiness"]
+  },
+  {
+    "id": "sre",
+    "name": "SRE",
+    "description": "Owns reliability, SLOs, capacity, incident readiness, resilience, and recovery.",
+    "capabilities": ["slos", "capacity", "incident_response", "dashboards", "resilience"],
+    "requiredHandoffFields": ["sloImpact", "alerts", "recovery"],
+    "blockingAuthority": ["reliability"],
+    "activationCriteria": ["availability impact", "latency risk", "capacity change", "incident-prone area"],
+    "expectedEvidence": ["SLO impact", "alert plan", "runbook", "recovery test"],
+    "gateParticipation": ["risk-review", "release-readiness"]
+  },
+  {
+    "id": "observability_incident",
+    "name": "Observability / Incident Response",
+    "description": "Owns logs, metrics, traces, alerts, dashboards, runbooks, incident workflow, and postmortem readiness.",
+    "capabilities": ["logs", "metrics", "tracing", "alerting", "runbooks", "postmortems"],
+    "requiredHandoffFields": ["signals", "alerts", "runbook", "owners"],
+    "blockingAuthority": ["observability"],
+    "activationCriteria": [
+      "new critical flow",
+      "production operation change",
+      "missing telemetry",
+      "incident follow-up"
+    ],
+    "expectedEvidence": ["dashboard link", "alert rule", "runbook", "synthetic check"],
+    "gateParticipation": ["risk-review", "release-readiness"]
+  },
+  {
+    "id": "dba",
+    "name": "DBA",
+    "description": "Owns database performance, migrations, indexes, locking, backups, and restore safety.",
+    "capabilities": ["database_review", "migrations", "query_plans", "backup_restore"],
+    "requiredHandoffFields": ["migration", "rollback", "queryRisk"],
+    "blockingAuthority": ["database"],
+    "activationCriteria": ["schema change", "query performance risk", "migration", "backup or restore change"],
+    "expectedEvidence": ["migration plan", "rollback SQL", "query plan", "restore proof"],
+    "gateParticipation": ["risk-review", "release-readiness"]
+  },
+  {
+    "id": "data_engineer",
+    "name": "Data Engineer / Data Platform Specialist",
+    "description": "Owns data pipelines, data contracts, transformations, lineage, quality checks, analytics reliability, and data platform operational risk.",
+    "capabilities": ["data_pipelines", "data_contracts", "lineage", "data_quality", "analytics_reliability"],
+    "requiredHandoffFields": ["dataContract", "lineage", "qualityChecks", "backfillPlan"],
+    "blockingAuthority": ["data_quality", "data_platform"],
+    "activationCriteria": [
+      "data pipeline change",
+      "analytics or reporting contract",
+      "backfill or transformation",
+      "data quality risk"
+    ],
+    "expectedEvidence": ["data contract", "lineage notes", "quality check result", "backfill or rollback plan"],
+    "gateParticipation": ["architecture", "risk-review", "release-readiness"]
+  },
+  {
+    "id": "performance_engineer",
+    "name": "Performance Engineer",
+    "description": "Owns latency, scalability, throughput, concurrency, caching, load behavior, and graceful degradation.",
+    "capabilities": ["performance", "load_testing", "scalability", "caching", "concurrency"],
+    "requiredHandoffFields": ["baseline", "risk", "test", "recommendation"],
+    "blockingAuthority": ["performance"],
+    "activationCriteria": ["hot path", "high traffic", "concurrency change", "SLO or cost risk"],
+    "expectedEvidence": ["benchmark", "load test", "profiling result", "degradation plan"],
+    "gateParticipation": ["risk-review", "release-readiness"]
+  },
+  {
+    "id": "release_manager",
+    "name": "Release Manager",
+    "description": "Owns release coordination, go/no-go, changelog, rollout, rollback, communication, and residual risk.",
+    "capabilities": ["release", "rollout", "rollback", "changelog", "go_no_go"],
+    "requiredHandoffFields": ["releasePlan", "rollback", "communications"],
+    "blockingAuthority": ["release"],
+    "activationCriteria": ["release candidate", "production deployment", "customer communication", "rollback risk"],
+    "expectedEvidence": ["release checklist", "rollback plan", "changelog", "go/no-go decision"],
+    "gateParticipation": ["release-readiness"]
+  },
+  {
+    "id": "support_customer_ops",
+    "name": "Support / Customer Operations",
+    "description": "Owns support readiness, customer-facing known issues, incident intake, troubleshooting guidance, and feedback loops after release.",
+    "capabilities": [
+      "support_readiness",
+      "customer_feedback",
+      "known_issues",
+      "troubleshooting",
+      "post_release_intake"
+    ],
+    "requiredHandoffFields": ["customerImpact", "knownIssues", "supportRunbook", "feedbackLoop"],
+    "blockingAuthority": ["support_readiness"],
+    "activationCriteria": [
+      "customer-visible release",
+      "support workflow change",
+      "known issue or workaround required",
+      "post-release feedback collection needed"
+    ],
+    "expectedEvidence": [
+      "support runbook",
+      "known issues note",
+      "customer communication draft",
+      "feedback intake plan"
+    ],
+    "gateParticipation": ["release-readiness"]
+  },
+  {
+    "id": "ai_evaluation_engineer",
+    "name": "AI Evaluation / Prompt Quality Engineer",
+    "description": "Owns LLM eval design, prompt regression coverage, rubric quality, model comparison, hallucination risk, and AI behavior evidence.",
+    "capabilities": ["llm_evaluations", "prompt_quality", "rubrics", "model_comparison", "ai_regression_testing"],
+    "requiredHandoffFields": ["evalDataset", "rubric", "modelBehavior", "regressionRisk"],
+    "blockingAuthority": ["ai_quality", "model_risk"],
+    "activationCriteria": [
+      "LLM behavior change",
+      "prompt or system instruction change",
+      "model routing change for critical role",
+      "AI output quality regression risk"
+    ],
+    "expectedEvidence": ["eval cases", "rubric results", "model comparison summary", "failure analysis"],
+    "gateParticipation": ["risk-review", "release-readiness"]
+  }
+]

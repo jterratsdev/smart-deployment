@@ -46,6 +46,7 @@ oclif.lock
 .wireit
 .wrangler/
 node_modules
+.tmp-npm-cache/
 
 # --
 # put files here you don't want cleaned with sf-clean

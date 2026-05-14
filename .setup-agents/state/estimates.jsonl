@@ -1,0 +1,4 @@
+{"id":"estimate-1778639832103-n6sg","storyId":"FEAT-218","sizingLabel":"m","soloEstimateDays":3,"aiUnguidedEstimateDays":2,"confidence":"medium","declaredBy":"architect","declaredAt":"2026-05-13T02:37:12.103Z"}
+{"id":"estimate-1778640419527-tw1y","storyId":"BUG-216","sizingLabel":"m","soloEstimateDays":2,"aiUnguidedEstimateDays":1,"confidence":"medium","declaredBy":"architect","declaredAt":"2026-05-13T02:46:59.527Z"}
+{"id":"estimate-1778640419553-a32s","storyId":"BUG-217","sizingLabel":"s","soloEstimateDays":1,"aiUnguidedEstimateDays":0.5,"confidence":"medium","declaredBy":"architect","declaredAt":"2026-05-13T02:46:59.553Z"}
+{"id":"estimate-1778640419556-js5f","storyId":"REV-219","sizingLabel":"xs","soloEstimateDays":0.5,"aiUnguidedEstimateDays":0.25,"confidence":"high","declaredBy":"architect","declaredAt":"2026-05-13T02:46:59.556Z"}

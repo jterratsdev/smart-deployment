@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "providers": {
+    "defaults": {
+      "provider": "none",
+      "model": "not-configured",
+      "fallbacks": [],
+      "maxTokens": 0,
+      "maxCostUsd": 0,
+      "timeoutMs": 30000,
+      "retries": 0,
+      "requiredCapabilities": []
+    },
+    "byRole": {}
+  },
+  "telemetry": {
+    "enabled": false,
+    "level": "off",
+    "policyVersion": "telemetry-consent-v1",
+    "actor": "system"
+  },
+  "notifications": {},
+  "providerPolicy": {
+    "allowedProviders": [],
+    "blockedProviders": [],
+    "allowVendorFallbackWithoutApproval": false
+  },
+  "runtimePolicy": {
+    "defaults": {
+      "executor": "generic-runtime"
+    },
+    "byRole": {},
+    "byTask": {},
+    "delegation": {
+      "mode": "runtime-native",
+      "allowDirectProviderApi": false
+    }
+  },
+  "budgets": {
+    "defaults": {},
+    "byRole": {},
+    "byTask": {}
+  },
+  "workflow": {
+    "playbooksDir": ".agent-workflow/playbooks",
+    "phasePlaybooks": {}
+  },
+  "tools": {
+    "node": {
+      "command": "node",
+      "args": [],
+      "cwd": ".",
+      "allowedRoles": ["developer", "qa", "parent"],
+      "timeoutMs": 30000,
+      "evidence": "command",
+      "risk": "low"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["playwright", "test"],
+      "cwd": ".",
+      "allowedRoles": ["qa", "developer"],
+      "timeoutMs": 120000,
+      "evidence": "trace",
+      "risk": "medium"
+    },
+    "python": {
+      "enabled": false,
+      "command": "python3",
+      "args": [],
+      "cwd": ".",
+      "allowedRoles": [],
+      "timeoutMs": 30000,
+      "evidence": "command",
+      "risk": "medium"
+    }
+  },
+  "staticAnalysis": {
+    "preCommit": {
+      "required": true,
+      "checks": ["format", "lint", "typecheck", "secret-scan", "staged-files"],
+      "disallowNoVerifyWithoutApproval": true
+    },
+    "ci": {
+      "checks": ["format", "lint", "typecheck", "test", "sast", "dependency-scan"]
+    }
+  },
+  "mode": "project",
+  "workspaceClassification": {
+    "root": "/Users/polux/dev/smart-deployment",
+    "normalizedRoot": "/Users/polux/dev/smart-deployment",
+    "kind": "project",
+    "signals": ["node-package-manager", "github-actions", "frontend", "python"],
+    "reasons": ["project signals detected"],
+    "writePolicy": "allow",
+    "recommendedAction": "Initialize Open Orchestra project workflow files.",
+    "confidence": "high",
+    "supportedTargets": ["generic", "claude", "cursor", "codex", "vscode", "windsurf"]
+  }
+}

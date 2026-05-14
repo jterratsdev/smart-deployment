@@ -1,0 +1,12 @@
+{
+  "version": "2.0.2",
+  "mode": "project",
+  "profiles": ["architect", "ba", "pm"],
+  "tools": ["codex"],
+  "orchestration": {
+    "enabled": true,
+    "engine": "native",
+    "mode": "project",
+    "profiles": ["architect", "ba", "pm"]
+  }
+}

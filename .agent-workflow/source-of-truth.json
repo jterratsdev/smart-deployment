@@ -1,0 +1,79 @@
+[
+  {
+    "id": "project-instructions",
+    "name": "Project Instructions",
+    "description": "Always-loaded project instructions and local agent operating rules.",
+    "priority": 1,
+    "locations": ["AGENTS.md", "ORCHESTRA.md", "CLAUDE.md", "rules/*.mdc"],
+    "useWhen": ["before planning", "before implementation", "before final response"],
+    "verification": "Prefer the most specific local instruction file for the current tool or agent."
+  },
+  {
+    "id": "product-backlog",
+    "name": "Product Backlog",
+    "description": "User stories, acceptance criteria, tasks, and workflow state.",
+    "priority": 2,
+    "locations": ["docs/multi-agent-orchestrator-backlog.md", ".agent-workflow/tasks.json", "GitHub issues"],
+    "useWhen": ["before scope decisions", "before implementation", "before QA"],
+    "verification": "Confirm the backlog item and acceptance criteria before starting work."
+  },
+  {
+    "id": "architecture",
+    "name": "Architecture and Design",
+    "description": "Architecture docs, ADRs, diagrams, service boundaries, and integration contracts.",
+    "priority": 3,
+    "locations": ["docs/*.md", ".agent-workflow/decisions/", ".generated-prompts/diagrams.md"],
+    "useWhen": ["before non-trivial design", "before cross-module changes"],
+    "verification": "Record architecture conflicts as decisions or blockers."
+  },
+  {
+    "id": "codebase",
+    "name": "Codebase",
+    "description": "Source code, tests, package manifests, config, and local command contracts.",
+    "priority": 4,
+    "locations": ["src/", "test/", "package.json", "tsconfig.json"],
+    "useWhen": ["before code changes", "before refactors", "before tests"],
+    "verification": "Inspect existing patterns before adding new abstractions or dependencies."
+  },
+  {
+    "id": "quality-security",
+    "name": "Quality and Security",
+    "description": "Static analysis, hooks, scans, QA plans, and test evidence.",
+    "priority": 5,
+    "locations": [".githooks/", ".agent-workflow/evidence/", "test/", "playwright.config.*"],
+    "useWhen": ["before commit", "before release", "before risk review"],
+    "verification": "Use local commands and evidence artifacts as proof, not generated explanations."
+  },
+  {
+    "id": "devops-runtime",
+    "name": "DevOps and Runtime",
+    "description": "CI/CD, deployment, IaC, observability, rollback, and release artifacts.",
+    "priority": 6,
+    "locations": [".github/workflows/", "infra/", "docs/*release*.md", "docs/*runbook*.md"],
+    "useWhen": ["before workflow changes", "before deploy", "before release readiness"],
+    "verification": "Validate downtime, rollback, secrets, environment isolation, and observability impact."
+  },
+  {
+    "id": "vendor-docs",
+    "name": "Official Vendor Documentation",
+    "description": "Official provider, framework, package, cloud, and browser documentation.",
+    "priority": 7,
+    "locations": ["official documentation URLs recorded by task"],
+    "useWhen": ["current APIs", "provider behavior", "framework behavior", "cloud/runtime behavior"],
+    "verification": "Use primary official docs and record source URLs for material claims."
+  },
+  {
+    "id": "agent-memory",
+    "name": "Agent Memory",
+    "description": "Prompt registry, handoffs, evidence, decisions, events, and lessons learned.",
+    "priority": 8,
+    "locations": [
+      ".generated-prompts/",
+      ".agent-workflow/events.jsonl",
+      ".agent-workflow/agent-lessons.jsonl",
+      ".agent-workflow/handoffs/"
+    ],
+    "useWhen": ["before repeated operations", "before handoff", "before final summary"],
+    "verification": "Load only relevant entries for the current task, skill, tool, or error signature."
+  }
+]

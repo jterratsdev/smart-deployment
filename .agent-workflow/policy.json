@@ -1,0 +1,41 @@
+{
+  "requireApprovalFor": ["major", "destructive"],
+  "routineCommands": [
+    "format",
+    "lint",
+    "test",
+    "build",
+    "local script",
+    "staging deploy",
+    "preview deploy",
+    "issue comment",
+    "issue close",
+    "git add",
+    "git commit",
+    "git push"
+  ],
+  "elevatedPatterns": ["release candidate", "tag", "version bump"],
+  "majorPatterns": [
+    "major version",
+    "breaking change",
+    "production deploy",
+    "irreversible migration",
+    "public cli",
+    "public api",
+    "config contract",
+    "auth",
+    "iam",
+    "permission",
+    "security boundary",
+    "secret"
+  ],
+  "destructivePatterns": [
+    "rm -rf",
+    "git reset --hard",
+    "drop database",
+    "truncate table",
+    "terraform destroy",
+    "delete production",
+    "destroy"
+  ]
+}

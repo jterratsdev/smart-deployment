@@ -1,0 +1,35 @@
+/*
+ * Custom CSS for mermaid-cli PDF rendering.
+ * Prevents diagram truncation and ensures full visibility in PDF output.
+ */
+
+/* Remove max-width constraint that causes truncation in PDF */
+svg {
+  max-width: none !important;
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* Ensure the container does not clip overflow */
+.mermaid {
+  overflow: visible !important;
+  max-width: none !important;
+}
+
+/* Rounded corners on nodes for readability */
+.node rect,
+.node polygon {
+  rx: 5;
+  ry: 5;
+}
+
+/* Ensure text inside nodes is not clipped */
+.nodeLabel {
+  overflow: visible !important;
+  white-space: normal !important;
+}
+
+/* Subgraph labels (epic headers) */
+.cluster-label {
+  font-weight: bold;
+}

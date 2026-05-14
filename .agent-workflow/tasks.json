@@ -1,0 +1,160 @@
+[
+  {
+    "id": "DQ-EPIC-001",
+    "title": "Dynamic SOQL deployment safety",
+    "ownerRole": "product_owner",
+    "dependencies": [],
+    "acceptanceCriteria": [
+      "Dynamic query field references are discovered from Apex and CMDT; known local fields become graph dependencies; missing local fields can be checked against target org; waves block unsafe components with actionable diagnostics; ambiguous references produce warnings rather than hard blockers."
+    ],
+    "assumptions": [
+      "Dynamic SOQL references can be detected conservatively from string literals, simple concatenation, constants, and common CMDT field names. Target-org checks are optional and only run when a target org is available."
+    ],
+    "risks": [
+      "False positives from arbitrary string parsing; false negatives from runtime-generated SOQL; target-org describe calls may add latency; managed-package namespaces and relationship fields need careful normalization."
+    ],
+    "paths": ["src/parsers", "src/dependencies", "src/deployment", "test/unit"],
+    "status": "done",
+    "createdAt": "2026-05-13T22:26:03.926Z",
+    "updatedAt": "2026-05-13T22:59:31.951Z",
+    "goal": "Prevent Salesforce deployments from installing Apex classes or Custom Metadata records that reference fields in dynamic SOQL before those fields exist in the target environment.",
+    "scope": "Product epic for dynamic-query deployment safety. Covers Apex string-based SOQL, Custom Metadata configurable query or field-list values, dependency graph ordering, target-org existence checks, and wave blocking/reporting. Non-goals: full Apex expression evaluation, arbitrary runtime query reconstruction, or replacing Salesforce validation.",
+    "testStrategy": "Add parser unit tests, dependency graph unit tests, deployment validation service tests, and command/NUT coverage for blocking behavior without requiring live org dependencies in CI.",
+    "blockedReason": "Epic container; execute child stories in order DQ-001/DQ-002, DQ-003, DQ-004, DQ-005."
+  },
+  {
+    "id": "DQ-002",
+    "title": "Extract configurable query references from Custom Metadata",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "acceptanceCriteria": [
+      "CMDT records containing SELECT Field__c FROM Object__c emit Object__c.Field__c; records with Object__c plus Fields__c field lists emit object-qualified fields; unrelated text values are ignored; references include source record and confidence; duplicate references are deduplicated."
+    ],
+    "assumptions": [
+      "Common CMDT naming conventions identify query-bearing fields with enough confidence for a first release. Users may later configure additional field names."
+    ],
+    "risks": [
+      "Configuration values may use tokens/placeholders; org-specific CMDT conventions may differ; field lists without object context may be ambiguous."
+    ],
+    "paths": [
+      "src/parsers/custom-metadata-parser.ts",
+      "src/services/scanners/data-metadata-scanner.ts",
+      "test/unit/parsers/custom-metadata-parser.test.ts"
+    ],
+    "status": "done",
+    "createdAt": "2026-05-13T22:26:23.830Z",
+    "updatedAt": "2026-05-13T22:45:54.413Z",
+    "goal": "Extract SOQL and field-list references from Custom Metadata records that configure dynamic Apex behavior.",
+    "scope": "Inspect Custom Metadata record values for likely query or field-list configuration fields such as Query__c, SOQL__c, Fields__c, Object__c, WhereClause__c, SelectFields__c, and equivalent names. Emit structured dynamic query references tied to CustomMetadataRecord sources. Non-goals: require every text value to be a blocker or infer business semantics from unrelated configuration text.",
+    "testStrategy": "Add parser tests for SOQL value records, object plus field-list records, placeholder-heavy values, unrelated text values, and duplicate references."
+  },
+  {
+    "id": "DQ-005",
+    "title": "Block unsafe waves with dynamic-query prerequisite diagnostics",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "acceptanceCriteria": [
+      "Unsafe waves are blocked before sf project deploy start; diagnostics identify source component, missing Object.Field, origin Apex/CMDT, confidence, and suggested remediation; ambiguous references are warnings; safe waves continue; JSON and human output include the new diagnostics."
+    ],
+    "assumptions": [
+      "DQ-001 through DQ-004 provide structured references, graph edges, and target-org existence results."
+    ],
+    "risks": [
+      "Blocking too aggressively could stop valid deployments; presentation must distinguish missing local field from missing target-org field; JSON output becomes product contract."
+    ],
+    "paths": [
+      "src/waves",
+      "src/deployment",
+      "src/presentation",
+      "test/unit/waves",
+      "test/unit/deployment",
+      "test/unit/presentation"
+    ],
+    "status": "done",
+    "createdAt": "2026-05-13T22:26:23.835Z",
+    "updatedAt": "2026-05-13T22:59:19.761Z",
+    "goal": "Block deployment waves that would install Apex or CMDT dynamic-query consumers before required fields exist, and report actionable remediation.",
+    "scope": "Integrate dynamic-query prerequisite results into wave validation/start execution presentation. Hard-block high-confidence missing prerequisites, warn for ambiguous references, and explain whether the fix is to include the field locally, deploy it earlier, or confirm it exists in the target org. Non-goals: auto-edit Apex/CMDT or deploy missing fields from outside the project.",
+    "testStrategy": "Add wave/deployment validation tests and command presenter tests for hard blockers, warnings, safe paths, and JSON output contract.",
+    "blockedReason": "Depends on DQ-004 target-org field existence results and DQ-003 graph integration."
+  },
+  {
+    "id": "DQ-003",
+    "title": "Add dynamic query references to dependency graph ordering",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "acceptanceCriteria": [
+      "Local Object.Field__c references create graph dependencies to CustomField:Object.Field__c; wave ordering places field metadata before Apex/CMDT consumers; absent local fields are carried as unresolved dynamic references for later validation; current dependency tests remain green."
+    ],
+    "assumptions": [
+      "The dependency graph already has or can normalize CustomField node IDs consistently enough for Object.Field references."
+    ],
+    "risks": [
+      "Node ID normalization mismatch; generated edges may over-constrain wave ordering; unresolved references need a stable contract."
+    ],
+    "paths": ["src/dependencies", "src/services/scanners", "test/unit/dependencies", "test/unit/services"],
+    "status": "done",
+    "createdAt": "2026-05-13T22:26:23.841Z",
+    "updatedAt": "2026-05-13T22:51:41.005Z",
+    "goal": "Promote dynamic query field references into dependency graph edges so waves install referenced fields before Apex or CMDT consumers.",
+    "scope": "Map dynamic query references to existing CustomField metadata nodes when the field is present locally, and add dependency edges from ApexClass or CustomMetadataRecord components to CustomField:Object.Field. Preserve existing static dependency behavior. Non-goals: target-org describe calls or blocking diagnostics; those belong to later tasks.",
+    "testStrategy": "Add dependency graph tests for local field ordering, absent local field unresolved tracking, duplicate edge handling, and mixed static plus dynamic dependencies.",
+    "blockedReason": "Depends on DQ-001 Apex extraction and DQ-002 Custom Metadata extraction reference contracts."
+  },
+  {
+    "id": "DQ-004",
+    "title": "Validate missing dynamic-query fields against target org",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "acceptanceCriteria": [
+      "When --target-org is provided, unresolved dynamic query fields are checked against the org; existing org fields do not block deployment; missing org fields produce structured missing prerequisite results; no target org falls back to local-only warnings; command tests can use a fake adapter."
+    ],
+    "assumptions": [
+      "Target org checks are best-effort and should fail closed only when the org call succeeds and confirms absence. Network/auth failures should produce actionable validation errors without masking local graph results."
+    ],
+    "risks": [
+      "Describe/query latency; permissions may hide metadata; CLI output shapes can change; live-org tests must remain optional."
+    ],
+    "paths": [
+      "src/deployment",
+      "src/commands/validate.ts",
+      "src/commands/start.ts",
+      "test/unit/deployment",
+      "test/unit/commands"
+    ],
+    "status": "done",
+    "createdAt": "2026-05-13T22:26:23.845Z",
+    "updatedAt": "2026-05-13T22:55:29.533Z",
+    "goal": "Check unresolved dynamic-query field references against the target org before deployment when a target org is available.",
+    "scope": "Add a target-org field existence service behind a deployment boundary that can verify whether Object.Field references already exist in the org. Use Salesforce CLI or stable metadata describe APIs behind an adapter. Cache results within a command run. Non-goals: mandatory live org dependency in CI or broad start/validate rewrites.",
+    "testStrategy": "Add unit tests with fake org-field adapter for existing fields, missing fields, auth failure, and no-target-org behavior; keep live org smoke manual or gated.",
+    "blockedReason": "Depends on DQ-003 unresolved dynamic-query reference contract from dependency graph ordering."
+  },
+  {
+    "id": "DQ-001",
+    "title": "Extract dynamic SOQL field references from Apex",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "acceptanceCriteria": [
+      "Apex with Database.query('SELECT Custom__c FROM Account') emits Account.Custom__c; multiple fields and custom objects are deduplicated; simple string concatenation and constants are handled; non-SOQL strings are ignored; ambiguous references are marked medium or low confidence rather than blocking."
+    ],
+    "assumptions": [
+      "Initial extraction can be conservative and regex/parser based over cleaned Apex source. Relationship fields and TYPEOF/subqueries can be deferred unless simple enough to parse safely."
+    ],
+    "risks": [
+      "False positives from arbitrary strings; false negatives for deeply dynamic query assembly; namespaces and relationship traversal need normalization rules."
+    ],
+    "paths": [
+      "src/parsers/apex-class-parser.ts",
+      "src/parsers/apex-class-dependencies.ts",
+      "src/parsers/apex-class-parser-model.ts",
+      "test/unit/parsers/apex-class-parser.test.ts"
+    ],
+    "status": "done",
+    "createdAt": "2026-05-13T22:26:23.831Z",
+    "updatedAt": "2026-05-13T22:40:22.812Z",
+    "goal": "Extract high-confidence field references from dynamic SOQL embedded in Apex classes so deployment ordering can account for fields used only through runtime query strings.",
+    "scope": "Detect Database.query, Database.getQueryLocator, Search.query where SOQL appears in string literals, simple concatenations, or class constants. Produce a structured dynamic query reference model with object, fields, raw query, confidence, and origin. Non-goals: arbitrary symbolic execution or runtime variable reconstruction.",
+    "testStrategy": "Add focused unit tests for literal SOQL, simple concatenation, constants, non-SOQL strings, custom object fields, and ambiguous low-confidence cases."
+  }
+]
