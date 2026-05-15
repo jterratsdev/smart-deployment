@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import { expect } from 'chai';
@@ -114,4 +114,78 @@ describe('SpecialDeploymentPlanExecutor', () => {
       'agent publish authoring-bundle -n SupportAgent --skip-retrieve',
     ]);
   });
+
+  it('runs deploy commands from a staging project that excludes forceignored files', async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), 'smart-deployment-special-exec-'));
+    await writeProjectFile(tempDir);
+    await writeNestedFile(
+      tempDir,
+      'force-app/main/default/classes/AccountService.cls',
+      'public class AccountService {}'
+    );
+    await writeNestedFile(
+      tempDir,
+      'force-app/main/default/digitalExperiences/site/PHP_Portal1/sfdc_cms__view/Privacy/view.json',
+      '{"ignored":true}'
+    );
+    await writeFile(
+      path.join(tempDir, '.forceignore'),
+      'force-app/main/default/digitalExperiences/site/PHP_Portal1/sfdc_cms__view/Privacy/\n',
+      'utf8'
+    );
+
+    const cwdValues: string[] = [];
+    const executor = new SpecialDeploymentPlanExecutor(async (_command, cwd) => {
+      cwdValues.push(cwd);
+      await expectMissing(
+        path.join(cwd, 'force-app/main/default/digitalExperiences/site/PHP_Portal1/sfdc_cms__view/Privacy/view.json')
+      );
+      expect(await readFile(path.join(cwd, 'force-app/main/default/classes/AccountService.cls'), 'utf8')).to.include(
+        'AccountService'
+      );
+      return { stdout: 'ok', stderr: '' };
+    });
+
+    const result = await executor.execute(plan(tempDir));
+
+    expect(result.success).to.equal(true);
+    expect(cwdValues[0]).to.not.equal(tempDir);
+    expect(
+      await readFile(
+        path.join(
+          tempDir,
+          'force-app/main/default/digitalExperiences/site/PHP_Portal1/sfdc_cms__view/Privacy/view.json'
+        ),
+        'utf8'
+      )
+    ).to.equal('{"ignored":true}');
+  });
 });
+
+async function writeProjectFile(projectRoot: string): Promise<void> {
+  await writeFile(
+    path.join(projectRoot, 'sfdx-project.json'),
+    JSON.stringify({
+      packageDirectories: [{ path: 'force-app', default: true }],
+      sourceApiVersion: '66.0',
+    }),
+    'utf8'
+  );
+}
+
+async function writeNestedFile(projectRoot: string, relativePath: string, content: string): Promise<void> {
+  const filePath = path.join(projectRoot, relativePath);
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(filePath, content, 'utf8');
+}
+
+async function expectMissing(filePath: string): Promise<void> {
+  try {
+    await access(filePath);
+    throw new Error(`${filePath} exists`);
+  } catch (error) {
+    if (error instanceof Error && error.message.endsWith('exists')) {
+      throw error;
+    }
+  }
+}

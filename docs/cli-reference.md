@@ -157,6 +157,7 @@ Behavior:
 - phase 3 optionally emits activation commands only when `--auto-activate` is enabled
 - phase 4 deploys changed `AiEvaluationDefinition` files after source subject prechecks
 - phase 5 publishes changed LWR sites with `sf community publish -n <site>`
+- metadata deploy phases run from a temporary sanitized Salesforce project when `.forceignore` excludes files under package directories
 - `--dry-run` is enabled by default and prints/returns the plan without executing commands
 - `--no-dry-run` executes non-skipped phase commands sequentially and stops at the first failed phase
 
@@ -165,5 +166,6 @@ Behavior:
 - repo config: `.smart-deployment.json`
 - saved plan: `.smart-deployment/deployment-plan.json`
 - deployment runtime state: `.smart-deployment/deployment-state.json`
+- temporary sanitized deploy project: operating-system temp directory, removed after the command finishes
 
 The runtime state file is operational state, not source-of-truth configuration.

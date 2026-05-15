@@ -6,6 +6,7 @@ import { SfCliIntegration } from './sf-cli-integration.js';
 import { StateManager } from './state-manager.js';
 import { TestPlanService } from './test-plan-service.js';
 import { WaveManifestService } from './wave-manifest-service.js';
+import { ForceIgnoreStagingService } from './forceignore-staging-service.js';
 import type { TestExecutor } from './test-executor.js';
 import type { DeploymentAIContext } from './deployment-context-service.js';
 import { buildPersistedWaveGraphContext } from './wave-graph-state.js';
@@ -30,15 +31,18 @@ export type DeploymentRunnerParams = {
 type DeploymentRunnerDependencies = {
   testPlanService?: TestPlanService;
   waveManifestService?: WaveManifestService;
+  forceIgnoreStagingService?: ForceIgnoreStagingService;
 };
 
 export class DeploymentRunner {
   private readonly testPlanService: TestPlanService;
   private readonly waveManifestService: WaveManifestService;
+  private readonly forceIgnoreStagingService: ForceIgnoreStagingService;
 
   public constructor(dependencies: DeploymentRunnerDependencies = {}) {
     this.testPlanService = dependencies.testPlanService ?? new TestPlanService();
     this.waveManifestService = dependencies.waveManifestService ?? new WaveManifestService();
+    this.forceIgnoreStagingService = dependencies.forceIgnoreStagingService ?? new ForceIgnoreStagingService();
   }
 
   public async execute(params: DeploymentRunnerParams): Promise<void> {
@@ -61,39 +65,62 @@ export class DeploymentRunner {
 
     await this.forEachSequentially(orderedWaves, async (wave) => {
       log(`\n🌊 Deploying Wave ${wave.number}/${orderedWaves.length} (${wave.components.length} components)...`);
-
-      const manifestPath = await this.waveManifestService.generateManifest({
-        baseDir: sourcePath ?? process.cwd(),
-        waveNumber: wave.number,
-        components: wave.components,
-        componentMap,
-        apiVersion,
+      const workspace = await this.forceIgnoreStagingService.prepare({
+        projectRoot: sourcePath ?? process.cwd(),
       });
-      const testPlan = this.testPlanService.resolveTestPlan(wave, skipTests, testExecutor);
 
-      tracker.startTracking(deploymentId, wave.number, orderedWaves.length);
-      const result = await sfCli.deploy({
-        manifestPath,
-        targetOrg,
-        workingDirectory: sourcePath,
-        testLevel: testPlan.testLevel,
-        tests: testPlan.testLevel === 'RunSpecifiedTests' ? testPlan.tests : undefined,
-      });
-      tracker.updateProgress(deploymentId, result);
+      try {
+        const manifestPath = await this.waveManifestService.generateManifest({
+          baseDir: workspace.projectRoot,
+          waveNumber: wave.number,
+          components: wave.components,
+          componentMap,
+          apiVersion,
+        });
+        const testPlan = this.testPlanService.resolveTestPlan(wave, skipTests, testExecutor);
 
-      if (!result.success) {
+        tracker.startTracking(deploymentId, wave.number, orderedWaves.length);
+        const result = await sfCli.deploy({
+          manifestPath,
+          targetOrg,
+          workingDirectory: workspace.projectRoot,
+          testLevel: testPlan.testLevel,
+          tests: testPlan.testLevel === 'RunSpecifiedTests' ? testPlan.tests : undefined,
+        });
+        tracker.updateProgress(deploymentId, result);
+
+        if (!result.success) {
+          await stateManager.saveState({
+            deploymentId,
+            targetOrg,
+            timestamp: new Date().toISOString(),
+            totalWaves: orderedWaves.length,
+            completedWaves: Array.from({ length: Math.max(0, wave.number - 1) }, (_, i) => i + 1),
+            currentWave: wave.number,
+            failedWave: {
+              waveNumber: wave.number,
+              error: result.output,
+              timestamp: new Date().toISOString(),
+            },
+            metadata: {
+              lastKnownStatus: result.status,
+              testsRun: result.testsRun,
+              testFailures: result.testFailures,
+              testLevel: testPlan.testLevel,
+              waveGraphContext: buildPersistedWaveGraphContext(orderedWaves, dependencyGraph),
+              ...this.buildAIMetadata(aiContext),
+            },
+          });
+          throw new Error(`Wave ${wave.number} failed: ${result.output}`);
+        }
+
         await stateManager.saveState({
           deploymentId,
           targetOrg,
           timestamp: new Date().toISOString(),
           totalWaves: orderedWaves.length,
-          completedWaves: Array.from({ length: Math.max(0, wave.number - 1) }, (_, i) => i + 1),
+          completedWaves: Array.from({ length: wave.number }, (_, i) => i + 1),
           currentWave: wave.number,
-          failedWave: {
-            waveNumber: wave.number,
-            error: result.output,
-            timestamp: new Date().toISOString(),
-          },
           metadata: {
             lastKnownStatus: result.status,
             testsRun: result.testsRun,
@@ -103,27 +130,11 @@ export class DeploymentRunner {
             ...this.buildAIMetadata(aiContext),
           },
         });
-        throw new Error(`Wave ${wave.number} failed: ${result.output}`);
+
+        log(`✅ Wave ${wave.number} deployed successfully`);
+      } finally {
+        await workspace.cleanup();
       }
-
-      await stateManager.saveState({
-        deploymentId,
-        targetOrg,
-        timestamp: new Date().toISOString(),
-        totalWaves: orderedWaves.length,
-        completedWaves: Array.from({ length: wave.number }, (_, i) => i + 1),
-        currentWave: wave.number,
-        metadata: {
-          lastKnownStatus: result.status,
-          testsRun: result.testsRun,
-          testFailures: result.testFailures,
-          testLevel: testPlan.testLevel,
-          waveGraphContext: buildPersistedWaveGraphContext(orderedWaves, dependencyGraph),
-          ...this.buildAIMetadata(aiContext),
-        },
-      });
-
-      log(`✅ Wave ${wave.number} deployed successfully`);
     });
 
     await stateManager.clearState();

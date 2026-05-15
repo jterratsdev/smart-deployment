@@ -136,6 +136,8 @@ sf smart-deployment ci-publish \
   --dry-run
 ```
 
+When executing deploy phases, Smart Deployment respects `.forceignore` by building from a temporary sanitized Salesforce project. Ignored files stay in the working tree but are not visible to package generation or `sf project deploy start`.
+
 ## Commands
 
 See:

@@ -7,6 +7,7 @@ import type {
   SpecialDeploymentPhase,
   SpecialDeploymentPlan,
 } from './special-deployment-plan.js';
+import { ForceIgnoreStagingService } from './forceignore-staging-service.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -35,6 +36,11 @@ export type SpecialDeploymentCommandRunner = (
   cwd: string
 ) => Promise<{ stdout: string; stderr: string }>;
 
+export type SpecialDeploymentPlanExecutorDependencies = {
+  runCommand?: SpecialDeploymentCommandRunner;
+  forceIgnoreStagingService?: ForceIgnoreStagingService;
+};
+
 type ExecFileFailure = {
   code?: number | string;
   stdout?: string;
@@ -44,9 +50,12 @@ type ExecFileFailure = {
 
 export class SpecialDeploymentPlanExecutor {
   private readonly runCommand: SpecialDeploymentCommandRunner;
+  private readonly forceIgnoreStagingService: ForceIgnoreStagingService;
 
-  public constructor(runCommand: SpecialDeploymentCommandRunner = defaultCommandRunner) {
-    this.runCommand = runCommand;
+  public constructor(dependencies: SpecialDeploymentCommandRunner | SpecialDeploymentPlanExecutorDependencies = {}) {
+    const resolved = typeof dependencies === 'function' ? { runCommand: dependencies } : dependencies;
+    this.runCommand = resolved.runCommand ?? defaultCommandRunner;
+    this.forceIgnoreStagingService = resolved.forceIgnoreStagingService ?? new ForceIgnoreStagingService();
   }
 
   public async execute(plan: SpecialDeploymentPlan): Promise<SpecialDeploymentExecutionResult> {
@@ -65,9 +74,16 @@ export class SpecialDeploymentPlanExecutor {
       }
 
       for (const command of phase.commands) {
-        const preparedCommand = await prepareCommand(command, phase, plan);
-        const commandResult = await this.executeCommand(preparedCommand, phase.kind, phase.label, plan.projectRoot);
-        result.commands.push(commandResult);
+        const workspace = await this.forceIgnoreStagingService.prepare({ projectRoot: plan.projectRoot });
+        let commandResult: SpecialDeploymentCommandResult;
+        try {
+          const stagedPlan = { ...plan, projectRoot: workspace.projectRoot };
+          const preparedCommand = await prepareCommand(command, phase, stagedPlan);
+          commandResult = await this.executeCommand(preparedCommand, phase.kind, phase.label, workspace.projectRoot);
+          result.commands.push(commandResult);
+        } finally {
+          await workspace.cleanup();
+        }
 
         if (!commandResult.success) {
           result.success = false;
