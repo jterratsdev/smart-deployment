@@ -46,6 +46,7 @@ type AnalyzeResult = {
 };
 
 export default class Analyze extends SfCommand<AnalyzeResult> {
+  public static readonly aliases = ['smart-deployment analyze'];
   public static readonly summary = messages.getMessage('summary');
   public static readonly description = messages.getMessage('description');
   public static readonly examples = messages.getMessages('examples');

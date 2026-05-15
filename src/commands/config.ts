@@ -25,6 +25,7 @@ const configMutationService = new ConfigMutationService();
 const presenter = new ConfigCommandPresenter();
 
 export default class Config extends SfCommand<{ success: boolean }> {
+  public static readonly aliases = ['smart-deployment config'];
   public static readonly summary = messages.getMessage('summary');
   public static readonly description = messages.getMessage('description');
 

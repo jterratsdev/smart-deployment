@@ -31,6 +31,7 @@ type ResumeResult = {
 };
 
 export default class Resume extends SfCommand<ResumeResult> {
+  public static readonly aliases = ['smart-deployment resume'];
   public static readonly summary = messages.getMessage('summary');
   public static readonly examples = messages.getMessages('examples');
   public static readonly flags: Interfaces.FlagInput = {

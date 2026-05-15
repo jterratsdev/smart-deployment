@@ -40,6 +40,7 @@ type ValidateResult = {
 };
 
 export default class Validate extends SfCommand<ValidateResult> {
+  public static readonly aliases = ['smart-deployment validate'];
   public static readonly summary = messages.getMessage('summary');
   public static readonly examples = messages.getMessages('examples');
   public static readonly flags: Interfaces.FlagInput = {

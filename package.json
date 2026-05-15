@@ -1,7 +1,7 @@
 {
   "name": "@jterrats/smart-deployment",
   "description": "Intelligent Salesforce metadata deployment plugin that automatically analyzes dependencies, generates optimal deployment",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "dependencies": {
     "@oclif/core": "4.11.2",
     "@salesforce/core": "^8.29.0",

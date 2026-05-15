@@ -54,6 +54,7 @@ type StartResult = {
 };
 
 export default class Start extends SfCommand<StartResult> {
+  public static readonly aliases = ['smart-deployment start'];
   public static readonly summary = messages.getMessage('summary');
   public static readonly description = messages.getMessage('description');
   public static readonly examples = messages.getMessages('examples');

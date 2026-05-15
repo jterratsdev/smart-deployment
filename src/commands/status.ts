@@ -44,6 +44,7 @@ type StatusResult = {
 };
 
 export default class Status extends SfCommand<StatusResult> {
+  public static readonly aliases = ['smart-deployment status'];
   public static readonly summary = messages.getMessage('summary');
   public static readonly examples = messages.getMessages('examples');
   public static readonly flags: Interfaces.FlagInput = {

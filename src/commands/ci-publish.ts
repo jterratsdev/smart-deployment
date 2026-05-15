@@ -6,6 +6,7 @@ import { getLogger } from '../utils/logger.js';
 const logger = getLogger('CiPublishCommand');
 
 export default class CiPublish extends SfCommand<SpecialDeploymentPlan> {
+  public static readonly aliases = ['smart-deployment ci-publish'];
   public static readonly summary = 'Build a coordinated metadata, Agentforce, LWR, and OmniStudio publish plan for CI.';
 
   public static readonly examples = [
