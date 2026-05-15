@@ -10,7 +10,7 @@ export default class CiPublish extends SfCommand<SpecialDeploymentPlan> {
 
   public static readonly examples = [
     '<%= config.bin %> <%= command.id %> --since origin/main --dry-run',
-    '<%= config.bin %> <%= command.id %> --source-path force-app --since HEAD~1 --json',
+    '<%= config.bin %> <%= command.id %> --source-path force-app --target-org release --since HEAD~1 --json',
   ];
 
   public static readonly flags = {
@@ -19,6 +19,10 @@ export default class CiPublish extends SfCommand<SpecialDeploymentPlan> {
     }),
     since: Flags.string({
       summary: 'Git revision used as the previous green deploy SHA for change detection.',
+    }),
+    'target-org': Flags.string({
+      char: 'o',
+      summary: 'Target org alias or username used for deploy commands and org preflight checks.',
     }),
     'dry-run': Flags.boolean({
       summary: 'Print the coordinated publish plan without executing external commands.',
@@ -35,14 +39,16 @@ export default class CiPublish extends SfCommand<SpecialDeploymentPlan> {
     const { flags } = await this.parse(CiPublish);
     const sourcePath = typeof flags['source-path'] === 'string' ? flags['source-path'] : undefined;
     const since = typeof flags.since === 'string' ? flags.since : undefined;
+    const targetOrg = typeof flags['target-org'] === 'string' ? flags['target-org'] : undefined;
     const dryRun = flags['dry-run'] !== false;
     const autoActivate = flags['auto-activate'] === true;
 
-    logger.info('Building CI publish plan', { sourcePath, since, dryRun, autoActivate });
+    logger.info('Building CI publish plan', { sourcePath, since, targetOrg, dryRun, autoActivate });
 
     const plan = await new SpecialDeploymentPlanService().buildPlan({
       sourcePath,
       since,
+      targetOrg,
       dryRun,
       autoActivate,
     });
@@ -73,6 +79,9 @@ export default class CiPublish extends SfCommand<SpecialDeploymentPlan> {
     this.log(`Mode: ${plan.dryRun ? 'dry-run' : 'execute'}`);
     if (plan.since) {
       this.log(`Since: ${plan.since}`);
+    }
+    if (plan.targetOrg) {
+      this.log(`Target Org: ${plan.targetOrg}`);
     }
 
     for (const phase of plan.phases) {

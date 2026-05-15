@@ -77,13 +77,19 @@ describe('CiPublishCommand', () => {
     let receivedOptions: unknown;
     SpecialDeploymentPlanService.prototype.buildPlan = async function buildPlanMock(options) {
       receivedOptions = options;
-      return plan();
+      return plan({ targetOrg: 'release-org' });
     };
 
     const command = new CiPublish([], {} as never);
     const logs: string[] = [];
     (command as unknown as CiPublishCommandTestDouble).parse = async () => ({
-      flags: { 'source-path': 'force-app', since: 'abc123', 'dry-run': true, 'auto-activate': false },
+      flags: {
+        'source-path': 'force-app',
+        since: 'abc123',
+        'target-org': 'release-org',
+        'dry-run': true,
+        'auto-activate': false,
+      },
       args: {},
       argv: [],
       raw: [],
@@ -103,11 +109,13 @@ describe('CiPublishCommand', () => {
     expect(receivedOptions).to.deep.equal({
       sourcePath: 'force-app',
       since: 'abc123',
+      targetOrg: 'release-org',
       dryRun: true,
       autoActivate: false,
     });
     expect(result.phases[0]?.commands[0]?.args).to.include.members(['agent', 'publish', 'authoring-bundle']);
     expect(logs).to.include('Coordinated publish plan');
+    expect(logs).to.include('Target Org: release-org');
     expect(logs.some((message) => message.includes('sf agent publish authoring-bundle'))).to.equal(true);
   });
 

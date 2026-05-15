@@ -6,6 +6,10 @@ import { XMLParser } from 'fast-xml-parser';
 import { glob } from 'glob';
 import { MetadataScannerService } from '../services/metadata-scanner-service.js';
 import type { MetadataComponent } from '../types/metadata.js';
+import {
+  SfCliSpecialDeploymentTargetLookup,
+  type SpecialDeploymentTargetLookup,
+} from './special-deployment-target-lookup.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -40,6 +44,7 @@ export type SpecialDeploymentPlan = {
   success: boolean;
   projectRoot: string;
   apiVersion: string;
+  targetOrg?: string;
   since?: string;
   dryRun: boolean;
   autoActivate: boolean;
@@ -51,10 +56,12 @@ export type SpecialDeploymentPlan = {
 export type SpecialDeploymentPlanOptions = {
   sourcePath?: string;
   since?: string;
+  targetOrg?: string;
   dryRun?: boolean;
   autoActivate?: boolean;
   scanner?: Pick<MetadataScannerService, 'scan'>;
   changedPathProvider?: (projectRoot: string, since?: string) => Promise<string[]>;
+  targetLookup?: SpecialDeploymentTargetLookup;
 };
 
 type ProviderContext = {
@@ -63,8 +70,10 @@ type ProviderContext = {
   components: MetadataComponent[];
   changedPaths: string[];
   since?: string;
+  targetOrg?: string;
   dryRun: boolean;
   autoActivate: boolean;
+  targetLookup: SpecialDeploymentTargetLookup;
 };
 
 type SpecialDeploymentProvider = {
@@ -86,8 +95,10 @@ export class SpecialDeploymentPlanService {
       components: scanResult.components,
       changedPaths,
       since: options.since,
+      targetOrg: options.targetOrg,
       dryRun: options.dryRun ?? true,
       autoActivate: options.autoActivate ?? false,
+      targetLookup: options.targetLookup ?? new SfCliSpecialDeploymentTargetLookup(),
     };
 
     const providers: SpecialDeploymentProvider[] = [
@@ -107,6 +118,7 @@ export class SpecialDeploymentPlanService {
       success: scanResult.errors.length === 0 && phaseErrors.length === 0,
       projectRoot,
       apiVersion: scanResult.apiVersion,
+      targetOrg: options.targetOrg,
       since: options.since,
       dryRun: context.dryRun,
       autoActivate: context.autoActivate,
@@ -132,7 +144,7 @@ class CoreMetadataProvider implements SpecialDeploymentProvider {
       commands: [
         {
           tool: 'sf',
-          args: ['project', 'deploy', 'start', '--manifest', '<generated-core-manifest>'],
+          args: withTargetOrg(['project', 'deploy', 'start', '--manifest', '<generated-core-manifest>'], context),
           reason: 'Deploy regular Salesforce metadata after excluding lifecycle-owned provider artifacts.',
         },
       ],
@@ -153,7 +165,7 @@ class AgentforcePublishProvider implements SpecialDeploymentProvider {
       changedPaths: changedPathsFor(context.changedPaths, 'aiAuthoringBundles/'),
       commands: bundles.map((name) => ({
         tool: 'sf',
-        args: ['agent', 'publish', 'authoring-bundle', '-n', name, '--skip-retrieve'],
+        args: withTargetOrg(['agent', 'publish', 'authoring-bundle', '-n', name, '--skip-retrieve', '--json'], context),
         reason: 'Publish changed Agentforce authoring bundle without retrieving generated version artifacts.',
       })),
       skipped: bundles.length === 0,
@@ -173,7 +185,7 @@ class AgentforceActivationProvider implements SpecialDeploymentProvider {
       changedPaths: changedPathsFor(context.changedPaths, 'aiAuthoringBundles/'),
       commands: bundles.map((name) => ({
         tool: 'sf',
-        args: ['agent', 'activate', '-n', name, '--version', '<published-version>'],
+        args: withTargetOrg(['agent', 'activate', '-n', name, '--version', `<published-version:${name}>`], context),
         reason: 'Activate the newly published Agentforce version only when explicitly requested.',
       })),
       skipped: bundles.length === 0,
@@ -197,7 +209,13 @@ class AiEvaluationProvider implements SpecialDeploymentProvider {
         .filter((component) => component.type === 'AiAuthoringBundle' || component.type === 'Bot')
         .map((component) => component.name)
     );
-    const precheckErrors = await findMissingEvaluationSubjects(context.projectRoot, changedFiles, sourceSubjects);
+    const precheckErrors = await findMissingEvaluationSubjects(
+      context.projectRoot,
+      changedFiles,
+      sourceSubjects,
+      context.targetOrg,
+      context.targetLookup
+    );
 
     return {
       kind: 'ai-evaluations',
@@ -209,7 +227,10 @@ class AiEvaluationProvider implements SpecialDeploymentProvider {
           ? [
               {
                 tool: 'sf',
-                args: ['project', 'deploy', 'start', '--manifest', '<generated-ai-evaluation-manifest>'],
+                args: withTargetOrg(
+                  ['project', 'deploy', 'start', '--manifest', '<generated-ai-evaluation-manifest>'],
+                  context
+                ),
                 reason: 'Deploy AI evaluations after Agentforce bundle publish/precheck ordering.',
               },
             ]
@@ -218,8 +239,8 @@ class AiEvaluationProvider implements SpecialDeploymentProvider {
       skipReason: changedFiles.length === 0 ? 'No changed AiEvaluationDefinition files detected.' : undefined,
       errors: precheckErrors,
       warnings:
-        changedFiles.length > 0
-          ? ['AiEvaluationDefinition target-org subject lookup is not executed in dry-run planning mode.']
+        changedFiles.length > 0 && !context.targetOrg
+          ? ['AiEvaluationDefinition target-org subject lookup requires --target-org.']
           : undefined,
     };
   }
@@ -236,7 +257,7 @@ class CommunityPublishProvider implements SpecialDeploymentProvider {
       changedPaths: changedPathsFor(context.changedPaths, 'digitalExperiences/site/'),
       commands: sites.map((name) => ({
         tool: 'sf',
-        args: ['community', 'publish', '-n', name],
+        args: withTargetOrg(['community', 'publish', '-n', name], context),
         reason: 'Publish changed LWR site to register route/view bindings after metadata deployment.',
       })),
       skipped: sites.length === 0,
@@ -326,10 +347,20 @@ function firstPathSegment(filePath: string): string {
   return normalizePath(filePath).split('/')[0] ?? filePath;
 }
 
+function withTargetOrg(args: string[], context: ProviderContext): string[] {
+  if (!context.targetOrg) {
+    return args;
+  }
+
+  return [...args, '--target-org', context.targetOrg];
+}
+
 async function findMissingEvaluationSubjects(
   projectRoot: string,
   files: string[],
-  sourceSubjects: ReadonlySet<string>
+  sourceSubjects: ReadonlySet<string>,
+  targetOrg: string | undefined,
+  targetLookup: SpecialDeploymentTargetLookup
 ): Promise<string[]> {
   const parser = new XMLParser({ ignoreAttributes: false });
   const errors: string[] = [];
@@ -339,7 +370,12 @@ async function findMissingEvaluationSubjects(
     const content = await readFile(absolutePath, 'utf8');
     const parsed = parser.parse(content) as Record<string, unknown>;
     const subjectName = findXmlValue(parsed, 'subjectName');
-    if (subjectName && !sourceSubjects.has(subjectName)) {
+    if (!subjectName || sourceSubjects.has(subjectName)) {
+      continue;
+    }
+
+    const existsInTarget = targetOrg ? await targetLookup.hasEvaluationSubject(targetOrg, subjectName) : false;
+    if (!existsInTarget) {
       errors.push(`${file}: subjectName "${subjectName}" was not found in source Agentforce bundles or Bots.`);
     }
   }

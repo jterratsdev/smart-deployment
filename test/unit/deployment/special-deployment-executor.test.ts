@@ -41,6 +41,14 @@ function plan(projectRoot: string): SpecialDeploymentPlan {
         skipped: false,
       },
       {
+        kind: 'agentforce-activate',
+        label: 'Phase 3: Agentforce activation',
+        components: [],
+        commands: [],
+        skipped: true,
+        skipReason: 'Activation is disabled by default.',
+      },
+      {
         kind: 'community-publish',
         label: 'Phase 5: Experience Cloud community publish',
         components: [],
@@ -78,7 +86,7 @@ describe('SpecialDeploymentPlanExecutor', () => {
 
     expect(result.success).to.equal(true);
     expect(result.completedPhases).to.deep.equal(['core-metadata', 'agentforce-publish']);
-    expect(result.skippedPhases).to.deep.equal(['community-publish']);
+    expect(result.skippedPhases).to.deep.equal(['agentforce-activate', 'community-publish']);
     expect(calls).to.deep.equal([
       `${tempDir}:sf project deploy start --manifest ${manifestPath}`,
       `${tempDir}:sf agent publish authoring-bundle -n SupportAgent --skip-retrieve`,
@@ -159,6 +167,82 @@ describe('SpecialDeploymentPlanExecutor', () => {
         'utf8'
       )
     ).to.equal('{"ignored":true}');
+  });
+
+  it('resolves Agentforce activation version from the preceding publish command', async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), 'smart-deployment-special-exec-'));
+    const calls: string[] = [];
+    const activationPlan = plan(tempDir);
+    activationPlan.phases = [
+      {
+        kind: 'agentforce-publish',
+        label: 'Phase 2: Agentforce authoring bundle publish',
+        components: ['AiAuthoringBundle:SupportAgent'],
+        commands: [
+          {
+            tool: 'sf',
+            args: ['agent', 'publish', 'authoring-bundle', '-n', 'SupportAgent', '--skip-retrieve', '--json'],
+            reason: 'test',
+          },
+        ],
+        skipped: false,
+      },
+      {
+        kind: 'agentforce-activate',
+        label: 'Phase 3: Agentforce activation',
+        components: ['AiAuthoringBundle:SupportAgent'],
+        commands: [
+          {
+            tool: 'sf',
+            args: ['agent', 'activate', '-n', 'SupportAgent', '--version', '<published-version:SupportAgent>'],
+            reason: 'test',
+          },
+        ],
+        skipped: false,
+      },
+    ];
+    const executor = new SpecialDeploymentPlanExecutor(async (command) => {
+      calls.push(command.args.join(' '));
+      if (command.args.includes('publish')) {
+        return { stdout: JSON.stringify({ result: { versionNumber: 12 } }), stderr: '' };
+      }
+      return { stdout: 'ok', stderr: '' };
+    });
+
+    const result = await executor.execute(activationPlan);
+
+    expect(result.success).to.equal(true);
+    expect(calls).to.deep.equal([
+      'agent publish authoring-bundle -n SupportAgent --skip-retrieve --json',
+      'agent activate -n SupportAgent --version 12',
+    ]);
+  });
+
+  it('fails activation when the publish output does not include a version', async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), 'smart-deployment-special-exec-'));
+    const activationPlan = plan(tempDir);
+    activationPlan.phases = [
+      {
+        kind: 'agentforce-activate',
+        label: 'Phase 3: Agentforce activation',
+        components: ['AiAuthoringBundle:SupportAgent'],
+        commands: [
+          {
+            tool: 'sf',
+            args: ['agent', 'activate', '-n', 'SupportAgent', '--version', '<published-version:SupportAgent>'],
+            reason: 'test',
+          },
+        ],
+        skipped: false,
+      },
+    ];
+    const executor = new SpecialDeploymentPlanExecutor(async () => ({ stdout: 'ok', stderr: '' }));
+
+    const result = await executor.execute(activationPlan);
+
+    expect(result.success).to.equal(false);
+    expect(result.failedPhase).to.equal('agentforce-activate');
+    expect(result.errors[0]).to.include('Published Agentforce version for "SupportAgent" is not available');
   });
 });
 

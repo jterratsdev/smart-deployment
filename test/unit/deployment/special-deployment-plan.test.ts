@@ -110,6 +110,7 @@ describe('SpecialDeploymentPlanService', () => {
       '-n',
       'SupportAgent',
       '--skip-retrieve',
+      '--json',
     ]);
 
     const activation = plan.phases.find((phase) => phase.kind === 'agentforce-activate');
@@ -120,7 +121,7 @@ describe('SpecialDeploymentPlanService', () => {
       '-n',
       'SupportAgent',
       '--version',
-      '<published-version>',
+      '<published-version:SupportAgent>',
     ]);
 
     const community = plan.phases.find((phase) => phase.kind === 'community-publish');
@@ -177,6 +178,52 @@ describe('SpecialDeploymentPlanService', () => {
     expect(plan.success).to.equal(false);
     expect(plan.errors).to.deep.equal([
       'force-app/main/default/aiEvaluationDefinitions/MissingSubject.xml: subjectName "MissingAgent" was not found in source Agentforce bundles or Bots.',
+    ]);
+  });
+
+  it('accepts AiEvaluationDefinition subjectName values found in the target org', async () => {
+    const projectRoot = await mkdtemp(path.join(tmpdir(), 'smart-deployment-eval-'));
+    const evalDir = path.join(projectRoot, 'force-app', 'main', 'default', 'aiEvaluationDefinitions');
+    const lookedUpSubjects: string[] = [];
+    await mkdir(evalDir, { recursive: true });
+    await writeFile(
+      path.join(evalDir, 'ExistingSubject.xml'),
+      '<AiEvaluationDefinition><subjectName>ExistingAgent</subjectName></AiEvaluationDefinition>',
+      'utf8'
+    );
+
+    const service = new SpecialDeploymentPlanService();
+    const plan = await service.buildPlan({
+      targetOrg: 'release-org',
+      scanner: {
+        scan: async () => ({
+          ...scanResult([]),
+          projectRoot,
+        }),
+      },
+      changedPathProvider: async () => ['force-app/main/default/aiEvaluationDefinitions/ExistingSubject.xml'],
+      targetLookup: {
+        hasEvaluationSubject: async (targetOrg, subjectName) => {
+          expect(targetOrg).to.equal('release-org');
+          lookedUpSubjects.push(subjectName);
+          return subjectName === 'ExistingAgent';
+        },
+      },
+    });
+
+    expect(plan.success).to.equal(true);
+    expect(plan.targetOrg).to.equal('release-org');
+    expect(plan.errors).to.deep.equal([]);
+    expect(lookedUpSubjects).to.deep.equal(['ExistingAgent']);
+    const aiEvaluations = plan.phases.find((phase) => phase.kind === 'ai-evaluations');
+    expect(aiEvaluations?.commands[0]?.args).to.deep.equal([
+      'project',
+      'deploy',
+      'start',
+      '--manifest',
+      '<generated-ai-evaluation-manifest>',
+      '--target-org',
+      'release-org',
     ]);
   });
 });

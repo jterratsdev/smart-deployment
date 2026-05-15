@@ -51,6 +51,7 @@ type ExecFileFailure = {
 export class SpecialDeploymentPlanExecutor {
   private readonly runCommand: SpecialDeploymentCommandRunner;
   private readonly forceIgnoreStagingService: ForceIgnoreStagingService;
+  private readonly publishedVersions = new Map<string, string>();
 
   public constructor(dependencies: SpecialDeploymentCommandRunner | SpecialDeploymentPlanExecutorDependencies = {}) {
     const resolved = typeof dependencies === 'function' ? { runCommand: dependencies } : dependencies;
@@ -78,8 +79,12 @@ export class SpecialDeploymentPlanExecutor {
         let commandResult: SpecialDeploymentCommandResult;
         try {
           const stagedPlan = { ...plan, projectRoot: workspace.projectRoot };
-          const preparedCommand = await prepareCommand(command, phase, stagedPlan);
+          const preparedCommand = await prepareCommand(command, phase, stagedPlan, this.publishedVersions);
           commandResult = await this.executeCommand(preparedCommand, phase.kind, phase.label, workspace.projectRoot);
+          this.capturePublishedVersion(commandResult);
+          result.commands.push(commandResult);
+        } catch (error) {
+          commandResult = buildFailedCommandResult(command, phase.kind, phase.label, error);
           result.commands.push(commandResult);
         } finally {
           await workspace.cleanup();
@@ -133,6 +138,19 @@ export class SpecialDeploymentPlanExecutor {
       };
     }
   }
+
+  private capturePublishedVersion(commandResult: SpecialDeploymentCommandResult): void {
+    if (!commandResult.success || commandResult.phaseKind !== 'agentforce-publish') {
+      return;
+    }
+
+    const nameArgIndex = commandResult.command.args.findIndex((arg) => arg === '-n');
+    const agentName = nameArgIndex >= 0 ? commandResult.command.args[nameArgIndex + 1] : undefined;
+    const version = findPublishedVersion(commandResult.stdout);
+    if (agentName && version) {
+      this.publishedVersions.set(agentName, version);
+    }
+  }
 }
 
 async function defaultCommandRunner(
@@ -145,8 +163,19 @@ async function defaultCommandRunner(
 async function prepareCommand(
   command: SpecialDeploymentCommand,
   phase: SpecialDeploymentPhase,
-  plan: SpecialDeploymentPlan
+  plan: SpecialDeploymentPlan,
+  publishedVersions: ReadonlyMap<string, string> = new Map()
 ): Promise<SpecialDeploymentCommand> {
+  const versionPlaceholderIndex = command.args.findIndex((arg) => /^<published-version:[^>]+>$/u.test(arg));
+  if (versionPlaceholderIndex >= 0) {
+    const agentName = command.args[versionPlaceholderIndex].slice('<published-version:'.length, -1);
+    const version = publishedVersions.get(agentName);
+    if (!version) {
+      throw new Error(`Published Agentforce version for "${agentName}" is not available for activation.`);
+    }
+    return replaceArg(command, versionPlaceholderIndex, version);
+  }
+
   const manifestArgIndex = command.args.findIndex((arg) => arg === '<generated-core-manifest>');
   if (manifestArgIndex >= 0) {
     const manifestPath = await writePhaseManifest(
@@ -226,6 +255,73 @@ function replaceArg(command: SpecialDeploymentCommand, index: number, value: str
   const args = [...command.args];
   args[index] = value;
   return { ...command, args };
+}
+
+function buildFailedCommandResult(
+  command: SpecialDeploymentCommand,
+  phaseKind: string,
+  phaseLabel: string,
+  error: unknown
+): SpecialDeploymentCommandResult {
+  const failure = toExecFileFailure(error);
+  return {
+    phaseKind,
+    phaseLabel,
+    command,
+    success: false,
+    stdout: failure.stdout ?? '',
+    stderr: failure.stderr ?? failure.message ?? String(error),
+    exitCode: typeof failure.code === 'number' ? failure.code : undefined,
+  };
+}
+
+function findPublishedVersion(stdout: string): string | undefined {
+  const parsed = parseJson(stdout);
+  if (!parsed) {
+    return undefined;
+  }
+
+  return findVersionValue(parsed);
+}
+
+function parseJson(stdout: string): unknown {
+  try {
+    return JSON.parse(stdout);
+  } catch {
+    const jsonMatch = stdout.match(/\{[\s\S]*\}/u);
+    if (!jsonMatch) {
+      return undefined;
+    }
+
+    try {
+      return JSON.parse(jsonMatch[0]);
+    } catch {
+      return undefined;
+    }
+  }
+}
+
+function findVersionValue(value: unknown): string | undefined {
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+
+  const record = value as Record<string, unknown>;
+  for (const key of ['version', 'versionNumber', 'publishedVersion', 'agentVersion']) {
+    const candidate = record[key];
+    if (typeof candidate === 'number' || typeof candidate === 'string') {
+      return String(candidate);
+    }
+  }
+
+  for (const nested of Object.values(record)) {
+    const found = findVersionValue(nested);
+    if (found) {
+      return found;
+    }
+  }
+
+  return undefined;
 }
 
 function escapeXml(value: string): string {

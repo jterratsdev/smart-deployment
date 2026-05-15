@@ -132,11 +132,13 @@ Build a coordinated CI publish plan for metadata, Agentforce authoring bundles, 
 ```bash
 sf smart-deployment ci-publish \
   --source-path force-app \
+  --target-org release \
   --since origin/main \
   --dry-run
 ```
 
 When executing deploy phases, Smart Deployment respects `.forceignore` by building from a temporary sanitized Salesforce project. Ignored files stay in the working tree but are not visible to package generation or `sf project deploy start`.
+When `--target-org` is provided, the coordinated publish flow also passes the org through to Salesforce CLI commands and checks AI evaluation subjects against source metadata or the target org before deploy.
 
 ## Commands
 

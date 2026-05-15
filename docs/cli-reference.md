@@ -143,6 +143,7 @@ Supported flags:
 
 - `--source-path <path>`
 - `--since <git-ref>`
+- `--target-org <alias-or-username>`
 - `--dry-run`
 - `--no-dry-run`
 - `--auto-activate`
@@ -155,9 +156,11 @@ Behavior:
 - `GenAiPlannerBundle` remains in the regular metadata deploy path for employee-agent planner bundles
 - phase 2 publishes changed `aiAuthoringBundles/<name>/` directories with `sf agent publish authoring-bundle -n <name> --skip-retrieve`
 - phase 3 optionally emits activation commands only when `--auto-activate` is enabled
-- phase 4 deploys changed `AiEvaluationDefinition` files after source subject prechecks
+- phase 3 resolves the published Agentforce version from the preceding publish command before activation
+- phase 4 deploys changed `AiEvaluationDefinition` files after source and target-org subject prechecks
 - phase 5 publishes changed LWR sites with `sf community publish -n <site>`
 - metadata deploy phases run from a temporary sanitized Salesforce project when `.forceignore` excludes files under package directories
+- `--target-org` is passed through to Salesforce CLI commands and enables target-org subject lookup for AI evaluations
 - `--dry-run` is enabled by default and prints/returns the plan without executing commands
 - `--no-dry-run` executes non-skipped phase commands sequentially and stops at the first failed phase
 
