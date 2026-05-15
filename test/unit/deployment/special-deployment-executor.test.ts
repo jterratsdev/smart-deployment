@@ -1,12 +1,15 @@
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import * as path from 'node:path';
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
+import { afterEach, describe, it } from 'mocha';
 import { SpecialDeploymentPlanExecutor } from '../../../src/deployment/special-deployment-executor.js';
 import type { SpecialDeploymentPlan } from '../../../src/deployment/special-deployment-plan.js';
 
-function plan(): SpecialDeploymentPlan {
+function plan(projectRoot: string): SpecialDeploymentPlan {
   return {
     success: true,
-    projectRoot: '/tmp/project',
+    projectRoot,
     apiVersion: '66.0',
     dryRun: false,
     autoActivate: false,
@@ -52,25 +55,40 @@ function plan(): SpecialDeploymentPlan {
 }
 
 describe('SpecialDeploymentPlanExecutor', () => {
+  let tempDir: string | undefined;
+
+  afterEach(async () => {
+    if (tempDir) {
+      await rm(tempDir, { recursive: true, force: true });
+      tempDir = undefined;
+    }
+  });
+
   it('executes non-skipped phases sequentially and records skipped phases', async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), 'smart-deployment-special-exec-'));
     const calls: string[] = [];
     const executor = new SpecialDeploymentPlanExecutor(async (command, cwd) => {
       calls.push(`${cwd}:${command.tool} ${command.args.join(' ')}`);
       return { stdout: 'ok', stderr: '' };
     });
 
-    const result = await executor.execute(plan());
+    const result = await executor.execute(plan(tempDir));
+    const manifestPath = path.join(tempDir, '.smart-deployment', 'ci-publish', 'core-metadata-package.xml');
+    const manifest = await readFile(manifestPath, 'utf8');
 
     expect(result.success).to.equal(true);
     expect(result.completedPhases).to.deep.equal(['core-metadata', 'agentforce-publish']);
     expect(result.skippedPhases).to.deep.equal(['community-publish']);
     expect(calls).to.deep.equal([
-      '/tmp/project:sf project deploy start --manifest <generated-core-manifest>',
-      '/tmp/project:sf agent publish authoring-bundle -n SupportAgent --skip-retrieve',
+      `${tempDir}:sf project deploy start --manifest ${manifestPath}`,
+      `${tempDir}:sf agent publish authoring-bundle -n SupportAgent --skip-retrieve`,
     ]);
+    expect(manifest).to.include('<members>AccountService</members>');
+    expect(manifest).to.include('<name>ApexClass</name>');
   });
 
   it('stops at the first failed phase and reports the phase with exit code', async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), 'smart-deployment-special-exec-'));
     const calls: string[] = [];
     const executor = new SpecialDeploymentPlanExecutor(async (command) => {
       calls.push(command.args.join(' '));
@@ -83,7 +101,8 @@ describe('SpecialDeploymentPlanExecutor', () => {
       return { stdout: 'ok', stderr: '' };
     });
 
-    const result = await executor.execute(plan());
+    const result = await executor.execute(plan(tempDir));
+    const manifestPath = path.join(tempDir, '.smart-deployment', 'ci-publish', 'core-metadata-package.xml');
 
     expect(result.success).to.equal(false);
     expect(result.completedPhases).to.deep.equal(['core-metadata']);
@@ -91,7 +110,7 @@ describe('SpecialDeploymentPlanExecutor', () => {
     expect(result.exitCode).to.equal(17);
     expect(result.errors[0]).to.include('Phase 2: Agentforce authoring bundle publish failed with exit code 17');
     expect(calls).to.deep.equal([
-      'project deploy start --manifest <generated-core-manifest>',
+      `project deploy start --manifest ${manifestPath}`,
       'agent publish authoring-bundle -n SupportAgent --skip-retrieve',
     ]);
   });

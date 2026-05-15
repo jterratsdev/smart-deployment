@@ -1,6 +1,12 @@
 import { execFile } from 'node:child_process';
+import { mkdir, writeFile } from 'node:fs/promises';
+import * as path from 'node:path';
 import { promisify } from 'node:util';
-import type { SpecialDeploymentCommand, SpecialDeploymentPlan } from './special-deployment-plan.js';
+import type {
+  SpecialDeploymentCommand,
+  SpecialDeploymentPhase,
+  SpecialDeploymentPlan,
+} from './special-deployment-plan.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -59,7 +65,8 @@ export class SpecialDeploymentPlanExecutor {
       }
 
       for (const command of phase.commands) {
-        const commandResult = await this.executeCommand(command, phase.kind, phase.label, plan.projectRoot);
+        const preparedCommand = await prepareCommand(command, phase, plan);
+        const commandResult = await this.executeCommand(preparedCommand, phase.kind, phase.label, plan.projectRoot);
         result.commands.push(commandResult);
 
         if (!commandResult.success) {
@@ -117,6 +124,101 @@ async function defaultCommandRunner(
   cwd: string
 ): Promise<{ stdout: string; stderr: string }> {
   return execFileAsync(command.tool, command.args, { cwd });
+}
+
+async function prepareCommand(
+  command: SpecialDeploymentCommand,
+  phase: SpecialDeploymentPhase,
+  plan: SpecialDeploymentPlan
+): Promise<SpecialDeploymentCommand> {
+  const manifestArgIndex = command.args.findIndex((arg) => arg === '<generated-core-manifest>');
+  if (manifestArgIndex >= 0) {
+    const manifestPath = await writePhaseManifest(
+      plan.projectRoot,
+      phase,
+      plan.apiVersion,
+      'core-metadata-package.xml'
+    );
+    return replaceArg(command, manifestArgIndex, manifestPath);
+  }
+
+  const aiEvalManifestArgIndex = command.args.findIndex((arg) => arg === '<generated-ai-evaluation-manifest>');
+  if (aiEvalManifestArgIndex >= 0) {
+    const manifestPath = await writePhaseManifest(
+      plan.projectRoot,
+      phase,
+      plan.apiVersion,
+      'ai-evaluations-package.xml'
+    );
+    return replaceArg(command, aiEvalManifestArgIndex, manifestPath);
+  }
+
+  return command;
+}
+
+async function writePhaseManifest(
+  projectRoot: string,
+  phase: SpecialDeploymentPhase,
+  apiVersion: string,
+  fileName: string
+): Promise<string> {
+  const manifestDirectory = path.join(projectRoot, '.smart-deployment', 'ci-publish');
+  const manifestPath = path.join(manifestDirectory, fileName);
+  await mkdir(manifestDirectory, { recursive: true });
+  await writeFile(manifestPath, buildPackageXml(phase.components, apiVersion), 'utf8');
+  return manifestPath;
+}
+
+function buildPackageXml(components: string[], apiVersion: string): string {
+  const byType = new Map<string, string[]>();
+  for (const component of components) {
+    const separator = component.indexOf(':');
+    if (separator <= 0) {
+      continue;
+    }
+    const type = component.slice(0, separator);
+    const name = component.slice(separator + 1);
+    const members = byType.get(type) ?? [];
+    members.push(name);
+    byType.set(type, members);
+  }
+
+  const typeBlocks = [...byType.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([type, members]) => {
+      const memberLines = [...new Set(members)]
+        .sort()
+        .map((member) => `    <members>${escapeXml(member)}</members>`)
+        .join('\n');
+      return `  <types>\n${memberLines}\n    <name>${escapeXml(type)}</name>\n  </types>`;
+    })
+    .join('\n');
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<Package xmlns="http://soap.sforce.com/2006/04/metadata">',
+    typeBlocks,
+    `  <version>${escapeXml(apiVersion)}</version>`,
+    '</Package>',
+    '',
+  ]
+    .filter((line) => line !== '')
+    .join('\n');
+}
+
+function replaceArg(command: SpecialDeploymentCommand, index: number, value: string): SpecialDeploymentCommand {
+  const args = [...command.args];
+  args[index] = value;
+  return { ...command, args };
+}
+
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/gu, '&amp;')
+    .replace(/</gu, '&lt;')
+    .replace(/>/gu, '&gt;')
+    .replace(/"/gu, '&quot;')
+    .replace(/'/gu, '&apos;');
 }
 
 function toExecFileFailure(error: unknown): ExecFileFailure {
