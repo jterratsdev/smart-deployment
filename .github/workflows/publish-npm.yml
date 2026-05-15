@@ -79,7 +79,7 @@ jobs:
 
           let next = current;
           if (isPackagePush) {
-            console.log(`Using package.json version from push event: ${current}`);
+            console.error(`Using package.json version from push event: ${current}`);
           } else if (explicit) {
             next = explicit;
             if (!semverPattern.test(next)) {
