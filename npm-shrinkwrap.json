@@ -21,7 +21,7 @@
         "@commitlint/cli": "^18.4.3",
         "@commitlint/config-conventional": "^18.4.3",
         "@cucumber/cucumber": "^12.8.2",
-        "@oclif/plugin-command-snapshot": "^5.3.9",
+        "@oclif/plugin-command-snapshot": "^5.3.20",
         "@salesforce/cli-plugins-testkit": "^5.3.41",
         "@salesforce/dev-scripts": "^11.0.4",
         "@semantic-release/changelog": "^6.0.3",
@@ -3561,9 +3561,9 @@
       }
     },
     "node_modules/@oclif/core": {
-      "version": "4.11.0",
-      "resolved": "https://registry.npmjs.org/@oclif/core/-/core-4.11.0.tgz",
-      "integrity": "sha512-nTkRMgxFlIKQIIYGvhO2JMsLSQ1aHPHblHfFgxgoBrGK8Ao/8wxc4eNOIv/+t8dMXliZd7mREVr6la4aXXXg5A==",
+      "version": "4.11.2",
+      "resolved": "https://registry.npmjs.org/@oclif/core/-/core-4.11.2.tgz",
+      "integrity": "sha512-LWDalCgy+hYyAkLa9sMIXMXk6ws5RzQhVnkmfXtVIIyEEYigbXQ/9/x+s76p53MiXxNc6SJB7lfwkPF+SdzfMQ==",
       "license": "MIT",
       "dependencies": {
         "ansi-escapes": "^4.3.2",
@@ -3577,7 +3577,7 @@
         "is-wsl": "^2.2.0",
         "lilconfig": "^3.1.3",
         "minimatch": "^10.2.5",
-        "semver": "^7.7.3",
+        "semver": "^7.8.0",
         "string-width": "^4.2.3",
         "supports-color": "^8",
         "tinyglobby": "^0.2.14",
@@ -3590,9 +3590,9 @@
       }
     },
     "node_modules/@oclif/core/node_modules/semver": {
-      "version": "7.7.3",
-      "resolved": "https://registry.npmjs.org/semver/-/semver-7.7.3.tgz",
-      "integrity": "sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==",
+      "version": "7.8.0",
+      "resolved": "https://registry.npmjs.org/semver/-/semver-7.8.0.tgz",
+      "integrity": "sha512-AcM7dV/5ul4EekoQ29Agm5vri8JNqRyj39o0qpX6vDF2GZrtutZl5RwgD1XnZjiTAfncsJhMI48QQH3sN87YNA==",
       "license": "ISC",
       "bin": {
         "semver": "bin/semver.js"
@@ -3602,9 +3602,9 @@
       }
     },
     "node_modules/@oclif/plugin-command-snapshot": {
-      "version": "5.3.15",
-      "resolved": "https://registry.npmjs.org/@oclif/plugin-command-snapshot/-/plugin-command-snapshot-5.3.15.tgz",
-      "integrity": "sha512-J9mNzaKG1wtOy5Yp9Orz25zwVC/eTtveDTS2P1kFdNSGv7y1NKPpUL7ZKynf4bDGm2aJloXvdlLur7rQtixLzg==",
+      "version": "5.3.20",
+      "resolved": "https://registry.npmjs.org/@oclif/plugin-command-snapshot/-/plugin-command-snapshot-5.3.20.tgz",
+      "integrity": "sha512-3VVMGmpEHQ+YAylGI2XbNRusVkyNZCyfWoYcaFsssLIv2R4adHvzF3tHME03BHTceRq2Lwi81bJ+oBW1gcy//g==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
@@ -3615,7 +3615,7 @@
         "lodash.difference": "^4.5.0",
         "lodash.get": "^4.4.2",
         "lodash.sortby": "^4.7.0",
-        "semver": "^7.7.4",
+        "semver": "^7.8.0",
         "ts-json-schema-generator": "^1.5.1"
       },
       "bin": {
@@ -3670,9 +3670,9 @@
       }
     },
     "node_modules/@oclif/plugin-command-snapshot/node_modules/semver": {
-      "version": "7.7.4",
-      "resolved": "https://registry.npmjs.org/semver/-/semver-7.7.4.tgz",
-      "integrity": "sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==",
+      "version": "7.8.0",
+      "resolved": "https://registry.npmjs.org/semver/-/semver-7.8.0.tgz",
+      "integrity": "sha512-AcM7dV/5ul4EekoQ29Agm5vri8JNqRyj39o0qpX6vDF2GZrtutZl5RwgD1XnZjiTAfncsJhMI48QQH3sN87YNA==",
       "dev": true,
       "license": "ISC",
       "bin": {
@@ -11744,7 +11744,9 @@
       "dev": true,
       "license": "MIT",
       "optional": true,
-      "os": ["darwin"],
+      "os": [
+        "darwin"
+      ],
       "engines": {
         "node": "^8.16.0 || ^10.6.0 || >=11.0.0"
       }
@@ -11824,7 +11826,10 @@
       "resolved": "https://registry.npmjs.org/uuid/-/uuid-9.0.1.tgz",
       "integrity": "sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==",
       "dev": true,
-      "funding": ["https://github.com/sponsors/broofa", "https://github.com/sponsors/ctavan"],
+      "funding": [
+        "https://github.com/sponsors/broofa",
+        "https://github.com/sponsors/ctavan"
+      ],
       "license": "MIT",
       "bin": {
         "uuid": "dist/bin/uuid"
@@ -14323,7 +14328,9 @@
       "resolved": "https://registry.npmjs.org/jsonparse/-/jsonparse-1.3.1.tgz",
       "integrity": "sha512-POQXvpdL69+CluYsillJ7SUhKvytYjW9vG/GKpnf+xP8UWgYEM/RaMzHHofbALDiKbbP1W8UEYmgGl39WkPZsg==",
       "dev": true,
-      "engines": ["node >= 0.2.0"],
+      "engines": [
+        "node >= 0.2.0"
+      ],
       "license": "MIT"
     },
     "node_modules/JSONStream": {
@@ -15331,7 +15338,9 @@
       "resolved": "https://registry.npmjs.org/mime/-/mime-4.1.0.tgz",
       "integrity": "sha512-X5ju04+cAzsojXKes0B/S4tcYtFAJ6tTMuSPBEn9CPGlrWr8Fiw7qYeLT0XyH80HSoAoqWCaz+MWKh22P7G1cw==",
       "dev": true,
-      "funding": ["https://github.com/sponsors/broofa"],
+      "funding": [
+        "https://github.com/sponsors/broofa"
+      ],
       "license": "MIT",
       "bin": {
         "mime": "bin/cli.js"
@@ -16030,7 +16039,13 @@
       ],
       "dev": true,
       "license": "Artistic-2.0",
-      "workspaces": ["docs", "smoke-tests", "mock-globals", "mock-registry", "workspaces/*"],
+      "workspaces": [
+        "docs",
+        "smoke-tests",
+        "mock-globals",
+        "mock-registry",
+        "workspaces/*"
+      ],
       "dependencies": {
         "@isaacs/string-locale-compare": "^1.1.0",
         "@npmcli/arborist": "^9.4.3",
@@ -17024,7 +17039,9 @@
       "resolved": "https://registry.npmjs.org/jsonparse/-/jsonparse-1.3.1.tgz",
       "integrity": "sha512-POQXvpdL69+CluYsillJ7SUhKvytYjW9vG/GKpnf+xP8UWgYEM/RaMzHHofbALDiKbbP1W8UEYmgGl39WkPZsg==",
       "dev": true,
-      "engines": ["node >= 0.2.0"],
+      "engines": [
+        "node >= 0.2.0"
+      ],
       "inBundle": true,
       "license": "MIT"
     },
@@ -23579,7 +23596,10 @@
       "integrity": "sha512-gNSd+nZmMo6cuICezYXRIayu6TSOeCSCDzjSF0q6g8FKDsRbdqrONrSZYzdk/uBISmRcv4vZtsno6GyGvdXwGA==",
       "dev": true,
       "license": "Apache-2.0",
-      "workspaces": ["vscode-extension", "website"],
+      "workspaces": [
+        "vscode-extension",
+        "website"
+      ],
       "dependencies": {
         "brace-expansion": "^4.0.0",
         "chokidar": "^3.5.3",
