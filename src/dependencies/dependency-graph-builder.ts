@@ -124,6 +124,11 @@ export class DependencyGraphBuilder {
    * @ac US-028-AC-4: Track dependency types
    */
   public addEdge(from: NodeId, to: NodeId, type: DependencyType = 'hard', reason?: string, confidence?: number): void {
+    if (from === to) {
+      logger.warn('Ignoring self dependency edge', { from, to, type });
+      return;
+    }
+
     this.invalidateBuildCache();
     this.ensureEdgeEndpoints(from, to);
     this.graph.get(from)!.add(to);
@@ -206,6 +211,8 @@ export class DependencyGraphBuilder {
       edges: totalEdges,
     });
 
+    this.removeSelfDependencyEdges();
+
     if (this.options.validateStructure) {
       this.validate();
     }
@@ -259,6 +266,18 @@ export class DependencyGraphBuilder {
    */
   private createBuildAnnotations(): BuildAnnotations {
     return collectBuildAnnotations(this.components, this.graph, this.reverseGraph);
+  }
+
+  private removeSelfDependencyEdges(): void {
+    for (const [nodeId, dependencies] of this.graph.entries()) {
+      if (!dependencies.delete(nodeId)) {
+        continue;
+      }
+
+      this.reverseGraph.get(nodeId)?.delete(nodeId);
+      this.edges.delete(`${nodeId}->${nodeId}`);
+      logger.warn('Ignoring self dependency edge', { from: nodeId, to: nodeId });
+    }
   }
 
   /**

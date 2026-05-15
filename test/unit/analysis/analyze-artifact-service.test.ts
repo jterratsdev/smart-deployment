@@ -169,4 +169,32 @@ describe('AnalyzeArtifactService', () => {
     expect(report.summary.components).to.equal(2);
     expect(report.ai?.provider).to.equal('agentforce');
   });
+
+  it('creates the deployment plan directory when saving artifacts', async () => {
+    const tempDir = await mkdtemp(path.join(tmpdir(), 'analyze-artifacts-'));
+    tempDirs.push(tempDir);
+    const service = new AnalyzeArtifactService();
+    const planPath = path.join(tempDir, '.smart-deployment', 'deployment-plan.json');
+    const scanResult = createScanResult(tempDir);
+    const waveResult = createWaveResult();
+
+    const result = await service.generateArtifacts(
+      scanResult,
+      waveResult,
+      {},
+      {
+        savePlan: true,
+        planPath,
+        outputFormat: 'json',
+      }
+    );
+
+    const plan = JSON.parse(await readFile(planPath, 'utf8')) as {
+      metadata: { totalComponents: number };
+    };
+
+    expect(result.planSaved).to.equal(true);
+    expect(result.planPath).to.equal(planPath);
+    expect(plan.metadata.totalComponents).to.equal(2);
+  });
 });

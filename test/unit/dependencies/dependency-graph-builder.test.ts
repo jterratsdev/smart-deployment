@@ -297,15 +297,17 @@ describe('DependencyGraphBuilder', () => {
     /**
      * @ac US-028-AC-6: Validate graph structure
      */
-    it('US-028-AC-6: should validate graph structure', () => {
+    it('US-028-AC-6: should ignore self dependency edges during graph intake', () => {
       const builder = new DependencyGraphBuilder({ validateStructure: true });
 
       const component = createComponent('ServiceA', 'ApexClass', ['ApexClass:ServiceA']); // Self-loop
 
       builder.addComponent(component);
 
-      // Should throw on self-loop
-      expect(() => builder.build()).to.throw(/Self-loop detected/);
+      const result = builder.build();
+
+      expect(result.graph.get('ApexClass:ServiceA')!.has('ApexClass:ServiceA')).to.be.false;
+      expect(result.edges).to.deep.equal([]);
     });
 
     it('should detect circular dependencies', () => {

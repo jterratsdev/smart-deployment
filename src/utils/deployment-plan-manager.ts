@@ -3,8 +3,8 @@
  * Handles loading, saving, and validating deployment plans for CI/CD
  */
 
-import { readFile, writeFile, access } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
 import type {
   DeploymentPlan,
   PlanValidationResult,
@@ -30,6 +30,7 @@ export class DeploymentPlanManager {
 
     try {
       const json = JSON.stringify(plan, null, 2);
+      await mkdir(dirname(path), { recursive: true });
       await writeFile(path, json, 'utf-8');
 
       logger.info('Deployment plan saved successfully', {
