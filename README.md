@@ -29,6 +29,7 @@ What is working today:
 - `sf smart-deployment status`
 - `sf smart-deployment resume`
 - `sf smart-deployment config`
+- `sf smart-deployment ci-publish`
 - JSON and HTML analysis reports
 - repo-level AI configuration via `.smart-deployment.json`
 
@@ -124,6 +125,15 @@ sf smart-deployment config \
   --source-path . \
   --set-llm-provider openai \
   --set-llm-model gpt-4o-mini
+```
+
+Build a coordinated CI publish plan for metadata, Agentforce authoring bundles, LWR publish, and optional activation:
+
+```bash
+sf smart-deployment ci-publish \
+  --source-path force-app \
+  --since origin/main \
+  --dry-run
 ```
 
 ## Commands

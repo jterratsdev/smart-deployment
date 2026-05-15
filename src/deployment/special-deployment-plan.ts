@@ -102,9 +102,6 @@ export class SpecialDeploymentPlanService {
     const phases = await Promise.all(providers.map(async (provider) => provider.plan(context)));
     const phaseErrors = phases.flatMap((phase) => phase.errors ?? []);
     const warnings = [...scanResult.warnings, ...phases.flatMap((phase) => phase.warnings ?? [])];
-    if (!context.dryRun) {
-      warnings.push('Execution is not implemented in this release slice; generated plan only.');
-    }
 
     return {
       success: scanResult.errors.length === 0 && phaseErrors.length === 0,

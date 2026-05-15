@@ -1,4 +1,5 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
+import { SpecialDeploymentPlanExecutor } from '../deployment/special-deployment-executor.js';
 import { SpecialDeploymentPlanService, type SpecialDeploymentPlan } from '../deployment/special-deployment-plan.js';
 import { getLogger } from '../utils/logger.js';
 
@@ -47,13 +48,29 @@ export default class CiPublish extends SfCommand<SpecialDeploymentPlan> {
     });
 
     this.reportPlan(plan);
+    if (!dryRun) {
+      const execution = await new SpecialDeploymentPlanExecutor().execute(plan);
+      if (!execution.success) {
+        const message = execution.errors[0] ?? 'Coordinated publish failed.';
+        const failedPlan = {
+          ...plan,
+          success: false,
+          errors: [...plan.errors, message],
+        };
+        this.reportExecutionFailure(execution.failedPhase, execution.exitCode, message);
+        return failedPlan;
+      }
+      this.log('');
+      this.log('Coordinated publish execution completed successfully.');
+    }
+
     return plan;
   }
 
   private reportPlan(plan: SpecialDeploymentPlan): void {
     this.log('Coordinated publish plan');
     this.log(`Project: ${plan.projectRoot}`);
-    this.log(`Mode: ${plan.dryRun ? 'dry-run' : 'plan-only'}`);
+    this.log(`Mode: ${plan.dryRun ? 'dry-run' : 'execute'}`);
     if (plan.since) {
       this.log(`Since: ${plan.since}`);
     }
@@ -75,5 +92,14 @@ export default class CiPublish extends SfCommand<SpecialDeploymentPlan> {
         this.warn(warning);
       }
     }
+  }
+
+  private reportExecutionFailure(failedPhase: string | undefined, exitCode: number | undefined, message: string): void {
+    this.log('');
+    this.error(
+      `Coordinated publish failed in phase ${failedPhase ?? 'unknown'} with exit code ${
+        exitCode ?? 'unknown'
+      }: ${message}`
+    );
   }
 }
