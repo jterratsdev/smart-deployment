@@ -31,9 +31,7 @@ jobs:
           cache: yarn
 
       - name: Install dependencies
-        uses: salesforcecli/github-workflows/.github/actions/retry@main
-        with:
-          command: yarn install --frozen-lockfile --network-timeout 600000
+        run: yarn install --frozen-lockfile --network-timeout 600000
 
       - name: Run unit tests
         run: yarn test:only
