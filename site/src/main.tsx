@@ -1,104 +1,8 @@
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Link, NavLink, Route, Routes } from 'react-router-dom';
+import { siteContent } from './generated-site-content';
 import './styles.css';
-
-const commands = [
-  {
-    name: 'analyze',
-    command: 'sf smart-deployment analyze --source-path force-app --use-ai',
-    body: 'Scans metadata, builds a dependency graph, detects cycles, and produces staged deployment waves.',
-  },
-  {
-    name: 'validate',
-    command: 'sf smart-deployment validate --source-path force-app --use-ai',
-    body: 'Checks project readiness and summarizes deployment, parser, and AI-assisted risk signals.',
-  },
-  {
-    name: 'start',
-    command: 'sf smart-deployment start --source-path force-app --target-org myorg',
-    body: 'Executes staged deployments with local state, retry support, and resumable progress tracking.',
-  },
-];
-
-const layers = [
-  {
-    title: 'Command Layer',
-    body: 'Thin oclif commands parse flags, load configuration, and delegate to services with typed presenters.',
-  },
-  {
-    title: 'Analysis Services',
-    body: 'Project scanners, parsers, dependency graph builders, and reporters produce deterministic deployment context.',
-  },
-  {
-    title: 'Wave Engine',
-    body: 'Wave builders, validators, splitters, mergers, and remediation planners organize deployable batches.',
-  },
-  {
-    title: 'Execution Services',
-    body: 'State managers, Salesforce CLI integration, test planning, retry handling, and reports own runtime effects.',
-  },
-  {
-    title: 'AI Boundary',
-    body: 'Provider adapters for Agentforce and OpenAI can assist inference and validation while deterministic fallbacks remain available.',
-  },
-];
-
-const risks = [
-  'Circular metadata dependencies',
-  'Unsupported parser shapes',
-  'AI provider unavailability',
-  'Partial wave failure',
-  'Large org analysis cost',
-];
-
-const docs = [
-  {
-    title: 'Command Reference',
-    body: 'Use analyze before deployment, validate the project state, then start or resume controlled deployment waves.',
-    items: [
-      'analyze builds graph and wave artifacts',
-      'validate checks readiness and risk',
-      'status and resume support long-running deployments',
-    ],
-  },
-  {
-    title: 'AI Configuration',
-    body: 'AI assistance is optional. Provider adapters can help with dependency inference, priority weighting, and validation notes.',
-    items: [
-      'Supported providers: agentforce and openai',
-      'Timeouts and models are explicit config',
-      'Deterministic fallbacks remain available',
-    ],
-  },
-  {
-    title: 'Known Limitations',
-    body: 'The tool is conservative around unsupported metadata shapes and partial failures. It should surface uncertainty before deployment.',
-    items: [
-      'Parser coverage depends on metadata type',
-      'Cycle remediation is intentionally narrow',
-      'AI unavailability should degrade gracefully',
-    ],
-  },
-];
-
-const diagramNodes = [
-  { id: 'cli', label: 'Command Layer', x: 40, y: 90 },
-  { id: 'scan', label: 'Metadata Scanners', x: 290, y: 30 },
-  { id: 'graph', label: 'Dependency Graph', x: 290, y: 150 },
-  { id: 'waves', label: 'Wave Engine', x: 540, y: 90 },
-  { id: 'validate', label: 'Validation', x: 790, y: 30 },
-  { id: 'execute', label: 'Execution Services', x: 790, y: 150 },
-];
-
-const diagramEdges = [
-  ['cli', 'scan'],
-  ['cli', 'graph'],
-  ['scan', 'waves'],
-  ['graph', 'waves'],
-  ['waves', 'validate'],
-  ['waves', 'execute'],
-];
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -108,11 +12,17 @@ function Shell({ children }: { children: React.ReactNode }) {
           Smart Deployment
         </NavLink>
         <nav className="nav-links" aria-label="Primary navigation">
-          <NavLink to="/">Home</NavLink>
-          <NavLink to="/architecture">Architecture</NavLink>
-          <NavLink to="/docs">Docs</NavLink>
-          <a href="https://jterrats.dev">Main site</a>
-          <a href="https://github.com/jterrats/smart-deployment">GitHub</a>
+          {siteContent.navLinks.map((link) =>
+            link.href.startsWith('http') ? (
+              <a href={link.href} key={link.href}>
+                {link.label}
+              </a>
+            ) : (
+              <NavLink key={link.href} to={link.href}>
+                {link.label}
+              </NavLink>
+            )
+          )}
         </nav>
       </header>
       {children}
@@ -120,9 +30,9 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ArchitectureDiagram() {
+function ArchitectureDiagram({ diagram }: { diagram: typeof siteContent.architecture.diagram }) {
   const [scale, setScale] = useState(1);
-  const nodeMap = new Map(diagramNodes.map((node) => [node.id, node]));
+  const nodeMap = new Map(diagram.nodes.map((node) => [node.id, node]));
 
   return (
     <div className="architecture-panel">
@@ -167,7 +77,7 @@ function ArchitectureDiagram() {
             transform={`translate(${(1 - scale) * 520} ${(1 - scale) * 135}) scale(${scale})`}
           >
             <g className="architecture-edges">
-              {diagramEdges.map(([from, to]) => {
+              {diagram.edges.map(([from, to]) => {
                 const source = nodeMap.get(from)!;
                 const target = nodeMap.get(to)!;
                 const startX = source.x + 170;
@@ -184,7 +94,7 @@ function ArchitectureDiagram() {
               })}
             </g>
             <g className="architecture-nodes">
-              {diagramNodes.map((node) => (
+              {diagram.nodes.map((node) => (
                 <g className="architecture-node" key={node.id} transform={`translate(${node.x} ${node.y})`}>
                   <rect width="170" height="52" rx="8" />
                   <text x="85" y="31" textAnchor="middle">
@@ -201,28 +111,27 @@ function ArchitectureDiagram() {
 }
 
 function Home() {
+  const { hero, operatingModel } = siteContent;
+
   return (
     <Shell>
       <main>
         <section className="hero">
-          <p className="eyebrow">Salesforce CLI Plugin</p>
-          <h1>Dependency-aware deployment orchestration for Salesforce metadata.</h1>
-          <p className="lead">
-            Smart Deployment scans metadata, builds a dependency graph, generates staged deployment waves, validates
-            project state, and supports optional AI-assisted prioritization and dependency inference.
-          </p>
+          <p className="eyebrow">{hero.eyebrow}</p>
+          <h1>{hero.title}</h1>
+          <p className="lead">{hero.lead}</p>
           <div className="actions">
-            <Link className="button button-primary" to="/architecture">
-              View Architecture
+            <Link className="button button-primary" to={hero.primary.href}>
+              {hero.primary.label}
             </Link>
-            <Link className="button button-secondary" to="/docs">
-              Read Docs
+            <Link className="button button-secondary" to={hero.secondary.href}>
+              {hero.secondary.label}
             </Link>
           </div>
         </section>
 
         <section className="command-grid" aria-label="Primary command surface">
-          {commands.map((item) => (
+          {siteContent.commands.map((item) => (
             <article className="command-card" key={item.name}>
               <h2>{item.name}</h2>
               <p>{item.body}</p>
@@ -235,15 +144,13 @@ function Home() {
 
         <section className="section-grid">
           <div className="section-heading">
-            <p className="eyebrow">Operating Model</p>
-            <h2>Analyze first, deploy in controlled waves.</h2>
+            <p className="eyebrow">{operatingModel.eyebrow}</p>
+            <h2>{operatingModel.title}</h2>
           </div>
           <div className="flow-diagram" aria-label="Deployment flow">
-            <div>Scan</div>
-            <div>Graph</div>
-            <div>Plan Waves</div>
-            <div>Validate</div>
-            <div>Deploy</div>
+            {operatingModel.steps.map((step) => (
+              <div key={step}>{step}</div>
+            ))}
           </div>
         </section>
       </main>
@@ -252,20 +159,19 @@ function Home() {
 }
 
 function Architecture() {
+  const { architecture } = siteContent;
+
   return (
     <Shell>
       <main>
         <section className="page-header">
-          <p className="eyebrow">Architecture</p>
-          <h1>Layered deployment planning with explicit side-effect boundaries.</h1>
-          <p className="lead">
-            The plugin keeps parsing, analysis, wave planning, AI inference, and Salesforce CLI execution in separate
-            modules so deployment risk is visible before remote changes begin.
-          </p>
+          <p className="eyebrow">{architecture.eyebrow}</p>
+          <h1>{architecture.title}</h1>
+          <p className="lead">{architecture.lead}</p>
         </section>
 
         <section className="layer-stack" aria-label="Architecture layers">
-          {layers.map((layer, index) => (
+          {architecture.layers.map((layer, index) => (
             <article className="layer-card" key={layer.title}>
               <span>{String(index + 1).padStart(2, '0')}</span>
               <div>
@@ -278,32 +184,23 @@ function Architecture() {
 
         <section className="diagram-section">
           <div>
-            <p className="eyebrow">System Diagram</p>
-            <h2>Analysis stays separate from deployment execution.</h2>
-            <p>
-              The command layer coordinates local analysis first. Remote Salesforce effects only happen through the
-              execution services after validation and wave planning.
-            </p>
+            <p className="eyebrow">{architecture.diagram.eyebrow}</p>
+            <h2>{architecture.diagram.title}</h2>
+            <p>{architecture.diagram.body}</p>
           </div>
-          <ArchitectureDiagram />
+          <ArchitectureDiagram diagram={architecture.diagram} />
         </section>
 
         <section className="diagram-section">
           <div>
-            <p className="eyebrow">Deployment Flow</p>
-            <h2>Analyze, validate, execute, then resume if needed.</h2>
-            <p>
-              Each phase has a durable artifact: graph output, deployment waves, validation findings, deployment state,
-              and final reports.
-            </p>
+            <p className="eyebrow">{architecture.process.eyebrow}</p>
+            <h2>{architecture.process.title}</h2>
+            <p>{architecture.process.body}</p>
           </div>
           <div className="process-list" aria-label="Deployment process artifacts">
-            <span>metadata scan</span>
-            <span>dependency graph</span>
-            <span>wave plan</span>
-            <span>validation findings</span>
-            <span>deployment state</span>
-            <span>release report</span>
+            {architecture.process.artifacts.map((artifact) => (
+              <span key={artifact}>{artifact}</span>
+            ))}
           </div>
         </section>
 
@@ -313,7 +210,7 @@ function Architecture() {
             <h2>Known risks are surfaced as product behavior.</h2>
           </div>
           <ul className="risk-list">
-            {risks.map((risk) => (
+            {architecture.risks.map((risk) => (
               <li key={risk}>{risk}</li>
             ))}
           </ul>
@@ -321,18 +218,16 @@ function Architecture() {
 
         <section className="section-grid">
           <div className="section-heading">
-            <p className="eyebrow">AI Boundary</p>
-            <h2>Optional inference does not replace deterministic analysis.</h2>
+            <p className="eyebrow">{architecture.aiBoundary.eyebrow}</p>
+            <h2>{architecture.aiBoundary.title}</h2>
           </div>
           <div className="split-panel">
-            <article>
-              <h3>Deterministic Core</h3>
-              <p>Parsers, graph algorithms, metadata scanners, and validators produce the baseline deployment plan.</p>
-            </article>
-            <article>
-              <h3>Provider Adapters</h3>
-              <p>Agentforce and OpenAI adapters add prioritization and inference behind explicit configuration.</p>
-            </article>
+            {architecture.aiBoundary.panels.map((panel) => (
+              <article key={panel.title}>
+                <h3>{panel.title}</h3>
+                <p>{panel.body}</p>
+              </article>
+            ))}
           </div>
         </section>
       </main>
@@ -341,52 +236,92 @@ function Architecture() {
 }
 
 function Docs() {
+  const { docs } = siteContent;
+  const [query, setQuery] = useState('');
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredDocs = docs.pages.filter((doc) => {
+    if (!normalizedQuery) return true;
+
+    return [doc.title, doc.body, ...doc.sections.flatMap((section) => [section.title, section.body, ...section.items])]
+      .join(' ')
+      .toLowerCase()
+      .includes(normalizedQuery);
+  });
+
   return (
     <Shell>
       <main>
         <section className="page-header">
-          <p className="eyebrow">Documentation</p>
-          <h1>Operate Smart Deployment from one place.</h1>
-          <p className="lead">
-            The public docs cover the command surface, AI configuration, known limits, and the architecture boundary
-            that keeps analysis separate from deployment side effects.
-          </p>
+          <p className="eyebrow">{docs.eyebrow}</p>
+          <h1>{docs.title}</h1>
+          <p className="lead">{docs.lead}</p>
         </section>
 
-        <section className="docs-grid" aria-label="Documentation sections">
-          {docs.map((section) => (
-            <article className="docs-card" key={section.title}>
-              <h2>{section.title}</h2>
-              <p>{section.body}</p>
-              <ul>
-                {section.items.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </article>
-          ))}
+        <section className="docs-catalog" aria-label="Documentation catalog">
+          <label className="docs-search">
+            <span>Search documentation</span>
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search commands, AI, release, parser safety..."
+            />
+          </label>
+
+          <div className="doc-detail">
+            {filteredDocs.map((doc, index) => (
+              <details className="doc-section" id={doc.slug} key={doc.slug} open={index === 0 || Boolean(query)}>
+                <summary>
+                  <span>{doc.eyebrow}</span>
+                  <strong>{doc.title}</strong>
+                  <p>{doc.body}</p>
+                </summary>
+                <div className="doc-section-body">
+                  {doc.sections.map((section) => (
+                    <article key={section.title}>
+                      <h2>{section.title}</h2>
+                      {section.body ? <p>{section.body}</p> : null}
+                      {section.items.length > 0 ? (
+                        <ul>
+                          {section.items.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              </details>
+            ))}
+            {filteredDocs.length === 0 ? <p className="docs-empty">No matching documentation found.</p> : null}
+          </div>
         </section>
 
         <section className="section-grid">
           <div className="section-heading">
-            <p className="eyebrow">Next Step</p>
-            <h2>Understand the layers before changing deployment behavior.</h2>
+            <p className="eyebrow">{docs.nextStep.eyebrow}</p>
+            <h2>{docs.nextStep.title}</h2>
           </div>
           <div className="split-panel">
-            <article>
-              <h3>Architecture</h3>
-              <p>Review command, analysis, wave, execution, and AI boundaries before extending the plugin.</p>
-              <Link className="text-link" to="/architecture">
-                View Architecture
-              </Link>
-            </article>
-            <article>
-              <h3>Source Docs</h3>
-              <p>The historical Markdown docs remain in the repository for deeper implementation context.</p>
-              <a className="text-link" href="https://github.com/jterrats/smart-deployment/tree/main/docs">
-                Browse source docs
-              </a>
-            </article>
+            {docs.nextStep.panels.map((panel) => (
+              <article key={panel.title}>
+                <h3>{panel.title}</h3>
+                <p>{panel.body}</p>
+                {panel.href.startsWith('#') ? (
+                  <a className="text-link" href={panel.href}>
+                    {panel.label}
+                  </a>
+                ) : panel.internal ? (
+                  <Link className="text-link" to={panel.href}>
+                    {panel.label}
+                  </Link>
+                ) : (
+                  <a className="text-link" href={panel.href}>
+                    {panel.label}
+                  </a>
+                )}
+              </article>
+            ))}
           </div>
         </section>
       </main>

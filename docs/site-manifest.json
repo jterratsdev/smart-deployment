@@ -1,0 +1,112 @@
+{
+  "repositoryUrl": "https://github.com/jterrats/smart-deployment",
+  "packageUrl": "https://www.npmjs.com/package/@jterrats/smart-deployment",
+  "nav": [
+    { "href": "/", "label": "Home" },
+    { "href": "/architecture", "label": "Architecture" },
+    { "href": "/docs", "label": "Docs" },
+    { "href": "https://jterrats.dev", "label": "Main site" },
+    { "href": "https://github.com/jterrats/smart-deployment", "label": "GitHub" }
+  ],
+  "hero": {
+    "source": "README.md",
+    "heading": "Smart Deployment"
+  },
+  "commands": [
+    {
+      "title": "analyze",
+      "source": "docs/cli-reference.md",
+      "heading": "`sf smart-deployment analyze`",
+      "command": "sf smart-deployment analyze --source-path force-app --use-ai"
+    },
+    {
+      "title": "validate",
+      "source": "docs/cli-reference.md",
+      "heading": "`sf smart-deployment validate`",
+      "command": "sf smart-deployment validate --source-path force-app --use-ai"
+    },
+    {
+      "title": "start",
+      "source": "docs/cli-reference.md",
+      "heading": "`sf smart-deployment start`",
+      "command": "sf smart-deployment start --source-path force-app --target-org myorg"
+    }
+  ],
+  "architecture": {
+    "source": "docs/README.md",
+    "heading": "Architecture Docs",
+    "layers": [
+      {
+        "title": "Command Layer",
+        "body": "Thin oclif commands parse flags, load configuration, and delegate to services with typed presenters."
+      },
+      {
+        "title": "Analysis Services",
+        "body": "Project scanners, parsers, dependency graph builders, and reporters produce deterministic deployment context."
+      },
+      {
+        "title": "Wave Engine",
+        "body": "Wave builders, validators, splitters, mergers, and remediation planners organize deployable batches."
+      },
+      {
+        "title": "Execution Services",
+        "body": "State managers, Salesforce CLI integration, test planning, retry handling, and reports own runtime effects."
+      },
+      {
+        "title": "AI Boundary",
+        "body": "Provider adapters for Agentforce and OpenAI can assist inference and validation while deterministic fallbacks remain available."
+      }
+    ],
+    "risks": [
+      "Circular metadata dependencies",
+      "Unsupported parser shapes",
+      "AI provider unavailability",
+      "Partial wave failure",
+      "Large org analysis cost"
+    ]
+  },
+  "docs": [
+    {
+      "title": "Command Reference",
+      "slug": "command-reference",
+      "source": "docs/cli-reference.md",
+      "heading": "CLI Reference",
+      "summaryHeading": "`sf smart-deployment analyze`"
+    },
+    {
+      "title": "AI Configuration",
+      "slug": "ai-configuration",
+      "source": "docs/ai-configuration.md",
+      "heading": "AI Configuration",
+      "summaryHeading": "AI-Enabled Command Paths"
+    },
+    {
+      "title": "Known Limitations",
+      "slug": "known-limitations",
+      "source": "docs/known-limitations.md",
+      "heading": "Known Limitations",
+      "summaryHeading": "Deployment Execution"
+    },
+    {
+      "title": "Release Candidate Checklist",
+      "slug": "release-candidate-checklist",
+      "source": "docs/release-candidate-checklist.md",
+      "heading": "Release Candidate Checklist",
+      "summaryHeading": "Entry Criteria"
+    },
+    {
+      "title": "Release Workflow",
+      "slug": "release-workflow",
+      "source": "docs/release-workflow.md",
+      "heading": "Release Workflow",
+      "summaryHeading": "Prepare a New Release"
+    },
+    {
+      "title": "Parser Safety",
+      "slug": "parser-safety",
+      "source": "docs/PARSER_SAFETY.md",
+      "heading": "Parser Safety & Forward Compatibility",
+      "summaryHeading": "Best Practices"
+    }
+  ]
+}

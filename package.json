@@ -83,6 +83,7 @@
     "postinstall": "husky install || true",
     "prepack": "tsc -p . --pretty false --incremental false && oclif manifest && oclif lock && npm shrinkwrap",
     "release": "semantic-release",
+    "site:content": "node scripts/generate-site-content.js",
     "site:dev": "npm --prefix site run dev",
     "site:build": "npm --prefix site run build",
     "site:preview": "npm --prefix site run preview",

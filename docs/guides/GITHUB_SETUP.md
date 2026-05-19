@@ -307,7 +307,7 @@ After creating the repository:
 - [ ] Configure social preview image
 - [ ] Enable vulnerability alerts
 - [ ] Enable Dependabot
-- [ ] Configure GitHub Pages (for documentation)
+- [ ] Configure Cloudflare Pages for the Vite public site
 
 ---
 
