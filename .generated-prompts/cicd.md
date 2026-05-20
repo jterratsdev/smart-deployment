@@ -60,3 +60,23 @@ Copy the SonarQube CI strategy from ~/dev/open-orchestra into smart-deployment. 
 ```
 
 ---
+
+## Acceptance Criteria Validation
+
+- **Created:** 2026-05-20
+- **Updated:** 2026-05-20
+- **Iterations:** 1
+
+### Key decisions
+
+- Added a job-level timeout so the required acceptance validation check cannot remain in progress indefinitely.
+- Restricted Salesforce NUTs to story-linked branches with an extracted issue number, because Dependabot branches do not run acceptance-criteria parsing and should not spend CI time on Salesforce integration tests.
+- Added a step-level timeout around NUTs so real story PRs still exercise Salesforce integration coverage without blocking CI forever.
+
+### Prompt
+
+```
+Fix the acceptance validation workflow so Dependabot PRs and other branches without linked issue numbers do not hang in the Salesforce NUTs step. Preserve the existing acceptance-criteria behavior for story-linked branches, but add explicit timeout guards and document the CI/CD decision.
+```
+
+---
