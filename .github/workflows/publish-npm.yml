@@ -1,4 +1,4 @@
-name: Publish to npm with Provenance
+name: Publish to npm
 
 on:
   push:
@@ -212,7 +212,7 @@ jobs:
           - npm audit --omit=dev --json
           - npm pack --dry-run
 
-          This workflow continues by publishing the package to npm with provenance." \
+          This workflow continues by publishing the package to npm." \
             --verify-tag
 
       - name: Check if version is already published
@@ -228,9 +228,9 @@ jobs:
             echo "@jterrats/smart-deployment@$NEXT_VERSION is not published yet. Continuing with npm publish."
           fi
 
-      - name: Publish to npm with provenance
+      - name: Publish to npm
         if: steps.prepared-npm-version-check.outputs.already_published != 'true'
-        run: NPM_CONFIG_CACHE="$RUNNER_TEMP/.npm" npm publish --provenance --access public
+        run: NPM_CONFIG_CACHE="$RUNNER_TEMP/.npm" npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -378,9 +378,9 @@ jobs:
             echo "${PKG_NAME}@${PKG_VERSION} is not published yet. Continuing with npm publish."
           fi
 
-      - name: Publish to npm with provenance
+      - name: Publish to npm
         if: steps.npm-version-check.outputs.already_published != 'true'
-        run: NPM_CONFIG_CACHE="$RUNNER_TEMP/.npm" npm publish --provenance --access public
+        run: NPM_CONFIG_CACHE="$RUNNER_TEMP/.npm" npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
