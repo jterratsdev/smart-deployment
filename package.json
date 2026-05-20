@@ -6,7 +6,7 @@
     "@oclif/core": "4.11.2",
     "@salesforce/core": "^8.29.0",
     "@salesforce/sf-plugins-core": "^12.2.13",
-    "fast-xml-parser": "^5.7.1",
+    "fast-xml-parser": "^5.8.0",
     "glob": "^11.0.0",
     "minimatch": "^10.2.5"
   },
@@ -22,7 +22,7 @@
     "@types/chai": "^5.2.2",
     "@types/cucumber": "^7.0.3",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^24.12.2",
+    "@types/node": "^24.12.4",
     "baseline-browser-mapping": "2.10.25",
     "chai": "^4.5.0",
     "commitizen": "^4.3.1",
