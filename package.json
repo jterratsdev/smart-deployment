@@ -6,15 +6,15 @@
     "@oclif/core": "4.11.2",
     "@salesforce/core": "^8.29.0",
     "@salesforce/sf-plugins-core": "^12.2.13",
-    "fast-xml-parser": "^5.7.1",
+    "fast-xml-parser": "^5.8.0",
     "glob": "^11.0.0",
     "minimatch": "^10.2.5"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.4.3",
     "@commitlint/config-conventional": "^18.4.3",
-    "@cucumber/cucumber": "^12.8.2",
-    "@oclif/plugin-command-snapshot": "^5.3.9",
+    "@cucumber/cucumber": "^12.9.0",
+    "@oclif/plugin-command-snapshot": "^5.3.21",
     "@salesforce/cli-plugins-testkit": "^5.3.41",
     "@salesforce/dev-scripts": "^11.0.4",
     "@semantic-release/changelog": "^6.0.3",
@@ -22,8 +22,8 @@
     "@types/chai": "^5.2.2",
     "@types/cucumber": "^7.0.3",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^24.12.2",
-    "baseline-browser-mapping": "2.10.25",
+    "@types/node": "^24.12.4",
+    "baseline-browser-mapping": "2.10.31",
     "chai": "^4.5.0",
     "commitizen": "^4.3.1",
     "cz-customizable": "^7.5.4",
@@ -224,7 +224,7 @@
   },
   "resolutions": {
     "@oclif/core": "4.11.2",
-    "baseline-browser-mapping": "2.10.25",
+    "baseline-browser-mapping": "2.10.31",
     "**/filelist/**/brace-expansion": "2.1.0",
     "**/socks/**/ip-address": "10.2.0"
   },
