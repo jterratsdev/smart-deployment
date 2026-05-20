@@ -9,6 +9,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: sonarqube-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pull-requests: read
@@ -16,28 +20,137 @@ permissions:
 jobs:
   scan:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.SONAR_RUNNER == 'self-hosted' && fromJSON('["self-hosted","sonar","local-sonar"]') || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || vars.SONAR_HOST_URL }}
+      SONAR_PROVIDER: ${{ vars.SONAR_PROVIDER }}
+      SONAR_QUALITY_GATE_WAIT: ${{ vars.SONAR_QUALITY_GATE_WAIT }}
+      SONAR_RUNNER: ${{ vars.SONAR_RUNNER }}
+      SONAR_LOCAL_HOST_URL: ${{ vars.SONAR_LOCAL_HOST_URL }}
+      CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+      CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
     steps:
+      - name: Skip when Sonar token is not configured
+        if: ${{ env.SONAR_TOKEN == '' }}
+        run: echo "SONAR_TOKEN is not configured; skipping Sonar analysis."
+
+      - name: Resolve Sonar provider policy
+        if: ${{ env.SONAR_TOKEN != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROVIDER="${SONAR_PROVIDER:-sonarqube-self-hosted}"
+          HOST_URL="${SONAR_HOST_URL:-https://sonarqube.jterrats.dev}"
+          if [[ "$SONAR_RUNNER" == "self-hosted" ]]; then
+            PROVIDER="sonarqube-local"
+            HOST_URL="${SONAR_LOCAL_HOST_URL:-http://localhost:9001}"
+          fi
+          if [[ -z "$HOST_URL" ]]; then
+            echo "SONAR_HOST_URL is required."
+            exit 1
+          fi
+          echo "SONAR_PROVIDER_RESOLVED=$PROVIDER" >> "$GITHUB_ENV"
+          echo "SONAR_HOST_URL_RESOLVED=$HOST_URL" >> "$GITHUB_ENV"
+          echo "SONAR_RUN_ENABLED=true" >> "$GITHUB_ENV"
+
       - name: Checkout code
-        uses: actions/checkout@v4
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' }}
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' }}
+        uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: yarn
 
+      - name: Validate Cloudflare Access secrets
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' && env.SONAR_RUNNER != 'self-hosted' && env.CF_ACCESS_CLIENT_ID != '' && env.CF_ACCESS_CLIENT_SECRET != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXPECTED_CLIENT_ID="257afd300bd1c926b38e751d8ac735e4.access"
+          if [[ "$CF_ACCESS_CLIENT_ID" != "$EXPECTED_CLIENT_ID" ]]; then
+            echo "CF_ACCESS_CLIENT_ID does not match the Cloudflare Access service token client_id for gh_actions."
+            echo "Store only the plain client_id value, without the CF-Access-Client-Id header name or colon."
+            exit 1
+          fi
+          if [[ "$CF_ACCESS_CLIENT_ID" == *"CF-Access-Client-ID"* || "$CF_ACCESS_CLIENT_ID" == *":"* ]]; then
+            echo "CF_ACCESS_CLIENT_ID appears to include a header name or colon. Store only the plain client_id value."
+            exit 1
+          fi
+          if [[ "$CF_ACCESS_CLIENT_SECRET" == *"CF-Access-Client-Secret"* || "$CF_ACCESS_CLIENT_SECRET" == *":"* ]]; then
+            echo "CF_ACCESS_CLIENT_SECRET appears to include a header name or colon. Store only the plain secret value."
+            exit 1
+          fi
+          if [[ "$CF_ACCESS_CLIENT_ID" =~ [[:space:]] || "$CF_ACCESS_CLIENT_SECRET" =~ [[:space:]] ]]; then
+            echo "Cloudflare Access service token values contain whitespace. Re-copy the plain values."
+            exit 1
+          fi
+
+      - name: Start Cloudflare Access proxy
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' && env.SONAR_RUNNER != 'self-hosted' && env.CF_ACCESS_CLIENT_ID != '' && env.CF_ACCESS_CLIENT_SECRET != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CF_ACCESS_PROXY_TARGET_URL="$SONAR_HOST_URL_RESOLVED"
+          export CF_ACCESS_PROXY_LISTEN_HOST="127.0.0.1"
+          export CF_ACCESS_PROXY_LISTEN_PORT="9010"
+          node scripts/ci/cloudflare-access-proxy.mjs > /tmp/cloudflare-access-proxy.log 2>&1 &
+          echo "CF_ACCESS_PROXY_PID=$!" >> "$GITHUB_ENV"
+          for attempt in {1..20}; do
+            if curl -fsS -u "$SONAR_TOKEN:" "http://127.0.0.1:9010/api/authentication/validate" >/dev/null; then
+              echo "SONAR_HOST_URL_RESOLVED=http://127.0.0.1:9010" >> "$GITHUB_ENV"
+              echo "SONAR_PROVIDER_RESOLVED=sonarqube-local" >> "$GITHUB_ENV"
+              echo "Cloudflare Access proxy is ready for Sonar analysis."
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/cloudflare-access-proxy.log
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            echo "Cloudflare Access proxy could not validate SonarQube access for this pull request; skipping Sonar analysis."
+            echo "SONAR_RUN_ENABLED=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          exit 1
+
       - name: Install dependencies
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' }}
         run: yarn install --frozen-lockfile --network-timeout 600000
 
       - name: Run unit tests
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' }}
         run: yarn test:only
 
+      - name: Align Sonar SCM baseline with main
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git update-ref refs/remotes/origin/master refs/remotes/origin/main
+          git branch --force master refs/remotes/origin/main
+          echo "Created local master compatibility refs that point to origin/main for Sonar SCM changed-lines analysis."
+
       - name: SonarQube scan
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' && env.SONAR_QUALITY_GATE_WAIT != 'true' }}
         uses: SonarSource/sonarqube-scan-action@v8.1.0
         env:
-          SONAR_HOST_URL: https://sonarqube.jterrats.dev
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL_RESOLVED }}
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+
+      - name: SonarQube scan with quality gate wait
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' && env.SONAR_QUALITY_GATE_WAIT == 'true' }}
+        uses: SonarSource/sonarqube-scan-action@v8.1.0
+        with:
+          args: >
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
+        env:
+          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL_RESOLVED }}
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
