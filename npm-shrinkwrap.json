@@ -21,7 +21,7 @@
         "@commitlint/cli": "^18.4.3",
         "@commitlint/config-conventional": "^18.4.3",
         "@cucumber/cucumber": "^12.9.0",
-        "@oclif/plugin-command-snapshot": "^5.3.9",
+        "@oclif/plugin-command-snapshot": "^5.3.21",
         "@salesforce/cli-plugins-testkit": "^5.3.41",
         "@salesforce/dev-scripts": "^11.0.4",
         "@semantic-release/changelog": "^6.0.3",
@@ -3602,9 +3602,9 @@
       }
     },
     "node_modules/@oclif/plugin-command-snapshot": {
-      "version": "5.3.15",
-      "resolved": "https://registry.npmjs.org/@oclif/plugin-command-snapshot/-/plugin-command-snapshot-5.3.15.tgz",
-      "integrity": "sha512-J9mNzaKG1wtOy5Yp9Orz25zwVC/eTtveDTS2P1kFdNSGv7y1NKPpUL7ZKynf4bDGm2aJloXvdlLur7rQtixLzg==",
+      "version": "5.3.21",
+      "resolved": "https://registry.npmjs.org/@oclif/plugin-command-snapshot/-/plugin-command-snapshot-5.3.21.tgz",
+      "integrity": "sha512-jmPF/FNGXBmgkgRUW+P4CfPjon48Nom62YzfLMkN6LXl2ILmlhEigMO4hnOdub1XaonMRfexmBtvuWL0mfUPfg==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
@@ -3615,7 +3615,7 @@
         "lodash.difference": "^4.5.0",
         "lodash.get": "^4.4.2",
         "lodash.sortby": "^4.7.0",
-        "semver": "^7.7.4",
+        "semver": "^7.8.0",
         "ts-json-schema-generator": "^1.5.1"
       },
       "bin": {
@@ -3670,9 +3670,9 @@
       }
     },
     "node_modules/@oclif/plugin-command-snapshot/node_modules/semver": {
-      "version": "7.7.4",
-      "resolved": "https://registry.npmjs.org/semver/-/semver-7.7.4.tgz",
-      "integrity": "sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==",
+      "version": "7.8.0",
+      "resolved": "https://registry.npmjs.org/semver/-/semver-7.8.0.tgz",
+      "integrity": "sha512-AcM7dV/5ul4EekoQ29Agm5vri8JNqRyj39o0qpX6vDF2GZrtutZl5RwgD1XnZjiTAfncsJhMI48QQH3sN87YNA==",
       "dev": true,
       "license": "ISC",
       "bin": {
