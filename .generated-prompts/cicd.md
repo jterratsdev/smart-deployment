@@ -39,3 +39,24 @@ and test gate thresholds already established in the project.
 ---
 
 <!-- Entries below this line are maintained by the agent -->
+
+## SonarQube
+
+- **Created:** 2026-05-20
+- **Updated:** 2026-05-20
+- **Iterations:** 1
+
+### Key decisions
+
+- Adapted the Open Orchestra Sonar workflow pattern for this repo: resolve Sonar host/provider from GitHub secrets and variables, support self-hosted local Sonar, align the SCM baseline with `main`, and route hosted runners through a Cloudflare Access proxy when `CF_ACCESS_CLIENT_ID` and `CF_ACCESS_CLIENT_SECRET` are configured.
+- Keep pull request checks non-blocking when Cloudflare Access rejects the service token, while preserving failure behavior on `push` and manual runs so the SonarQube Access policy issue remains visible before release.
+- Kept this repo on `yarn install --frozen-lockfile --network-timeout 600000` and `yarn test:only` instead of copying Open Orchestra's `npm ci` and coverage/import steps.
+- Reused the Open Orchestra Cloudflare Access service-token validation for the `gh_actions` client id.
+
+### Prompt
+
+```
+Copy the SonarQube CI strategy from ~/dev/open-orchestra into smart-deployment. Read the full Open Orchestra workflow to preserve the Cloudflare Access proxy behavior, provider resolution, secret/variable conventions, quality gate wait option, and service-token validation, while adapting dependency installation and tests to this repo.
+```
+
+---
