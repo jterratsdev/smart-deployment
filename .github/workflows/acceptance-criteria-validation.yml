@@ -9,6 +9,7 @@ on:
 jobs:
   validate-acceptance-criteria:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       issues: write
@@ -72,7 +73,9 @@ jobs:
       #   continue-on-error: true
 
       - name: Run NUTs (Salesforce integration tests)
+        if: steps.extract-issue.outputs.has_issue == 'true'
         id: nuts
+        timeout-minutes: 10
         run: |
           yarn test:nuts --json --reporter json > test-results-nuts.json || true
         continue-on-error: true
