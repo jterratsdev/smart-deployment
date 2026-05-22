@@ -14,6 +14,10 @@
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import { getLogger } from '../utils/logger.js';
+import {
+  normalizeDeploymentDiagnostics,
+  type DeploymentDiagnostic,
+} from './deployment-error-diagnostics.js';
 
 const execAsync = promisify(exec);
 const logger = getLogger('SfCliIntegration');
@@ -38,6 +42,7 @@ export type DeploymentResult = {
   testsRun?: number;
   testFailures?: number;
   output: string;
+  diagnostics?: DeploymentDiagnostic[];
 };
 
 /**
@@ -109,8 +114,10 @@ export class SfCliIntegration {
           };
         };
 
+        const success = !failed && (parsed.result?.status === 'Succeeded' || parsed.result?.status === 'Success');
+
         return {
-          success: !failed && (parsed.result?.status === 'Succeeded' || parsed.result?.status === 'Success'),
+          success,
           deploymentId: parsed.result?.id,
           status: parsed.result?.status ?? 'Unknown',
           componentSuccesses: parsed.result?.numberComponentsDeployed ?? 0,
@@ -118,6 +125,7 @@ export class SfCliIntegration {
           testsRun: parsed.result?.numberTestsTotal,
           testFailures: parsed.result?.numberTestErrors,
           output,
+          diagnostics: success ? undefined : normalizeDeploymentDiagnostics(output),
         };
       }
     } catch (parseError) {
@@ -125,12 +133,14 @@ export class SfCliIntegration {
     }
 
     // Fallback for non-JSON output
+    const success = !failed;
     return {
-      success: !failed,
+      success,
       status: failed ? 'Failed' : 'Unknown',
       componentSuccesses: 0,
       componentFailures: failed ? 1 : 0,
       output,
+      diagnostics: success ? undefined : normalizeDeploymentDiagnostics(output),
     };
   }
 

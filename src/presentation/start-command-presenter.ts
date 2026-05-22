@@ -43,4 +43,9 @@ export class StartCommandPresenter {
     io.log(`   - Waves: ${waves}`);
     io.log('   - Status: Success');
   }
+
+  public reportPlanReportsSaved(io: Pick<StartPresenterIO, 'log'>, paths: { jsonPath: string; htmlPath: string }): void {
+    io.log(`   - JSON report: ${paths.jsonPath}`);
+    io.log(`   - HTML report: ${paths.htmlPath}`);
+  }
 }

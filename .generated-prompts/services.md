@@ -59,3 +59,30 @@
 
 <!-- Entries below this line are maintained by agents -->
 ````
+
+## PlanExplainService
+
+- **Created:** 2026-05-22
+- **Updated:** 2026-05-22
+- **Iterations:** 1
+- **Task:** PLUGIN-PLAN-EXPLAIN
+- **Role:** developer
+
+### Key decisions
+
+- Reused `DeploymentContextService` and `SpecialDeploymentPlanService` instead of changing wave generation or provider planning.
+- Reports direct dependencies, recursively discovered transitive blockers, unresolved references, provider-owned phase decisions, and confidence values in deterministic arrays.
+- Carries `architecturalConcerns` in structured output per developer playbook requirements.
+
+### Evidence
+
+- `npx eslint src/commands/plan/explain.ts src/deployment/plan-explain-service.ts src/presentation/plan-explain-presenter.ts test/unit/deployment/plan-explain-service.test.ts test/unit/commands/plan-explain.test.ts --color`
+- `npx mocha --reporter spec "test/unit/deployment/plan-explain-service.test.ts" "test/unit/commands/plan-explain.test.ts"`
+
+### Prompt
+
+```
+Implement the smallest coherent plan explanation service for PLUGIN-PLAN-EXPLAIN using existing deployment context and provider plan services. The result must justify component placement, dependency edges, unresolved references, provider-owned metadata decisions, confidence levels, and empty plans without executing deployments or provider calls beyond existing local plan construction.
+```
+
+---

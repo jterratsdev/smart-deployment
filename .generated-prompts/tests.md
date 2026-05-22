@@ -23,6 +23,26 @@
 <the final prompt that produced or substantially changed this component>
 ```
 ---
+
+## PlanExplainService
+
+- **Created:** 2026-05-22
+- **Updated:** 2026-05-22
+- **Iterations:** 1
+
+### Key decisions
+
+- Added focused unit coverage for dependency placement with transitive blockers, provider-owned decisions, unresolved references, empty plans, and command input passthrough.
+- Used injected service doubles to avoid real project scanning, deployments, provider calls, or remote state.
+
+### Prompt
+
+```
+Create unit tests for PLUGIN-PLAN-EXPLAIN covering dependency placement, provider placement, unresolved references, empty plans, and command acceptance of start dry-run style inputs. Keep tests deterministic and local-only.
+```
+
+---
+
 ```
 
 **Substantial change** = new method, new business requirement, pattern change, architectural refactor.
@@ -38,3 +58,21 @@ System.runAs(), fixture patterns, page object model structure, and coverage conv
 ---
 
 <!-- Entries below this line are maintained by the agent -->
+
+## DeploymentErrorDiagnostics
+- **Created:** 2026-05-22
+- **Updated:** 2026-05-22
+- **Iterations:** 1
+
+### Key decisions
+- Added focused unit coverage for Salesforce deploy diagnostic categories and unknown fallback behavior.
+- Extended existing deployment integration tests to verify parsed failed JSON output includes actionable diagnostics and failed wave state stores formatted remediation hints.
+
+### Prompt
+```
+
+Create unit tests for Salesforce metadata deploy error diagnostics covering known mappings for missing fields, missing objects, duplicate metadata, permissions, invalid references, source tracking conflicts, and unknown fallback behavior. Verify SF CLI result parsing and failed wave persistence carry actionable diagnostics.
+
+```
+---
+```

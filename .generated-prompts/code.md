@@ -59,3 +59,58 @@
 
 <!-- Entries below this line are maintained by agents -->
 ````
+
+## DeploymentErrorDiagnostics
+
+- **Created:** 2026-05-22
+- **Updated:** 2026-05-22
+- **Iterations:** 1
+- **Task:** PLUGIN-SF-ERROR-DIAGNOSTICS
+- **Role:** developer
+
+### Key decisions
+
+- Added a deployment-layer normalizer that converts Salesforce deploy failure output into component, problem, probable cause, remediation, raw details, and category fields.
+- Kept parsing local to deployment code and wired diagnostics into `SfCliIntegration` results plus failed wave persistence.
+- Unknown Salesforce errors retain raw details and a generic validation next-step hint.
+
+### Evidence
+
+- `npx mocha "test/unit/deployment/deployment-error-diagnostics.test.ts" "test/unit/deployment/deployment-suite.test.ts" "test/unit/deployment/start-execution-service.test.ts"` passed.
+- `npm test` passed.
+
+### Prompt
+
+```
+Translate Salesforce metadata deploy errors into actionable diagnostics and remediation hints within the deployment/presentation/commands/test ownership scope. Cover missing fields, missing objects, duplicate metadata, permissions, invalid references, source tracking conflicts, and unknown fallback behavior while preserving existing dirty state from other workers.
+```
+
+---
+
+## PlanExplainCommand
+
+- **Created:** 2026-05-22
+- **Updated:** 2026-05-22
+- **Iterations:** 2
+- **Task:** PLUGIN-PLAN-EXPLAIN
+- **Role:** qa
+
+### Key decisions
+
+- Added `smart-deployment plan explain` as a read-only command that accepts start dry-run style planning inputs and returns a stable JSON result.
+- Kept human output in a presenter and command text in a messages file to satisfy sf-plugin lint rules.
+- Suppressed command/runtime console logs during `--json` execution so CI consumers receive a single parseable JSON payload.
+
+### Evidence
+
+- `npx eslint src/commands/plan/explain.ts src/deployment/plan-explain-service.ts src/presentation/plan-explain-presenter.ts test/unit/deployment/plan-explain-service.test.ts test/unit/commands/plan-explain.test.ts --color`
+- `npx mocha --reporter spec "test/unit/deployment/plan-explain-service.test.ts" "test/unit/commands/plan-explain.test.ts"`
+- `./bin/dev.js plan explain --json`
+
+### Prompt
+
+```
+QA fix for PLUGIN-PLAN-EXPLAIN: verify the plan explain command behavior and keep JSON output stable for CI artifacts by ensuring `--json` emits only the final result object while preserving human summary output for non-JSON runs.
+```
+
+---

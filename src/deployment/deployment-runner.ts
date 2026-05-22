@@ -9,6 +9,7 @@ import { WaveManifestService } from './wave-manifest-service.js';
 import { ForceIgnoreStagingService } from './forceignore-staging-service.js';
 import type { TestExecutor } from './test-executor.js';
 import type { DeploymentAIContext } from './deployment-context-service.js';
+import { formatDeploymentDiagnostics } from './deployment-error-diagnostics.js';
 import { buildPersistedWaveGraphContext } from './wave-graph-state.js';
 
 export type DeploymentRunnerParams = {
@@ -90,6 +91,12 @@ export class DeploymentRunner {
         tracker.updateProgress(deploymentId, result);
 
         if (!result.success) {
+          const diagnostics = result.diagnostics ?? [];
+          const formattedDiagnostics = formatDeploymentDiagnostics(diagnostics);
+          const failureMessage = formattedDiagnostics
+            ? `${result.output}\n\n${formattedDiagnostics}`
+            : result.output;
+
           await stateManager.saveState({
             deploymentId,
             targetOrg,
@@ -99,7 +106,7 @@ export class DeploymentRunner {
             currentWave: wave.number,
             failedWave: {
               waveNumber: wave.number,
-              error: result.output,
+              error: failureMessage,
               timestamp: new Date().toISOString(),
             },
             metadata: {
@@ -107,11 +114,12 @@ export class DeploymentRunner {
               testsRun: result.testsRun,
               testFailures: result.testFailures,
               testLevel: testPlan.testLevel,
+              diagnostics,
               waveGraphContext: buildPersistedWaveGraphContext(orderedWaves, dependencyGraph),
               ...this.buildAIMetadata(aiContext),
             },
           });
-          throw new Error(`Wave ${wave.number} failed: ${result.output}`);
+          throw new Error(`Wave ${wave.number} failed: ${failureMessage}`);
         }
 
         await stateManager.saveState({

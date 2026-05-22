@@ -28,6 +28,14 @@ type SfCliIntegrationPrivate = {
     testsRun?: number;
     testFailures?: number;
     output: string;
+    diagnostics?: Array<{
+      component: string;
+      problem: string;
+      probableCause: string;
+      remediation: string;
+      rawDetails: string;
+      category: string;
+    }>;
   };
 };
 
@@ -145,6 +153,38 @@ describe('Deployment Engine Suite', () => {
       expect(result.success).to.equal(false);
       expect(result.status).to.equal('Failed');
       expect(result.componentFailures).to.equal(1);
+    });
+
+    it('adds actionable diagnostics for failed JSON deployment output', () => {
+      const integration = new SfCliIntegration();
+      const internals = integration as unknown as SfCliIntegrationPrivate;
+
+      const result = internals.parseDeploymentOutput(
+        JSON.stringify({
+          result: {
+            id: '0Afxx0000009999',
+            status: 'Failed',
+            numberComponentsDeployed: 0,
+            numberComponentErrors: 1,
+            details: {
+              componentFailures: {
+                componentType: 'ApexClass',
+                fullName: 'AccountService',
+                problem: 'No such column Missing__c on entity Account',
+              },
+            },
+          },
+        }),
+        true
+      );
+
+      expect(result.success).to.equal(false);
+      expect(result.diagnostics?.[0]).to.deep.include({
+        component: 'ApexClass:AccountService',
+        category: 'missing-field',
+        problem: 'No such column Missing__c on entity Account',
+      });
+      expect(result.diagnostics?.[0].remediation).to.include('Deploy the missing CustomField');
     });
   });
 

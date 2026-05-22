@@ -1,0 +1,18 @@
+{
+  "summary": "Explain why metadata components are placed in deployment waves",
+  "description": "Builds the same local plan used by start dry-run and explains wave placement, dependency edges, unresolved references, and provider-owned deployment decisions.",
+  "examples": [
+    "<%= config.bin %> <%= command.id %> --source-path force-app",
+    "<%= config.bin %> smart-deployment plan explain --use-ai --org-type Sandbox --target-org dev"
+  ],
+  "flags.source-path.summary": "Salesforce source path to analyze",
+  "flags.dry-run.summary": "Accepted for parity with start dry-run; explain never deploys metadata",
+  "flags.validate-only.summary": "Accepted for parity with start validate-only; explain never deploys metadata",
+  "flags.skip-tests.summary": "Accepted for parity with start dry-run inputs; explain never runs tests",
+  "flags.allow-cycle-remediation.summary": "Accepted for parity with start dry-run inputs; explain does not modify sources",
+  "flags.use-ai.summary": "Use configured AI providers for dependency inference and wave priority analysis",
+  "flags.org-type.summary": "Target org type used by AI wave priority analysis",
+  "flags.industry.summary": "Industry context used by AI wave priority analysis",
+  "flags.since.summary": "Git ref used to explain changed provider-owned metadata decisions",
+  "flags.auto-activate.summary": "Include Agentforce activation decisions in provider-owned metadata planning"
+}

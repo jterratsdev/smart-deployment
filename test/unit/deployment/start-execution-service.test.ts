@@ -36,6 +36,17 @@ class FailingSfCli extends SfCliIntegration {
           numberTestErrors: 1,
         },
       }),
+      diagnostics: [
+        {
+          component: 'ApexClass:TestClass',
+          problem: 'No such column Missing__c on entity Account',
+          probableCause: 'A referenced field is not present in the target org or is deployed in a later wave.',
+          remediation:
+            'Deploy the missing CustomField before this component, add it to the same or earlier wave, or remove the stale field reference.',
+          rawDetails: '{"problem":"No such column Missing__c on entity Account"}',
+          category: 'missing-field',
+        },
+      ],
     };
   }
 }
@@ -123,8 +134,20 @@ describe('StartExecutionService', () => {
     expect(state.completedWaves).to.deep.equal([]);
     expect(state.failedWave?.waveNumber).to.equal(1);
     expect(state.failedWave?.error).to.include('"status":"Failed"');
+    expect(state.failedWave?.error).to.include('Remediation: Deploy the missing CustomField');
     expect(state.metadata?.lastKnownStatus).to.equal('Failed');
     expect(state.metadata?.testFailures).to.equal(1);
+    expect(state.metadata?.diagnostics).to.deep.equal([
+      {
+        component: 'ApexClass:TestClass',
+        problem: 'No such column Missing__c on entity Account',
+        probableCause: 'A referenced field is not present in the target org or is deployed in a later wave.',
+        remediation:
+          'Deploy the missing CustomField before this component, add it to the same or earlier wave, or remove the stale field reference.',
+        rawDetails: '{"problem":"No such column Missing__c on entity Account"}',
+        category: 'missing-field',
+      },
+    ]);
     expect(state.metadata?.waveGraphContext).to.deep.equal({
       waves: [{ number: 1, components: ['ApexClass:TestClass'] }],
       dependencies: [],

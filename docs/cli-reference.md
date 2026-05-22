@@ -36,6 +36,7 @@ Supported flags:
 - `--validate-only`
 - `--skip-tests`
 - `--source-path <path>`
+- `--report-dir <path>`
 - `--allow-cycle-remediation`
 - `--use-ai`
 - `--org-type <Production|Sandbox|Developer>`
@@ -47,8 +48,11 @@ Behavior:
 - generates waves
 - can execute real deployment through `SfCliIntegration`
 - persists deployment state for `status` and `resume`
+- writes deterministic JSON and HTML plan reports for `--dry-run` and `--validate-only`
 - can attempt conservative cycle remediation for supported `ApexClass` cycles only
 - `--dry-run` follows the real `start` orchestration path without executing the deploy, so it is the closest rehearsal of an actual deployment command run
+- `--dry-run` writes `.smart-deployment/reports/start-dry-run/deployment-plan.json` and `.smart-deployment/reports/start-dry-run/deployment-plan.html` by default
+- `--report-dir <path>` overrides the report output directory for CI artifact collection
 - `--validate-only` keeps the command in the `start` command family, but stops short of real deployment execution
 
 Important:

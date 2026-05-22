@@ -13,6 +13,8 @@
   "flags.skip-tests.summary": "Skip running tests during deployment",
   "flags.source-path.summary": "Path to the Salesforce project to analyze and deploy",
   "flags.source-path.description": "Defaults to the current working directory when omitted",
+  "flags.report-dir.summary": "Directory for dry-run deployment plan reports",
+  "flags.report-dir.description": "Defaults to .smart-deployment/reports/start-dry-run under the scanned project root",
   "flags.allow-cycle-remediation.summary": "Allow conservative cycle remediation for supported ApexClass cycles",
   "flags.allow-cycle-remediation.description": "Applies temporary reversible source edits for simple cycles only",
   "flags.use-ai.summary": "Use AI for intelligent priority weighting and dependency inference",

@@ -24,6 +24,7 @@ import { StartExecutionService } from '../deployment/start-execution-service.js'
 import { DeploymentContextService } from '../deployment/deployment-context-service.js';
 import { ProjectAnalysisPresenter } from '../presentation/project-analysis-presenter.js';
 import { StartCommandPresenter } from '../presentation/start-command-presenter.js';
+import { DeploymentPlanReportService } from '../reports/deployment-plan-report-service.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('@jterrats/smart-deployment', 'start');
@@ -32,6 +33,7 @@ const deploymentContextService = new DeploymentContextService();
 const startExecutionService = new StartExecutionService();
 const projectAnalysisPresenter = new ProjectAnalysisPresenter();
 const presenter = new StartCommandPresenter();
+const deploymentPlanReportService = new DeploymentPlanReportService();
 
 /**
  * @ac US-046-AC-1: Analyzes metadata automatically
@@ -41,6 +43,10 @@ const presenter = new StartCommandPresenter();
 type StartResult = {
   success: boolean;
   waves: number;
+  reports?: {
+    jsonPath: string;
+    htmlPath: string;
+  };
   ai?: {
     enabled: boolean;
     provider?: string;
@@ -86,6 +92,10 @@ export default class Start extends SfCommand<StartResult> {
     'source-path': Flags.string({
       summary: messages.getMessage('flags.source-path.summary'),
       description: messages.getMessage('flags.source-path.description'),
+    }),
+    'report-dir': Flags.string({
+      summary: messages.getMessage('flags.report-dir.summary'),
+      description: messages.getMessage('flags.report-dir.description'),
     }),
     'allow-cycle-remediation': Flags.boolean({
       summary: messages.getMessage('flags.allow-cycle-remediation.summary'),
@@ -156,9 +166,28 @@ export default class Start extends SfCommand<StartResult> {
       }
 
       presenter.reportReportGenerationStart(this);
+      const reportResult =
+        executionOptions.dryRun || executionOptions.validateOnly
+          ? await deploymentPlanReportService.generate(deploymentContext, {
+              reportDir: typeof flags['report-dir'] === 'string' ? flags['report-dir'] : undefined,
+              targetOrg: executionOptions.targetOrg,
+              sourcePath,
+              dryRun: executionOptions.dryRun,
+              validateOnly: executionOptions.validateOnly,
+              skipTests: executionOptions.skipTests,
+            })
+          : undefined;
       presenter.reportDeploymentReport(this, waves);
+      if (reportResult) {
+        presenter.reportPlanReportsSaved(this, reportResult);
+      }
 
-      return { success: true, waves, ai: deploymentContext.aiContext };
+      return {
+        success: true,
+        waves,
+        reports: reportResult ? { jsonPath: reportResult.jsonPath, htmlPath: reportResult.htmlPath } : undefined,
+        ai: deploymentContext.aiContext,
+      };
     } catch (error) {
       // AC-10: Handle failures gracefully
       logger.error('Deployment failed', { error });
@@ -186,6 +215,7 @@ export default class Start extends SfCommand<StartResult> {
       'validate-only': flags['validate-only'] === true,
       'skip-tests': flags['skip-tests'] === true,
       'source-path': typeof flags['source-path'] === 'string' ? flags['source-path'] : undefined,
+      'report-dir': typeof flags['report-dir'] === 'string' ? flags['report-dir'] : undefined,
       'allow-cycle-remediation': flags['allow-cycle-remediation'] === true,
       'use-ai': flags['use-ai'] === true,
       'org-type': typeof flags['org-type'] === 'string' ? flags['org-type'] : undefined,
