@@ -1,3 +1,5 @@
+![Salesforce Cloud](https://cdn.prod.website-files.com/691f4b0505409df23e191b87/69416b267de7ae6888996981_logo.svg)
+
 # CLI Reference
 
 This reference describes the commands and flags currently implemented in the repository.
@@ -168,11 +170,40 @@ Behavior:
 - `--dry-run` is enabled by default and prints/returns the plan without executing commands
 - `--no-dry-run` executes non-skipped phase commands sequentially and stops at the first failed phase
 
+## `sf smart-deployment ci preset`
+
+Run the CI preset for deployment planning, validation-safe checks, deterministic report artifacts, and CI exit codes.
+
+Supported flags:
+
+- `--source-path <path>`
+- `--target-org <alias-or-username>`
+- `--report-dir <path>`
+- `--validation-mode <strict|warn-only|local-only>`
+- `--skip-tests`
+- `--use-ai`
+- `--org-type <Production|Sandbox|Developer>`
+- `--industry <value>`
+- `--json`
+
+Behavior:
+
+- runs the same local scan and wave planning path used by `start --dry-run`
+- never executes a real Salesforce deployment
+- writes `deployment-plan.json` and `deployment-plan.html`
+- defaults reports to `.smart-deployment/reports/start-dry-run` under the scanned project root
+- writes GitHub Actions outputs when `GITHUB_OUTPUT` is available:
+  `deployment_plan_json`, `deployment_plan_html`, `deployment_report_dir`, `deployment_status`, and `deployment_exit_code`
+- `strict` exits with code `2` when plan blockers are present
+- `warn-only` emits the same artifacts but exits `0` for plan blockers
+- `local-only` exits `0` for local planning blockers and avoids org-dependent validation expectations
+
 ## Files Written By The CLI
 
 - repo config: `.smart-deployment.json`
 - saved plan: `.smart-deployment/deployment-plan.json`
 - deployment runtime state: `.smart-deployment/deployment-state.json`
+- CI preset reports: `.smart-deployment/reports/start-dry-run/deployment-plan.json` and `.smart-deployment/reports/start-dry-run/deployment-plan.html`
 - temporary sanitized deploy project: operating-system temp directory, removed after the command finishes
 
 The runtime state file is operational state, not source-of-truth configuration.

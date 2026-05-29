@@ -80,3 +80,22 @@ Fix the acceptance validation workflow so Dependabot PRs and other branches with
 ```
 
 ---
+
+## Smart Deployment CI Preset
+
+- **Created:** 2026-05-22
+- **Updated:** 2026-05-22
+- **Iterations:** 1
+
+### Key decisions
+
+- Expose CI artifact paths through the CLI command's `GITHUB_OUTPUT` integration rather than adding a new always-on workflow that could affect existing repository CI.
+- Keep GitHub Actions outputs stable: `deployment_plan_json`, `deployment_plan_html`, `deployment_report_dir`, `deployment_status`, and `deployment_exit_code`.
+
+### Prompt
+
+```
+Document the CI/CD behavior for PLUGIN-CI-PRESET: expose deterministic deployment plan artifact paths for GitHub Actions while avoiding active workflow changes that would alter existing CI behavior without release wiring.
+```
+
+---

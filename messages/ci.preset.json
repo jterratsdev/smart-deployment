@@ -1,0 +1,18 @@
+{
+  "summary": "Run the CI deployment planning preset",
+  "description": "Builds a validation-safe deployment plan, writes JSON and HTML report artifacts, emits GitHub Actions output keys, and returns deterministic CI exit codes.",
+  "examples": [
+    "<%= config.bin %> <%= command.id %> --source-path force-app --target-org dev --report-dir reports/deployment-plan",
+    "<%= config.bin %> smart-deployment ci preset --validation-mode warn-only --skip-tests"
+  ],
+  "flags.source-path.summary": "Salesforce source path to analyze",
+  "flags.source-path.description": "Path to the Salesforce source directory used to build the deployment plan.",
+  "flags.report-dir.summary": "Directory where JSON and HTML deployment plan reports are written",
+  "flags.report-dir.description": "Defaults to the deployment plan report service location under the analyzed project.",
+  "flags.validation-mode.summary": "CI exit-code policy for deployment planning blockers",
+  "flags.validation-mode.description": "strict exits non-zero for blockers, warn-only reports blockers with exit code 0, and local-only avoids org-dependent validation expectations.",
+  "flags.skip-tests.summary": "Record that Apex tests should be skipped by downstream validation",
+  "flags.use-ai.summary": "Use configured AI providers for dependency inference and wave priority analysis",
+  "flags.org-type.summary": "Target org type used by AI wave priority analysis",
+  "flags.industry.summary": "Industry context used by AI wave priority analysis"
+}

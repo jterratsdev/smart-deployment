@@ -114,3 +114,33 @@ QA fix for PLUGIN-PLAN-EXPLAIN: verify the plan explain command behavior and kee
 ```
 
 ---
+
+## CiPresetCommand
+
+- **Created:** 2026-05-22
+- **Updated:** 2026-05-22
+- **Iterations:** 1
+- **Task:** PLUGIN-CI-PRESET
+- **Role:** developer
+
+### Key decisions
+
+- Added `smart-deployment ci preset` as a validation-safe CI command that reuses existing deployment context and plan report generation instead of creating a parallel artifact format.
+- Kept deterministic CI exit-code policy in `CiPresetService`: `strict` fails with exit code 2 for plan blockers, while `warn-only` and `local-only` emit artifacts and exit 0 for plan blockers.
+- Exposed GitHub Actions artifact paths through both JSON result fields and `GITHUB_OUTPUT` keys.
+
+### Evidence
+
+- `./node_modules/.bin/tsc -p . --pretty false --incremental false` passed.
+- `./node_modules/.bin/tsc -p ./test --pretty false` passed.
+- `./node_modules/.bin/eslint src/commands/ci/preset.ts src/deployment/ci-preset-service.ts test/unit/commands/ci-preset.test.ts test/unit/deployment/ci-preset-service.test.ts --color` passed.
+- `./node_modules/.bin/mocha --reporter spec "test/unit/deployment/ci-preset-service.test.ts" "test/unit/commands/ci-preset.test.ts"` passed.
+- `npm test` passed.
+
+### Prompt
+
+```
+Implement PLUGIN-CI-PRESET in the CI preset ownership scope. Add a smart-deployment CI preset command that runs dry-run planning, validation-safe checks, report artifact generation, GitHub Actions output emission, and deterministic strict/warn-only/local-only exit-code handling without touching unrelated dirty canonical worktree files.
+```
+
+---
