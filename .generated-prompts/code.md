@@ -144,3 +144,62 @@ Implement PLUGIN-CI-PRESET in the CI preset ownership scope. Add a smart-deploym
 ```
 
 ---
+
+## ImpactCommand
+
+- **Created:** 2026-06-03
+- **Updated:** 2026-06-03
+- **Iterations:** 1
+- **Task:** PLUGIN-IMPACT-COMMAND
+- **Role:** developer
+
+### Key decisions
+
+- Added `smart-deployment impact` as a read-only command that accepts either `--base` plus `--head` or working-tree analysis.
+- Kept git diff/status access isolated in `ImpactAnalysisService` behind an injectable provider so command and dependency behavior can be tested without shelling out.
+- Returned CI-oriented JSON with direct changes, transitive dependents, affected components, planned waves, and Apex test suggestions.
+
+### Evidence
+
+- `./node_modules/.bin/tsc -p . --pretty false --incremental false` passed.
+- `./node_modules/.bin/tsc -p ./test --pretty false` passed.
+- `./node_modules/.bin/eslint src/commands/impact.ts src/dependencies/impact-analysis-service.ts test/unit/commands/impact.test.ts test/unit/dependencies/impact-analysis-service.test.ts --color` passed.
+- `./node_modules/.bin/mocha --reporter spec "test/unit/dependencies/impact-analysis-service.test.ts" "test/unit/commands/impact.test.ts"` passed.
+- `npm test` passed.
+- `./bin/dev.js impact --working-tree --json` returned parseable JSON.
+
+### Prompt
+
+```
+Implement PLUGIN-IMPACT-COMMAND in an isolated worktree from origin/main commit f5aab23337389ac1d0f50ad00f218501db1d07ce. Add an impact command that accepts base/head refs or working-tree mode, reports directly changed components, transitive dependents, planned waves, and suggested Apex tests, and provides JSON suitable for CI decisions. Cover added, changed, deleted, and transitive dependency cases without touching unrelated graph export, init wizard, cache, scanner metadata support, or CI workflow files.
+```
+
+---
+
+## GraphExportCommand
+
+- **Created:** 2026-05-29
+- **Updated:** 2026-05-29
+- **Iterations:** 1
+- **Task:** PLUGIN-GRAPH-EXPORT
+- **Role:** developer
+
+### Key decisions
+
+- Added `smart-deployment graph export` as a local planning command that reuses `DeploymentContextService` instead of changing scanner, impact, cache, or deployment execution flows.
+- Supports `--report-dir`, `--output`, `--format mermaid|dot|json|html`, and `--json` with JSON-safe result metadata for CI artifact collection.
+
+### Evidence
+
+- `tsc -p . --pretty false --incremental false` passed.
+- `tsc -p ./test --pretty false` passed.
+- Focused ESLint and Mocha graph export checks passed.
+- `npm test` passed.
+
+### Prompt
+
+```
+Implement PLUGIN-GRAPH-EXPORT in an isolated worktree from f5aab23. Add a graph export command that builds the existing dependency and wave context, writes selected Mermaid/DOT/JSON/HTML artifacts, keeps JSON output suitable for CI, avoids shared impact/cache/scanner/CI changes, and covers command behavior with focused tests.
+```
+
+---

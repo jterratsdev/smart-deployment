@@ -39,3 +39,41 @@ Always updates rather than duplicates an existing doc.
 ---
 
 <!-- Entries below this line are maintained by the agent -->
+
+## CLI Reference Impact Command
+
+- **Created:** 2026-06-03
+- **Updated:** 2026-06-03
+- **Iterations:** 1
+
+### Key decisions
+
+- Updated the existing CLI reference instead of creating a new document.
+- Documented impact command flags, read-only behavior, working-tree default, ref comparison mode, and CI JSON fields.
+
+### Prompt
+
+```
+Document the new smart-deployment impact command in docs/cli-reference.md with supported flags and behavior, preserving the existing Salesforce Cloud header and CLI reference structure.
+```
+
+---
+
+## CliReferenceGraphExport
+
+- **Created:** 2026-05-29
+- **Updated:** 2026-05-29
+- **Iterations:** 1
+
+### Key decisions
+
+- Documented `sf smart-deployment graph export` in the existing CLI reference rather than adding a new guide.
+- Captured output path precedence, supported formats, default graph export location, and JSON artifact review metadata.
+
+### Prompt
+
+```
+Update the CLI reference for PLUGIN-GRAPH-EXPORT with supported flags, behavior, default files written, and CI artifact expectations while preserving existing documentation structure and Salesforce Cloud header.
+```
+
+---

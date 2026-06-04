@@ -198,12 +198,60 @@ Behavior:
 - `warn-only` emits the same artifacts but exits `0` for plan blockers
 - `local-only` exits `0` for local planning blockers and avoids org-dependent validation expectations
 
+## `sf smart-deployment impact`
+
+Analyze git changes and report transitive deployment/test impact without deploying.
+
+Supported flags:
+
+- `--source-path <path>`
+- `--base <git-ref>`
+- `--head <git-ref>`
+- `--working-tree`
+- `--max-depth <number>`
+- `--json`
+
+Behavior:
+
+- maps git changed files to metadata components
+- supports ref comparison with `--base` and `--head`
+- defaults to working-tree mode when refs are omitted
+- includes staged, unstaged, and untracked files in working-tree mode
+- reports directly changed components, transitive dependents, affected components, planned waves, and suggested Apex tests
+- returns CI-friendly JSON with a stable `summary`, `changedComponents`, `transitiveDependents`, `affectedComponents`, `plannedWaves`, and `suggestedApexTests` shape
+- never executes a Salesforce deployment
+
+## `sf smart-deployment graph export`
+
+Export dependency and deployment wave graphs for review or CI artifacts.
+
+Supported flags:
+
+- `--source-path <path>`
+- `--report-dir <path>`
+- `--output <path>`
+- `--format <mermaid|dot|json|html>`
+- `--use-ai`
+- `--org-type <Production|Sandbox|Developer>`
+- `--industry <value>`
+- `--json`
+
+Behavior:
+
+- scans metadata and builds the same dependency graph and ordered deployment waves used by local planning
+- writes the selected graph artifact to `.smart-deployment/reports/graph-export` by default
+- `--report-dir <path>` changes the output directory and keeps the default filename for the selected format
+- `--output <path>` writes to an exact file path and takes precedence over `--report-dir`
+- JSON exports include components, dependency edges, wave grouping, cycle markers, isolated components, and summary counts for CI artifact review
+- HTML exports embed the review table plus Mermaid, DOT, and JSON representations
+
 ## Files Written By The CLI
 
 - repo config: `.smart-deployment.json`
 - saved plan: `.smart-deployment/deployment-plan.json`
 - deployment runtime state: `.smart-deployment/deployment-state.json`
 - CI preset reports: `.smart-deployment/reports/start-dry-run/deployment-plan.json` and `.smart-deployment/reports/start-dry-run/deployment-plan.html`
+- graph exports: `.smart-deployment/reports/graph-export/dependency-graph.{mmd,dot,json,html}`
 - temporary sanitized deploy project: operating-system temp directory, removed after the command finishes
 
 The runtime state file is operational state, not source-of-truth configuration.

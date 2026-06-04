@@ -86,3 +86,32 @@ Implement the smallest coherent plan explanation service for PLUGIN-PLAN-EXPLAIN
 ```
 
 ---
+
+## GraphExportService
+
+- **Created:** 2026-05-29
+- **Updated:** 2026-05-29
+- **Iterations:** 1
+- **Task:** PLUGIN-GRAPH-EXPORT
+- **Role:** developer
+
+### Key decisions
+
+- Kept graph artifact generation in `src/reports` with a structured report contract shared by Mermaid, DOT, JSON, and HTML renderers.
+- Included deployment review metadata: components, dependency edges, wave grouping, cycle markers, isolated components, edge wave crossings, source, reason, and confidence.
+- Escapes Mermaid, DOT, and HTML labels so metadata names cannot corrupt graph syntax or rendered HTML.
+
+### Evidence
+
+- `tsc -p . --pretty false --incremental false` passed.
+- `tsc -p ./test --pretty false` passed.
+- Focused ESLint and Mocha graph export checks passed.
+- `npm test` passed.
+
+### Prompt
+
+```
+Create a report-layer graph export service for PLUGIN-GRAPH-EXPORT that transforms the existing deployment context into review-ready graph metadata and renders Mermaid, DOT, JSON, and HTML without modifying shared dependency analysis semantics.
+```
+
+---

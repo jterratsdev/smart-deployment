@@ -76,3 +76,22 @@ Create unit tests for Salesforce metadata deploy error diagnostics covering know
 ```
 ---
 ```
+
+## GraphExportService
+
+- **Created:** 2026-05-29
+- **Updated:** 2026-05-29
+- **Iterations:** 1
+
+### Key decisions
+
+- Added focused unit coverage for Mermaid, DOT, JSON, and HTML generation, empty graph behavior, deployment wave grouping, cycle markers, and escaping/sanitization.
+- Added command-level coverage for format selection, report directory output, exact output path override, and JSON-safe result metadata.
+
+### Prompt
+
+```
+Cover PLUGIN-GRAPH-EXPORT with deterministic local unit tests for all graph artifact formats, empty graph handling, wave grouping, cycle metadata, escaping/sanitization, and command flag passthrough without requiring Salesforce org access.
+```
+
+---

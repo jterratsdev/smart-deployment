@@ -1,0 +1,20 @@
+{
+  "summary": "Export dependency and deployment wave graphs",
+  "description": "Builds the local dependency graph and deployment waves, then exports review-ready graph artifacts in Mermaid, DOT, JSON, or HTML format.",
+  "examples": [
+    "<%= config.bin %> <%= command.id %> --source-path force-app --format mermaid --report-dir reports/graphs",
+    "<%= config.bin %> smart-deployment graph export --format html --output reports/dependency-graph.html",
+    "<%= config.bin %> smart-deployment graph export --json --format json"
+  ],
+  "flags.source-path.summary": "Salesforce source path to analyze",
+  "flags.source-path.description": "Path to the Salesforce source directory used to build the dependency and wave graph.",
+  "flags.report-dir.summary": "Directory where the selected graph artifact is written",
+  "flags.report-dir.description": "Defaults to .smart-deployment/reports/graph-export under the analyzed project root.",
+  "flags.output.summary": "Exact output file path for the selected graph format",
+  "flags.output.description": "Overrides --report-dir and writes the selected graph artifact to this file.",
+  "flags.format.summary": "Graph export format",
+  "flags.format.description": "Supported formats are mermaid, dot, json, and html.",
+  "flags.use-ai.summary": "Use configured AI providers for dependency inference and wave priority analysis before exporting",
+  "flags.org-type.summary": "Target org type used by AI wave priority analysis",
+  "flags.industry.summary": "Industry context used by AI wave priority analysis"
+}
