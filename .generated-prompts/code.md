@@ -203,3 +203,33 @@ Implement PLUGIN-GRAPH-EXPORT in an isolated worktree from f5aab23. Add a graph 
 ```
 
 ---
+
+## InitCommand
+
+- **Created:** 2026-06-03
+- **Updated:** 2026-06-03
+- **Iterations:** 1
+- **Task:** PLUGIN-INIT-WIZARD
+- **Role:** developer
+
+### Key decisions
+
+- Added `smart-deployment init` as a deterministic, non-destructive command that delegates config generation to a service.
+- Kept overwrite protection behind `--force` and logged generated project, source, and package summary for humans while returning structured JSON.
+- Reused repo config types so generated source, cache, CI preset, and report defaults have a typed contract.
+
+### Evidence
+
+- `./node_modules/.bin/tsc -p . --pretty false --incremental false` passed.
+- `./node_modules/.bin/tsc -p ./test --pretty false` passed.
+- Focused ESLint and Mocha init checks passed.
+- `npm test` passed.
+- `./bin/dev.js init --source-path /private/tmp/sd-init-smoke-1780543803668 --force --non-interactive --json` exited 0.
+
+### Prompt
+
+```
+Regenerate and integrate PLUGIN-INIT-WIZARD after the original worker worktree lost its source files. Add a Smart Deployment init command that detects Salesforce project structure, writes .smart-deployment.json with source/cache/CI/report defaults, refuses overwrite unless --force, and covers command/service behavior with tests.
+```
+
+---

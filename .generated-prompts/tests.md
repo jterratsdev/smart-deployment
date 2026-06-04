@@ -95,3 +95,22 @@ Cover PLUGIN-GRAPH-EXPORT with deterministic local unit tests for all graph arti
 ```
 
 ---
+
+## InitWizardTests
+
+- **Created:** 2026-06-03
+- **Updated:** 2026-06-03
+- **Iterations:** 1
+
+### Key decisions
+
+- Added focused service tests for default generation, existing config protection, and forced overwrite with non-default automation flags.
+- Added command coverage using a parse/log test double to verify non-interactive defaults write config without invoking remote Salesforce state.
+
+### Prompt
+
+```
+Cover PLUGIN-INIT-WIZARD with deterministic local unit tests for config generation defaults, overwrite protection, force overwrite behavior, and command passthrough using temporary Salesforce project fixtures.
+```
+
+---

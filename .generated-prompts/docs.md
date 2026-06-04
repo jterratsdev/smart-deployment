@@ -77,3 +77,22 @@ Update the CLI reference for PLUGIN-GRAPH-EXPORT with supported flags, behavior,
 ```
 
 ---
+
+## CLI Reference Init Command
+
+- **Created:** 2026-06-03
+- **Updated:** 2026-06-03
+- **Iterations:** 1
+
+### Key decisions
+
+- Documented `sf smart-deployment init` in the existing CLI reference rather than creating a separate guide.
+- Captured overwrite protection, generated config fields, project detection behavior, and non-deployment semantics.
+
+### Prompt
+
+```
+Document the new smart-deployment init command in docs/cli-reference.md with supported flags, generated config behavior, overwrite protection, and files written.
+```
+
+---

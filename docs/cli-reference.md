@@ -4,6 +4,28 @@
 
 This reference describes the commands and flags currently implemented in the repository.
 
+## `sf smart-deployment init`
+
+Create a repo-level Smart Deployment configuration from the local Salesforce project structure.
+
+Supported flags:
+
+- `--source-path <path>`
+- `--force`
+- `--cache-enabled` / `--no-cache-enabled`
+- `--validation-mode <strict|warn-only|local-only>`
+- `--report-dir <path>`
+- `--skip-tests`
+- `--non-interactive`
+
+Behavior:
+
+- detects the nearest `sfdx-project.json` from the selected source path
+- writes `.smart-deployment.json` at the Salesforce project root
+- records source path, package directories, API version, cache defaults, CI preset defaults, and report directories
+- refuses to overwrite an existing config unless `--force` is provided
+- is deterministic and non-destructive; it does not deploy or validate metadata
+
 ## `sf smart-deployment analyze`
 
 Analyze metadata without deploying.
@@ -248,6 +270,7 @@ Behavior:
 ## Files Written By The CLI
 
 - repo config: `.smart-deployment.json`
+- init-generated defaults: source, cache, CI preset, and report directory settings in `.smart-deployment.json`
 - saved plan: `.smart-deployment/deployment-plan.json`
 - deployment runtime state: `.smart-deployment/deployment-state.json`
 - CI preset reports: `.smart-deployment/reports/start-dry-run/deployment-plan.json` and `.smart-deployment/reports/start-dry-run/deployment-plan.html`

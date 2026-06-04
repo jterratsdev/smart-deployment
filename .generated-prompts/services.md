@@ -115,3 +115,33 @@ Create a report-layer graph export service for PLUGIN-GRAPH-EXPORT that transfor
 ```
 
 ---
+
+## InitConfigGenerationService
+
+- **Created:** 2026-06-03
+- **Updated:** 2026-06-03
+- **Iterations:** 1
+- **Task:** PLUGIN-INIT-WIZARD
+- **Role:** developer
+
+### Key decisions
+
+- Centralized config generation in a service that detects `sfdx-project.json`, derives relative package paths, and writes deterministic JSON.
+- Treats missing config as creatable, but surfaces unreadable or invalid existing config errors instead of silently replacing them.
+- Stores CI preset defaults and report directories without executing deployment or validation commands.
+
+### Evidence
+
+- `./node_modules/.bin/tsc -p . --pretty false --incremental false` passed.
+- `./node_modules/.bin/tsc -p ./test --pretty false` passed.
+- Focused ESLint and Mocha init checks passed.
+- `npm test` passed.
+- `./bin/dev.js init --source-path /private/tmp/sd-init-smoke-1780543803668 --force --non-interactive --json` exited 0.
+
+### Prompt
+
+```
+Create the init config generation service for PLUGIN-INIT-WIZARD with deterministic Salesforce project detection, overwrite protection, typed repo configuration output, and focused tests for defaults, force overwrite, and custom options.
+```
+
+---
