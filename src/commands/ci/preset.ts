@@ -6,6 +6,7 @@ import {
   type CiPresetResult,
   type CiPresetValidationMode,
 } from '../../deployment/ci-preset-service.js';
+import type { CommitScopeOptions } from '../../deployment/commit-scope-service.js';
 import { getLogger } from '../../utils/logger.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
@@ -49,6 +50,14 @@ export default class CiPreset extends SfCommand<CiPresetResult> {
     industry: Flags.string({
       summary: messages.getMessage('flags.industry.summary'),
     }),
+    'scope-commits': Flags.string({
+      summary: messages.getMessage('flags.scope-commits.summary'),
+      description: messages.getMessage('flags.scope-commits.description'),
+    }),
+    'scope-manifest': Flags.string({
+      summary: messages.getMessage('flags.scope-manifest.summary'),
+      description: messages.getMessage('flags.scope-manifest.description'),
+    }),
   };
 
   public async run(): Promise<CiPresetResult> {
@@ -56,6 +65,7 @@ export default class CiPreset extends SfCommand<CiPresetResult> {
     const validationMode = flags['validation-mode'] as CiPresetValidationMode;
     const sourcePath = typeof flags['source-path'] === 'string' ? flags['source-path'] : undefined;
     const targetOrg = this.getTargetOrgIdentifier(flags['target-org']);
+    const commitScope = this.getCommitScopeOptions(flags);
     let result: CiPresetResult;
 
     try {
@@ -69,6 +79,7 @@ export default class CiPreset extends SfCommand<CiPresetResult> {
         useAI: flags['use-ai'] === true,
         orgType: typeof flags['org-type'] === 'string' ? flags['org-type'] : undefined,
         industry: typeof flags.industry === 'string' ? flags.industry : undefined,
+        commitScope,
       });
 
       await this.writeGithubOutputs(result);
@@ -84,6 +95,13 @@ export default class CiPreset extends SfCommand<CiPresetResult> {
     }
 
     return result;
+  }
+
+  private getCommitScopeOptions(flags: Record<string, unknown>): CommitScopeOptions | undefined {
+    const commits = typeof flags['scope-commits'] === 'string' ? [flags['scope-commits']] : undefined;
+    const manifestPath = typeof flags['scope-manifest'] === 'string' ? flags['scope-manifest'] : undefined;
+
+    return commits !== undefined || manifestPath !== undefined ? { commits, manifestPath } : undefined;
   }
 
   private getTargetOrgIdentifier(value: unknown): string | undefined {

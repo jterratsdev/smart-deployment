@@ -25,6 +25,7 @@ import { DeploymentContextService } from '../deployment/deployment-context-servi
 import { ProjectAnalysisPresenter } from '../presentation/project-analysis-presenter.js';
 import { StartCommandPresenter } from '../presentation/start-command-presenter.js';
 import { DeploymentPlanReportService } from '../reports/deployment-plan-report-service.js';
+import type { CommitScopeOptions } from '../deployment/commit-scope-service.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('@jterrats/smart-deployment', 'start');
@@ -46,6 +47,14 @@ type StartResult = {
   reports?: {
     jsonPath: string;
     htmlPath: string;
+  };
+  commitScope?: {
+    enabled: boolean;
+    commits: string[];
+    changedComponents: string[];
+    dependencyComponents: string[];
+    includedComponents: string[];
+    ignoredComponents: string[];
   };
   ai?: {
     enabled: boolean;
@@ -116,6 +125,14 @@ export default class Start extends SfCommand<StartResult> {
       summary: messages.getMessage('flags.industry.summary'),
       description: messages.getMessage('flags.industry.description'),
     }),
+    'scope-commits': Flags.string({
+      summary: messages.getMessage('flags.scope-commits.summary'),
+      description: messages.getMessage('flags.scope-commits.description'),
+    }),
+    'scope-manifest': Flags.string({
+      summary: messages.getMessage('flags.scope-manifest.summary'),
+      description: messages.getMessage('flags.scope-manifest.description'),
+    }),
   };
 
   /**
@@ -126,6 +143,7 @@ export default class Start extends SfCommand<StartResult> {
   public async run(): Promise<StartResult> {
     const { flags } = await this.parse(Start);
     const sourcePath = typeof flags['source-path'] === 'string' ? flags['source-path'] : undefined;
+    const commitScope = this.getCommitScopeOptions(flags);
 
     try {
       logger.info('Starting smart deployment', { flags: this.toLoggableFlags(flags) });
@@ -136,6 +154,7 @@ export default class Start extends SfCommand<StartResult> {
         useAI: Boolean(flags['use-ai']),
         orgType: typeof flags['org-type'] === 'string' ? flags['org-type'] : undefined,
         industry: typeof flags.industry === 'string' ? flags.industry : undefined,
+        commitScope,
       });
       projectAnalysisPresenter.reportDiagnostics(this, deploymentContext.scanResult, deploymentContext.messages);
       const metadataCount = deploymentContext.scanResult.components.length;
@@ -186,6 +205,7 @@ export default class Start extends SfCommand<StartResult> {
         success: true,
         waves,
         reports: reportResult ? { jsonPath: reportResult.jsonPath, htmlPath: reportResult.htmlPath } : undefined,
+        commitScope: deploymentContext.commitScope,
         ai: deploymentContext.aiContext,
       };
     } catch (error) {
@@ -193,6 +213,13 @@ export default class Start extends SfCommand<StartResult> {
       logger.error('Deployment failed', { error });
       this.error(`Deployment failed: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  private getCommitScopeOptions(flags: Record<string, unknown>): CommitScopeOptions | undefined {
+    const commits = typeof flags['scope-commits'] === 'string' ? [flags['scope-commits']] : undefined;
+    const manifestPath = typeof flags['scope-manifest'] === 'string' ? flags['scope-manifest'] : undefined;
+
+    return commits !== undefined || manifestPath !== undefined ? { commits, manifestPath } : undefined;
   }
 
   private getTargetOrgIdentifier(value: unknown): string | undefined {
@@ -220,6 +247,8 @@ export default class Start extends SfCommand<StartResult> {
       'use-ai': flags['use-ai'] === true,
       'org-type': typeof flags['org-type'] === 'string' ? flags['org-type'] : undefined,
       industry: typeof flags.industry === 'string' ? flags.industry : undefined,
+      'scope-commits': typeof flags['scope-commits'] === 'string' ? flags['scope-commits'] : undefined,
+      'scope-manifest': typeof flags['scope-manifest'] === 'string' ? flags['scope-manifest'] : undefined,
     };
   }
 }

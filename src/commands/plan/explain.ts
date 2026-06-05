@@ -1,6 +1,7 @@
 import { type Interfaces } from '@oclif/core';
 import { Messages } from '@salesforce/core';
 import { Flags, SfCommand, optionalOrgFlagWithDeprecations } from '@salesforce/sf-plugins-core';
+import type { CommitScopeOptions } from '../../deployment/commit-scope-service.js';
 import { PlanExplainService, type PlanExplainResult } from '../../deployment/plan-explain-service.js';
 import { PlanExplainPresenter } from '../../presentation/plan-explain-presenter.js';
 import { getLogger } from '../../utils/logger.js';
@@ -57,12 +58,19 @@ export default class PlanExplain extends SfCommand<PlanExplainResult> {
       summary: messages.getMessage('flags.auto-activate.summary'),
       default: false,
     }),
+    'scope-commits': Flags.string({
+      summary: messages.getMessage('flags.scope-commits.summary'),
+    }),
+    'scope-manifest': Flags.string({
+      summary: messages.getMessage('flags.scope-manifest.summary'),
+    }),
   };
 
   public async run(): Promise<PlanExplainResult> {
     const { flags } = await this.parse(PlanExplain);
     const sourcePath = typeof flags['source-path'] === 'string' ? flags['source-path'] : undefined;
     const targetOrg = this.getTargetOrgIdentifier(flags['target-org']);
+    const commitScope = this.getCommitScopeOptions(flags);
 
     try {
       const result = await this.withJsonConsoleSuppressed(async () => {
@@ -80,6 +88,7 @@ export default class PlanExplain extends SfCommand<PlanExplainResult> {
           industry: typeof flags.industry === 'string' ? flags.industry : undefined,
           since: typeof flags.since === 'string' ? flags.since : undefined,
           autoActivate: flags['auto-activate'] === true,
+          commitScope,
         });
       });
 
@@ -92,6 +101,13 @@ export default class PlanExplain extends SfCommand<PlanExplainResult> {
       logger.error('Plan explain failed', { error });
       this.error(`Plan explain failed: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  private getCommitScopeOptions(flags: Record<string, unknown>): CommitScopeOptions | undefined {
+    const commits = typeof flags['scope-commits'] === 'string' ? [flags['scope-commits']] : undefined;
+    const manifestPath = typeof flags['scope-manifest'] === 'string' ? flags['scope-manifest'] : undefined;
+
+    return commits !== undefined || manifestPath !== undefined ? { commits, manifestPath } : undefined;
   }
 
   private getTargetOrgIdentifier(value: unknown): string | undefined {

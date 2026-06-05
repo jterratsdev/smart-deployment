@@ -22,5 +22,9 @@
   "flags.org-type.summary": "Organization type context for AI analysis",
   "flags.org-type.description": "Helps AI provide context-aware recommendations",
   "flags.industry.summary": "Industry context for AI analysis",
-  "flags.industry.description": "Provides business context to AI for better prioritization"
+  "flags.industry.description": "Provides business context to AI for better prioritization",
+  "flags.scope-commits.summary": "Comma-separated commit SHAs or refs to include in the deployment scope",
+  "flags.scope-commits.description": "Limits the deployment plan to metadata changed by these commits plus required dependencies.",
+  "flags.scope-manifest.summary": "Path to a JSON commit or story scope manifest",
+  "flags.scope-manifest.description": "Reads commits from { commits: [] } and { stories: [{ commits: [] }] } to scope validation and deployment planning."
 }

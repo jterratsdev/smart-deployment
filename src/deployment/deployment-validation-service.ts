@@ -5,7 +5,8 @@ import { getLogger } from '../utils/logger.js';
 import { XmlMetadataValidator } from '../validators/xml-metadata-validator.js';
 import { WaveValidationService } from '../ai/wave-validation-service.js';
 import { validateWaveOrder } from '../waves/wave-executor.js';
-import type { MetadataDependencyKind } from '../types/metadata.js';
+import type { MetadataComponent, MetadataDependencyKind } from '../types/metadata.js';
+import type { CommitScopeOptions, CommitScopeSummary } from './commit-scope-service.js';
 
 const logger = getLogger('DeploymentValidationService');
 
@@ -30,6 +31,7 @@ export type DeploymentValidationSummary = {
   aiProvider?: string;
   aiModel?: string;
   aiFallback?: boolean;
+  commitScope?: CommitScopeSummary;
 };
 
 export class DeploymentValidationService {
@@ -38,9 +40,13 @@ export class DeploymentValidationService {
 
   public async validateProject(
     sourcePath?: string,
-    options: { useAI?: boolean } = {}
+    options: { useAI?: boolean; commitScope?: CommitScopeOptions } = {}
   ): Promise<DeploymentValidationSummary> {
-    const analysis = await this.projectAnalysisService.buildAnalysis({ sourcePath });
+    const analysis = await this.projectAnalysisService.buildAnalysis({
+      sourcePath,
+      useAI: options.useAI,
+      commitScope: options.commitScope,
+    });
     const { scanResult, waveResult } = analysis;
     const issues: DeploymentValidationIssue[] = [];
     const dependencyBreakdown = scanResult.dependencyResult.edges.reduce<Record<MetadataDependencyKind, number>>(
@@ -83,7 +89,10 @@ export class DeploymentValidationService {
 
     issues.push(...this.createWaveDependencyRiskIssues(scanResult.dependencyResult.edges, waveResult.waves));
 
-    const xmlFiles = await this.findXmlMetadataFiles(scanResult.projectRoot);
+    const xmlFiles = await this.findXmlMetadataFiles(
+      scanResult.projectRoot,
+      analysis.commitScope?.enabled ? scanResult.components : undefined
+    );
     const xmlResults = await this.xmlValidator.validateFiles(xmlFiles);
     for (const result of xmlResults) {
       for (const error of result.errors) {
@@ -165,6 +174,7 @@ export class DeploymentValidationService {
       aiProvider,
       aiModel,
       aiFallback,
+      commitScope: analysis.commitScope,
     };
   }
 
@@ -211,16 +221,49 @@ export class DeploymentValidationService {
     });
   }
 
-  private async findXmlMetadataFiles(projectRoot: string): Promise<string[]> {
+  private async findXmlMetadataFiles(projectRoot: string, scopedComponents?: MetadataComponent[]): Promise<string[]> {
     const files = await globAsync('**/*-meta.xml', {
       cwd: projectRoot,
       absolute: true,
       ignore: ['**/node_modules/**', '**/.git/**'],
     });
+    const scopedPaths = scopedComponents ? createScopedXmlPathMatcher(projectRoot, scopedComponents) : undefined;
 
     return files.filter((filePath) => {
       const normalized = filePath.split(path.sep).join('/');
-      return !normalized.includes('/node_modules/') && !normalized.includes('/.git/');
+      return (
+        !normalized.includes('/node_modules/') &&
+        !normalized.includes('/.git/') &&
+        (!scopedPaths || scopedPaths(filePath))
+      );
     });
   }
+}
+
+function createScopedXmlPathMatcher(
+  projectRoot: string,
+  components: MetadataComponent[]
+): (filePath: string) => boolean {
+  const exactPaths = new Set<string>();
+  const directoryPrefixes: string[] = [];
+
+  for (const component of components) {
+    const relativePath = normalizeRelativePath(projectRoot, component.filePath);
+    exactPaths.add(relativePath);
+    exactPaths.add(`${relativePath}-meta.xml`);
+
+    if (component.type === 'LightningComponentBundle' || component.type === 'AuraDefinitionBundle') {
+      directoryPrefixes.push(`${relativePath}/`);
+    }
+  }
+
+  return (filePath: string): boolean => {
+    const relativePath = normalizeRelativePath(projectRoot, filePath);
+    return exactPaths.has(relativePath) || directoryPrefixes.some((prefix) => relativePath.startsWith(prefix));
+  };
+}
+
+function normalizeRelativePath(projectRoot: string, filePath: string): string {
+  const relativePath = path.isAbsolute(filePath) ? path.relative(projectRoot, filePath) : filePath;
+  return relativePath.split(path.sep).join('/');
 }

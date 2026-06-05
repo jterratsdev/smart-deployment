@@ -114,3 +114,41 @@ Cover PLUGIN-INIT-WIZARD with deterministic local unit tests for config generati
 ```
 
 ---
+
+## CommitScopeServiceTests
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+
+### Key decisions
+
+- Added focused unit coverage for changed component selection, required dependency inclusion, unrelated metadata exclusion, story manifest commit loading, deleted metadata ignoring, bundle path matching, and CI flag passthrough.
+- Used injected git change providers and mocked deployment contexts so tests remain local-only and deterministic.
+
+### Prompt
+
+```
+Cover commit/story scoped deployment planning with deterministic unit tests that verify metadata outside selected commits is excluded, dependencies are included, deleted files do not cause destructive behavior, bundle paths resolve, and CI command flags pass scope options into analysis.
+```
+
+---
+
+## CommitScopedDeploymentsNUT
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+
+### Key decisions
+
+- Added a deterministic NUT that creates a temporary Salesforce project, initializes git, makes real commits, writes a story scope manifest, and runs `ci preset` in `local-only` mode through the dev CLI.
+- Verified the generated deployment plan includes only scoped metadata plus required dependencies, excludes unrelated trunk metadata, and keeps deleted scoped files out of normal deployment waves without mutating source.
+
+### Prompt
+
+```
+Act as QA for PLUGIN-COMMIT-SCOPED-DEPLOYMENTS and add small deterministic end-to-end coverage using a real temporary git Salesforce fixture. Validate story manifest scoped commits through ci preset local-only before commit, including dependency inclusion, unrelated trunk exclusion, and deleted metadata safety.
+```
+
+---

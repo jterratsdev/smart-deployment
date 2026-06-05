@@ -14,5 +14,7 @@
   "flags.org-type.summary": "Target org type used by AI wave priority analysis",
   "flags.industry.summary": "Industry context used by AI wave priority analysis",
   "flags.since.summary": "Git ref used to explain changed provider-owned metadata decisions",
-  "flags.auto-activate.summary": "Include Agentforce activation decisions in provider-owned metadata planning"
+  "flags.auto-activate.summary": "Include Agentforce activation decisions in provider-owned metadata planning",
+  "flags.scope-commits.summary": "Comma-separated commit SHAs or refs to include in the explained plan",
+  "flags.scope-manifest.summary": "Path to a JSON commit or story scope manifest"
 }

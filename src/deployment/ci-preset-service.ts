@@ -1,5 +1,6 @@
 import * as path from 'node:path';
 import { DeploymentPlanReportService, type DeploymentPlanReport } from '../reports/deployment-plan-report-service.js';
+import type { CommitScopeOptions } from './commit-scope-service.js';
 import { DeploymentContextService } from './deployment-context-service.js';
 
 export type CiPresetValidationMode = 'strict' | 'warn-only' | 'local-only';
@@ -13,6 +14,7 @@ export type CiPresetOptions = {
   useAI: boolean;
   orgType?: string;
   industry?: string;
+  commitScope?: CommitScopeOptions;
 };
 
 export type CiPresetResult = {
@@ -52,6 +54,7 @@ export class CiPresetService {
       useAI: options.useAI,
       orgType: options.orgType,
       industry: options.industry,
+      commitScope: options.commitScope,
     });
     const reportResult = await this.deploymentPlanReportService.generate(context, {
       reportDir: options.reportDir,

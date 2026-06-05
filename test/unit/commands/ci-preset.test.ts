@@ -104,6 +104,8 @@ describe('CiPresetCommand', () => {
         'use-ai': true,
         'org-type': 'Sandbox',
         industry: 'Financial Services',
+        'scope-commits': 'abc123,def456',
+        'scope-manifest': 'manifests/release.json',
       },
       args: {},
       argv: [],
@@ -125,6 +127,10 @@ describe('CiPresetCommand', () => {
       useAI: true,
       orgType: 'Sandbox',
       industry: 'Financial Services',
+      commitScope: {
+        commits: ['abc123,def456'],
+        manifestPath: 'manifests/release.json',
+      },
     });
     expect(output).to.include(`deployment_plan_json=${path.join(reportDir, 'deployment-plan.json')}`);
     expect(output).to.include(`deployment_plan_html=${path.join(reportDir, 'deployment-plan.html')}`);

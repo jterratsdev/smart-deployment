@@ -145,3 +145,31 @@ Create the init config generation service for PLUGIN-INIT-WIZARD with determinis
 ```
 
 ---
+
+## CommitScopeService
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+- **Task:** PLUGIN-COMMIT-SCOPED-DEPLOYMENTS
+- **Role:** developer
+
+### Key decisions
+
+- Introduced a deployment-layer commit scope service that reads explicit commits or story manifest commits, maps git file changes to scanned metadata components, and keeps only changed components plus their outgoing dependency closure.
+- Rebuilds the dependency graph from cloned scoped components so unrelated trunk metadata is omitted while required dependencies remain available for wave ordering and manifest generation.
+- Deleted files from selected commits are reported as changed files but ignored when they no longer exist in the current scan, avoiding destructive source behavior.
+
+### Evidence
+
+- ./node_modules/.bin/tsc -p . --pretty false --incremental false passed.
+- ./node_modules/.bin/tsc -p ./test --pretty false passed.
+- npm test passed.
+
+### Prompt
+
+```
+Create a shared service for commit/story scoped deployment planning. It must filter metadata in memory to selected commit changes, include required dependencies, exclude unrelated trunk work, and integrate with existing ProjectAnalysisService wave generation without duplicating impact-analysis dependent semantics.
+```
+
+---

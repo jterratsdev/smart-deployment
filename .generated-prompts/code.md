@@ -233,3 +233,29 @@ Regenerate and integrate PLUGIN-INIT-WIZARD after the original worker worktree l
 ```
 
 ---
+
+## CommitScopedDeploymentCommands
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+- **Task:** PLUGIN-COMMIT-SCOPED-DEPLOYMENTS
+- **Role:** developer
+
+### Key decisions
+
+- Added --scope-commits and --scope-manifest flags to start, validate, ci preset, and plan explain so trunk-based validation can restrict deployment planning to selected commits or story manifest commits.
+- Kept command behavior validation-safe: source files are not deleted or rewritten; scoped metadata is filtered in the analysis context before reports/manifests are generated.
+
+### Evidence
+
+- npm test passed.
+- Focused CommitScopeService and ci preset command tests passed.
+
+### Prompt
+
+```
+Support deployments based on user stories or commits so validation and deployment planning can ignore metadata not included in selected commits, preventing trunk-based work that is not ready from being included in production plans.
+```
+
+---
