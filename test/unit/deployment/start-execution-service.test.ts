@@ -255,6 +255,45 @@ describe('StartExecutionService', () => {
       dependencies: [],
     });
   });
+
+  it('executes destructive deployments in reverse wave order', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-service-destructive-'));
+    const sfCli = new SequencedSfCli([
+      createDeploymentResult({ deploymentId: '0AfFakeDeployment002', status: 'Succeeded', success: true }),
+      createDeploymentResult({ deploymentId: '0AfFakeDeployment001', status: 'Succeeded', success: true }),
+    ]);
+    const dependencyComponent = createComponent(tempDir, 'DependencyClass');
+    const dependentComponent = createComponent(tempDir, 'DependentTrigger', 'ApexTrigger');
+    const context = createDeploymentContext(
+      [dependencyComponent, dependentComponent],
+      [['ApexClass:DependencyClass'], ['ApexTrigger:DependentTrigger']]
+    );
+    const service = new StartExecutionService({
+      createSfCli: () => sfCli,
+      createStateManager: (baseDir?: string) => new StateManager({ baseDir }),
+      createDeploymentId: () => 'deployment-fixture-destructive',
+    });
+
+    const result = await service.execute({
+      dryRun: false,
+      validateOnly: false,
+      allowCycleRemediation: false,
+      skipTests: false,
+      destructive: true,
+      targetOrg: 'fixture@example.com',
+      sourcePath: tempDir,
+      deploymentContext: context,
+      log: () => {},
+    });
+
+    expect(result.kind).to.equal('executed');
+    expect(sfCli.deployCalls).to.have.lengthOf(2);
+    expect(sfCli.deployCalls.map((call) => path.basename(call.postDestructiveChangesPath ?? ''))).to.deep.equal([
+      'wave-002-destructiveChanges.xml',
+      'wave-001-destructiveChanges.xml',
+    ]);
+    expect(sfCli.deployCalls.every((call) => call.testLevel === 'NoTestRun')).to.equal(true);
+  });
 });
 
 function createComponent(baseDir: string, name = 'TestClass', type: MetadataType = 'ApexClass'): MetadataComponent {

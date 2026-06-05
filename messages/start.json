@@ -5,7 +5,9 @@
     "<%= config.bin %> <%= command.id %> --source-path force-app --target-org myorg",
     "<%= config.bin %> <%= command.id %> --source-path force-app --target-org myorg --dry-run",
     "<%= config.bin %> <%= command.id %> --source-path force-app --target-org myorg --validate-only",
-    "<%= config.bin %> <%= command.id %> --source-path force-app --target-org myorg --skip-tests"
+    "<%= config.bin %> <%= command.id %> --source-path force-app --target-org myorg --skip-tests",
+    "<%= config.bin %> <%= command.id %> --source-path force-app --target-org myorg --destructive",
+    "<%= config.bin %> <%= command.id %> --source-path force-app --target-org myorg --rollback-from v1.2.0 --rollback-to v1.2.1"
   ],
   "flags.target-org.summary": "Target Salesforce org for deployment",
   "flags.dry-run.summary": "Preview deployment without executing",
@@ -26,5 +28,11 @@
   "flags.scope-commits.summary": "Comma-separated commit SHAs or refs to include in the deployment scope",
   "flags.scope-commits.description": "Limits the deployment plan to metadata changed by these commits plus required dependencies.",
   "flags.scope-manifest.summary": "Path to a JSON commit or story scope manifest",
-  "flags.scope-manifest.description": "Reads commits from { commits: [] } and { stories: [{ commits: [] }] } to scope validation and deployment planning."
+  "flags.scope-manifest.description": "Reads commits from { commits: [] } and { stories: [{ commits: [] }] } to scope validation and deployment planning.",
+  "flags.destructive.summary": "Delete metadata components using destructive wave manifests",
+  "flags.destructive.description": "Runs the normal analysis path, then executes destructiveChanges manifests in reverse wave order.",
+  "flags.rollback-from.summary": "Git ref or release tag that represents the rollback target state",
+  "flags.rollback-from.description": "Use with --rollback-to. Modified or deleted metadata is restored from this ref using normal deploy waves.",
+  "flags.rollback-to.summary": "Git ref or release tag that represents the release being rolled back",
+  "flags.rollback-to.description": "Use with --rollback-from. Metadata added between refs is deleted using destructive waves."
 }

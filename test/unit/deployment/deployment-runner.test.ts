@@ -90,6 +90,72 @@ describe('DeploymentRunner', () => {
     ).to.equal('{"ignored":true}');
     await expectMissing(workingDirectories[0]);
   });
+
+  it('deploys destructive waves from forceignore-sanitized staging with post destructive manifests', async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), 'smart-deployment-runner-destructive-'));
+    await writeProjectFile(tempDir);
+    await writeNestedFile(
+      tempDir,
+      'force-app/main/default/classes/AccountService.cls',
+      'public class AccountService {}'
+    );
+    await writeNestedFile(
+      tempDir,
+      'force-app/main/default/digitalExperiences/site/PHP_Portal1/sfdc_cms__view/Privacy/view.json',
+      '{"ignored":true}'
+    );
+    await writeFile(
+      path.join(tempDir, '.forceignore'),
+      'force-app/main/default/digitalExperiences/site/PHP_Portal1/sfdc_cms__view/Privacy/\n',
+      'utf8'
+    );
+
+    const sfCli = {
+      deploy: async (options: {
+        manifestPath: string;
+        postDestructiveChangesPath?: string;
+        testLevel?: string;
+        workingDirectory?: string;
+      }): Promise<DeploymentResult> => {
+        expect(options.workingDirectory).to.be.a('string');
+        await expectMissing(
+          path.join(
+            options.workingDirectory ?? '',
+            'force-app/main/default/digitalExperiences/site/PHP_Portal1/sfdc_cms__view/Privacy/view.json'
+          )
+        );
+        expect(await readFile(options.manifestPath, 'utf8')).to.not.include('<types>');
+        expect(options.postDestructiveChangesPath).to.be.a('string');
+        expect(await readFile(options.postDestructiveChangesPath ?? '', 'utf8')).to.include(
+          '<members>AccountService</members>'
+        );
+        expect(options.testLevel).to.equal('NoTestRun');
+        return {
+          success: true,
+          status: 'Succeeded',
+          componentSuccesses: 1,
+          componentFailures: 0,
+          output: 'ok',
+        };
+      },
+    } as unknown as SfCliIntegration;
+
+    await new DeploymentRunner().execute({
+      deploymentId: 'test-destructive-deployment',
+      targetOrg: 'test-org',
+      sourcePath: tempDir,
+      orderedWaves: [wave()],
+      componentMap: componentMap(),
+      apiVersion: '66.0',
+      skipTests: false,
+      testExecutor: new TestExecutor(),
+      tracker: new DeploymentTracker(),
+      stateManager: new StateManager({ baseDir: tempDir }),
+      sfCli,
+      mode: 'destructive',
+      log: () => undefined,
+    });
+  });
 });
 
 function wave(): Wave {

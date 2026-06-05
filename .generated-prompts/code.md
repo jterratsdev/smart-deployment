@@ -288,3 +288,31 @@ Implement GitHub issue #222 by adding a forceignore-safe retrieve command for co
 ```
 
 ---
+
+## StartDestructiveRollbackCommand
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+- **Task:** gh-feature-225-destructive-rollback
+- **Role:** developer
+
+### Key decisions
+
+- Extended the existing start command instead of adding a new destructive command.
+- Added --destructive, --rollback-from, and --rollback-to flags through start messages so help output remains generated from message files.
+- Rollback execution plans can run a destructive phase for added metadata and a normal restore phase for modified or deleted metadata from the earlier ref.
+
+### Evidence
+
+- start --help smoke exposed destructive and rollback flags.
+- Focused destructive/rollback mocha suite passed.
+- npm run build passed.
+
+### Prompt
+
+```
+Implement GitHub issue #225 by adding destructive and rollback modes to sf smart-deployment start. Preserve normal analysis and wave generation, avoid adding a new top-level command, expose flags in help, and route rollback refs through staged destructive and restore phases.
+```
+
+---

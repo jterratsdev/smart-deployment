@@ -5,7 +5,7 @@
     "<%= config.bin %> <%= command.id %> --source-path force-app --use-ai"
   ],
   "flags.source-path.summary": "Path to the Salesforce project to validate",
-  "flags.use-ai.summary": "Use AI wave validation with the configured provider when available",
+  "flags.use-ai.summary": "Use configured provider AI validation when available",
   "flags.scope-commits.summary": "Comma-separated commit SHAs or refs to include in validation",
   "flags.scope-manifest.summary": "Path to a JSON commit or story scope manifest"
 }

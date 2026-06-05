@@ -171,3 +171,23 @@ Cover issue #222 with local deterministic tests for forceignore-safe retrieve be
 ```
 
 ---
+
+## DestructiveRollbackTests
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 2
+
+### Key decisions
+
+- Added focused unit coverage for destructive manifest generation, SF CLI command construction, forceignore staging preservation, reverse wave execution, and rollback diff classification.
+- Added start --help smoke coverage through the dev CLI using a temporary HOME to avoid Salesforce CLI log permission issues.
+- Added a CLI E2E/NUT that creates a temporary Salesforce project, tags v1.2.0 and v1.2.1, runs `start --rollback-from v1.2.0 --rollback-to v1.2.1 --dry-run --json`, and verifies added metadata is destructive while modified/deleted metadata is restore.
+
+### Prompt
+
+```
+Cover issue #225 with deterministic local tests and CLI E2E coverage for destructive wave manifests, post destructive deploy options, DeploymentRunner staging behavior, StartExecutionService reverse wave order, RollbackPlanningService A/M/D classification, start command help flags, and release-tag rollback planning through the dev CLI.
+```
+
+---

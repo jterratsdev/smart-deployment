@@ -82,6 +82,25 @@ sf smart-deployment start \
   --dry-run
 ```
 
+Run a destructive delete using the normal wave plan:
+
+```bash
+sf smart-deployment start \
+  --source-path force-app \
+  --target-org myorg \
+  --destructive
+```
+
+Rollback a release by comparing release tags:
+
+```bash
+sf smart-deployment start \
+  --source-path force-app \
+  --target-org myorg \
+  --rollback-from v1.2.0 \
+  --rollback-to v1.2.1
+```
+
 Run with AI and allow conservative cycle remediation:
 
 ```bash

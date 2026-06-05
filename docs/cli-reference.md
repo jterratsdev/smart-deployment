@@ -78,6 +78,9 @@ Behavior:
 - `--dry-run` writes `.smart-deployment/reports/start-dry-run/deployment-plan.json` and `.smart-deployment/reports/start-dry-run/deployment-plan.html` by default
 - `--report-dir <path>` overrides the report output directory for CI artifact collection
 - `--validate-only` keeps the command in the `start` command family, but stops short of real deployment execution
+- `--destructive` keeps the normal analysis and wave generation path, then deletes components using per-wave `destructiveChanges` manifests in reverse wave order
+- `--rollback-from <ref> --rollback-to <ref>` computes the Git delta between release boundaries, deletes metadata added in the later ref, and restores modified or deleted metadata from the earlier ref using normal deploy waves
+- release tags are the recommended rollback boundary, for example `--rollback-from v1.2.0 --rollback-to v1.2.1`
 
 Important:
 

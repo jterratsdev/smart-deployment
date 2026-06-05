@@ -115,3 +115,22 @@ Document the new smart-deployment retrieve command in README.md and docs/cli-ref
 ```
 
 ---
+
+## CLI Reference Destructive Rollback
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+
+### Key decisions
+
+- Updated README and docs/cli-reference.md rather than adding a new guide.
+- Documented --destructive, --rollback-from, --rollback-to, reverse destructive waves, and release tags as recommended rollback boundaries.
+
+### Prompt
+
+```
+Document destructive and rollback start modes in README.md and docs/cli-reference.md, including release-tag rollback guidance and the fact that destructive mode remains part of the start command.
+```
+
+---

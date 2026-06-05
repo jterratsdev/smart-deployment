@@ -15,6 +15,7 @@ type SfCliIntegrationPrivate = {
     testLevel?: 'NoTestRun' | 'RunSpecifiedTests' | 'RunLocalTests' | 'RunAllTestsInOrg';
     tests?: string[];
     checkOnly?: boolean;
+    postDestructiveChangesPath?: string;
   }) => string;
   parseDeploymentOutput: (
     output: string,
@@ -114,6 +115,21 @@ describe('Deployment Engine Suite', () => {
       expect(command).to.include('--tests AlphaTest BetaTest');
       expect(command).to.include('--dry-run');
       expect(command).to.include('--json');
+    });
+
+    it('builds destructive deploy commands with empty package and post destructive manifest', () => {
+      const integration = new SfCliIntegration();
+      const internals = integration as unknown as SfCliIntegrationPrivate;
+
+      const command = internals.buildDeployCommand({
+        manifestPath: '/tmp/package.xml',
+        postDestructiveChangesPath: '/tmp/destructiveChanges.xml',
+        targetOrg: 'qa@example.com',
+      });
+
+      expect(command).to.include('--manifest /tmp/package.xml');
+      expect(command).to.include('--post-destructive-changes /tmp/destructiveChanges.xml');
+      expect(command).to.include('--target-org qa@example.com');
     });
 
     it('parses successful JSON deployment output into a structured result', () => {

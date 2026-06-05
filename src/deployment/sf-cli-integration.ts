@@ -14,10 +14,7 @@
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import { getLogger } from '../utils/logger.js';
-import {
-  normalizeDeploymentDiagnostics,
-  type DeploymentDiagnostic,
-} from './deployment-error-diagnostics.js';
+import { normalizeDeploymentDiagnostics, type DeploymentDiagnostic } from './deployment-error-diagnostics.js';
 
 const execAsync = promisify(exec);
 const logger = getLogger('SfCliIntegration');
@@ -31,6 +28,7 @@ export type DeploymentOptions = {
   testLevel?: TestLevel;
   tests?: string[];
   checkOnly?: boolean;
+  postDestructiveChangesPath?: string;
 };
 
 export type DeploymentResult = {
@@ -82,6 +80,10 @@ export class SfCliIntegration {
       '--json',
       '--wait 60',
     ];
+
+    if (options.postDestructiveChangesPath) {
+      parts.push(`--post-destructive-changes ${options.postDestructiveChangesPath}`);
+    }
 
     if (options.testLevel) {
       parts.push(`--test-level ${options.testLevel}`);

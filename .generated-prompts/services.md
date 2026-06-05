@@ -202,3 +202,31 @@ Create a deployment service for issue #222 that runs Salesforce retrieve, reload
 ```
 
 ---
+
+## DestructiveRollbackDeploymentServices
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+- **Task:** gh-feature-225-destructive-rollback
+- **Role:** developer
+
+### Key decisions
+
+- WaveManifestService now emits empty package manifests plus per-wave destructiveChanges manifests.
+- DeploymentRunner preserves forceignore staging and passes destructive manifest paths to SfCliIntegration.
+- StartExecutionService reverses wave order for destructive execution and bypasses deploy-only cycle and dynamic-query guards.
+- RollbackPlanningService classifies git name-status entries as destructive adds or restore modifications/deletions and builds restore contexts from an archive of the earlier ref.
+
+### Evidence
+
+- Focused eslint, build, and destructive/rollback mocha suites passed.
+- npm test was run after implementation.
+
+### Prompt
+
+```
+Add deployment services for destructive wave execution and ref-based rollback. Generate destructiveChanges manifests with empty package manifests, call Salesforce CLI using --post-destructive-changes, execute destructive waves in reverse order, and classify git diffs so added metadata is deleted while modified/deleted metadata is restored from the rollback-from ref.
+```
+
+---
