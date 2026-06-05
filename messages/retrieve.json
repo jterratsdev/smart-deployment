@@ -1,0 +1,26 @@
+{
+  "summary": "Retrieve Salesforce metadata while enforcing .forceignore for bundle sub-paths",
+  "description": "Wraps sf project retrieve start, then restores any changed paths protected by .forceignore. This protects DigitalExperienceBundle, LightningComponentBundle, and AuraDefinitionBundle leaf paths that the Salesforce CLI can write as part of composite retrieves.",
+  "examples": [
+    "<%= config.bin %> <%= command.id %> --metadata DigitalExperienceBundle:site/PHP_Portal1 --target-org dev",
+    "<%= config.bin %> <%= command.id %> --metadata DigitalExperienceBundle:site/PHP_Portal1 --strict-ignore",
+    "<%= config.bin %> <%= command.id %> --metadata DigitalExperienceBundle:site/PHP_Portal1 --normalize-meta"
+  ],
+  "flags.source-path.summary": "Salesforce project path where retrieve should run",
+  "flags.source-path.description": "Defaults to the current working directory when omitted.",
+  "flags.metadata.summary": "Metadata component(s) to retrieve, comma-separated",
+  "flags.metadata.description": "Passed through to sf project retrieve start --metadata. Example: DigitalExperienceBundle:site/PHP_Portal1.",
+  "flags.manifest.summary": "Package manifest to retrieve",
+  "flags.manifest.description": "Passed through to sf project retrieve start --manifest.",
+  "flags.wait.summary": "Minutes to wait for Salesforce retrieve completion",
+  "flags.strict-ignore.summary": "Fail when retrieve touches .forceignore-protected paths",
+  "flags.strict-ignore.description": "Protected paths are still restored before the command fails.",
+  "flags.normalize-meta.summary": "Normalize DigitalExperienceBundle *_meta.json formatting after retrieve",
+  "flags.normalize-meta.description": "Formats JSON with two-space indentation and a trailing newline before forceignore restoration.",
+  "output.title": "Smart deployment retrieve",
+  "output.changed": "Changed paths after retrieve: %s",
+  "output.restored": ".forceignore-protected paths restored: %s",
+  "output.normalized": "DigitalExperience *_meta.json files normalized: %s",
+  "output.restoredHeader": "Restored protected paths",
+  "errors.strict-ignore": "Retrieve touched %s .forceignore-protected path(s). Workspace was restored, but --strict-ignore requires failure."
+}

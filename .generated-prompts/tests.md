@@ -152,3 +152,22 @@ Act as QA for PLUGIN-COMMIT-SCOPED-DEPLOYMENTS and add small deterministic end-t
 ```
 
 ---
+
+## RetrieveForceIgnoreTests
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+
+### Key decisions
+
+- Added deterministic unit coverage with temporary git projects instead of requiring a Salesforce org.
+- Covered tracked protected restore, untracked protected cleanup, strict failure after restore, DigitalExperience meta normalization, porcelain parsing, and command flag passthrough.
+
+### Prompt
+
+```
+Cover issue #222 with local deterministic tests for forceignore-safe retrieve behavior. Use fake retrieve runners and temporary git repositories to verify protected bundle sub-path restoration, strict ignore failure, meta normalization, and command flag passthrough without remote Salesforce access.
+```
+
+---

@@ -173,3 +173,32 @@ Create a shared service for commit/story scoped deployment planning. It must fil
 ```
 
 ---
+
+## RetrieveForceIgnoreService
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+- **Task:** gh-feature-222-forceignore-stash
+- **Role:** developer
+
+### Key decisions
+
+- Reused ForceIgnoreParser so ordered .forceignore rules and negations remain consistent with deploy staging behavior.
+- Enforced ignore protection after retrieve by inspecting git status porcelain output, restoring tracked protected files from HEAD, and removing untracked protected paths created by retrieve.
+- Kept DigitalExperience meta JSON normalization opt-in and separate from ignore detection.
+
+### Evidence
+
+- tsc source passed.
+- tsc tests passed.
+- Focused ESLint and Mocha retrieve checks passed.
+- npm test passed before final prompt-registry updates.
+
+### Prompt
+
+```
+Create a deployment service for issue #222 that runs Salesforce retrieve, reloads .forceignore, detects touched workspace paths, restores ignored bundle sub-paths for DigitalExperienceBundle, LightningComponentBundle, AuraDefinitionBundle, and other ignored paths visible to git, supports strict failure after restore, and optionally normalizes DigitalExperience meta JSON.
+```
+
+---

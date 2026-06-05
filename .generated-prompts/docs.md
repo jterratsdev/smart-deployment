@@ -96,3 +96,22 @@ Document the new smart-deployment init command in docs/cli-reference.md with sup
 ```
 
 ---
+
+## CLI Reference Retrieve Command
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+
+### Key decisions
+
+- Updated README and the existing CLI reference instead of creating a new guide.
+- Documented retrieve flags, post-retrieve .forceignore enforcement, strict failure behavior, and opt-in DigitalExperience meta normalization.
+
+### Prompt
+
+```
+Document the new smart-deployment retrieve command in README.md and docs/cli-reference.md, including forceignore-protected bundle sub-path restoration, strict ignore behavior, normalize-meta behavior, and the fact that the command guards the local workspace after Salesforce CLI retrieve completes.
+```
+
+---

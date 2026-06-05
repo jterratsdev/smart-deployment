@@ -163,6 +163,36 @@ Behavior:
 - stores metadata priority overrides
 - stores default provider, model, endpoint, and timeout for AI services
 
+## `sf smart-deployment retrieve`
+
+Retrieve Salesforce metadata while enforcing `.forceignore` after the Salesforce CLI writes composite bundle contents.
+
+Supported flags:
+
+- `--source-path <path>`
+- `--target-org <org>`
+- `--metadata <type:name[,type:name]>`
+- `--manifest <path>`
+- `--wait <minutes>`
+- `--strict-ignore`
+- `--normalize-meta`
+- `--json`
+
+Behavior:
+
+- runs `sf project retrieve start` with the selected metadata, manifest, target org, and wait options
+- reloads `.forceignore` after retrieve and checks changed working-tree paths
+- restores ignored bundle sub-paths for DigitalExperienceBundle, LightningComponentBundle, AuraDefinitionBundle, and any other ignored path visible in git status
+- restores tracked paths with `git checkout HEAD -- <path>` and removes untracked protected paths created by retrieve
+- prints restored protected paths in human output and returns `changedPaths`, `protectedPaths`, `restoredPaths`, and `normalizedPaths` in JSON output
+- when `--strict-ignore` is provided, restores protected paths first and then fails if retrieve touched any ignored path
+- when `--normalize-meta` is provided, formats DigitalExperience `*_meta.json` files with two-space JSON and a trailing newline before ignore restoration
+
+Important:
+
+- this command does not change Salesforce CLI retrieve behavior; it guards the local workspace after retrieve completes
+- keep the project in a git repository so protected tracked paths can be restored from `HEAD`
+
 ## `sf smart-deployment ci-publish`
 
 Build and optionally execute a coordinated CI publish plan for regular metadata, Agentforce authoring bundles, AI evaluations, Experience Cloud LWR sites, and OmniStudio DataPacks.

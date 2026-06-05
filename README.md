@@ -13,7 +13,7 @@ The current codebase supports:
 - metadata scanning and dependency graph generation
 - wave generation with circular dependency detection
 - conservative circular dependency remediation for supported `ApexClass` cycles
-- real CLI flows for `start`, `analyze`, `validate`, `status`, `resume`, and `config`
+- real CLI flows for `start`, `analyze`, `validate`, `status`, `resume`, `retrieve`, and `config`
 - AI-assisted dependency inference, priority weighting, and validation
 - multiple LLM providers through a shared provider abstraction
 
@@ -30,6 +30,7 @@ What is working today:
 - `sf smart-deployment resume`
 - `sf smart-deployment config`
 - `sf smart-deployment ci-publish`
+- `sf smart-deployment retrieve`
 - JSON and HTML analysis reports
 - repo-level AI configuration via `.smart-deployment.json`
 
@@ -127,6 +128,15 @@ sf smart-deployment config \
   --set-llm-model gpt-4o-mini
 ```
 
+Retrieve bundle metadata while enforcing `.forceignore` leaf paths:
+
+```bash
+sf smart-deployment retrieve \
+  --metadata DigitalExperienceBundle:site/PHP_Portal1 \
+  --strict-ignore \
+  --normalize-meta
+```
+
 Build a coordinated CI publish plan for metadata, Agentforce authoring bundles, LWR publish, and optional activation:
 
 ```bash
@@ -138,6 +148,7 @@ sf smart-deployment ci-publish \
 ```
 
 When executing deploy phases, Smart Deployment respects `.forceignore` by building from a temporary sanitized Salesforce project. Ignored files stay in the working tree but are not visible to package generation or `sf project deploy start`.
+For retrieve flows, `sf smart-deployment retrieve` runs `sf project retrieve start`, detects touched paths, restores `.forceignore`-protected bundle sub-paths with `git checkout HEAD -- <path>` or untracked cleanup, and can fail the command with `--strict-ignore`. Use `--normalize-meta` to opt into deterministic formatting for DigitalExperience `*_meta.json` files.
 When `--target-org` is provided, the coordinated publish flow also passes the org through to Salesforce CLI commands and checks AI evaluation subjects against source metadata or the target org before deploy.
 
 ## Commands

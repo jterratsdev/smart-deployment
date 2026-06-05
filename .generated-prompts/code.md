@@ -259,3 +259,32 @@ Support deployments based on user stories or commits so validation and deploymen
 ```
 
 ---
+
+## RetrieveCommand
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+- **Task:** gh-feature-222-forceignore-stash
+- **Role:** developer
+
+### Key decisions
+
+- Added a smart-deployment retrieve alias that wraps Salesforce CLI retrieve inputs without changing the underlying retrieve command contract.
+- Kept command messages in messages/retrieve.json and returned structured JSON result fields for changed, protected, restored, and normalized paths.
+- strict-ignore reports failure only after the service restores ignored paths so the workspace is left clean.
+
+### Evidence
+
+- tsc source passed.
+- tsc tests passed.
+- Focused ESLint and Mocha retrieve checks passed.
+- retrieve help smoke passed.
+
+### Prompt
+
+```
+Implement GitHub issue #222 by adding a forceignore-safe retrieve command for composite Salesforce bundles. The command should pass metadata, manifest, target org, and wait flags to sf project retrieve start, expose strict ignore and DigitalExperience meta normalization options, and preserve existing command/message conventions.
+```
+
+---
