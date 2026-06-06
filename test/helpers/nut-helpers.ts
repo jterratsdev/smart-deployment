@@ -75,13 +75,14 @@ export function execNutCommandWithOptions<T = unknown>(
     homeDir: string;
     ensureExitCode?: 0 | 'nonZero';
     cwd?: string;
+    env?: NodeJS.ProcessEnv;
   }
 ) {
   return execCmd<T>(command, {
     cwd: options.cwd ?? process.cwd(),
     ensureExitCode: options.ensureExitCode ?? 0,
     cli: 'dev',
-    env: { ...process.env, HOME: options.homeDir, TESTKIT_HOMEDIR: options.homeDir },
+    env: { ...process.env, ...options.env, HOME: options.homeDir, TESTKIT_HOMEDIR: options.homeDir },
   });
 }
 

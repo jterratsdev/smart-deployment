@@ -191,3 +191,42 @@ Cover issue #225 with deterministic local tests and CLI E2E coverage for destruc
 ```
 
 ---
+
+## GenAiPlannerBundleScannerTests
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+
+### Key decisions
+
+- Added scanner fixture coverage for Employee Copilot planner inclusion, generated AgentScript planner exclusion, and extracted Flow/Apex/prompt dependencies.
+- Added ProjectAnalysisService coverage proving deployable GenAiPlannerBundle components land in waves after referenced automation metadata and do not appear as unplaced.
+
+### Prompt
+
+```
+Cover GitHub issue #223 with local deterministic tests for Employee Copilot GenAiPlannerBundle scanning and wave placement, including exclusion of generated AgentScript planner bundles that have a matching AiAuthoringBundle source.
+```
+
+---
+
+## DeploymentValidationHarness
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+
+### Key decisions
+
+- Added deterministic fake `sf` fixtures for deploy start, report, and resume responses without requiring a live Salesforce org.
+- Covered start-style deployment success, partial failure, and timeout through `DeploymentRunner` with real manifest generation and `SfCliIntegration`; kept command-level NUT coverage for validate, status, and resume remote deployment id behavior.
+- Documented that full `start` NUT execution with `--target-org` still requires a source change or Salesforce-core org resolver seam because target org parsing occurs before the fake `sf` binary is invoked.
+
+### Prompt
+
+```
+Implement GitHub issue #198 / NEXT-001-validation-harness in parallel with local #223 work. Add production-like deterministic sf CLI fixtures/mocks for start, validate, resume, and status; cover success, partial failure, timeout, resume, and status polling where possible; edit only test/** and .generated-prompts/tests.md and report whether src changes are needed.
+```
+
+---

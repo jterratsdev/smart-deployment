@@ -20,6 +20,7 @@ import {
   parseAiAuthoringBundleComponent,
   parseBotComponent,
   parseFlowComponent,
+  parseGenAiPlannerBundleComponent,
   parseGenAiPromptComponent,
 } from './scanners/automation-ai-metadata-scanner.js';
 import { CODE_DIRECTORY_SCANNERS, CODE_FILE_SCANNERS } from './scanners/code-metadata-scanner.js';
@@ -333,7 +334,19 @@ export class MetadataScannerService {
       (filePath) => Promise.resolve(parseAiAuthoringBundleComponent(filePath))
     );
 
-    return [...botComponents, ...genAiPromptComponents, ...aiAuthoringBundleComponents];
+    const authoringBundleNames = new Set(aiAuthoringBundleComponents.map((component) => component.name));
+    const genAiPlannerBundleComponents = (
+      await scanMetadataDirectories(
+        packagePath,
+        '**/genAiPlannerBundles/*',
+        errors,
+        'GenAiPlannerBundle',
+        this.shouldIgnorePath,
+        parseGenAiPlannerBundleComponent
+      )
+    ).filter((component) => !authoringBundleNames.has(component.name));
+
+    return [...botComponents, ...genAiPromptComponents, ...aiAuthoringBundleComponents, ...genAiPlannerBundleComponents];
   }
 
   private async scanAdditionalMetadata(packagePath: string, errors: string[]): Promise<MetadataComponent[]> {

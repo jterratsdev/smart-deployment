@@ -230,3 +230,31 @@ Add deployment services for destructive wave execution and ref-based rollback. G
 ```
 
 ---
+
+## GenAiPlannerBundleScanner
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+- **Task:** gh-bug-223-genai-planner-wave
+- **Role:** developer
+
+### Key decisions
+
+- MetadataScannerService now scans Employee Copilot genAiPlannerBundles as deployable GenAiPlannerBundle components when no AiAuthoringBundle with the same name exists.
+- AgentScript generated planner bundles remain excluded when an AiAuthoringBundle source bundle owns the same agent name.
+- Planner bundle parsing extracts local Flow, ApexClass, and GenAiPromptTemplate references from JSON/XML/YAML bundle files so wave ordering can place dependencies first.
+
+### Evidence
+
+- ./node_modules/.bin/tsc -p . --pretty false --incremental false passed.
+- ./node_modules/.bin/tsc -p ./test --pretty false passed.
+- Focused ESLint and Mocha scanner/analysis suites passed.
+
+### Prompt
+
+```
+Fix GitHub issue #223 by scanning Employee Copilot GenAiPlannerBundle metadata into normal deployment analysis while preserving AgentScript generated bundle exclusion when an AiAuthoringBundle exists for the same agent. Add deterministic coverage for scanner behavior and wave placement.
+```
+
+---

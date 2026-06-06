@@ -364,6 +364,53 @@ export default class AccountCard extends LightningElement {
     return projectRoot;
   }
 
+  async function createEmployeeCopilotFixture(): Promise<string> {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'metadata-scanner-copilot-'));
+    tempDirectories.push(projectRoot);
+
+    await writeFile(
+      path.join(projectRoot, 'sfdx-project.json'),
+      JSON.stringify(
+        {
+          packageDirectories: [{ path: 'force-app', default: true }],
+          sourceApiVersion: '66.0',
+        },
+        null,
+        2
+      )
+    );
+
+    const baseDir = path.join(projectRoot, 'force-app', 'main', 'default');
+    await Promise.all([
+      mkdir(path.join(baseDir, 'genAiPlannerBundles', 'PHP_Ops_Copilot_Agent'), { recursive: true }),
+      mkdir(path.join(baseDir, 'aiAuthoringBundles', 'PHP_Pacific_Haven_Agent'), { recursive: true }),
+      mkdir(path.join(baseDir, 'genAiPlannerBundles', 'PHP_Pacific_Haven_Agent'), { recursive: true }),
+    ]);
+
+    await writeFile(
+      path.join(baseDir, 'genAiPlannerBundles', 'PHP_Ops_Copilot_Agent', 'planner.json'),
+      JSON.stringify(
+        {
+          plannerType: 'AiCopilot__ReAct',
+          flowName: 'Resolve_Case',
+          apexClass: 'CopilotActionHandler',
+          promptTemplate: 'SummarizeCase',
+        },
+        null,
+        2
+      )
+    );
+    await writeFile(
+      path.join(baseDir, 'aiAuthoringBundles', 'PHP_Pacific_Haven_Agent', 'PHP_Pacific_Haven_Agent.agent'),
+      'agentType: customer'
+    );
+    await writeFile(
+      path.join(baseDir, 'genAiPlannerBundles', 'PHP_Pacific_Haven_Agent', 'planner.json'),
+      JSON.stringify({ plannerType: 'generated' }, null, 2)
+    );
+
+    return projectRoot;
+  }
   async function createExpandedMetadataFixture(): Promise<string> {
     const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'metadata-scanner-expanded-'));
     tempDirectories.push(projectRoot);
@@ -581,6 +628,29 @@ export default class AccountCard extends LightningElement {
     expect(
       result.components.map((metadataComponent) => `${metadataComponent.type}:${metadataComponent.name}`)
     ).to.not.include('Bot:PHP_Pacific_Haven_Agent');
+  });
+
+  it('scans Employee Copilot planner bundles while excluding generated AgentScript planners', async () => {
+    const projectRoot = await createEmployeeCopilotFixture();
+    const scanner = new MetadataScannerService();
+
+    const result = await scanner.scan({ sourcePath: projectRoot });
+    const componentIds = result.components.map(
+      (metadataComponent) => `${metadataComponent.type}:${metadataComponent.name}`
+    );
+    const copilotPlanner = result.components.find(
+      (metadataComponent) =>
+        metadataComponent.type === 'GenAiPlannerBundle' && metadataComponent.name === 'PHP_Ops_Copilot_Agent'
+    );
+
+    expect(componentIds).to.include('GenAiPlannerBundle:PHP_Ops_Copilot_Agent');
+    expect(componentIds).to.include('AiAuthoringBundle:PHP_Pacific_Haven_Agent');
+    expect(componentIds).to.not.include('GenAiPlannerBundle:PHP_Pacific_Haven_Agent');
+    expect([...copilotPlanner!.dependencies]).to.include.members([
+      'Flow:Resolve_Case',
+      'ApexClass:CopilotActionHandler',
+      'GenAiPromptTemplate:SummarizeCase',
+    ]);
   });
 
   it('respects .forceignore directory patterns for Agentforce authoring bundles', async () => {
