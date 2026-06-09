@@ -215,18 +215,19 @@ Cover GitHub issue #223 with local deterministic tests for Employee Copilot GenA
 
 - **Created:** 2026-06-05
 - **Updated:** 2026-06-05
-- **Iterations:** 1
+- **Iterations:** 2
 
 ### Key decisions
 
 - Added deterministic fake `sf` fixtures for deploy start, report, and resume responses without requiring a live Salesforce org.
 - Covered start-style deployment success, partial failure, and timeout through `DeploymentRunner` with real manifest generation and `SfCliIntegration`; kept command-level NUT coverage for validate, status, and resume remote deployment id behavior.
 - Documented that full `start` NUT execution with `--target-org` still requires a source change or Salesforce-core org resolver seam because target org parsing occurs before the fake `sf` binary is invoked.
+- Updated the command-level fake `sf` fixture to execute by explicit path and generate a Windows `.cmd` wrapper so Windows NUTs do not depend on extensionless executable resolution.
 
 ### Prompt
 
 ```
-Implement GitHub issue #198 / NEXT-001-validation-harness in parallel with local #223 work. Add production-like deterministic sf CLI fixtures/mocks for start, validate, resume, and status; cover success, partial failure, timeout, resume, and status polling where possible; edit only test/** and .generated-prompts/tests.md and report whether src changes are needed.
+Implement GitHub issue #198 / NEXT-001-validation-harness and fix the Windows NUT failure by making the fake sf fixture executable cross-platform. The harness should run report/resume fixtures by explicit fake executable path, generate an sf.cmd wrapper on Windows, and keep coverage local-only without requiring a Salesforce org.
 ```
 
 ---

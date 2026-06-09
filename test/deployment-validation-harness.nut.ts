@@ -203,22 +203,30 @@ describe('NUT: production-like deployment command validation harness', () => {
   async function createHarness(scenario: string): Promise<{
     tempDir: string;
     logPath: string;
+    fakeSfPath: string;
     commandOptions: Parameters<typeof execNutCommandWithOptions>[1];
   }> {
     const { tempDir, homeDir } = await createNutContext('smart-deployment-validation-harness-');
     tempDirs.push(tempDir);
     const binDir = path.join(tempDir, 'fake-bin');
-    const fakeSfPath = path.join(binDir, 'sf');
+    const fakeSfNodePath = path.join(binDir, 'sf-node.js');
+    const fakeSfPath = path.join(binDir, process.platform === 'win32' ? 'sf.cmd' : 'sf');
     const logPath = path.join(tempDir, 'fake-sf-invocations.jsonl');
 
     await mkdir(binDir, { recursive: true });
-    await writeFile(fakeSfPath, fakeSfScript, 'utf8');
-    await chmod(fakeSfPath, 0o755);
+    await writeFile(fakeSfNodePath, fakeSfScript, 'utf8');
+    if (process.platform === 'win32') {
+      await writeFile(fakeSfPath, ['@echo off', 'node "%~dp0sf-node.js" %*', ''].join('\r\n'), 'utf8');
+    } else {
+      await writeFile(fakeSfPath, ['#!/bin/sh', 'exec node "$(dirname "$0")/sf-node.js" "$@"', ''].join('\n'), 'utf8');
+      await chmod(fakeSfPath, 0o755);
+    }
     await writeFile(logPath, '', 'utf8');
 
     return {
       tempDir,
       logPath,
+      fakeSfPath,
       commandOptions: {
         homeDir,
         env: {
@@ -255,9 +263,9 @@ async function readFakeSfInvocations(logPath: string): Promise<FakeSfInvocation[
 }
 
 async function runFakeSfFixture(
-  harness: { commandOptions: Parameters<typeof execNutCommandWithOptions>[1] },
+  harness: { commandOptions: Parameters<typeof execNutCommandWithOptions>[1]; fakeSfPath: string },
   args: readonly string[]
 ): Promise<void> {
   const env = { ...process.env, ...harness.commandOptions.env };
-  await execFileAsync('sf', args, { env });
+  await execFileAsync(harness.fakeSfPath, args, { env });
 }
