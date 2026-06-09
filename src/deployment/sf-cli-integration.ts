@@ -158,4 +158,17 @@ export class SfCliIntegration {
       return this.parseDeploymentOutput(output, true);
     }
   }
+
+  public async resumeDeployment(deploymentId: string, targetOrg: string): Promise<DeploymentResult> {
+    const command = `sf project deploy resume --job-id ${deploymentId} --target-org ${targetOrg} --json`;
+
+    try {
+      const { stdout, stderr } = await execAsync(command);
+      return this.parseDeploymentOutput(stdout + stderr);
+    } catch (error) {
+      logger.error('Failed to resume deployment', { error, deploymentId });
+      const output = error instanceof Error ? error.message : String(error);
+      return this.parseDeploymentOutput(output, true);
+    }
+  }
 }

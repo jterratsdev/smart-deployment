@@ -65,7 +65,7 @@ describe('ResumeCommand', () => {
     const logs: string[] = [];
 
     (command as unknown as ResumeCommandTestDouble).parse = async () => ({
-      flags: { 'target-org': 'test-org', 'retry-strategy': 'quick' },
+      flags: { 'retry-strategy': 'quick' },
       args: {},
       argv: [],
       raw: [],
@@ -100,7 +100,7 @@ describe('ResumeCommand', () => {
     const command = new Resume([], {} as never);
 
     (command as unknown as ResumeCommandTestDouble).parse = async () => ({
-      flags: { 'target-org': 'test-org', 'retry-strategy': 'standard' },
+      flags: { 'retry-strategy': 'standard' },
       args: {},
       argv: [],
       raw: [],

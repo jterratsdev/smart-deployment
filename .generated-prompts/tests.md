@@ -214,8 +214,8 @@ Cover GitHub issue #223 with local deterministic tests for Employee Copilot GenA
 ## DeploymentValidationHarness
 
 - **Created:** 2026-06-05
-- **Updated:** 2026-06-05
-- **Iterations:** 2
+- **Updated:** 2026-06-08
+- **Iterations:** 3
 
 ### Key decisions
 
@@ -223,11 +223,32 @@ Cover GitHub issue #223 with local deterministic tests for Employee Copilot GenA
 - Covered start-style deployment success, partial failure, and timeout through `DeploymentRunner` with real manifest generation and `SfCliIntegration`; kept command-level NUT coverage for validate, status, and resume remote deployment id behavior.
 - Documented that full `start` NUT execution with `--target-org` still requires a source change or Salesforce-core org resolver seam because target org parsing occurs before the fake `sf` binary is invoked.
 - Updated the command-level fake `sf` fixture to execute by explicit path and generate a Windows `.cmd` wrapper so Windows NUTs do not depend on extensionless executable resolution.
+- Adjusted direct fixture verification to execute `sf-node.js` through `process.execPath`, avoiding Windows `spawn EINVAL` when `execFile` receives a `.cmd` wrapper directly.
 
 ### Prompt
 
 ```
-Implement GitHub issue #198 / NEXT-001-validation-harness and fix the Windows NUT failure by making the fake sf fixture executable cross-platform. The harness should run report/resume fixtures by explicit fake executable path, generate an sf.cmd wrapper on Windows, and keep coverage local-only without requiring a Salesforce org.
+Implement GitHub issue #198 / NEXT-001-validation-harness and fix the Windows NUT failures by making the fake sf fixture executable cross-platform. The harness should expose an sf.cmd wrapper for CLI PATH resolution but run direct fixture checks through process.execPath and sf-node.js to avoid Windows spawn EINVAL, while keeping coverage local-only without requiring a Salesforce org.
+```
+
+---
+
+## RemoteDeploymentStatusResumeTests
+
+- **Created:** 2026-06-08
+- **Updated:** 2026-06-08
+- **Iterations:** 1
+
+### Key decisions
+
+- Added unit coverage for DeploymentStatusService refreshing failed state from a successful remote deploy report.
+- Added unit coverage for ResumeDeploymentService invoking remote deploy resume and persisting remote resume metadata.
+- Kept command tests local-only by omitting --target-org unless the test intends remote behavior.
+
+### Prompt
+
+```
+Cover NEXT-001 remote status/resume behavior with deterministic tests that do not require a Salesforce org. Verify status maps sf deploy report results back into persisted state and resume calls sf deploy resume when target-org is present.
 ```
 
 ---

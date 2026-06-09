@@ -63,7 +63,7 @@ export default class Status extends SfCommand<StatusResult> {
       logger.info('Getting status', { flags });
 
       const statusService = new DeploymentStatusService(new StateManager({ baseDir: sourcePath }));
-      const summary = await statusService.getStatus();
+      const summary = await statusService.getStatus({ targetOrg: this.getTargetOrgIdentifier(flags['target-org']) });
       const formattedStatus = statusService.formatStatus(summary);
 
       presenter.reportStatus(this, summary, formattedStatus);
@@ -127,5 +127,18 @@ export default class Status extends SfCommand<StatusResult> {
       logger.error('Status failed', { error });
       this.error(`Status failed: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  private getTargetOrgIdentifier(value: unknown): string | undefined {
+    if (typeof value === 'string' && value.length > 0) {
+      return value;
+    }
+
+    if (typeof value === 'object' && value !== null && 'getUsername' in value) {
+      const getUsername = (value as { getUsername: () => string }).getUsername;
+      return typeof getUsername === 'function' ? getUsername.call(value) : undefined;
+    }
+
+    return undefined;
   }
 }

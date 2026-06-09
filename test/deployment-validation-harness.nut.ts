@@ -204,6 +204,7 @@ describe('NUT: production-like deployment command validation harness', () => {
     tempDir: string;
     logPath: string;
     fakeSfPath: string;
+    fakeSfNodePath: string;
     commandOptions: Parameters<typeof execNutCommandWithOptions>[1];
   }> {
     const { tempDir, homeDir } = await createNutContext('smart-deployment-validation-harness-');
@@ -227,6 +228,7 @@ describe('NUT: production-like deployment command validation harness', () => {
       tempDir,
       logPath,
       fakeSfPath,
+      fakeSfNodePath,
       commandOptions: {
         homeDir,
         env: {
@@ -263,9 +265,9 @@ async function readFakeSfInvocations(logPath: string): Promise<FakeSfInvocation[
 }
 
 async function runFakeSfFixture(
-  harness: { commandOptions: Parameters<typeof execNutCommandWithOptions>[1]; fakeSfPath: string },
+  harness: { commandOptions: Parameters<typeof execNutCommandWithOptions>[1]; fakeSfNodePath: string },
   args: readonly string[]
 ): Promise<void> {
   const env = { ...process.env, ...harness.commandOptions.env };
-  await execFileAsync(harness.fakeSfPath, args, { env });
+  await execFileAsync(process.execPath, [harness.fakeSfNodePath, ...args], { env });
 }

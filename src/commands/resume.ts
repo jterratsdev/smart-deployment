@@ -56,7 +56,9 @@ export default class Resume extends SfCommand<ResumeResult> {
 
       const retryStrategy = flags['retry-strategy'] as ResumeRetryStrategy;
       const resumeService = new ResumeDeploymentService(new StateManager({ baseDir: sourcePath }));
-      const summary = await resumeService.prepareResume(retryStrategy);
+      const summary = await resumeService.prepareResume(retryStrategy, {
+        targetOrg: this.getTargetOrgIdentifier(flags['target-org']),
+      });
       presenter.reportResumePreparation(this, summary, retryStrategy);
 
       return {
@@ -69,5 +71,18 @@ export default class Resume extends SfCommand<ResumeResult> {
       logger.error('Resume failed', { error });
       this.error(`Resume failed: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  private getTargetOrgIdentifier(value: unknown): string | undefined {
+    if (typeof value === 'string' && value.length > 0) {
+      return value;
+    }
+
+    if (typeof value === 'object' && value !== null && 'getUsername' in value) {
+      const getUsername = (value as { getUsername: () => string }).getUsername;
+      return typeof getUsername === 'function' ? getUsername.call(value) : undefined;
+    }
+
+    return undefined;
   }
 }

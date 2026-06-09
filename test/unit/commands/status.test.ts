@@ -64,7 +64,7 @@ describe('StatusCommand', () => {
     const logs: string[] = [];
 
     (command as unknown as StatusCommandTestDouble).parse = async () => ({
-      flags: { 'target-org': 'test-org' },
+      flags: {},
       args: {},
       argv: [],
       raw: [],
@@ -105,7 +105,7 @@ describe('StatusCommand', () => {
     const logs: string[] = [];
 
     (command as unknown as StatusCommandTestDouble).parse = async () => ({
-      flags: { 'target-org': 'test-org' },
+      flags: {},
       args: {},
       argv: [],
       raw: [],

@@ -258,3 +258,32 @@ Fix GitHub issue #223 by scanning Employee Copilot GenAiPlannerBundle metadata i
 ```
 
 ---
+
+## RemoteDeploymentStatusResumeServices
+
+- **Created:** 2026-06-08
+- **Updated:** 2026-06-08
+- **Iterations:** 1
+- **Task:** NEXT-001-remote-status-resume
+- **Role:** developer
+
+### Key decisions
+
+- Status remains local-only unless the command receives --target-org; with a target org it refreshes persisted state through sf project deploy report.
+- Resume remains local-only unless --target-org is provided; with a target org it calls sf project deploy resume before updating resume metadata.
+- Remote report/resume results are stored in deployment state metadata so command JSON and later status views can inspect remote status without requiring a live org in default local flows.
+
+### Evidence
+
+- tsc source/test with --noEmit passed.
+- Focused ESLint passed for status/resume services, commands, and tests.
+- Focused Mocha command/service suites passed.
+- Deployment validation harness NUT passed.
+
+### Prompt
+
+```
+Continue GitHub issue #198 by adding remote deployment id semantics to status and resume. Use sf project deploy report/resume only when --target-org is explicitly provided, preserve existing local behavior otherwise, persist remote status metadata, and cover the service behavior with deterministic tests.
+```
+
+---
