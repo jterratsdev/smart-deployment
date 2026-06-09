@@ -12,7 +12,7 @@
 
 import { type Interfaces } from '@oclif/core';
 import { Messages } from '@salesforce/core';
-import { Flags, SfCommand, optionalOrgFlagWithDeprecations } from '@salesforce/sf-plugins-core';
+import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { ResumeDeploymentService, type ResumeRetryStrategy } from '../deployment/resume-deployment-service.js';
 import { ResumeCommandPresenter } from '../presentation/resume-command-presenter.js';
 import { getLogger } from '../utils/logger.js';
@@ -35,7 +35,9 @@ export default class Resume extends SfCommand<ResumeResult> {
   public static readonly summary = messages.getMessage('summary');
   public static readonly examples = messages.getMessages('examples');
   public static readonly flags: Interfaces.FlagInput = {
-    'target-org': optionalOrgFlagWithDeprecations,
+    'target-org': Flags.string({
+      summary: messages.getMessage('flags.target-org.summary'),
+    }),
     'source-path': Flags.directory({
       summary: messages.getMessage('flags.source-path.summary'),
       exists: true,

@@ -4,6 +4,7 @@
     "<%= config.bin %> <%= command.id %> --source-path force-app",
     "<%= config.bin %> <%= command.id %> --source-path force-app --retry-strategy quick"
   ],
+  "flags.target-org.summary": "Target Salesforce org alias or username for remote deployment resume",
   "flags.source-path.summary": "Path to the Salesforce project containing deployment state",
   "flags.retry-strategy.summary": "Retry strategy to use when resuming the deployment"
 }

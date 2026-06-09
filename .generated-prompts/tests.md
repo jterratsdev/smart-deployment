@@ -214,8 +214,8 @@ Cover GitHub issue #223 with local deterministic tests for Employee Copilot GenA
 ## DeploymentValidationHarness
 
 - **Created:** 2026-06-05
-- **Updated:** 2026-06-08
-- **Iterations:** 3
+- **Updated:** 2026-06-09
+- **Iterations:** 4
 
 ### Key decisions
 
@@ -224,11 +224,12 @@ Cover GitHub issue #223 with local deterministic tests for Employee Copilot GenA
 - Documented that full `start` NUT execution with `--target-org` still requires a source change or Salesforce-core org resolver seam because target org parsing occurs before the fake `sf` binary is invoked.
 - Updated the command-level fake `sf` fixture to execute by explicit path and generate a Windows `.cmd` wrapper so Windows NUTs do not depend on extensionless executable resolution.
 - Adjusted direct fixture verification to execute `sf-node.js` through `process.execPath`, avoiding Windows `spawn EINVAL` when `execFile` receives a `.cmd` wrapper directly.
+- Added command-level NUT assertions for `status --target-org --json` and `resume --target-org --json`, validating both real command stdout and fake `sf project deploy report/resume` invocation arguments.
 
 ### Prompt
 
 ```
-Implement GitHub issue #198 / NEXT-001-validation-harness and fix the Windows NUT failures by making the fake sf fixture executable cross-platform. The harness should expose an sf.cmd wrapper for CLI PATH resolution but run direct fixture checks through process.execPath and sf-node.js to avoid Windows spawn EINVAL, while keeping coverage local-only without requiring a Salesforce org.
+Implement GitHub issue #198 / NEXT-001-validation-harness, fix the Windows NUT failures by making the fake sf fixture executable cross-platform, and add command-level remote status/resume NUT coverage. The harness should expose an sf.cmd wrapper for CLI PATH resolution, run direct fixture checks through process.execPath and sf-node.js to avoid Windows spawn EINVAL, and verify `status --target-org --json` plus `resume --target-org --json` stdout and fake sf invocation arguments without requiring a Salesforce org.
 ```
 
 ---

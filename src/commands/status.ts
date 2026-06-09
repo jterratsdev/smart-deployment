@@ -12,7 +12,7 @@
 
 import { type Interfaces } from '@oclif/core';
 import { Messages } from '@salesforce/core';
-import { Flags, SfCommand, optionalOrgFlagWithDeprecations } from '@salesforce/sf-plugins-core';
+import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { DeploymentStatusService } from '../deployment/deployment-status-service.js';
 import { StatusCommandPresenter } from '../presentation/status-command-presenter.js';
 import { getLogger } from '../utils/logger.js';
@@ -48,7 +48,9 @@ export default class Status extends SfCommand<StatusResult> {
   public static readonly summary = messages.getMessage('summary');
   public static readonly examples = messages.getMessages('examples');
   public static readonly flags: Interfaces.FlagInput = {
-    'target-org': optionalOrgFlagWithDeprecations,
+    'target-org': Flags.string({
+      summary: messages.getMessage('flags.target-org.summary'),
+    }),
     'source-path': Flags.directory({
       summary: messages.getMessage('flags.source-path.summary'),
       exists: true,

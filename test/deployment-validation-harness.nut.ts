@@ -125,9 +125,9 @@ describe('NUT: production-like deployment command validation harness', () => {
     ]);
   });
 
-  it('status reports a resumable failed deployment with a remote deployment id from state', async () => {
-    const harness = await createHarness('status-polling');
-    const projectRoot = await createHarnessProject(harness.tempDir, 'status-remote-id-project');
+  it('status refreshes remote deployment state and prints real command JSON output', async () => {
+    const harness = await createHarness('success');
+    const projectRoot = await createHarnessProject(harness.tempDir, 'status-remote-refresh-project');
 
     await writeDeploymentState(projectRoot, {
       deploymentId: '0AfREMOTE000001',
@@ -146,20 +146,38 @@ describe('NUT: production-like deployment command validation harness', () => {
       },
     });
 
-    const result = execNutCommandWithOptions<StatusResult>(`status --source-path ${projectRoot} --json`, {
-      ...harness.commandOptions,
-    });
+    const result = execNutCommandWithOptions<StatusResult>(
+      `status --source-path ${projectRoot} --target-org release-org --json`,
+      harness.commandOptions
+    );
     const status = parseJsonStdout<StatusResult>(result.shellOutput.stdout);
+    const state = JSON.parse(
+      await readFile(path.join(projectRoot, '.smart-deployment', 'deployment-state.json'), 'utf8')
+    ) as { failedWave?: unknown; metadata?: Record<string, unknown>; targetOrg?: string };
+    const invocations = await readFakeSfInvocations(harness.logPath);
 
-    expect(status.status).to.equal('Failed');
-    expect(status.canResume).to.equal(true);
-    expect(status.currentWave).to.equal(1);
+    expect(status.status).to.equal('Completed');
+    expect(status.canResume).to.equal(false);
+    expect(status.currentWave).to.equal(2);
     expect(result.shellOutput.stdout).to.include('0AfREMOTE000001');
+    expect(state.targetOrg).to.equal('release-org');
+    expect(state.failedWave).to.equal(undefined);
+    expect(state.metadata).to.deep.include({
+      lastKnownStatus: 'Succeeded',
+      remoteStatus: 'Succeeded',
+      remoteComponentSuccesses: 2,
+      remoteComponentFailures: 0,
+      remoteTestsRun: 0,
+      remoteTestFailures: 0,
+    });
+    expect(invocations.map((invocation) => invocation.args)).to.deep.equal([
+      ['project', 'deploy', 'report', '--job-id', '0AfREMOTE000001', '--target-org', 'release-org', '--json'],
+    ]);
   });
 
-  it('resume preserves remote deployment id semantics from persisted failed state', async () => {
+  it('resume invokes remote sf resume and prints real command JSON output', async () => {
     const harness = await createHarness('success');
-    const projectRoot = await createHarnessProject(harness.tempDir, 'resume-remote-id-project');
+    const projectRoot = await createHarnessProject(harness.tempDir, 'resume-remote-command-project');
 
     await writeDeploymentState(projectRoot, {
       deploymentId: '0AfREMOTE000001',
@@ -179,25 +197,35 @@ describe('NUT: production-like deployment command validation harness', () => {
     });
 
     const result = execNutCommandWithOptions<ResumeResult>(
-      `resume --source-path ${projectRoot} --retry-strategy validate-only --json`,
+      `resume --source-path ${projectRoot} --target-org release-org --retry-strategy validate-only --json`,
       harness.commandOptions
     );
     const resume = parseJsonStdout<ResumeResult>(result.shellOutput.stdout);
     const state = JSON.parse(
       await readFile(path.join(projectRoot, '.smart-deployment', 'deployment-state.json'), 'utf8')
-    ) as { deploymentId: string; failedWave?: unknown; metadata?: Record<string, unknown> };
+    ) as { deploymentId: string; failedWave?: unknown; metadata?: Record<string, unknown>; targetOrg?: string };
+    const invocations = await readFakeSfInvocations(harness.logPath);
 
     expect(resume.success).to.equal(true);
     expect(resume.deploymentId).to.equal('0AfREMOTE000001');
     expect(resume.resumedFromWave).to.equal(2);
     expect(resume.remainingWaves).to.equal(2);
     expect(state.deploymentId).to.equal('0AfREMOTE000001');
+    expect(state.targetOrg).to.equal('release-org');
     expect(state.failedWave).to.equal(undefined);
     expect(state.metadata).to.deep.include({
       retryStrategy: 'validate-only',
       resumedFromWave: 2,
       lastKnownStatus: 'Resumed',
+      remoteResumeStatus: 'Succeeded',
+      remoteComponentSuccesses: 1,
+      remoteComponentFailures: 0,
+      remoteTestsRun: 0,
+      remoteTestFailures: 0,
     });
+    expect(invocations.map((invocation) => invocation.args)).to.deep.equal([
+      ['project', 'deploy', 'resume', '--job-id', '0AfREMOTE000001', '--target-org', 'release-org', '--json'],
+    ]);
   });
 
   async function createHarness(scenario: string): Promise<{
