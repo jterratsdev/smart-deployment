@@ -1,4 +1,10 @@
+![Salesforce Cloud](https://cdn.prod.website-files.com/691f4b0505409df23e191b87/69416b267de7ae6888996981_logo.svg)
+
 # Release Workflow
+
+Author: Salesforce Professional Services
+
+Version: 1.1
 
 This repository uses a single npm publishing workflow:
 
@@ -6,13 +12,20 @@ This repository uses a single npm publishing workflow:
 
 ## Prepare a New Release
 
-Run **Publish to npm with Provenance** manually without a `tag` input.
+A release can be prepared either by pushing a `package.json` version bump to `main` or by running **Publish to npm** manually without a `tag` input.
 
-- `bump=patch|minor|major` updates `package.json` from the current version.
+- A `package.json` push uses the version already committed and creates the matching tag/release.
+- `bump=patch|minor|major` updates `package.json` from the current version when run manually.
 - `version=x.y.z` can be used instead of `bump` when an exact version is required.
 - The workflow verifies that the target Git tag and npm version do not already exist.
 - The workflow runs install, build, tests, lint, runtime dependency audit, and `npm pack --dry-run`.
 - The workflow commits the version bump, creates the annotated tag, creates the GitHub Release, publishes to npm with provenance, verifies npm availability, and checks the `latest` dist-tag.
+
+## CI Minute Policy
+
+The release workflow runs on release events, manual dispatch, and pushes to `main` that modify `package.json`. Heavy release validation remains inside this workflow because npm publication uses elevated permissions and secrets, while the path filter avoids running it on unrelated pushes.
+
+Set `CI_LINUX_RUNNER=github-hosted` only as a temporary fallback when the trusted self-hosted Linux runner is unavailable.
 
 ## Publish an Existing Tag
 

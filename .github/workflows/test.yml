@@ -4,15 +4,32 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: '17 9 * * 1'
   workflow_dispatch:
+    inputs:
+      run_cross_os:
+        description: 'Run hosted Windows build and Windows NUT coverage'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   yarn-lockfile-check:
     uses: salesforcecli/github-workflows/.github/workflows/lockFileCheck.yml@main
 
   linux-unit-tests:
+    name: Linux unit tests
     needs: yarn-lockfile-check
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_LINUX_RUNNER == 'github-hosted' && 'ubuntu-latest' || fromJSON('["self-hosted","linux","smart-deployment"]') }}
+    timeout-minutes: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,9 +51,44 @@ jobs:
       - name: Test
         run: yarn test
 
+  linux-nuts:
+    name: NUTs (self-hosted Linux)
+    needs: linux-unit-tests
+    runs-on: ${{ vars.CI_LINUX_RUNNER == 'github-hosted' && 'ubuntu-latest' || fromJSON('["self-hosted","linux","smart-deployment"]') }}
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        uses: salesforcecli/github-workflows/.github/actions/retry@main
+        with:
+          command: yarn install --frozen-lockfile --network-timeout 600000
+
+      - name: Install Salesforce CLI
+        run: npm install --global @salesforce/cli
+
+      - name: Compile plugin
+        run: yarn compile
+
+      - name: Check that oclif config exists
+        run: test -f oclif.manifest.json
+
+      - name: Run NUTs
+        run: yarn test:nuts
+
   windows-build-check:
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_cross_os) }}
+    name: Windows build check (manual/nightly)
     needs: linux-unit-tests
     runs-on: windows-latest
+    timeout-minutes: 20
     steps:
       - name: Enable long paths
         run: git config --system core.longpaths true
@@ -58,13 +110,11 @@ jobs:
       - name: Build
         run: yarn build
 
-  nuts:
+  windows-nuts:
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_cross_os) }}
+    name: NUTs (windows manual/nightly)
     needs: linux-unit-tests
     uses: salesforcecli/github-workflows/.github/workflows/nut.yml@main
     secrets: inherit
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-      fail-fast: false
     with:
-      os: ${{ matrix.os }}
+      os: windows-latest
