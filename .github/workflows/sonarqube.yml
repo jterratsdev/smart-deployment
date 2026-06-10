@@ -21,7 +21,7 @@ jobs:
   scan:
     name: Analyze
     runs-on: ${{ vars.SONAR_RUNNER == 'self-hosted' && fromJSON('["self-hosted","sonar","local-sonar"]') || 'ubuntu-latest' }}
-    timeout-minutes: 15
+    timeout-minutes: 30
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || vars.SONAR_HOST_URL }}
@@ -138,14 +138,18 @@ jobs:
           echo "Created local master compatibility refs that point to origin/main for Sonar SCM changed-lines analysis."
 
       - name: SonarQube scan
+        id: sonar_scan
         if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' && env.SONAR_QUALITY_GATE_WAIT != 'true' }}
+        continue-on-error: true
         uses: SonarSource/sonarqube-scan-action@v8.1.0
         env:
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL_RESOLVED }}
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
 
       - name: SonarQube scan with quality gate wait
+        id: sonar_scan_wait
         if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' && env.SONAR_QUALITY_GATE_WAIT == 'true' }}
+        continue-on-error: true
         uses: SonarSource/sonarqube-scan-action@v8.1.0
         with:
           args: >
@@ -154,3 +158,87 @@ jobs:
         env:
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL_RESOLVED }}
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+
+      - name: Import Sonar insights artifact
+        if: ${{ always() && env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' && (steps.sonar_scan.outcome != 'skipped' || steps.sonar_scan_wait.outcome != 'skipped') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .agent-workflow/sonar
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+
+          const projectKey = 'smart-deployment';
+          const hostUrl = process.env.SONAR_HOST_URL_RESOLVED;
+          const token = process.env.SONAR_TOKEN;
+          const branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME;
+          const commit = process.env.GITHUB_SHA;
+          const reportPath = '.scannerwork/report-task.txt';
+          const auth = Buffer.from(`${token}:`).toString('base64');
+
+          const report = parseReport(reportPath);
+          const output = {
+            status: 'collected',
+            provider: process.env.SONAR_PROVIDER_RESOLVED,
+            projectKey,
+            hostUrl,
+            dashboardUrl: report.dashboardUrl || `${hostUrl}/dashboard?id=${encodeURIComponent(projectKey)}`,
+            branch,
+            commit,
+            ceTaskId: report.ceTaskId,
+            generatedAt: new Date().toISOString(),
+          };
+
+          try {
+            output.ceTask = report.ceTaskId ? await sonar(`/api/ce/task?id=${encodeURIComponent(report.ceTaskId)}`) : null;
+            output.qualityGate = await sonar(`/api/qualitygates/project_status?projectKey=${encodeURIComponent(projectKey)}`);
+            output.measures = await sonar(`/api/measures/component?component=${encodeURIComponent(projectKey)}&metricKeys=security_hotspots,security_hotspots_reviewed,vulnerabilities,security_rating,alert_status,bugs,code_smells`);
+            output.hotspots = await sonar(`/api/hotspots/search?projectKey=${encodeURIComponent(projectKey)}&p=1&ps=100`);
+            output.issues = await sonar(`/api/issues/search?componentKeys=${encodeURIComponent(projectKey)}&types=VULNERABILITY&ps=100`);
+          } catch (error) {
+            output.status = 'blocked';
+            output.reason = error instanceof Error ? error.message : String(error);
+          }
+
+          fs.writeFileSync('.agent-workflow/sonar/sonar-insights.json', `${JSON.stringify(output, null, 2)}\n`);
+
+          async function sonar(path) {
+            const response = await fetch(new URL(path, hostUrl), {
+              headers: { Authorization: `Basic ${auth}` },
+            });
+            if (!response.ok) {
+              throw new Error(`Sonar API ${path} failed with HTTP ${response.status}`);
+            }
+            return response.json();
+          }
+
+          function parseReport(path) {
+            if (!fs.existsSync(path)) return {};
+            return Object.fromEntries(
+              fs
+                .readFileSync(path, 'utf8')
+                .split(/\r?\n/)
+                .filter((line) => line.includes('='))
+                .map((line) => {
+                  const index = line.indexOf('=');
+                  return [line.slice(0, index), line.slice(index + 1)];
+                })
+            );
+          }
+          NODE
+
+      - name: Upload Sonar insights artifact
+        if: ${{ always() && env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' && (steps.sonar_scan.outcome != 'skipped' || steps.sonar_scan_wait.outcome != 'skipped') }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-insights
+          path: .agent-workflow/sonar/*.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Fail when Sonar analysis or quality gate failed
+        if: ${{ steps.sonar_scan.outcome == 'failure' || steps.sonar_scan_wait.outcome == 'failure' }}
+        run: |
+          echo "Sonar analysis or quality gate failed after importing Sonar insights."
+          exit 1
