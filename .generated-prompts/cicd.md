@@ -44,7 +44,7 @@ and test gate thresholds already established in the project.
 
 - **Created:** 2026-05-20
 - **Updated:** 2026-05-20
-- **Iterations:** 1
+- **Iterations:** 2
 
 ### Key decisions
 
@@ -52,11 +52,13 @@ and test gate thresholds already established in the project.
 - Keep pull request checks non-blocking when Cloudflare Access rejects the service token, while preserving failure behavior on `push` and manual runs so the SonarQube Access policy issue remains visible before release.
 - Kept this repo on `yarn install --frozen-lockfile --network-timeout 600000` and `yarn test:only` instead of copying Open Orchestra's `npm ci` and coverage/import steps.
 - Reused the Open Orchestra Cloudflare Access service-token validation for the `gh_actions` client id.
+- Pulled in the Open Orchestra quality-gate artifact pattern: scan steps continue long enough to collect Sonar API output, upload `sonar-insights`, and then fail explicitly if the scan or quality gate failed.
+- Replaced Open Orchestra-specific `bin/orchestra.js sonar preflight/import` commands with direct SonarQube API collection for the `smart-deployment` project key.
 
 ### Prompt
 
 ```
-Copy the SonarQube CI strategy from ~/dev/open-orchestra into smart-deployment. Read the full Open Orchestra workflow to preserve the Cloudflare Access proxy behavior, provider resolution, secret/variable conventions, quality gate wait option, and service-token validation, while adapting dependency installation and tests to this repo.
+Copy the SonarQube CI strategy from ~/dev/open-orchestra into smart-deployment. Preserve the Cloudflare Access proxy behavior, provider resolution, self-hosted runner support, quality gate wait, and insight artifact pattern. Adapt dependency installation, tests, and Sonar insight import for this repo by using yarn and direct SonarQube API calls for the `smart-deployment` project instead of Open Orchestra's `bin/orchestra.js sonar` commands.
 ```
 
 ---
