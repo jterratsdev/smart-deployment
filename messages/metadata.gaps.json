@@ -1,0 +1,12 @@
+{
+  "summary": "Analyze unsupported Salesforce metadata types",
+  "description": "Scans package manifests and Salesforce source paths, compares detected metadata types against smart-deployment support, and reports safe next steps for unsupported or partially supported metadata.",
+  "examples": [
+    "<%= config.bin %> <%= command.id %> --source-path force-app --json",
+    "<%= config.bin %> smart-deployment metadata gaps --ai-explain"
+  ],
+  "flags.source-path.summary": "Salesforce project or source path to scan",
+  "flags.source-path.description": "Path used to locate sfdx-project.json and scan configured package directories.",
+  "flags.ai-explain.summary": "Include workflow-ready AI explanation context",
+  "flags.ai-explain.description": "Adds a deterministic prompt and setup-agents workflow command for Codex-assisted review. The plugin does not call an AI provider directly."
+}

@@ -316,3 +316,30 @@ Implement GitHub issue #225 by adding destructive and rollback modes to sf smart
 ```
 
 ---
+
+## MetadataGapsCommand
+
+- **Created:** 2026-06-10
+- **Updated:** 2026-06-10
+- **Iterations:** 1
+- **Task:** PLUGIN-AI-METADATA-GAP-DETECTION
+- **Role:** developer
+
+### Key decisions
+
+- Added `smart-deployment metadata gaps` with JSON-safe output and a concise human summary.
+- Kept AI usage explicit behind `--ai-explain`, returning workflow context instead of invoking a provider directly.
+- Reused sf-plugin message files and command test doubles consistent with existing command tests.
+
+### Evidence
+
+- Focused command Mocha test passed.
+- Focused ESLint command check passed.
+
+### Prompt
+
+```
+Add a read-only metadata gaps command that runs deterministic support analysis, reports unsupported or incomplete metadata type coverage, and optionally emits Codex/setup-agents AI context for follow-up implementation planning without calling an LLM from plugin runtime.
+```
+
+---

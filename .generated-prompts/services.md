@@ -287,3 +287,32 @@ Continue GitHub issue #198 by adding remote deployment id semantics to status an
 ```
 
 ---
+
+## MetadataGapAnalysisService
+
+- **Created:** 2026-06-10
+- **Updated:** 2026-06-10
+- **Iterations:** 1
+- **Task:** PLUGIN-AI-METADATA-GAP-DETECTION
+- **Role:** developer
+
+### Key decisions
+
+- Added a deterministic scanner that compares package manifests and source-path metadata evidence against smart-deployment scanner and ordering support.
+- Classifies gaps as registry-only, dependency-rule, ordering-special, provider-owned, or human-review-required before any type can be marked supported.
+- `--ai-explain` produces workflow-ready Codex/setup-agents context without calling provider APIs from plugin runtime.
+
+### Evidence
+
+- `./node_modules/.bin/tsc -p . --pretty false --incremental false` passed.
+- `./node_modules/.bin/tsc -p ./test --pretty false` passed.
+- Focused Mocha metadata gap tests passed.
+- Focused ESLint metadata gap checks passed.
+
+### Prompt
+
+```
+Implement PLUGIN-AI-METADATA-GAP-DETECTION as a deterministic metadata support analyzer. The plugin must detect unsupported or partially supported Salesforce metadata types from package manifests and source paths, classify safe versus risky gaps, and provide optional AI workflow context without direct provider API calls or runtime code generation.
+```
+
+---
