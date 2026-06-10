@@ -75,7 +75,7 @@ jobs:
         run: npm install --global @salesforce/cli
 
       - name: Compile plugin
-        run: yarn compile
+        run: yarn compile && yarn oclif manifest
 
       - name: Check that oclif config exists
         run: test -f oclif.manifest.json
