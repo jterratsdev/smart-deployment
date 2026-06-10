@@ -14,6 +14,7 @@
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import { getLogger } from '../utils/logger.js';
+import { normalizeDeploymentDiagnostics, type DeploymentDiagnostic } from './deployment-error-diagnostics.js';
 
 const execAsync = promisify(exec);
 const logger = getLogger('SfCliIntegration');
@@ -27,6 +28,7 @@ export type DeploymentOptions = {
   testLevel?: TestLevel;
   tests?: string[];
   checkOnly?: boolean;
+  postDestructiveChangesPath?: string;
 };
 
 export type DeploymentResult = {
@@ -38,6 +40,7 @@ export type DeploymentResult = {
   testsRun?: number;
   testFailures?: number;
   output: string;
+  diagnostics?: DeploymentDiagnostic[];
 };
 
 /**
@@ -78,6 +81,10 @@ export class SfCliIntegration {
       '--wait 60',
     ];
 
+    if (options.postDestructiveChangesPath) {
+      parts.push(`--post-destructive-changes ${options.postDestructiveChangesPath}`);
+    }
+
     if (options.testLevel) {
       parts.push(`--test-level ${options.testLevel}`);
     }
@@ -109,8 +116,10 @@ export class SfCliIntegration {
           };
         };
 
+        const success = !failed && (parsed.result?.status === 'Succeeded' || parsed.result?.status === 'Success');
+
         return {
-          success: !failed && (parsed.result?.status === 'Succeeded' || parsed.result?.status === 'Success'),
+          success,
           deploymentId: parsed.result?.id,
           status: parsed.result?.status ?? 'Unknown',
           componentSuccesses: parsed.result?.numberComponentsDeployed ?? 0,
@@ -118,6 +127,7 @@ export class SfCliIntegration {
           testsRun: parsed.result?.numberTestsTotal,
           testFailures: parsed.result?.numberTestErrors,
           output,
+          diagnostics: success ? undefined : normalizeDeploymentDiagnostics(output),
         };
       }
     } catch (parseError) {
@@ -125,12 +135,14 @@ export class SfCliIntegration {
     }
 
     // Fallback for non-JSON output
+    const success = !failed;
     return {
-      success: !failed,
+      success,
       status: failed ? 'Failed' : 'Unknown',
       componentSuccesses: 0,
       componentFailures: failed ? 1 : 0,
       output,
+      diagnostics: success ? undefined : normalizeDeploymentDiagnostics(output),
     };
   }
 
@@ -142,6 +154,19 @@ export class SfCliIntegration {
       return this.parseDeploymentOutput(stdout);
     } catch (error) {
       logger.error('Failed to check deployment status', { error, deploymentId });
+      const output = error instanceof Error ? error.message : String(error);
+      return this.parseDeploymentOutput(output, true);
+    }
+  }
+
+  public async resumeDeployment(deploymentId: string, targetOrg: string): Promise<DeploymentResult> {
+    const command = `sf project deploy resume --job-id ${deploymentId} --target-org ${targetOrg} --json`;
+
+    try {
+      const { stdout, stderr } = await execAsync(command);
+      return this.parseDeploymentOutput(stdout + stderr);
+    } catch (error) {
+      logger.error('Failed to resume deployment', { error, deploymentId });
       const output = error instanceof Error ? error.message : String(error);
       return this.parseDeploymentOutput(output, true);
     }

@@ -60,6 +60,51 @@ describe('ProjectAnalysisService', () => {
     });
   });
 
+  it('places Employee Copilot GenAiPlannerBundle components after referenced automation metadata', async () => {
+    const scanResult = buildScanResult([
+      {
+        name: 'Resolve_Case',
+        type: 'Flow',
+        filePath: '/tmp/project-analysis-service/flows/Resolve_Case.flow-meta.xml',
+        dependencies: new Set(),
+        dependents: new Set(),
+        priorityBoost: 0,
+      },
+      {
+        name: 'CopilotActionHandler',
+        type: 'ApexClass',
+        filePath: '/tmp/project-analysis-service/classes/CopilotActionHandler.cls',
+        dependencies: new Set(),
+        dependents: new Set(),
+        priorityBoost: 0,
+      },
+      {
+        name: 'PHP_Ops_Copilot_Agent',
+        type: 'GenAiPlannerBundle',
+        filePath: '/tmp/project-analysis-service/genAiPlannerBundles/PHP_Ops_Copilot_Agent',
+        dependencies: new Set(['Flow:Resolve_Case', 'ApexClass:CopilotActionHandler']),
+        dependents: new Set(),
+        priorityBoost: 0,
+      },
+    ]);
+    const service = new ProjectAnalysisService({
+      scanner: {
+        scan: async () => scanResult,
+      } as never,
+    });
+
+    const analysis = await service.buildAnalysis();
+    const plannerWave = analysis.waveResult.waves.find((wave) =>
+      wave.components.includes('GenAiPlannerBundle:PHP_Ops_Copilot_Agent')
+    );
+
+    expect(plannerWave).to.exist;
+    expect(analysis.waveResult.unplacedComponents).to.not.include(
+      'GenAiPlannerBundle:PHP_Ops_Copilot_Agent'
+    );
+    expect(analysis.orderedWaves.at(-1)?.components).to.include('GenAiPlannerBundle:PHP_Ops_Copilot_Agent');
+  });
+
   it('applies AI inference and priority metadata through the shared pipeline', async () => {
     const scanResult = buildScanResult([
       {

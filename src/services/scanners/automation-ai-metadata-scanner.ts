@@ -65,6 +65,57 @@ export function parseAiAuthoringBundleComponent(filePath: string): MetadataCompo
   };
 }
 
+export async function parseGenAiPlannerBundleComponent(directoryPath: string): Promise<MetadataComponent> {
+  const bundleName = path.basename(directoryPath);
+  const deps = await parseGenAiPlannerBundleDependencies(directoryPath);
+
+  return {
+    name: bundleName,
+    type: 'GenAiPlannerBundle',
+    filePath: directoryPath,
+    dependencies: deps,
+    dependents: new Set<string>(),
+    priorityBoost: 0,
+  };
+}
+
+async function parseGenAiPlannerBundleDependencies(directoryPath: string): Promise<Set<string>> {
+  const deps = new Set<string>();
+  const entries = await fs.readdir(directoryPath, { recursive: true, withFileTypes: true });
+  const files = entries
+    .filter((entry) => entry.isFile())
+    .map((entry) => path.join(entry.parentPath, entry.name))
+    .filter((filePath) => /\.(?:json|xml|yaml|yml)$/iu.test(filePath));
+  const contents = await Promise.all(files.map((filePath) => fs.readFile(filePath, 'utf8')));
+
+  for (const content of contents) {
+    collectNamedReferences(deps, content, ['flow', 'flowName', 'targetFlow', 'subflow'], 'Flow');
+    collectNamedReferences(deps, content, ['apexClass', 'apexAction', 'invocableApexClass'], 'ApexClass');
+    collectNamedReferences(deps, content, ['prompt', 'promptTemplate', 'genAiPromptTemplate'], 'GenAiPromptTemplate');
+  }
+
+  return deps;
+}
+
+function collectNamedReferences(
+  dependencies: Set<string>,
+  content: string,
+  propertyNames: readonly string[],
+  metadataType: string
+): void {
+  for (const propertyName of propertyNames) {
+    const quotedProperty = new RegExp(`"${propertyName}"\\s*:\\s*"([^"/]+)"`, 'giu');
+    const xmlElement = new RegExp(`<${propertyName}>([^<]+)</${propertyName}>`, 'giu');
+
+    for (const match of content.matchAll(quotedProperty)) {
+      dependencies.add(`${metadataType}:${match[1]}`);
+    }
+
+    for (const match of content.matchAll(xmlElement)) {
+      dependencies.add(`${metadataType}:${match[1]}`);
+    }
+  }
+}
 export async function parseGenAiPromptComponent(filePath: string): Promise<MetadataComponent | undefined> {
   const promptName = path.basename(filePath, '.genAiPromptTemplate-meta.xml');
   const parsed = await parseGenAiPrompt(filePath, promptName);

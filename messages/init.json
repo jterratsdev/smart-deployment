@@ -1,0 +1,16 @@
+{
+  "summary": "Initialize Smart Deployment repository config",
+  "description": "Detects Salesforce project source settings and writes .smart-deployment.json defaults for cache policy, CI preset behavior, and report locations.",
+  "examples": [
+    "<%= config.bin %> <%= command.id %>",
+    "<%= config.bin %> smart-deployment init --source-path force-app --validation-mode warn-only --non-interactive",
+    "<%= config.bin %> smart-deployment init --force --no-cache-enabled"
+  ],
+  "flags.source-path.summary": "Path used to detect the Salesforce project and default package directory",
+  "flags.force.summary": "Overwrite an existing .smart-deployment.json file",
+  "flags.cache-enabled.summary": "Enable file-hash cache defaults in generated config",
+  "flags.validation-mode.summary": "Default validation mode for the CI preset",
+  "flags.report-dir.summary": "Default report directory for CI preset plan artifacts",
+  "flags.skip-tests.summary": "Default skip-tests setting for CI preset config",
+  "flags.non-interactive.summary": "Run with deterministic defaults suitable for CI automation"
+}

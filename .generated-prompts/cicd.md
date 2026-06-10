@@ -82,3 +82,45 @@ Fix the acceptance validation workflow so Dependabot PRs and other branches with
 ```
 
 ---
+
+## Smart Deployment CI Preset
+
+- **Created:** 2026-05-22
+- **Updated:** 2026-05-22
+- **Iterations:** 1
+
+### Key decisions
+
+- Expose CI artifact paths through the CLI command's `GITHUB_OUTPUT` integration rather than adding a new always-on workflow that could affect existing repository CI.
+- Keep GitHub Actions outputs stable: `deployment_plan_json`, `deployment_plan_html`, `deployment_report_dir`, `deployment_status`, and `deployment_exit_code`.
+
+### Prompt
+
+```
+Document the CI/CD behavior for PLUGIN-CI-PRESET: expose deterministic deployment plan artifact paths for GitHub Actions while avoiding active workflow changes that would alter existing CI behavior without release wiring.
+```
+
+---
+
+## HostedMinuteOptimization
+
+- **Created:** 2026-06-09
+- **Updated:** 2026-06-09
+- **Iterations:** 1
+
+### Key decisions
+
+- Moved normal Linux validation paths to the trusted self-hosted Linux runner labels `self-hosted`, `linux`, and `smart-deployment`, with `CI_LINUX_RUNNER=github-hosted` as an explicit temporary fallback.
+- Kept Windows build and Windows NUT coverage, but limited them to weekly scheduled runs or manual workflow dispatch with `run_cross_os=true`.
+- Kept package.json push-triggered npm release preparation on trusted main, using the committed package version, while moving the job to trusted Linux by default.
+- Updated Linux NUT CI to generate `oclif.manifest.json` after compile before asserting its presence.
+- Gated acceptance-validation NUTs behind a `run-nuts` PR label to control expensive Salesforce integration coverage.
+- Documented runner setup, security boundaries, workspace cleanup expectations, fallback behavior, and branch hygiene in `docs/ci-runner-policy.md`.
+
+### Prompt
+
+```
+Apply the Open Orchestra CI hosted-minute optimization strategy to smart-deployment. Move normal Linux CI work to trusted self-hosted Linux, keep Windows/cross-OS checks as manual or nightly coverage, preserve release and secret safety, keep automatic package.json push publishing on trusted main, gate expensive NUTs, and document runner labels, security boundaries, fallback behavior, cleanup, and branch hygiene.
+```
+
+---

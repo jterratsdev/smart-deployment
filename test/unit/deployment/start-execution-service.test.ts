@@ -36,6 +36,17 @@ class FailingSfCli extends SfCliIntegration {
           numberTestErrors: 1,
         },
       }),
+      diagnostics: [
+        {
+          component: 'ApexClass:TestClass',
+          problem: 'No such column Missing__c on entity Account',
+          probableCause: 'A referenced field is not present in the target org or is deployed in a later wave.',
+          remediation:
+            'Deploy the missing CustomField before this component, add it to the same or earlier wave, or remove the stale field reference.',
+          rawDetails: '{"problem":"No such column Missing__c on entity Account"}',
+          category: 'missing-field',
+        },
+      ],
     };
   }
 }
@@ -123,8 +134,20 @@ describe('StartExecutionService', () => {
     expect(state.completedWaves).to.deep.equal([]);
     expect(state.failedWave?.waveNumber).to.equal(1);
     expect(state.failedWave?.error).to.include('"status":"Failed"');
+    expect(state.failedWave?.error).to.include('Remediation: Deploy the missing CustomField');
     expect(state.metadata?.lastKnownStatus).to.equal('Failed');
     expect(state.metadata?.testFailures).to.equal(1);
+    expect(state.metadata?.diagnostics).to.deep.equal([
+      {
+        component: 'ApexClass:TestClass',
+        problem: 'No such column Missing__c on entity Account',
+        probableCause: 'A referenced field is not present in the target org or is deployed in a later wave.',
+        remediation:
+          'Deploy the missing CustomField before this component, add it to the same or earlier wave, or remove the stale field reference.',
+        rawDetails: '{"problem":"No such column Missing__c on entity Account"}',
+        category: 'missing-field',
+      },
+    ]);
     expect(state.metadata?.waveGraphContext).to.deep.equal({
       waves: [{ number: 1, components: ['ApexClass:TestClass'] }],
       dependencies: [],
@@ -231,6 +254,45 @@ describe('StartExecutionService', () => {
       ],
       dependencies: [],
     });
+  });
+
+  it('executes destructive deployments in reverse wave order', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-service-destructive-'));
+    const sfCli = new SequencedSfCli([
+      createDeploymentResult({ deploymentId: '0AfFakeDeployment002', status: 'Succeeded', success: true }),
+      createDeploymentResult({ deploymentId: '0AfFakeDeployment001', status: 'Succeeded', success: true }),
+    ]);
+    const dependencyComponent = createComponent(tempDir, 'DependencyClass');
+    const dependentComponent = createComponent(tempDir, 'DependentTrigger', 'ApexTrigger');
+    const context = createDeploymentContext(
+      [dependencyComponent, dependentComponent],
+      [['ApexClass:DependencyClass'], ['ApexTrigger:DependentTrigger']]
+    );
+    const service = new StartExecutionService({
+      createSfCli: () => sfCli,
+      createStateManager: (baseDir?: string) => new StateManager({ baseDir }),
+      createDeploymentId: () => 'deployment-fixture-destructive',
+    });
+
+    const result = await service.execute({
+      dryRun: false,
+      validateOnly: false,
+      allowCycleRemediation: false,
+      skipTests: false,
+      destructive: true,
+      targetOrg: 'fixture@example.com',
+      sourcePath: tempDir,
+      deploymentContext: context,
+      log: () => {},
+    });
+
+    expect(result.kind).to.equal('executed');
+    expect(sfCli.deployCalls).to.have.lengthOf(2);
+    expect(sfCli.deployCalls.map((call) => path.basename(call.postDestructiveChangesPath ?? ''))).to.deep.equal([
+      'wave-002-destructiveChanges.xml',
+      'wave-001-destructiveChanges.xml',
+    ]);
+    expect(sfCli.deployCalls.every((call) => call.testLevel === 'NoTestRun')).to.equal(true);
   });
 });
 

@@ -5,7 +5,8 @@ import {
   formatDeploymentStatus,
   summarizeDeploymentState,
 } from './deployment-state-summary.js';
-import { StateManager } from './state-manager.js';
+import { StateManager, type DeploymentState } from './state-manager.js';
+import { SfCliIntegration, type DeploymentResult } from './sf-cli-integration.js';
 import { buildWaveGraphFromState } from './wave-graph-state.js';
 
 const logger = getLogger('DeploymentStatusService');
@@ -41,10 +42,15 @@ export type ResumeSummary = {
 };
 
 export class DeploymentStatusService {
-  public constructor(private readonly stateManager: StateManager = new StateManager()) {}
+  public constructor(
+    private readonly stateManager: StateManager = new StateManager(),
+    private readonly sfCli: Pick<SfCliIntegration, 'checkDeploymentStatus'> = new SfCliIntegration()
+  ) {}
 
-  public async getStatus(): Promise<DeploymentStatusSummary> {
-    const state = await this.stateManager.loadState();
+  public async getStatus(options: { targetOrg?: string } = {}): Promise<DeploymentStatusSummary> {
+    const loadedState = await this.stateManager.loadState();
+    const state =
+      loadedState && options.targetOrg ? await this.refreshRemoteState(loadedState, options.targetOrg) : loadedState;
 
     if (!state) {
       return {
@@ -144,6 +150,61 @@ export class DeploymentStatusService {
       failureReason: summary.failedWaveError,
       cycleRemediation: summary.cycleRemediation,
     }).join('\n');
+  }
+
+  private async refreshRemoteState(state: DeploymentState, targetOrg: string): Promise<DeploymentState> {
+    const remoteResult = await this.sfCli.checkDeploymentStatus(state.deploymentId, targetOrg);
+    const updatedState = this.applyRemoteResult(state, targetOrg, remoteResult);
+    await this.stateManager.saveState(updatedState);
+    return updatedState;
+  }
+
+  private applyRemoteResult(state: DeploymentState, targetOrg: string, result: DeploymentResult): DeploymentState {
+    const metadata = {
+      ...(state.metadata ?? {}),
+      lastKnownStatus: result.status,
+      remoteStatus: result.status,
+      remoteStatusCheckedAt: new Date().toISOString(),
+      remoteComponentSuccesses: result.componentSuccesses,
+      remoteComponentFailures: result.componentFailures,
+      remoteTestsRun: result.testsRun,
+      remoteTestFailures: result.testFailures,
+    };
+
+    if (result.status === 'Succeeded' || result.status === 'Success') {
+      return {
+        ...state,
+        targetOrg,
+        completedWaves: Array.from({ length: state.totalWaves }, (_, index) => index + 1),
+        currentWave: state.totalWaves,
+        failedWave: undefined,
+        metadata,
+      };
+    }
+
+    if (this.isFailedRemoteStatus(result.status)) {
+      return {
+        ...state,
+        targetOrg,
+        failedWave: state.failedWave ?? {
+          waveNumber: state.currentWave ?? 1,
+          error: result.output,
+          timestamp: new Date().toISOString(),
+        },
+        metadata,
+      };
+    }
+
+    return {
+      ...state,
+      targetOrg,
+      failedWave: undefined,
+      metadata,
+    };
+  }
+
+  private isFailedRemoteStatus(status: string): boolean {
+    return ['Failed', 'Canceled', 'Error'].includes(status);
   }
 
   private expandRemainingWaves(currentWave: number, remainingCount: number, totalWaves: number): number[] {

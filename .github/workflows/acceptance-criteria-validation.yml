@@ -8,7 +8,7 @@ on:
 
 jobs:
   validate-acceptance-criteria:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_LINUX_RUNNER == 'github-hosted' && 'ubuntu-latest' || fromJSON('["self-hosted","linux","smart-deployment"]') }}
     timeout-minutes: 20
     permissions:
       contents: read
@@ -73,12 +73,17 @@ jobs:
       #   continue-on-error: true
 
       - name: Run NUTs (Salesforce integration tests)
-        if: steps.extract-issue.outputs.has_issue == 'true'
+        if: steps.extract-issue.outputs.has_issue == 'true' && contains(github.event.pull_request.labels.*.name, 'run-nuts')
         id: nuts
         timeout-minutes: 10
         run: |
           yarn test:nuts --json --reporter json > test-results-nuts.json || true
         continue-on-error: true
+
+      - name: Record skipped NUT policy
+        if: steps.extract-issue.outputs.has_issue == 'true' && !contains(github.event.pull_request.labels.*.name, 'run-nuts')
+        run: |
+          echo '{"skipped":true,"reason":"NUTs require the run-nuts label to control CI minutes."}' > test-results-nuts.json
 
       - name: Parse test results and validate AC
         if: steps.extract-issue.outputs.has_issue == 'true'

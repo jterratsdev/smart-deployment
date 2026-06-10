@@ -39,3 +39,98 @@ Always updates rather than duplicates an existing doc.
 ---
 
 <!-- Entries below this line are maintained by the agent -->
+
+## CLI Reference Impact Command
+
+- **Created:** 2026-06-03
+- **Updated:** 2026-06-03
+- **Iterations:** 1
+
+### Key decisions
+
+- Updated the existing CLI reference instead of creating a new document.
+- Documented impact command flags, read-only behavior, working-tree default, ref comparison mode, and CI JSON fields.
+
+### Prompt
+
+```
+Document the new smart-deployment impact command in docs/cli-reference.md with supported flags and behavior, preserving the existing Salesforce Cloud header and CLI reference structure.
+```
+
+---
+
+## CliReferenceGraphExport
+
+- **Created:** 2026-05-29
+- **Updated:** 2026-05-29
+- **Iterations:** 1
+
+### Key decisions
+
+- Documented `sf smart-deployment graph export` in the existing CLI reference rather than adding a new guide.
+- Captured output path precedence, supported formats, default graph export location, and JSON artifact review metadata.
+
+### Prompt
+
+```
+Update the CLI reference for PLUGIN-GRAPH-EXPORT with supported flags, behavior, default files written, and CI artifact expectations while preserving existing documentation structure and Salesforce Cloud header.
+```
+
+---
+
+## CLI Reference Init Command
+
+- **Created:** 2026-06-03
+- **Updated:** 2026-06-03
+- **Iterations:** 1
+
+### Key decisions
+
+- Documented `sf smart-deployment init` in the existing CLI reference rather than creating a separate guide.
+- Captured overwrite protection, generated config fields, project detection behavior, and non-deployment semantics.
+
+### Prompt
+
+```
+Document the new smart-deployment init command in docs/cli-reference.md with supported flags, generated config behavior, overwrite protection, and files written.
+```
+
+---
+
+## CLI Reference Retrieve Command
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+
+### Key decisions
+
+- Updated README and the existing CLI reference instead of creating a new guide.
+- Documented retrieve flags, post-retrieve .forceignore enforcement, strict failure behavior, and opt-in DigitalExperience meta normalization.
+
+### Prompt
+
+```
+Document the new smart-deployment retrieve command in README.md and docs/cli-reference.md, including forceignore-protected bundle sub-path restoration, strict ignore behavior, normalize-meta behavior, and the fact that the command guards the local workspace after Salesforce CLI retrieve completes.
+```
+
+---
+
+## CLI Reference Destructive Rollback
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+
+### Key decisions
+
+- Updated README and docs/cli-reference.md rather than adding a new guide.
+- Documented --destructive, --rollback-from, --rollback-to, reverse destructive waves, and release tags as recommended rollback boundaries.
+
+### Prompt
+
+```
+Document destructive and rollback start modes in README.md and docs/cli-reference.md, including release-tag rollback guidance and the fact that destructive mode remains part of the start command.
+```
+
+---

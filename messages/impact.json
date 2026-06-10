@@ -1,0 +1,18 @@
+{
+  "summary": "Analyze deployment impact from git changes",
+  "description": "Maps git changes to Salesforce metadata components, expands transitive dependents, reports planned deployment waves, and suggests Apex tests for CI decisions.",
+  "examples": [
+    "<%= config.bin %> <%= command.id %> --base origin/main --head HEAD --json",
+    "<%= config.bin %> smart-deployment impact --working-tree --source-path force-app"
+  ],
+  "flags.source-path.summary": "Salesforce source path to analyze",
+  "flags.source-path.description": "Path to the Salesforce source directory used to build the dependency graph and deployment waves.",
+  "flags.base.summary": "Base git ref for impact analysis",
+  "flags.base.description": "Git ref at the start of the comparison range. Must be provided with --head.",
+  "flags.head.summary": "Head git ref for impact analysis",
+  "flags.head.description": "Git ref at the end of the comparison range. Must be provided with --base.",
+  "flags.working-tree.summary": "Analyze current working-tree changes",
+  "flags.working-tree.description": "Uses git status to include staged, unstaged, and untracked working-tree changes. This is the default when --base and --head are omitted.",
+  "flags.max-depth.summary": "Maximum dependent traversal depth",
+  "flags.max-depth.description": "Limits transitive dependent traversal. Omit for unlimited depth."
+}

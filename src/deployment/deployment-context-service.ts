@@ -5,6 +5,7 @@ import {
 } from '../analysis/project-analysis-service.js';
 import type { ScanResult } from '../services/metadata-scanner-service.js';
 import type { Wave } from '../waves/wave-builder.js';
+import type { CommitScopeOptions, CommitScopeSummary } from './commit-scope-service.js';
 
 export type DeploymentAIContext = ProjectAnalysisAIContext;
 
@@ -14,6 +15,7 @@ export type DeploymentContext = {
   scanResult: ScanResult;
   orderedWaves: Wave[];
   aiContext?: DeploymentAIContext;
+  commitScope?: CommitScopeSummary;
   messages: DeploymentContextMessages;
 };
 
@@ -22,6 +24,7 @@ export type DeploymentContextBuildOptions = {
   useAI?: boolean;
   orgType?: string;
   industry?: string;
+  commitScope?: CommitScopeOptions;
 };
 
 type DeploymentContextServiceDependencies = ConstructorParameters<typeof ProjectAnalysisService>[0];
@@ -39,6 +42,7 @@ export class DeploymentContextService {
       scanResult: analysis.scanResult,
       orderedWaves: analysis.orderedWaves,
       aiContext: analysis.aiContext,
+      commitScope: analysis.commitScope,
       messages: analysis.messages,
     };
   }

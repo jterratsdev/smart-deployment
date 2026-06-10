@@ -59,3 +59,260 @@
 
 <!-- Entries below this line are maintained by agents -->
 ````
+
+## DeploymentErrorDiagnostics
+
+- **Created:** 2026-05-22
+- **Updated:** 2026-05-22
+- **Iterations:** 1
+- **Task:** PLUGIN-SF-ERROR-DIAGNOSTICS
+- **Role:** developer
+
+### Key decisions
+
+- Added a deployment-layer normalizer that converts Salesforce deploy failure output into component, problem, probable cause, remediation, raw details, and category fields.
+- Kept parsing local to deployment code and wired diagnostics into `SfCliIntegration` results plus failed wave persistence.
+- Unknown Salesforce errors retain raw details and a generic validation next-step hint.
+
+### Evidence
+
+- `npx mocha "test/unit/deployment/deployment-error-diagnostics.test.ts" "test/unit/deployment/deployment-suite.test.ts" "test/unit/deployment/start-execution-service.test.ts"` passed.
+- `npm test` passed.
+
+### Prompt
+
+```
+Translate Salesforce metadata deploy errors into actionable diagnostics and remediation hints within the deployment/presentation/commands/test ownership scope. Cover missing fields, missing objects, duplicate metadata, permissions, invalid references, source tracking conflicts, and unknown fallback behavior while preserving existing dirty state from other workers.
+```
+
+---
+
+## PlanExplainCommand
+
+- **Created:** 2026-05-22
+- **Updated:** 2026-05-22
+- **Iterations:** 2
+- **Task:** PLUGIN-PLAN-EXPLAIN
+- **Role:** qa
+
+### Key decisions
+
+- Added `smart-deployment plan explain` as a read-only command that accepts start dry-run style planning inputs and returns a stable JSON result.
+- Kept human output in a presenter and command text in a messages file to satisfy sf-plugin lint rules.
+- Suppressed command/runtime console logs during `--json` execution so CI consumers receive a single parseable JSON payload.
+
+### Evidence
+
+- `npx eslint src/commands/plan/explain.ts src/deployment/plan-explain-service.ts src/presentation/plan-explain-presenter.ts test/unit/deployment/plan-explain-service.test.ts test/unit/commands/plan-explain.test.ts --color`
+- `npx mocha --reporter spec "test/unit/deployment/plan-explain-service.test.ts" "test/unit/commands/plan-explain.test.ts"`
+- `./bin/dev.js plan explain --json`
+
+### Prompt
+
+```
+QA fix for PLUGIN-PLAN-EXPLAIN: verify the plan explain command behavior and keep JSON output stable for CI artifacts by ensuring `--json` emits only the final result object while preserving human summary output for non-JSON runs.
+```
+
+---
+
+## CiPresetCommand
+
+- **Created:** 2026-05-22
+- **Updated:** 2026-05-22
+- **Iterations:** 1
+- **Task:** PLUGIN-CI-PRESET
+- **Role:** developer
+
+### Key decisions
+
+- Added `smart-deployment ci preset` as a validation-safe CI command that reuses existing deployment context and plan report generation instead of creating a parallel artifact format.
+- Kept deterministic CI exit-code policy in `CiPresetService`: `strict` fails with exit code 2 for plan blockers, while `warn-only` and `local-only` emit artifacts and exit 0 for plan blockers.
+- Exposed GitHub Actions artifact paths through both JSON result fields and `GITHUB_OUTPUT` keys.
+
+### Evidence
+
+- `./node_modules/.bin/tsc -p . --pretty false --incremental false` passed.
+- `./node_modules/.bin/tsc -p ./test --pretty false` passed.
+- `./node_modules/.bin/eslint src/commands/ci/preset.ts src/deployment/ci-preset-service.ts test/unit/commands/ci-preset.test.ts test/unit/deployment/ci-preset-service.test.ts --color` passed.
+- `./node_modules/.bin/mocha --reporter spec "test/unit/deployment/ci-preset-service.test.ts" "test/unit/commands/ci-preset.test.ts"` passed.
+- `npm test` passed.
+
+### Prompt
+
+```
+Implement PLUGIN-CI-PRESET in the CI preset ownership scope. Add a smart-deployment CI preset command that runs dry-run planning, validation-safe checks, report artifact generation, GitHub Actions output emission, and deterministic strict/warn-only/local-only exit-code handling without touching unrelated dirty canonical worktree files.
+```
+
+---
+
+## ImpactCommand
+
+- **Created:** 2026-06-03
+- **Updated:** 2026-06-03
+- **Iterations:** 1
+- **Task:** PLUGIN-IMPACT-COMMAND
+- **Role:** developer
+
+### Key decisions
+
+- Added `smart-deployment impact` as a read-only command that accepts either `--base` plus `--head` or working-tree analysis.
+- Kept git diff/status access isolated in `ImpactAnalysisService` behind an injectable provider so command and dependency behavior can be tested without shelling out.
+- Returned CI-oriented JSON with direct changes, transitive dependents, affected components, planned waves, and Apex test suggestions.
+
+### Evidence
+
+- `./node_modules/.bin/tsc -p . --pretty false --incremental false` passed.
+- `./node_modules/.bin/tsc -p ./test --pretty false` passed.
+- `./node_modules/.bin/eslint src/commands/impact.ts src/dependencies/impact-analysis-service.ts test/unit/commands/impact.test.ts test/unit/dependencies/impact-analysis-service.test.ts --color` passed.
+- `./node_modules/.bin/mocha --reporter spec "test/unit/dependencies/impact-analysis-service.test.ts" "test/unit/commands/impact.test.ts"` passed.
+- `npm test` passed.
+- `./bin/dev.js impact --working-tree --json` returned parseable JSON.
+
+### Prompt
+
+```
+Implement PLUGIN-IMPACT-COMMAND in an isolated worktree from origin/main commit f5aab23337389ac1d0f50ad00f218501db1d07ce. Add an impact command that accepts base/head refs or working-tree mode, reports directly changed components, transitive dependents, planned waves, and suggested Apex tests, and provides JSON suitable for CI decisions. Cover added, changed, deleted, and transitive dependency cases without touching unrelated graph export, init wizard, cache, scanner metadata support, or CI workflow files.
+```
+
+---
+
+## GraphExportCommand
+
+- **Created:** 2026-05-29
+- **Updated:** 2026-05-29
+- **Iterations:** 1
+- **Task:** PLUGIN-GRAPH-EXPORT
+- **Role:** developer
+
+### Key decisions
+
+- Added `smart-deployment graph export` as a local planning command that reuses `DeploymentContextService` instead of changing scanner, impact, cache, or deployment execution flows.
+- Supports `--report-dir`, `--output`, `--format mermaid|dot|json|html`, and `--json` with JSON-safe result metadata for CI artifact collection.
+
+### Evidence
+
+- `tsc -p . --pretty false --incremental false` passed.
+- `tsc -p ./test --pretty false` passed.
+- Focused ESLint and Mocha graph export checks passed.
+- `npm test` passed.
+
+### Prompt
+
+```
+Implement PLUGIN-GRAPH-EXPORT in an isolated worktree from f5aab23. Add a graph export command that builds the existing dependency and wave context, writes selected Mermaid/DOT/JSON/HTML artifacts, keeps JSON output suitable for CI, avoids shared impact/cache/scanner/CI changes, and covers command behavior with focused tests.
+```
+
+---
+
+## InitCommand
+
+- **Created:** 2026-06-03
+- **Updated:** 2026-06-03
+- **Iterations:** 1
+- **Task:** PLUGIN-INIT-WIZARD
+- **Role:** developer
+
+### Key decisions
+
+- Added `smart-deployment init` as a deterministic, non-destructive command that delegates config generation to a service.
+- Kept overwrite protection behind `--force` and logged generated project, source, and package summary for humans while returning structured JSON.
+- Reused repo config types so generated source, cache, CI preset, and report defaults have a typed contract.
+
+### Evidence
+
+- `./node_modules/.bin/tsc -p . --pretty false --incremental false` passed.
+- `./node_modules/.bin/tsc -p ./test --pretty false` passed.
+- Focused ESLint and Mocha init checks passed.
+- `npm test` passed.
+- `./bin/dev.js init --source-path /private/tmp/sd-init-smoke-1780543803668 --force --non-interactive --json` exited 0.
+
+### Prompt
+
+```
+Regenerate and integrate PLUGIN-INIT-WIZARD after the original worker worktree lost its source files. Add a Smart Deployment init command that detects Salesforce project structure, writes .smart-deployment.json with source/cache/CI/report defaults, refuses overwrite unless --force, and covers command/service behavior with tests.
+```
+
+---
+
+## CommitScopedDeploymentCommands
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+- **Task:** PLUGIN-COMMIT-SCOPED-DEPLOYMENTS
+- **Role:** developer
+
+### Key decisions
+
+- Added --scope-commits and --scope-manifest flags to start, validate, ci preset, and plan explain so trunk-based validation can restrict deployment planning to selected commits or story manifest commits.
+- Kept command behavior validation-safe: source files are not deleted or rewritten; scoped metadata is filtered in the analysis context before reports/manifests are generated.
+
+### Evidence
+
+- npm test passed.
+- Focused CommitScopeService and ci preset command tests passed.
+
+### Prompt
+
+```
+Support deployments based on user stories or commits so validation and deployment planning can ignore metadata not included in selected commits, preventing trunk-based work that is not ready from being included in production plans.
+```
+
+---
+
+## RetrieveCommand
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+- **Task:** gh-feature-222-forceignore-stash
+- **Role:** developer
+
+### Key decisions
+
+- Added a smart-deployment retrieve alias that wraps Salesforce CLI retrieve inputs without changing the underlying retrieve command contract.
+- Kept command messages in messages/retrieve.json and returned structured JSON result fields for changed, protected, restored, and normalized paths.
+- strict-ignore reports failure only after the service restores ignored paths so the workspace is left clean.
+
+### Evidence
+
+- tsc source passed.
+- tsc tests passed.
+- Focused ESLint and Mocha retrieve checks passed.
+- retrieve help smoke passed.
+
+### Prompt
+
+```
+Implement GitHub issue #222 by adding a forceignore-safe retrieve command for composite Salesforce bundles. The command should pass metadata, manifest, target org, and wait flags to sf project retrieve start, expose strict ignore and DigitalExperience meta normalization options, and preserve existing command/message conventions.
+```
+
+---
+
+## StartDestructiveRollbackCommand
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+- **Task:** gh-feature-225-destructive-rollback
+- **Role:** developer
+
+### Key decisions
+
+- Extended the existing start command instead of adding a new destructive command.
+- Added --destructive, --rollback-from, and --rollback-to flags through start messages so help output remains generated from message files.
+- Rollback execution plans can run a destructive phase for added metadata and a normal restore phase for modified or deleted metadata from the earlier ref.
+
+### Evidence
+
+- start --help smoke exposed destructive and rollback flags.
+- Focused destructive/rollback mocha suite passed.
+- npm run build passed.
+
+### Prompt
+
+```
+Implement GitHub issue #225 by adding destructive and rollback modes to sf smart-deployment start. Preserve normal analysis and wave generation, avoid adding a new top-level command, expose flags in help, and route rollback refs through staged destructive and restore phases.
+```
+
+---

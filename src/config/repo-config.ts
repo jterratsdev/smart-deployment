@@ -15,12 +15,42 @@ export type RepoLLMConfig = {
   rateLimit?: number;
 };
 
+export type RepoSourceConfig = {
+  path?: string;
+  packageDirectories?: string[];
+  apiVersion?: string;
+};
+
+export type RepoCacheConfig = {
+  enabled?: boolean;
+  strategy?: 'file-hash' | 'none';
+};
+
+export type RepoCiPresetConfig = {
+  validationMode?: 'strict' | 'warn-only' | 'local-only';
+  skipTests?: boolean;
+  reportDir?: string;
+};
+
+export type RepoCiConfig = {
+  preset?: RepoCiPresetConfig;
+};
+
+export type RepoReportConfig = {
+  planDir?: string;
+  graphDir?: string;
+};
+
 export type DeploymentConfig = {
   priorities?: UserPriorities;
   testLevel?: string;
   timeout?: number;
   retryStrategy?: string;
   llm?: RepoLLMConfig;
+  source?: RepoSourceConfig;
+  cache?: RepoCacheConfig;
+  ci?: RepoCiConfig;
+  reports?: RepoReportConfig;
 };
 
 export function getRepoConfigPath(baseDir?: string): string {

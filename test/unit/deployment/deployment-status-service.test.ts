@@ -112,6 +112,96 @@ describe('DeploymentStatusService', () => {
     expect(summary.waveGraph).to.equal(undefined);
   });
 
+  it('refreshes persisted state from remote deployment report when a target org is provided', async () => {
+    await stateManager.saveState({
+      deploymentId: '0AfREMOTE000001',
+      targetOrg: 'old-org',
+      timestamp: '2026-04-20T00:00:00.000Z',
+      totalWaves: 2,
+      completedWaves: [],
+      currentWave: 1,
+      failedWave: {
+        waveNumber: 1,
+        error: 'Polling timed out',
+        timestamp: '2026-04-20T00:00:10.000Z',
+      },
+    });
+    const refreshedService = new DeploymentStatusService(stateManager, {
+      checkDeploymentStatus: async (deploymentId, targetOrg) => {
+        expect(deploymentId).to.equal('0AfREMOTE000001');
+        expect(targetOrg).to.equal('release-org');
+        return {
+          success: true,
+          deploymentId,
+          status: 'Succeeded',
+          componentSuccesses: 2,
+          componentFailures: 0,
+          testsRun: 3,
+          testFailures: 0,
+          output: '{}',
+        };
+      },
+    });
+
+    const summary = await refreshedService.getStatus({ targetOrg: 'release-org' });
+    const savedState = await stateManager.loadState();
+
+    expect(summary.status).to.equal('completed');
+    expect(summary.resumable).to.equal(false);
+    expect(summary.completedWaves).to.deep.equal([1, 2]);
+    expect(savedState?.failedWave).to.equal(undefined);
+    expect(savedState?.targetOrg).to.equal('release-org');
+    expect(savedState?.metadata).to.deep.include({
+      lastKnownStatus: 'Succeeded',
+      remoteStatus: 'Succeeded',
+      remoteComponentSuccesses: 2,
+      remoteTestsRun: 3,
+    });
+  });
+
+  it('keeps a remote in-progress deployment resumable false without treating success false as failure', async () => {
+    await stateManager.saveState({
+      deploymentId: '0AfREMOTE000002',
+      targetOrg: 'old-org',
+      timestamp: '2026-04-20T00:00:00.000Z',
+      totalWaves: 2,
+      completedWaves: [1],
+      currentWave: 2,
+      failedWave: {
+        waveNumber: 2,
+        error: 'Earlier polling timeout',
+        timestamp: '2026-04-20T00:00:10.000Z',
+      },
+    });
+    const refreshedService = new DeploymentStatusService(stateManager, {
+      checkDeploymentStatus: async (deploymentId, targetOrg) => {
+        expect(deploymentId).to.equal('0AfREMOTE000002');
+        expect(targetOrg).to.equal('release-org');
+        return {
+          success: false,
+          deploymentId,
+          status: 'InProgress',
+          componentSuccesses: 1,
+          componentFailures: 0,
+          testsRun: 1,
+          testFailures: 0,
+          output: '{}',
+        };
+      },
+    });
+
+    const summary = await refreshedService.getStatus({ targetOrg: 'release-org' });
+    const savedState = await stateManager.loadState();
+
+    expect(summary.status).to.equal('in-progress');
+    expect(summary.resumable).to.equal(false);
+    expect(savedState?.failedWave).to.equal(undefined);
+    expect(savedState?.metadata).to.deep.include({
+      lastKnownStatus: 'InProgress',
+      remoteStatus: 'InProgress',
+    });
+  });
+
   it('returns a resume summary for failed deployments', async () => {
     await stateManager.saveState({
       deploymentId: 'deploy-456',

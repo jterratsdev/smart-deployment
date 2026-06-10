@@ -35,7 +35,7 @@ permissions:
 jobs:
   prepare-release:
     name: Prepare release from package version
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_LINUX_RUNNER == 'github-hosted' && 'ubuntu-latest' || fromJSON('["self-hosted","linux","smart-deployment"]') }}
     if: (github.event_name == 'workflow_dispatch' && !inputs.tag) || github.event_name == 'push'
 
     concurrency:
@@ -288,7 +288,7 @@ jobs:
 
   publish-npm:
     name: Publish to npm Registry
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_LINUX_RUNNER == 'github-hosted' && 'ubuntu-latest' || fromJSON('["self-hosted","linux","smart-deployment"]') }}
     if: github.event_name == 'release' || inputs.tag
 
     steps:

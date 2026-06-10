@@ -59,3 +59,231 @@
 
 <!-- Entries below this line are maintained by agents -->
 ````
+
+## PlanExplainService
+
+- **Created:** 2026-05-22
+- **Updated:** 2026-05-22
+- **Iterations:** 1
+- **Task:** PLUGIN-PLAN-EXPLAIN
+- **Role:** developer
+
+### Key decisions
+
+- Reused `DeploymentContextService` and `SpecialDeploymentPlanService` instead of changing wave generation or provider planning.
+- Reports direct dependencies, recursively discovered transitive blockers, unresolved references, provider-owned phase decisions, and confidence values in deterministic arrays.
+- Carries `architecturalConcerns` in structured output per developer playbook requirements.
+
+### Evidence
+
+- `npx eslint src/commands/plan/explain.ts src/deployment/plan-explain-service.ts src/presentation/plan-explain-presenter.ts test/unit/deployment/plan-explain-service.test.ts test/unit/commands/plan-explain.test.ts --color`
+- `npx mocha --reporter spec "test/unit/deployment/plan-explain-service.test.ts" "test/unit/commands/plan-explain.test.ts"`
+
+### Prompt
+
+```
+Implement the smallest coherent plan explanation service for PLUGIN-PLAN-EXPLAIN using existing deployment context and provider plan services. The result must justify component placement, dependency edges, unresolved references, provider-owned metadata decisions, confidence levels, and empty plans without executing deployments or provider calls beyond existing local plan construction.
+```
+
+---
+
+## GraphExportService
+
+- **Created:** 2026-05-29
+- **Updated:** 2026-05-29
+- **Iterations:** 1
+- **Task:** PLUGIN-GRAPH-EXPORT
+- **Role:** developer
+
+### Key decisions
+
+- Kept graph artifact generation in `src/reports` with a structured report contract shared by Mermaid, DOT, JSON, and HTML renderers.
+- Included deployment review metadata: components, dependency edges, wave grouping, cycle markers, isolated components, edge wave crossings, source, reason, and confidence.
+- Escapes Mermaid, DOT, and HTML labels so metadata names cannot corrupt graph syntax or rendered HTML.
+
+### Evidence
+
+- `tsc -p . --pretty false --incremental false` passed.
+- `tsc -p ./test --pretty false` passed.
+- Focused ESLint and Mocha graph export checks passed.
+- `npm test` passed.
+
+### Prompt
+
+```
+Create a report-layer graph export service for PLUGIN-GRAPH-EXPORT that transforms the existing deployment context into review-ready graph metadata and renders Mermaid, DOT, JSON, and HTML without modifying shared dependency analysis semantics.
+```
+
+---
+
+## InitConfigGenerationService
+
+- **Created:** 2026-06-03
+- **Updated:** 2026-06-03
+- **Iterations:** 1
+- **Task:** PLUGIN-INIT-WIZARD
+- **Role:** developer
+
+### Key decisions
+
+- Centralized config generation in a service that detects `sfdx-project.json`, derives relative package paths, and writes deterministic JSON.
+- Treats missing config as creatable, but surfaces unreadable or invalid existing config errors instead of silently replacing them.
+- Stores CI preset defaults and report directories without executing deployment or validation commands.
+
+### Evidence
+
+- `./node_modules/.bin/tsc -p . --pretty false --incremental false` passed.
+- `./node_modules/.bin/tsc -p ./test --pretty false` passed.
+- Focused ESLint and Mocha init checks passed.
+- `npm test` passed.
+- `./bin/dev.js init --source-path /private/tmp/sd-init-smoke-1780543803668 --force --non-interactive --json` exited 0.
+
+### Prompt
+
+```
+Create the init config generation service for PLUGIN-INIT-WIZARD with deterministic Salesforce project detection, overwrite protection, typed repo configuration output, and focused tests for defaults, force overwrite, and custom options.
+```
+
+---
+
+## CommitScopeService
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+- **Task:** PLUGIN-COMMIT-SCOPED-DEPLOYMENTS
+- **Role:** developer
+
+### Key decisions
+
+- Introduced a deployment-layer commit scope service that reads explicit commits or story manifest commits, maps git file changes to scanned metadata components, and keeps only changed components plus their outgoing dependency closure.
+- Rebuilds the dependency graph from cloned scoped components so unrelated trunk metadata is omitted while required dependencies remain available for wave ordering and manifest generation.
+- Deleted files from selected commits are reported as changed files but ignored when they no longer exist in the current scan, avoiding destructive source behavior.
+
+### Evidence
+
+- ./node_modules/.bin/tsc -p . --pretty false --incremental false passed.
+- ./node_modules/.bin/tsc -p ./test --pretty false passed.
+- npm test passed.
+
+### Prompt
+
+```
+Create a shared service for commit/story scoped deployment planning. It must filter metadata in memory to selected commit changes, include required dependencies, exclude unrelated trunk work, and integrate with existing ProjectAnalysisService wave generation without duplicating impact-analysis dependent semantics.
+```
+
+---
+
+## RetrieveForceIgnoreService
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+- **Task:** gh-feature-222-forceignore-stash
+- **Role:** developer
+
+### Key decisions
+
+- Reused ForceIgnoreParser so ordered .forceignore rules and negations remain consistent with deploy staging behavior.
+- Enforced ignore protection after retrieve by inspecting git status porcelain output, restoring tracked protected files from HEAD, and removing untracked protected paths created by retrieve.
+- Kept DigitalExperience meta JSON normalization opt-in and separate from ignore detection.
+
+### Evidence
+
+- tsc source passed.
+- tsc tests passed.
+- Focused ESLint and Mocha retrieve checks passed.
+- npm test passed before final prompt-registry updates.
+
+### Prompt
+
+```
+Create a deployment service for issue #222 that runs Salesforce retrieve, reloads .forceignore, detects touched workspace paths, restores ignored bundle sub-paths for DigitalExperienceBundle, LightningComponentBundle, AuraDefinitionBundle, and other ignored paths visible to git, supports strict failure after restore, and optionally normalizes DigitalExperience meta JSON.
+```
+
+---
+
+## DestructiveRollbackDeploymentServices
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+- **Task:** gh-feature-225-destructive-rollback
+- **Role:** developer
+
+### Key decisions
+
+- WaveManifestService now emits empty package manifests plus per-wave destructiveChanges manifests.
+- DeploymentRunner preserves forceignore staging and passes destructive manifest paths to SfCliIntegration.
+- StartExecutionService reverses wave order for destructive execution and bypasses deploy-only cycle and dynamic-query guards.
+- RollbackPlanningService classifies git name-status entries as destructive adds or restore modifications/deletions and builds restore contexts from an archive of the earlier ref.
+
+### Evidence
+
+- Focused eslint, build, and destructive/rollback mocha suites passed.
+- npm test was run after implementation.
+
+### Prompt
+
+```
+Add deployment services for destructive wave execution and ref-based rollback. Generate destructiveChanges manifests with empty package manifests, call Salesforce CLI using --post-destructive-changes, execute destructive waves in reverse order, and classify git diffs so added metadata is deleted while modified/deleted metadata is restored from the rollback-from ref.
+```
+
+---
+
+## GenAiPlannerBundleScanner
+
+- **Created:** 2026-06-05
+- **Updated:** 2026-06-05
+- **Iterations:** 1
+- **Task:** gh-bug-223-genai-planner-wave
+- **Role:** developer
+
+### Key decisions
+
+- MetadataScannerService now scans Employee Copilot genAiPlannerBundles as deployable GenAiPlannerBundle components when no AiAuthoringBundle with the same name exists.
+- AgentScript generated planner bundles remain excluded when an AiAuthoringBundle source bundle owns the same agent name.
+- Planner bundle parsing extracts local Flow, ApexClass, and GenAiPromptTemplate references from JSON/XML/YAML bundle files so wave ordering can place dependencies first.
+
+### Evidence
+
+- ./node_modules/.bin/tsc -p . --pretty false --incremental false passed.
+- ./node_modules/.bin/tsc -p ./test --pretty false passed.
+- Focused ESLint and Mocha scanner/analysis suites passed.
+
+### Prompt
+
+```
+Fix GitHub issue #223 by scanning Employee Copilot GenAiPlannerBundle metadata into normal deployment analysis while preserving AgentScript generated bundle exclusion when an AiAuthoringBundle exists for the same agent. Add deterministic coverage for scanner behavior and wave placement.
+```
+
+---
+
+## RemoteDeploymentStatusResumeServices
+
+- **Created:** 2026-06-08
+- **Updated:** 2026-06-08
+- **Iterations:** 1
+- **Task:** NEXT-001-remote-status-resume
+- **Role:** developer
+
+### Key decisions
+
+- Status remains local-only unless the command receives --target-org; with a target org it refreshes persisted state through sf project deploy report.
+- Resume remains local-only unless --target-org is provided; with a target org it calls sf project deploy resume before updating resume metadata.
+- Remote report/resume results are stored in deployment state metadata so command JSON and later status views can inspect remote status without requiring a live org in default local flows.
+
+### Evidence
+
+- tsc source/test with --noEmit passed.
+- Focused ESLint passed for status/resume services, commands, and tests.
+- Focused Mocha command/service suites passed.
+- Deployment validation harness NUT passed.
+
+### Prompt
+
+```
+Continue GitHub issue #198 by adding remote deployment id semantics to status and resume. Use sf project deploy report/resume only when --target-org is explicitly provided, preserve existing local behavior otherwise, persist remote status metadata, and cover the service behavior with deterministic tests.
+```
+
+---

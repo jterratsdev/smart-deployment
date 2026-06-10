@@ -17,6 +17,7 @@ export type StartExecutionOptions = {
   validateOnly: boolean;
   allowCycleRemediation: boolean;
   skipTests: boolean;
+  destructive?: boolean;
   targetOrg?: string;
   sourcePath?: string;
   deploymentContext: DeploymentContext;
@@ -70,14 +71,16 @@ export class StartExecutionService {
     }
 
     const { scanResult, orderedWaves, aiContext } = options.deploymentContext;
+    const destructive = options.destructive === true;
+    const executionWaves = destructive ? [...orderedWaves].reverse() : orderedWaves;
     const testExecutor = this.testPlanService.createExecutor(scanResult.components);
+    const remediationPlan = destructive
+      ? undefined
+      : new CycleRemediationPlanner(scanResult.dependencyResult.graph, {
+          components: scanResult.dependencyResult.components,
+        }).createPlan();
 
-    const planner = new CycleRemediationPlanner(scanResult.dependencyResult.graph, {
-      components: scanResult.dependencyResult.components,
-    });
-    const remediationPlan = planner.createPlan();
-
-    if (remediationPlan.cycles.length > 0) {
+    if (remediationPlan && remediationPlan.cycles.length > 0) {
       options.log(`♻️ Detected ${remediationPlan.cycles.length} circular dependency cycle(s).`);
 
       if (!options.allowCycleRemediation) {
@@ -105,9 +108,11 @@ export class StartExecutionService {
       throw new Error('The --target-org flag is required for real deployments.');
     }
 
-    await this.assertDynamicQueryFieldsAreSafe(scanResult.dependencyResult, options.targetOrg);
+    if (!destructive) {
+      await this.assertDynamicQueryFieldsAreSafe(scanResult.dependencyResult, options.targetOrg);
+    }
 
-    if (remediationPlan.cycles.length > 0) {
+    if (remediationPlan && remediationPlan.cycles.length > 0) {
       await this.cycleRemediationRunner.execute({
         deploymentId,
         targetOrg: options.targetOrg,
@@ -129,7 +134,7 @@ export class StartExecutionService {
       deploymentId,
       targetOrg: options.targetOrg,
       sourcePath: options.sourcePath,
-      orderedWaves,
+      orderedWaves: executionWaves,
       dependencyGraph: scanResult.dependencyResult.graph,
       componentMap: scanResult.dependencyResult.components,
       apiVersion: scanResult.apiVersion,
@@ -139,6 +144,7 @@ export class StartExecutionService {
       stateManager,
       sfCli,
       aiContext,
+      mode: destructive ? 'destructive' : 'deploy',
       log: options.log,
     });
 

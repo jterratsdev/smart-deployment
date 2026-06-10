@@ -260,6 +260,64 @@ describe('StartCommand', () => {
     expect(result.success).to.equal(true);
   });
 
+  it('writes dry-run deployment plan reports to the requested report directory', async () => {
+    const { projectRoot } = await createProjectWithRelatedTest(tempDir);
+    const reportDir = path.join(tempDir, 'ci-artifacts', 'smart-deployment');
+    const command = new Start([], {} as never);
+    const logs: string[] = [];
+
+    (command as unknown as StartCommandTestDouble).parse = async () => ({
+      flags: {
+        'target-org': 'test-org',
+        'dry-run': true,
+        'validate-only': false,
+        'skip-tests': true,
+        'use-ai': false,
+        'allow-cycle-remediation': false,
+        'source-path': projectRoot,
+        'report-dir': reportDir,
+      },
+      args: {},
+      argv: [],
+      raw: [],
+      metadata: { flags: {}, args: {} },
+      nonExistentFlags: [],
+      _runtime: {},
+    });
+    (command as unknown as StartCommandTestDouble).log = (message?: string) => {
+      if (message) logs.push(message);
+    };
+    (command as unknown as StartCommandTestDouble).warn = () => undefined;
+    (command as unknown as StartCommandTestDouble).error = (message: string) => {
+      throw new Error(message);
+    };
+
+    const result = await command.run();
+    const jsonPath = path.join(reportDir, 'deployment-plan.json');
+    const htmlPath = path.join(reportDir, 'deployment-plan.html');
+    const report = JSON.parse(await readFile(jsonPath, 'utf8')) as {
+      command: { mode: string };
+      providerPhases: Array<{ name: string; provider: string; status: string; detail: string }>;
+      waves: Array<{ components: Array<{ id: string }> }>;
+    };
+    const html = await readFile(htmlPath, 'utf8');
+
+    expect(result.reports).to.deep.equal({ jsonPath, htmlPath });
+    expect(report.command.mode).to.equal('dry-run');
+    expect(report.providerPhases).to.deep.include({
+      name: 'deployment-execution',
+      provider: 'sf-cli',
+      status: 'skipped',
+      detail: 'Skipped because --dry-run was requested',
+    });
+    expect(report.waves.flatMap((wave) => wave.components.map((component) => component.id))).to.include(
+      'ApexClass:AccountService'
+    );
+    expect(html).to.include('Deployment Plan Report');
+    expect(logs.join('\n')).to.include(`JSON report: ${jsonPath}`);
+    expect(logs.join('\n')).to.include(`HTML report: ${htmlPath}`);
+  });
+
   it('fails fast on circular dependencies unless remediation is explicitly enabled', async () => {
     const { projectRoot } = await createCircularProject(tempDir);
     const command = new Start([], {} as never);

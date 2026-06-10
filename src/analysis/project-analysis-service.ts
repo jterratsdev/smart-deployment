@@ -1,6 +1,11 @@
 import { AgentforcePriorityService } from '../ai/agentforce-priority-service.js';
 import { DependencyInferenceService, type InferredDependency } from '../ai/dependency-inference-service.js';
 import { DependencyGraphBuilder } from '../dependencies/dependency-graph-builder.js';
+import {
+  CommitScopeService,
+  type CommitScopeOptions,
+  type CommitScopeSummary,
+} from '../deployment/commit-scope-service.js';
 import { MetadataScannerService, type ScanResult } from '../services/metadata-scanner-service.js';
 import type { NodeId } from '../types/dependency.js';
 import type { PriorityOverride } from '../types/deployment-plan.js';
@@ -33,6 +38,7 @@ export type ProjectAnalysisResult = {
   orderedWaves: Wave[];
   priorityOverrides: Record<string, PriorityOverride>;
   aiContext?: ProjectAnalysisAIContext;
+  commitScope?: CommitScopeSummary;
   messages: ProjectAnalysisMessages;
 };
 
@@ -41,18 +47,21 @@ export type ProjectAnalysisBuildOptions = {
   useAI?: boolean;
   orgType?: string;
   industry?: string;
+  commitScope?: CommitScopeOptions;
 };
 
 type ProjectAnalysisServiceDependencies = {
   scanner?: MetadataScannerService;
   createInferenceService?: (baseDir: string) => Pick<DependencyInferenceService, 'inferDependencies'>;
   createPriorityService?: (baseDir: string) => AgentforcePriorityService;
+  commitScopeService?: Pick<CommitScopeService, 'apply'>;
 };
 
 export class ProjectAnalysisService {
   private readonly scanner: MetadataScannerService;
   private readonly createInferenceService: NonNullable<ProjectAnalysisServiceDependencies['createInferenceService']>;
   private readonly createPriorityService: NonNullable<ProjectAnalysisServiceDependencies['createPriorityService']>;
+  private readonly commitScopeService: Pick<CommitScopeService, 'apply'>;
 
   public constructor(dependencies: ProjectAnalysisServiceDependencies = {}) {
     this.scanner = dependencies.scanner ?? new MetadataScannerService();
@@ -62,6 +71,7 @@ export class ProjectAnalysisService {
     this.createPriorityService =
       dependencies.createPriorityService ??
       ((baseDir): AgentforcePriorityService => new AgentforcePriorityService({ baseDir }));
+    this.commitScopeService = dependencies.commitScopeService ?? new CommitScopeService();
   }
 
   public async buildAnalysis(options: ProjectAnalysisBuildOptions = {}): Promise<ProjectAnalysisResult> {
@@ -96,6 +106,24 @@ export class ProjectAnalysisService {
         dependencyResult = graphBuilder.build();
         scanResult.dependencyResult = dependencyResult;
       }
+    }
+
+    let commitScope: CommitScopeSummary | undefined;
+    const hasCommitScope =
+      (options.commitScope?.commits?.length ?? 0) > 0 || options.commitScope?.manifestPath !== undefined;
+    if (hasCommitScope) {
+      const scoped = await this.commitScopeService.apply(scanResult, options.commitScope);
+      scanResult.components = scoped.scanResult.components;
+      scanResult.dependencyResult = scoped.scanResult.dependencyResult;
+      dependencyResult = scoped.scanResult.dependencyResult;
+      commitScope = scoped.summary;
+      messages.logs.push(
+        [
+          `  Scope: ${commitScope.includedComponents.length} component(s) selected`,
+          `from ${commitScope.commits.length} commit(s);`,
+          `${commitScope.ignoredComponents.length} ignored.`,
+        ].join(' ')
+      );
     }
 
     const waveBuilder = new WaveBuilder({
@@ -158,6 +186,7 @@ export class ProjectAnalysisService {
       orderedWaves,
       priorityOverrides,
       aiContext,
+      commitScope,
       messages,
     };
   }

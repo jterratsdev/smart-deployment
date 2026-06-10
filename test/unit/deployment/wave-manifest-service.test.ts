@@ -109,4 +109,40 @@ describe('WaveManifestService', () => {
     expect(content).to.include('<name>Network</name>');
     expect(content).to.include('<name>CustomSite</name>');
   });
+
+  it('generates a destructiveChanges manifest with an empty package manifest', async () => {
+    const baseDir = await mkdtemp(path.join(os.tmpdir(), 'wave-manifest-destructive-'));
+    const service = new WaveManifestService();
+    const components = new Map<string, MetadataComponent>([
+      [
+        'ApexClass:DeletedService',
+        {
+          name: 'DeletedService',
+          type: 'ApexClass',
+          filePath: 'force-app/main/default/classes/DeletedService.cls',
+          dependencies: new Set<string>(),
+          dependents: new Set<string>(),
+          priorityBoost: 0,
+        },
+      ],
+    ]);
+
+    const result = await service.generateDestructiveManifest({
+      baseDir,
+      waveNumber: 3,
+      components: ['ApexClass:DeletedService'],
+      componentMap: components,
+      apiVersion: '66.0',
+    });
+
+    const emptyPackage = await readFile(result.packagePath, 'utf8');
+    const destructiveChanges = await readFile(result.destructiveChangesPath, 'utf8');
+
+    expect(result.packagePath).to.match(/wave-003-package.xml$/);
+    expect(result.destructiveChangesPath).to.match(/wave-003-destructiveChanges.xml$/);
+    expect(emptyPackage).to.not.include('<types>');
+    expect(emptyPackage).to.include('<version>66.0</version>');
+    expect(destructiveChanges).to.include('<members>DeletedService</members>');
+    expect(destructiveChanges).to.include('<name>ApexClass</name>');
+  });
 });

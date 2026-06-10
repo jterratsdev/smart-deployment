@@ -13,10 +13,11 @@
 import { type Interfaces } from '@oclif/core';
 import { Messages } from '@salesforce/core';
 import { Flags, SfCommand, optionalOrgFlagWithDeprecations } from '@salesforce/sf-plugins-core';
+import type { CommitScopeOptions } from '../deployment/commit-scope-service.js';
 import { DeploymentValidationService } from '../deployment/deployment-validation-service.js';
 import { ValidateCommandPresenter } from '../presentation/validate-command-presenter.js';
-import { getLogger } from '../utils/logger.js';
 import type { MetadataDependencyKind } from '../types/metadata.js';
+import { getLogger } from '../utils/logger.js';
 
 const logger = getLogger('ValidateCommand');
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
@@ -30,6 +31,13 @@ type ValidateResult = {
   dependencyBreakdown: Record<MetadataDependencyKind, number>;
   waves: number;
   issueCount: number;
+  commitScope?: {
+    commits: string[];
+    changedComponents: string[];
+    dependencyComponents: string[];
+    includedComponents: string[];
+    ignoredComponents: string[];
+  };
   ai?: {
     analyzed: boolean;
     provider?: string;
@@ -53,6 +61,12 @@ export default class Validate extends SfCommand<ValidateResult> {
       summary: messages.getMessage('flags.use-ai.summary'),
       default: false,
     }),
+    'scope-commits': Flags.string({
+      summary: messages.getMessage('flags.scope-commits.summary'),
+    }),
+    'scope-manifest': Flags.string({
+      summary: messages.getMessage('flags.scope-manifest.summary'),
+    }),
   };
 
   public async run(): Promise<ValidateResult> {
@@ -60,11 +74,13 @@ export default class Validate extends SfCommand<ValidateResult> {
     const validationService = new DeploymentValidationService();
     const sourcePath = typeof flags['source-path'] === 'string' ? flags['source-path'] : undefined;
     const useAI = flags['use-ai'] === true;
+    const commitScope = this.getCommitScopeOptions(flags);
 
     logger.info('Validating wave plan', { flags });
 
     const summary = await validationService.validateProject(sourcePath, {
       useAI,
+      commitScope,
     });
     presenter.reportValidationResult(this, summary);
 
@@ -75,6 +91,7 @@ export default class Validate extends SfCommand<ValidateResult> {
       dependencyBreakdown: summary.dependencyBreakdown,
       waves: summary.totalWaves,
       issueCount: summary.issues.length,
+      commitScope: summary.commitScope,
       ai: useAI
         ? {
             analyzed: summary.aiAnalyzed ?? false,
@@ -85,5 +102,12 @@ export default class Validate extends SfCommand<ValidateResult> {
           }
         : undefined,
     };
+  }
+
+  private getCommitScopeOptions(flags: Record<string, unknown>): CommitScopeOptions | undefined {
+    const commits = typeof flags['scope-commits'] === 'string' ? [flags['scope-commits']] : undefined;
+    const manifestPath = typeof flags['scope-manifest'] === 'string' ? flags['scope-manifest'] : undefined;
+
+    return commits !== undefined || manifestPath !== undefined ? { commits, manifestPath } : undefined;
   }
 }

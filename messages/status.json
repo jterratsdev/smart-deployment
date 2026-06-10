@@ -4,5 +4,6 @@
     "<%= config.bin %> <%= command.id %> --source-path force-app",
     "<%= config.bin %> <%= command.id %> --target-org myorg --source-path force-app"
   ],
+  "flags.target-org.summary": "Target Salesforce org alias or username for remote deployment status refresh",
   "flags.source-path.summary": "Path to the Salesforce project containing deployment state"
 }
