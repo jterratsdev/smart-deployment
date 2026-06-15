@@ -3,11 +3,13 @@ import * as path from 'node:path';
 import { expect } from 'chai';
 import { afterEach, describe, it } from 'mocha';
 import { StateManager } from '../src/deployment/state-manager.js';
+import { createFakeSfCli, readDeploymentState } from './nut/command-fixtures.js';
 import {
   cleanupNutContexts,
   createNutContext,
   createSalesforceProject,
   execNutCommand,
+  execNutCommandWithOptions,
   parseJsonStdout,
 } from './helpers/nut-helpers.js';
 
@@ -232,6 +234,121 @@ describe('NUT: validate, status, and resume commands', () => {
       resumedFromWave: 3,
       lastKnownStatus: 'Resumed',
     });
+  });
+
+  it('start persists remote deployment id and generated manifest when sf deploy reports partial failure', async () => {
+    const { tempDir, homeDir } = await createNutContext();
+    tempDirs.push(tempDir);
+    const projectRoot = await createSalesforceProject(tempDir, 'start-partial-failure-project', {
+      'force-app/main/default/classes/BrokenClass.cls': 'public class BrokenClass { MissingDependency value; }\n',
+      'force-app/main/default/classes/BrokenClass.cls-meta.xml': [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">',
+        '  <apiVersion>61.0</apiVersion>',
+        '  <status>Active</status>',
+        '</ApexClass>',
+        '',
+      ].join('\n'),
+    });
+    const fakeSf = await createFakeSfCli(tempDir, 'partial-failure');
+
+    const result = execNutCommandWithOptions(
+      `start --source-path ${projectRoot} --target-org fake-org --skip-tests --json`,
+      { homeDir, env: fakeSf.env, ensureExitCode: 'nonZero' }
+    );
+
+    const state = await readDeploymentState(projectRoot);
+    const manifest = await readFile(path.join(projectRoot, '.smart-deployment/manifests/wave-001.xml'), 'utf8');
+    const calls = await fakeSf.readCalls();
+
+    expect(result.shellOutput.stderr).to.include('Wave 1 failed');
+    expect(state.deploymentId).to.equal('0AfFakePartialFailure');
+    expect(state.failedWave?.waveNumber).to.equal(1);
+    expect(state.metadata?.lastKnownStatus).to.equal('Failed');
+    expect(manifest).to.include('<members>BrokenClass</members>');
+    expect(calls.some((call) => call.args.join(' ').startsWith('project deploy start'))).to.equal(true);
+  });
+
+  it('status refreshes persisted state from sf project deploy report when target org is provided', async () => {
+    const { tempDir, homeDir } = await createNutContext();
+    tempDirs.push(tempDir);
+    const projectRoot = await createSalesforceProject(tempDir, 'status-report-project', {
+      'force-app/main/default/classes/StatusRemote.cls': 'public class StatusRemote {}\n',
+    });
+    const stateManager = new StateManager({ baseDir: projectRoot });
+    const fakeSf = await createFakeSfCli(tempDir, 'report-in-progress');
+
+    await stateManager.saveState({
+      deploymentId: '0AfFakeReportInProgress',
+      targetOrg: 'fake-org',
+      timestamp: '2026-04-22T00:00:00.000Z',
+      totalWaves: 2,
+      completedWaves: [],
+      currentWave: 1,
+      failedWave: {
+        waveNumber: 1,
+        error: 'Previous timeout',
+        timestamp: '2026-04-22T00:01:00.000Z',
+      },
+    });
+
+    const result = execNutCommandWithOptions<{ status: string; canResume: boolean }>(
+      `status --source-path ${projectRoot} --target-org fake-org --json`,
+      { homeDir, env: fakeSf.env }
+    );
+
+    const output = parseJsonStdout<{ status: string; canResume: boolean }>(result.shellOutput.stdout);
+    const refreshed = await readDeploymentState(projectRoot);
+    const calls = await fakeSf.readCalls();
+
+    expect(output.status).to.equal('In Progress');
+    expect(output.canResume).to.equal(false);
+    expect(refreshed.failedWave).to.equal(undefined);
+    expect(refreshed.metadata?.lastKnownStatus).to.equal('InProgress');
+    expect(calls.some((call) => call.args.join(' ').startsWith('project deploy report'))).to.equal(true);
+  });
+
+  it('resume delegates to sf project deploy resume before updating local state when target org is provided', async () => {
+    const { tempDir, homeDir } = await createNutContext();
+    tempDirs.push(tempDir);
+    const projectRoot = await createSalesforceProject(tempDir, 'resume-remote-project', {
+      'force-app/main/default/classes/ResumeRemote.cls': 'public class ResumeRemote {}\n',
+    });
+    const stateManager = new StateManager({ baseDir: projectRoot });
+    const fakeSf = await createFakeSfCli(tempDir, 'resume-success');
+
+    await stateManager.saveState({
+      deploymentId: '0AfFakeResumeStart',
+      targetOrg: 'fake-org',
+      timestamp: '2026-04-22T00:00:00.000Z',
+      totalWaves: 3,
+      completedWaves: [1],
+      currentWave: 2,
+      failedWave: {
+        waveNumber: 2,
+        error: 'Timeout waiting for deploy result',
+        timestamp: '2026-04-22T00:01:00.000Z',
+      },
+    });
+
+    const result = execNutCommandWithOptions<{ success: boolean; deploymentId: string }>(
+      `resume --source-path ${projectRoot} --target-org fake-org --retry-strategy standard --json`,
+      { homeDir, env: fakeSf.env }
+    );
+
+    const output = parseJsonStdout<{ success: boolean; deploymentId: string }>(result.shellOutput.stdout);
+    const state = await readDeploymentState(projectRoot);
+    const calls = await fakeSf.readCalls();
+
+    expect(output.success).to.equal(true);
+    expect(output.deploymentId).to.equal('0AfFakeResumeStart');
+    expect(state.failedWave).to.equal(undefined);
+    expect(state.metadata).to.deep.include({
+      retryStrategy: 'standard',
+      resumedFromWave: 2,
+      remoteResumeStatus: 'Succeeded',
+    });
+    expect(calls.some((call) => call.args.join(' ').startsWith('project deploy resume'))).to.equal(true);
   });
 
   it('resume fails when there is no failed deployment state to resume', async () => {

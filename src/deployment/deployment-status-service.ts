@@ -41,16 +41,19 @@ export type ResumeSummary = {
   deploymentId?: string;
 };
 
+export type DeploymentStatusOptions = {
+  refreshRemote?: boolean;
+  targetOrg?: string;
+};
+
 export class DeploymentStatusService {
   public constructor(
     private readonly stateManager: StateManager = new StateManager(),
-    private readonly sfCli: Pick<SfCliIntegration, 'checkDeploymentStatus'> = new SfCliIntegration()
+    private readonly sfCli: SfCliIntegration = new SfCliIntegration()
   ) {}
 
-  public async getStatus(options: { targetOrg?: string } = {}): Promise<DeploymentStatusSummary> {
-    const loadedState = await this.stateManager.loadState();
-    const state =
-      loadedState && options.targetOrg ? await this.refreshRemoteState(loadedState, options.targetOrg) : loadedState;
+  public async getStatus(options: DeploymentStatusOptions = {}): Promise<DeploymentStatusSummary> {
+    let state = await this.stateManager.loadState();
 
     if (!state) {
       return {
@@ -65,6 +68,10 @@ export class DeploymentStatusService {
         testStatusText: 'Not started',
         stateFilePath: this.stateManager.getStateFilePath(),
       };
+    }
+
+    if (options.refreshRemote) {
+      state = await this.refreshRemoteStatus(state, options.targetOrg);
     }
 
     const summary = summarizeDeploymentState(state);
@@ -152,59 +159,78 @@ export class DeploymentStatusService {
     }).join('\n');
   }
 
-  private async refreshRemoteState(state: DeploymentState, targetOrg: string): Promise<DeploymentState> {
-    const remoteResult = await this.sfCli.checkDeploymentStatus(state.deploymentId, targetOrg);
-    const updatedState = this.applyRemoteResult(state, targetOrg, remoteResult);
-    await this.stateManager.saveState(updatedState);
-    return updatedState;
+  private async refreshRemoteStatus(state: DeploymentState, requestedTargetOrg?: string): Promise<DeploymentState> {
+    const targetOrg = requestedTargetOrg ?? state.targetOrg;
+    if (!state.deploymentId || !targetOrg) {
+      return state;
+    }
+
+    const remoteStatus = await this.sfCli.checkDeploymentStatus(state.deploymentId, targetOrg);
+    const refreshed = this.applyRemoteStatus(state, remoteStatus, targetOrg);
+    await this.stateManager.saveState(refreshed);
+    return refreshed;
   }
 
-  private applyRemoteResult(state: DeploymentState, targetOrg: string, result: DeploymentResult): DeploymentState {
+  private applyRemoteStatus(
+    state: DeploymentState,
+    remoteStatus: DeploymentResult,
+    targetOrg: string
+  ): DeploymentState {
+    const currentWave = state.currentWave ?? state.failedWave?.waveNumber ?? state.completedWaves.at(-1) ?? 1;
+    const now = new Date().toISOString();
     const metadata = {
       ...(state.metadata ?? {}),
-      lastKnownStatus: result.status,
-      remoteStatus: result.status,
-      remoteStatusCheckedAt: new Date().toISOString(),
-      remoteComponentSuccesses: result.componentSuccesses,
-      remoteComponentFailures: result.componentFailures,
-      remoteTestsRun: result.testsRun,
-      remoteTestFailures: result.testFailures,
+      lastKnownStatus: remoteStatus.status,
+      testsRun: remoteStatus.testsRun,
+      testFailures: remoteStatus.testFailures,
+      remoteComponentSuccesses: remoteStatus.componentSuccesses,
+      remoteComponentFailures: remoteStatus.componentFailures,
+      remoteCheckedAt: now,
     };
 
-    if (result.status === 'Succeeded' || result.status === 'Success') {
+    if (remoteStatus.success) {
+      const completedWaves = [...new Set([...state.completedWaves, currentWave])].sort((a, b) => a - b);
       return {
         ...state,
+        deploymentId: remoteStatus.deploymentId ?? state.deploymentId,
         targetOrg,
-        completedWaves: Array.from({ length: state.totalWaves }, (_, index) => index + 1),
-        currentWave: state.totalWaves,
+        timestamp: now,
+        completedWaves,
+        currentWave,
         failedWave: undefined,
         metadata,
       };
     }
 
-    if (this.isFailedRemoteStatus(result.status)) {
+    if (
+      remoteStatus.status === 'InProgress' ||
+      remoteStatus.status === 'In Progress' ||
+      remoteStatus.status === 'Pending'
+    ) {
       return {
         ...state,
+        deploymentId: remoteStatus.deploymentId ?? state.deploymentId,
         targetOrg,
-        failedWave: state.failedWave ?? {
-          waveNumber: state.currentWave ?? 1,
-          error: result.output,
-          timestamp: new Date().toISOString(),
-        },
+        timestamp: now,
+        currentWave,
+        failedWave: undefined,
         metadata,
       };
     }
 
     return {
       ...state,
+      deploymentId: remoteStatus.deploymentId ?? state.deploymentId,
       targetOrg,
-      failedWave: undefined,
+      timestamp: now,
+      currentWave,
+      failedWave: {
+        waveNumber: state.failedWave?.waveNumber ?? currentWave,
+        error: remoteStatus.output,
+        timestamp: now,
+      },
       metadata,
     };
-  }
-
-  private isFailedRemoteStatus(status: string): boolean {
-    return ['Failed', 'Canceled', 'Error'].includes(status);
   }
 
   private expandRemainingWaves(currentWave: number, remainingCount: number, totalWaves: number): number[] {

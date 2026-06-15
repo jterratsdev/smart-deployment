@@ -9,8 +9,8 @@ import { WaveManifestService } from './wave-manifest-service.js';
 import { ForceIgnoreStagingService } from './forceignore-staging-service.js';
 import type { TestExecutor } from './test-executor.js';
 import type { DeploymentAIContext } from './deployment-context-service.js';
-import { formatDeploymentDiagnostics } from './deployment-error-diagnostics.js';
 import { buildPersistedWaveGraphContext } from './wave-graph-state.js';
+import { formatDeploymentDiagnostics } from './deployment-error-diagnostics.js';
 
 export type DeploymentRunnerParams = {
   deploymentId: string;
@@ -21,12 +21,12 @@ export type DeploymentRunnerParams = {
   componentMap: ReadonlyMap<NodeId, MetadataComponent>;
   apiVersion?: string;
   skipTests: boolean;
+  destructive: boolean;
   testExecutor: TestExecutor;
   tracker: DeploymentTracker;
   stateManager: StateManager;
   sfCli: SfCliIntegration;
   aiContext?: DeploymentAIContext;
-  mode?: 'deploy' | 'destructive';
   log: (message: string) => void;
 };
 
@@ -57,17 +57,16 @@ export class DeploymentRunner {
       componentMap,
       apiVersion,
       skipTests,
+      destructive,
       testExecutor,
       tracker,
       stateManager,
       sfCli,
       aiContext,
-      mode = 'deploy',
       log,
     } = params;
 
     await this.forEachSequentially(orderedWaves, async (wave) => {
-      const destructive = mode === 'destructive';
       log(
         `\n🌊 ${destructive ? 'Deleting' : 'Deploying'} Wave ${wave.number}/${orderedWaves.length} (${
           wave.components.length
@@ -78,7 +77,19 @@ export class DeploymentRunner {
       });
 
       try {
-        const manifest = destructive
+        const manifestPath = destructive
+          ? await this.waveManifestService.generateEmptyManifest({
+              baseDir: workspace.projectRoot,
+              apiVersion,
+            })
+          : await this.waveManifestService.generateManifest({
+              baseDir: workspace.projectRoot,
+              waveNumber: wave.number,
+              components: wave.components,
+              componentMap,
+              apiVersion,
+            });
+        const destructiveChangesPath = destructive
           ? await this.waveManifestService.generateDestructiveManifest({
               baseDir: workspace.projectRoot,
               waveNumber: wave.number,
@@ -86,38 +97,28 @@ export class DeploymentRunner {
               componentMap,
               apiVersion,
             })
-          : {
-              packagePath: await this.waveManifestService.generateManifest({
-                baseDir: workspace.projectRoot,
-                waveNumber: wave.number,
-                components: wave.components,
-                componentMap,
-                apiVersion,
-              }),
-              destructiveChangesPath: undefined,
-            };
-        const testPlan = destructive
-          ? { testLevel: 'NoTestRun' as const, tests: [] }
-          : this.testPlanService.resolveTestPlan(wave, skipTests, testExecutor);
+          : undefined;
+        const testPlan = this.testPlanService.resolveTestPlan(wave, skipTests, testExecutor);
 
         tracker.startTracking(deploymentId, wave.number, orderedWaves.length);
         const result = await sfCli.deploy({
-          manifestPath: manifest.packagePath,
-          postDestructiveChangesPath: manifest.destructiveChangesPath,
+          manifestPath,
           targetOrg,
           workingDirectory: workspace.projectRoot,
           testLevel: testPlan.testLevel,
           tests: testPlan.testLevel === 'RunSpecifiedTests' ? testPlan.tests : undefined,
+          destructiveChangesPath,
+          destructiveChangesTiming: 'post',
         });
         tracker.updateProgress(deploymentId, result);
+        const persistedDeploymentId = result.deploymentId ?? deploymentId;
 
         if (!result.success) {
           const diagnostics = result.diagnostics ?? [];
           const formattedDiagnostics = formatDeploymentDiagnostics(diagnostics);
           const failureMessage = formattedDiagnostics ? `${result.output}\n\n${formattedDiagnostics}` : result.output;
-
           await stateManager.saveState({
-            deploymentId,
+            deploymentId: persistedDeploymentId,
             targetOrg,
             timestamp: new Date().toISOString(),
             totalWaves: orderedWaves.length,
@@ -133,6 +134,7 @@ export class DeploymentRunner {
               testsRun: result.testsRun,
               testFailures: result.testFailures,
               testLevel: testPlan.testLevel,
+              destructive,
               diagnostics,
               waveGraphContext: buildPersistedWaveGraphContext(orderedWaves, dependencyGraph),
               ...this.buildAIMetadata(aiContext),
@@ -142,7 +144,7 @@ export class DeploymentRunner {
         }
 
         await stateManager.saveState({
-          deploymentId,
+          deploymentId: persistedDeploymentId,
           targetOrg,
           timestamp: new Date().toISOString(),
           totalWaves: orderedWaves.length,
@@ -153,6 +155,7 @@ export class DeploymentRunner {
             testsRun: result.testsRun,
             testFailures: result.testFailures,
             testLevel: testPlan.testLevel,
+            destructive,
             waveGraphContext: buildPersistedWaveGraphContext(orderedWaves, dependencyGraph),
             ...this.buildAIMetadata(aiContext),
           },
@@ -165,7 +168,7 @@ export class DeploymentRunner {
     });
 
     await stateManager.clearState();
-    log(`\n✅ All waves ${mode === 'destructive' ? 'deleted' : 'deployed'} successfully!`);
+    log(`\n✅ All waves ${params.destructive ? 'deleted' : 'deployed'} successfully!`);
   }
 
   private buildAIMetadata(aiContext?: DeploymentAIContext): Record<string, unknown> {

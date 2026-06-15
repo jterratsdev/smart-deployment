@@ -75,7 +75,7 @@ export function execNutCommandWithOptions<T = unknown>(
     homeDir: string;
     ensureExitCode?: 0 | 'nonZero';
     cwd?: string;
-    env?: NodeJS.ProcessEnv;
+    env?: Record<string, string | undefined>;
   }
 ) {
   return execCmd<T>(command, {

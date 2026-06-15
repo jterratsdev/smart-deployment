@@ -1,4 +1,4 @@
-import { access, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { constants as fsConstants } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -151,4 +151,79 @@ function writeProjectConfig(projectRoot: string): Promise<void> {
     ),
     'utf8'
   );
+}
+
+export type FakeSfCliScenario =
+  | 'success'
+  | 'partial-failure'
+  | 'report-in-progress'
+  | 'report-failed'
+  | 'resume-success';
+
+export type FakeSfCliFixture = {
+  binDir: string;
+  logPath: string;
+  env: Record<string, string>;
+  readCalls: () => Promise<Array<{ args: string[]; cwd: string }>>;
+};
+
+export async function createFakeSfCli(rootDir: string, scenario: FakeSfCliScenario): Promise<FakeSfCliFixture> {
+  const binDir = path.join(rootDir, 'fake-sf-bin');
+  const logPath = path.join(rootDir, 'fake-sf-calls.jsonl');
+  const executablePath = path.join(binDir, 'sf');
+
+  await mkdir(binDir, { recursive: true });
+  await writeFile(executablePath, buildFakeSfCliScript(logPath), 'utf8');
+  await chmod(executablePath, 0o755);
+
+  return {
+    binDir,
+    logPath,
+    env: {
+      PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ''}`,
+      SMART_DEPLOYMENT_FAKE_SF_SCENARIO: scenario,
+      SMART_DEPLOYMENT_FAKE_SF_LOG: logPath,
+    },
+    readCalls: async () => {
+      try {
+        const content = await readFile(logPath, 'utf8');
+        return content
+          .split(/\r?\n/)
+          .filter((line) => line.length > 0)
+          .map((line) => JSON.parse(line) as { args: string[]; cwd: string });
+      } catch {
+        return [];
+      }
+    },
+  };
+}
+
+function buildFakeSfCliScript(logPath: string): string {
+  return [
+    '#!/usr/bin/env node',
+    "const { appendFileSync } = require('node:fs');",
+    'const args = process.argv.slice(2);',
+    `const logPath = process.env.SMART_DEPLOYMENT_FAKE_SF_LOG || ${JSON.stringify(logPath)};`,
+    "appendFileSync(logPath, JSON.stringify({ args, cwd: process.cwd() }) + '\\n');",
+    "const scenario = process.env.SMART_DEPLOYMENT_FAKE_SF_SCENARIO || 'success';",
+    'function write(result, code = 0) { console.log(JSON.stringify({ status: code, result })); process.exit(code); }',
+    "if (args.join(' ').startsWith('project deploy start')) {",
+    "  if (scenario === 'partial-failure') {",
+    "    write({ id: '0AfFakePartialFailure', status: 'Failed', numberComponentsDeployed: 1, numberComponentErrors: 1, numberTestsTotal: 0, numberTestErrors: 0, details: { componentFailures: { componentType: 'ApexClass', fullName: 'BrokenClass', problem: 'Invalid type: MissingDependency' } } }, 1);",
+    '  }',
+    "  write({ id: '0AfFakeStartSuccess', status: 'Succeeded', numberComponentsDeployed: 1, numberComponentErrors: 0, numberTestsTotal: 0, numberTestErrors: 0 });",
+    '}',
+    "if (args.join(' ').startsWith('project deploy report')) {",
+    "  if (scenario === 'report-failed') {",
+    "    write({ id: '0AfFakeReportFailed', status: 'Failed', numberComponentsDeployed: 1, numberComponentErrors: 1, numberTestsTotal: 0, numberTestErrors: 0, details: { componentFailures: { componentType: 'ApexClass', fullName: 'ReportFailed', problem: 'FIELD_INTEGRITY_EXCEPTION' } } }, 1);",
+    '  }',
+    "  write({ id: '0AfFakeReportInProgress', status: 'InProgress', numberComponentsDeployed: 0, numberComponentErrors: 0, numberTestsTotal: 0, numberTestErrors: 0 });",
+    '}',
+    "if (args.join(' ').startsWith('project deploy resume')) {",
+    "  write({ id: '0AfFakeResumeSuccess', status: 'Succeeded', numberComponentsDeployed: 1, numberComponentErrors: 0, numberTestsTotal: 0, numberTestErrors: 0 });",
+    '}',
+    "console.error(`Unsupported fake sf command: ${args.join(' ')}`);",
+    'process.exit(64);',
+    '',
+  ].join('\n');
 }

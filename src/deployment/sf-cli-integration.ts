@@ -28,7 +28,8 @@ export type DeploymentOptions = {
   testLevel?: TestLevel;
   tests?: string[];
   checkOnly?: boolean;
-  postDestructiveChangesPath?: string;
+  destructiveChangesPath?: string;
+  destructiveChangesTiming?: 'pre' | 'post';
 };
 
 export type DeploymentResult = {
@@ -41,6 +42,11 @@ export type DeploymentResult = {
   testFailures?: number;
   output: string;
   diagnostics?: DeploymentDiagnostic[];
+};
+
+type ExecFailure = Error & {
+  stdout?: string;
+  stderr?: string;
 };
 
 /**
@@ -67,7 +73,7 @@ export class SfCliIntegration {
       return result;
     } catch (error) {
       logger.error('Deployment failed', { error });
-      const output = error instanceof Error ? error.message : String(error);
+      const output = this.collectExecOutput(error);
       return this.parseDeploymentOutput(output, true);
     }
   }
@@ -81,10 +87,6 @@ export class SfCliIntegration {
       '--wait 60',
     ];
 
-    if (options.postDestructiveChangesPath) {
-      parts.push(`--post-destructive-changes ${options.postDestructiveChangesPath}`);
-    }
-
     if (options.testLevel) {
       parts.push(`--test-level ${options.testLevel}`);
     }
@@ -95,6 +97,13 @@ export class SfCliIntegration {
 
     if (options.checkOnly) {
       parts.push('--dry-run');
+    }
+
+    if (options.destructiveChangesPath) {
+      parts.push(
+        options.destructiveChangesTiming === 'pre' ? '--pre-destructive-changes' : '--post-destructive-changes',
+        options.destructiveChangesPath
+      );
     }
 
     return parts.join(' ');
@@ -117,7 +126,6 @@ export class SfCliIntegration {
         };
 
         const success = !failed && (parsed.result?.status === 'Succeeded' || parsed.result?.status === 'Success');
-
         return {
           success,
           deploymentId: parsed.result?.id,
@@ -127,7 +135,7 @@ export class SfCliIntegration {
           testsRun: parsed.result?.numberTestsTotal,
           testFailures: parsed.result?.numberTestErrors,
           output,
-          diagnostics: success ? undefined : normalizeDeploymentDiagnostics(output),
+          diagnostics: success ? [] : normalizeDeploymentDiagnostics(output),
         };
       }
     } catch (parseError) {
@@ -135,14 +143,13 @@ export class SfCliIntegration {
     }
 
     // Fallback for non-JSON output
-    const success = !failed;
     return {
-      success,
+      success: !failed,
       status: failed ? 'Failed' : 'Unknown',
       componentSuccesses: 0,
       componentFailures: failed ? 1 : 0,
       output,
-      diagnostics: success ? undefined : normalizeDeploymentDiagnostics(output),
+      diagnostics: failed ? normalizeDeploymentDiagnostics(output) : [],
     };
   }
 
@@ -154,7 +161,7 @@ export class SfCliIntegration {
       return this.parseDeploymentOutput(stdout);
     } catch (error) {
       logger.error('Failed to check deployment status', { error, deploymentId });
-      const output = error instanceof Error ? error.message : String(error);
+      const output = this.collectExecOutput(error);
       return this.parseDeploymentOutput(output, true);
     }
   }
@@ -163,12 +170,25 @@ export class SfCliIntegration {
     const command = `sf project deploy resume --job-id ${deploymentId} --target-org ${targetOrg} --json`;
 
     try {
-      const { stdout, stderr } = await execAsync(command);
-      return this.parseDeploymentOutput(stdout + stderr);
+      const { stdout } = await execAsync(command);
+      return this.parseDeploymentOutput(stdout);
     } catch (error) {
       logger.error('Failed to resume deployment', { error, deploymentId });
-      const output = error instanceof Error ? error.message : String(error);
+      const output = this.collectExecOutput(error);
       return this.parseDeploymentOutput(output, true);
     }
+  }
+
+  private collectExecOutput(error: unknown): string {
+    if (error instanceof Error) {
+      const execFailure = error as ExecFailure;
+      const output = [execFailure.stdout, execFailure.stderr, execFailure.message]
+        .filter((value): value is string => typeof value === 'string' && value.length > 0)
+        .join('\n');
+
+      return output.length > 0 ? output : error.message;
+    }
+
+    return String(error);
   }
 }

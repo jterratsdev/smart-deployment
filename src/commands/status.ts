@@ -12,7 +12,7 @@
 
 import { type Interfaces } from '@oclif/core';
 import { Messages } from '@salesforce/core';
-import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
+import { Flags, SfCommand, optionalOrgFlagWithDeprecations } from '@salesforce/sf-plugins-core';
 import { DeploymentStatusService } from '../deployment/deployment-status-service.js';
 import { StatusCommandPresenter } from '../presentation/status-command-presenter.js';
 import { getLogger } from '../utils/logger.js';
@@ -48,9 +48,7 @@ export default class Status extends SfCommand<StatusResult> {
   public static readonly summary = messages.getMessage('summary');
   public static readonly examples = messages.getMessages('examples');
   public static readonly flags: Interfaces.FlagInput = {
-    'target-org': Flags.string({
-      summary: messages.getMessage('flags.target-org.summary'),
-    }),
+    'target-org': optionalOrgFlagWithDeprecations,
     'source-path': Flags.directory({
       summary: messages.getMessage('flags.source-path.summary'),
       exists: true,
@@ -58,14 +56,18 @@ export default class Status extends SfCommand<StatusResult> {
   };
 
   public async run(): Promise<StatusResult> {
-    const { flags } = await this.parse(Status);
+    const parseResult = await this.parse(Status);
+    const { flags } = parseResult;
     const sourcePath = typeof flags['source-path'] === 'string' ? flags['source-path'] : undefined;
+    const targetOrg = this.hasExplicitTargetOrgFlag(parseResult.argv)
+      ? this.getTargetOrgIdentifier(flags['target-org'])
+      : undefined;
 
     try {
       logger.info('Getting status', { flags });
 
       const statusService = new DeploymentStatusService(new StateManager({ baseDir: sourcePath }));
-      const summary = await statusService.getStatus({ targetOrg: this.getTargetOrgIdentifier(flags['target-org']) });
+      const summary = await statusService.getStatus({ refreshRemote: targetOrg !== undefined, targetOrg });
       const formattedStatus = statusService.formatStatus(summary);
 
       presenter.reportStatus(this, summary, formattedStatus);
@@ -129,6 +131,13 @@ export default class Status extends SfCommand<StatusResult> {
       logger.error('Status failed', { error });
       this.error(`Status failed: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  private hasExplicitTargetOrgFlag(argv: unknown[]): boolean {
+    return argv.some(
+      (value) =>
+        typeof value === 'string' && (value === '--target-org' || value === '-o' || value.startsWith('--target-org='))
+    );
   }
 
   private getTargetOrgIdentifier(value: unknown): string | undefined {

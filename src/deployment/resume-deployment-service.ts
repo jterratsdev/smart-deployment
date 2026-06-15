@@ -12,15 +12,19 @@ export type ResumePreparation = {
   failureReason?: string;
 };
 
+export type ResumeOptions = {
+  targetOrg?: string;
+};
+
 export class ResumeDeploymentService {
   public constructor(
     private readonly stateManager: StateManager = new StateManager(),
-    private readonly sfCli: Pick<SfCliIntegration, 'resumeDeployment'> = new SfCliIntegration()
+    private readonly sfCli: SfCliIntegration = new SfCliIntegration()
   ) {}
 
   public async prepareResume(
     retryStrategy: ResumeRetryStrategy,
-    options: { targetOrg?: string } = {}
+    options: ResumeOptions = {}
   ): Promise<ResumePreparation> {
     const state = await this.stateManager.loadState();
 
@@ -29,31 +33,25 @@ export class ResumeDeploymentService {
     }
 
     const summary = summarizeDeploymentState(state);
-    const remoteResult = options.targetOrg
+    const targetOrg = options.targetOrg ?? state.targetOrg;
+    const remoteResume = options.targetOrg
       ? await this.sfCli.resumeDeployment(state.deploymentId, options.targetOrg)
       : undefined;
-
-    if (remoteResult?.success === false) {
-      throw new Error(`Remote resume failed: ${remoteResult.output}`);
+    if (remoteResume && !remoteResume.success) {
+      throw new Error(remoteResume.output);
     }
 
     const resumedState = createResumedState(
-      remoteResult
-        ? {
-            ...state,
-            targetOrg: options.targetOrg ?? state.targetOrg,
-            metadata: {
-              ...(state.metadata ?? {}),
-              lastKnownStatus: remoteResult.status,
-              remoteResumeStatus: remoteResult.status,
-              remoteResumeCheckedAt: new Date().toISOString(),
-              remoteComponentSuccesses: remoteResult.componentSuccesses,
-              remoteComponentFailures: remoteResult.componentFailures,
-              remoteTestsRun: remoteResult.testsRun,
-              remoteTestFailures: remoteResult.testFailures,
-            },
-          }
-        : state,
+      {
+        ...state,
+        deploymentId: remoteResume?.deploymentId ?? state.deploymentId,
+        targetOrg,
+        metadata: {
+          ...(state.metadata ?? {}),
+          remoteResumeStatus: remoteResume?.status,
+          remoteResumeCheckedAt: remoteResume ? new Date().toISOString() : undefined,
+        },
+      },
       retryStrategy
     );
 

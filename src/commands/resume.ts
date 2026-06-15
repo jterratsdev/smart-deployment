@@ -12,7 +12,7 @@
 
 import { type Interfaces } from '@oclif/core';
 import { Messages } from '@salesforce/core';
-import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
+import { Flags, SfCommand, optionalOrgFlagWithDeprecations } from '@salesforce/sf-plugins-core';
 import { ResumeDeploymentService, type ResumeRetryStrategy } from '../deployment/resume-deployment-service.js';
 import { ResumeCommandPresenter } from '../presentation/resume-command-presenter.js';
 import { getLogger } from '../utils/logger.js';
@@ -35,9 +35,7 @@ export default class Resume extends SfCommand<ResumeResult> {
   public static readonly summary = messages.getMessage('summary');
   public static readonly examples = messages.getMessages('examples');
   public static readonly flags: Interfaces.FlagInput = {
-    'target-org': Flags.string({
-      summary: messages.getMessage('flags.target-org.summary'),
-    }),
+    'target-org': optionalOrgFlagWithDeprecations,
     'source-path': Flags.directory({
       summary: messages.getMessage('flags.source-path.summary'),
       exists: true,
@@ -50,17 +48,19 @@ export default class Resume extends SfCommand<ResumeResult> {
   };
 
   public async run(): Promise<ResumeResult> {
-    const { flags } = await this.parse(Resume);
+    const parseResult = await this.parse(Resume);
+    const { flags } = parseResult;
     const sourcePath = typeof flags['source-path'] === 'string' ? flags['source-path'] : undefined;
+    const targetOrg = this.hasExplicitTargetOrgFlag(parseResult.argv)
+      ? this.getTargetOrgIdentifier(flags['target-org'])
+      : undefined;
 
     try {
       logger.info('Resuming deployment', { flags });
 
       const retryStrategy = flags['retry-strategy'] as ResumeRetryStrategy;
       const resumeService = new ResumeDeploymentService(new StateManager({ baseDir: sourcePath }));
-      const summary = await resumeService.prepareResume(retryStrategy, {
-        targetOrg: this.getTargetOrgIdentifier(flags['target-org']),
-      });
+      const summary = await resumeService.prepareResume(retryStrategy, { targetOrg });
       presenter.reportResumePreparation(this, summary, retryStrategy);
 
       return {
@@ -73,6 +73,13 @@ export default class Resume extends SfCommand<ResumeResult> {
       logger.error('Resume failed', { error });
       this.error(`Resume failed: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  private hasExplicitTargetOrgFlag(argv: unknown[]): boolean {
+    return argv.some(
+      (value) =>
+        typeof value === 'string' && (value === '--target-org' || value === '-o' || value.startsWith('--target-org='))
+    );
   }
 
   private getTargetOrgIdentifier(value: unknown): string | undefined {
