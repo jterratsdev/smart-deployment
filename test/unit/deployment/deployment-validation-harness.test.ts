@@ -57,7 +57,7 @@ if (args.join(' ').startsWith('project deploy start')) {
   record({ command: 'start', scenario });
 
   if (scenario === 'partial-failure') {
-    process.stderr.write(JSON.stringify({ status: 1, result: {
+    process.stdout.write(JSON.stringify({ status: 1, result: {
       id: '0AfPARTIAL000001',
       status: 'Failed',
       numberComponentsDeployed: 1,
@@ -157,7 +157,7 @@ describe('Deployment validation harness', () => {
     const invocations = await readFakeSfInvocations(harness.logPath);
 
     expect(thrownError?.message).to.include('Wave 1 failed');
-    expect(state.deploymentId).to.equal('deployment-partial-failure');
+    expect(state.deploymentId).to.equal('0AfPARTIAL000001');
     expect(state.failedWave?.waveNumber).to.equal(1);
     expect(state.failedWave?.error).to.include('Missing field Account.Legacy_Id__c');
     expect(state.metadata).to.deep.include({
@@ -256,6 +256,7 @@ async function executeRunner(projectRoot: string, deploymentId: string): Promise
     componentMap: new Map([[nodeId, component]]),
     apiVersion: '61.0',
     skipTests: true,
+    destructive: false,
     testExecutor: new TestExecutor(),
     tracker: new DeploymentTracker(),
     stateManager: new StateManager({ baseDir: projectRoot }),

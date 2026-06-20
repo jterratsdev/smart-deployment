@@ -70,6 +70,7 @@ describe('DeploymentRunner', () => {
       componentMap: componentMap(),
       apiVersion: '66.0',
       skipTests: true,
+      destructive: false,
       testExecutor: new TestExecutor(),
       tracker: new DeploymentTracker(),
       stateManager: new StateManager({ baseDir: tempDir }),
@@ -113,7 +114,7 @@ describe('DeploymentRunner', () => {
     const sfCli = {
       deploy: async (options: {
         manifestPath: string;
-        postDestructiveChangesPath?: string;
+        destructiveChangesPath?: string;
         testLevel?: string;
         workingDirectory?: string;
       }): Promise<DeploymentResult> => {
@@ -125,8 +126,8 @@ describe('DeploymentRunner', () => {
           )
         );
         expect(await readFile(options.manifestPath, 'utf8')).to.not.include('<types>');
-        expect(options.postDestructiveChangesPath).to.be.a('string');
-        expect(await readFile(options.postDestructiveChangesPath ?? '', 'utf8')).to.include(
+        expect(options.destructiveChangesPath).to.be.a('string');
+        expect(await readFile(options.destructiveChangesPath ?? '', 'utf8')).to.include(
           '<members>AccountService</members>'
         );
         expect(options.testLevel).to.equal('NoTestRun');
@@ -148,11 +149,11 @@ describe('DeploymentRunner', () => {
       componentMap: componentMap(),
       apiVersion: '66.0',
       skipTests: false,
+      destructive: true,
       testExecutor: new TestExecutor(),
       tracker: new DeploymentTracker(),
       stateManager: new StateManager({ baseDir: tempDir }),
       sfCli,
-      mode: 'destructive',
       log: () => undefined,
     });
   });

@@ -15,7 +15,8 @@ type SfCliIntegrationPrivate = {
     testLevel?: 'NoTestRun' | 'RunSpecifiedTests' | 'RunLocalTests' | 'RunAllTestsInOrg';
     tests?: string[];
     checkOnly?: boolean;
-    postDestructiveChangesPath?: string;
+    destructiveChangesPath?: string;
+    destructiveChangesTiming?: 'pre' | 'post';
   }) => string;
   parseDeploymentOutput: (
     output: string,
@@ -123,7 +124,8 @@ describe('Deployment Engine Suite', () => {
 
       const command = internals.buildDeployCommand({
         manifestPath: '/tmp/package.xml',
-        postDestructiveChangesPath: '/tmp/destructiveChanges.xml',
+        destructiveChangesPath: '/tmp/destructiveChanges.xml',
+        destructiveChangesTiming: 'post',
         targetOrg: 'qa@example.com',
       });
 

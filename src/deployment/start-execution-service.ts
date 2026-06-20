@@ -139,12 +139,12 @@ export class StartExecutionService {
       componentMap: scanResult.dependencyResult.components,
       apiVersion: scanResult.apiVersion,
       skipTests: options.skipTests,
+      destructive,
       testExecutor,
       tracker,
       stateManager,
       sfCli,
       aiContext,
-      mode: destructive ? 'destructive' : 'deploy',
       log: options.log,
     });
 

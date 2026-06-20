@@ -77,19 +77,7 @@ export class DeploymentRunner {
       });
 
       try {
-        const manifestPath = destructive
-          ? await this.waveManifestService.generateEmptyManifest({
-              baseDir: workspace.projectRoot,
-              apiVersion,
-            })
-          : await this.waveManifestService.generateManifest({
-              baseDir: workspace.projectRoot,
-              waveNumber: wave.number,
-              components: wave.components,
-              componentMap,
-              apiVersion,
-            });
-        const destructiveChangesPath = destructive
+        const destructiveManifest = destructive
           ? await this.waveManifestService.generateDestructiveManifest({
               baseDir: workspace.projectRoot,
               waveNumber: wave.number,
@@ -98,7 +86,17 @@ export class DeploymentRunner {
               apiVersion,
             })
           : undefined;
-        const testPlan = this.testPlanService.resolveTestPlan(wave, skipTests, testExecutor);
+        const manifestPath =
+          destructiveManifest?.packagePath ??
+          (await this.waveManifestService.generateManifest({
+            baseDir: workspace.projectRoot,
+            waveNumber: wave.number,
+            components: wave.components,
+            componentMap,
+            apiVersion,
+          }));
+        const destructiveChangesPath = destructiveManifest?.destructiveChangesPath;
+        const testPlan = this.testPlanService.resolveTestPlan(wave, destructive || skipTests, testExecutor);
 
         tracker.startTracking(deploymentId, wave.number, orderedWaves.length);
         const result = await sfCli.deploy({

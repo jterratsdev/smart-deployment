@@ -127,7 +127,7 @@ describe('StartExecutionService', () => {
       metadata?: Record<string, unknown>;
     };
 
-    expect(state.deploymentId).to.equal('deployment-fixture-001');
+    expect(state.deploymentId).to.equal('0AfFakeDeployment001');
     expect(state.targetOrg).to.equal('fixture@example.com');
     expect(state.totalWaves).to.equal(1);
     expect(state.currentWave).to.equal(1);
@@ -288,7 +288,7 @@ describe('StartExecutionService', () => {
 
     expect(result.kind).to.equal('executed');
     expect(sfCli.deployCalls).to.have.lengthOf(2);
-    expect(sfCli.deployCalls.map((call) => path.basename(call.postDestructiveChangesPath ?? ''))).to.deep.equal([
+    expect(sfCli.deployCalls.map((call) => path.basename(call.destructiveChangesPath ?? ''))).to.deep.equal([
       'wave-002-destructiveChanges.xml',
       'wave-001-destructiveChanges.xml',
     ]);
