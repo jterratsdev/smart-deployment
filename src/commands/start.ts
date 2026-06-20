@@ -18,7 +18,7 @@
 
 import { type Interfaces } from '@oclif/core';
 import { Messages } from '@salesforce/core';
-import { Flags, SfCommand, optionalOrgFlagWithDeprecations } from '@salesforce/sf-plugins-core';
+import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { getLogger } from '../utils/logger.js';
 import { StartExecutionService } from '../deployment/start-execution-service.js';
 import { DeploymentContextService } from '../deployment/deployment-context-service.js';
@@ -91,7 +91,10 @@ export default class Start extends SfCommand<StartResult> {
    * @ac US-057-AC-1: Send component list to Agentforce
    */
   public static readonly flags: Interfaces.FlagInput = {
-    'target-org': optionalOrgFlagWithDeprecations,
+    'target-org': Flags.string({
+      summary: messages.getMessage('flags.target-org.summary'),
+      char: 'o',
+    }),
     'dry-run': Flags.boolean({
       summary: messages.getMessage('flags.dry-run.summary'),
       char: 'd',

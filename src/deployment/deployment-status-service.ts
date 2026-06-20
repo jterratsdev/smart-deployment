@@ -181,22 +181,25 @@ export class DeploymentStatusService {
     const metadata = {
       ...(state.metadata ?? {}),
       lastKnownStatus: remoteStatus.status,
+      remoteStatus: remoteStatus.status,
       testsRun: remoteStatus.testsRun,
       testFailures: remoteStatus.testFailures,
+      remoteTestsRun: remoteStatus.testsRun,
+      remoteTestFailures: remoteStatus.testFailures,
       remoteComponentSuccesses: remoteStatus.componentSuccesses,
       remoteComponentFailures: remoteStatus.componentFailures,
       remoteCheckedAt: now,
     };
 
     if (remoteStatus.success) {
-      const completedWaves = [...new Set([...state.completedWaves, currentWave])].sort((a, b) => a - b);
+      const completedWaves = Array.from({ length: state.totalWaves }, (_, index) => index + 1);
       return {
         ...state,
         deploymentId: remoteStatus.deploymentId ?? state.deploymentId,
         targetOrg,
         timestamp: now,
         completedWaves,
-        currentWave,
+        currentWave: state.totalWaves,
         failedWave: undefined,
         metadata,
       };

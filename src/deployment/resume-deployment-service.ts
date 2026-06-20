@@ -49,6 +49,10 @@ export class ResumeDeploymentService {
         metadata: {
           ...(state.metadata ?? {}),
           remoteResumeStatus: remoteResume?.status,
+          remoteComponentSuccesses: remoteResume?.componentSuccesses,
+          remoteComponentFailures: remoteResume?.componentFailures,
+          remoteTestsRun: remoteResume?.testsRun,
+          remoteTestFailures: remoteResume?.testFailures,
           remoteResumeCheckedAt: remoteResume ? new Date().toISOString() : undefined,
         },
       },
