@@ -11,7 +11,8 @@
  * @issue #68
  */
 
-import { promises as fs } from 'node:fs';
+import { mkdtempSync, promises as fs } from 'node:fs';
+import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import { getLogger } from '../../src/utils/logger.js';
 
@@ -40,7 +41,11 @@ export type ProjectStructure = {
  * @ac US-068-AC-2: Various project structures
  */
 export class ProjectFixtures {
-  private readonly fixturesDir = path.join(process.cwd(), 'test/fixtures/projects');
+  private readonly fixturesDir: string;
+
+  public constructor(fixturesDir?: string) {
+    this.fixturesDir = fixturesDir ?? mkdtempSync(path.join(tmpdir(), 'smart-deployment-project-fixtures-'));
+  }
 
   /**
    * @ac US-068-AC-1: Sample Salesforce projects

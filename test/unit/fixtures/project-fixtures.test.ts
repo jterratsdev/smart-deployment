@@ -66,7 +66,7 @@ describe('ProjectFixtures', () => {
     it('should get fixture path', () => {
       const path = fixtures.getFixturePath('test-project');
       expect(path).to.be.a('string');
-      expect(path).to.include('test/fixtures/projects');
+      expect(path).to.include('smart-deployment-project-fixtures-');
     });
   });
 });

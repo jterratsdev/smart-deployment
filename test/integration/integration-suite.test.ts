@@ -13,7 +13,7 @@
 
 import { readFile } from 'node:fs/promises';
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
+import { after, describe, it } from 'mocha';
 import { ProjectFixtures } from '../fixtures/project-fixtures.js';
 import { DependencyGraphBuilder } from '../../src/dependencies/dependency-graph-builder.js';
 import { WaveBuilder } from '../../src/waves/wave-builder.js';
@@ -21,6 +21,10 @@ import { parseApexClass } from '../../src/parsers/apex-class-parser.js';
 
 describe('Integration Tests - US-065', () => {
   const fixtures = new ProjectFixtures();
+
+  after(async () => {
+    await fixtures.cleanup();
+  });
 
   describe('US-065: Integration Tests', () => {
     /** @ac US-065-AC-1: Parser → Service integration */
