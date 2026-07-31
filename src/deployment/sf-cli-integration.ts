@@ -166,8 +166,8 @@ export class SfCliIntegration {
     }
   }
 
-  public async resumeDeployment(deploymentId: string, targetOrg: string): Promise<DeploymentResult> {
-    const command = `sf project deploy resume --job-id ${deploymentId} --target-org ${targetOrg} --json`;
+  public async resumeDeployment(deploymentId: string): Promise<DeploymentResult> {
+    const command = this.buildResumeCommand(deploymentId);
 
     try {
       const { stdout } = await execAsync(command);
@@ -177,6 +177,10 @@ export class SfCliIntegration {
       const output = this.collectExecOutput(error);
       return this.parseDeploymentOutput(output, true);
     }
+  }
+
+  private buildResumeCommand(deploymentId: string): string {
+    return `sf project deploy resume --job-id ${deploymentId} --json`;
   }
 
   private collectExecOutput(error: unknown): string {

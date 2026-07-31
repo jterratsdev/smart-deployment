@@ -18,6 +18,7 @@ type SfCliIntegrationPrivate = {
     destructiveChangesPath?: string;
     destructiveChangesTiming?: 'pre' | 'post';
   }) => string;
+  buildResumeCommand: (deploymentId: string) => string;
   parseDeploymentOutput: (
     output: string,
     failed?: boolean
@@ -132,6 +133,16 @@ describe('Deployment Engine Suite', () => {
       expect(command).to.include('--manifest /tmp/package.xml');
       expect(command).to.include('--post-destructive-changes /tmp/destructiveChanges.xml');
       expect(command).to.include('--target-org qa@example.com');
+    });
+
+    it('builds resume commands without target org because the current Salesforce CLI rejects that flag', () => {
+      const integration = new SfCliIntegration();
+      const internals = integration as unknown as SfCliIntegrationPrivate;
+
+      const command = internals.buildResumeCommand('0Afxx0000009999');
+
+      expect(command).to.equal('sf project deploy resume --job-id 0Afxx0000009999 --json');
+      expect(command).not.to.include('--target-org');
     });
 
     it('parses successful JSON deployment output into a structured result', () => {

@@ -21,6 +21,15 @@ type CiPresetJson = {
   };
 };
 
+type ValidateJson = {
+  success: boolean;
+  commitScope?: {
+    manifestPath?: string;
+    includedComponents: string[];
+    ignoredComponents: string[];
+  };
+};
+
 type DeploymentPlanReport = {
   summary: {
     components: number;
@@ -44,12 +53,32 @@ describe('NUT: commit-scoped deployments', () => {
     tempDirs.push(tempDir);
     const fixture = await createCommitScopedProject(tempDir);
     const reportDir = path.join(tempDir, 'reports');
+    const generatedManifestPath = path.join(fixture.projectRoot, 'manifests/story-scope.generated.json');
+
+    const validateResult = execNutCommand<ValidateJson>(
+      [
+        'smart-deployment validate',
+        `--source-path ${fixture.projectRoot}`,
+        `--scope-commits ${fixture.scopedCommit},${fixture.deleteCommit}`,
+        `--scope-manifest-output ${generatedManifestPath}`,
+        '--json',
+      ].join(' '),
+      homeDir
+    );
+    const validateOutput = parseJsonStdout<ValidateJson>(validateResult.shellOutput.stdout);
+    const generatedManifest = JSON.parse(await readFile(generatedManifestPath, 'utf8')) as {
+      schemaVersion: number;
+      scope: {
+        includedComponents: string[];
+        ignoredComponents: string[];
+      };
+    };
 
     const result = execNutCommand<CiPresetJson>(
       [
         'ci preset',
         `--source-path ${fixture.projectRoot}`,
-        `--scope-manifest ${fixture.manifestPath}`,
+        `--scope-manifest ${generatedManifestPath}`,
         '--validation-mode local-only',
         `--report-dir ${reportDir}`,
         '--json',
@@ -60,6 +89,14 @@ describe('NUT: commit-scoped deployments', () => {
     const report = JSON.parse(await readFile(output.artifacts.jsonPath, 'utf8')) as DeploymentPlanReport;
     const plannedComponentIds = report.waves.flatMap((wave) => wave.components.map((component) => component.id)).sort();
 
+    expect(validateOutput.success).to.equal(true);
+    expect(validateOutput.commitScope?.manifestPath).to.equal(generatedManifestPath);
+    expect(generatedManifest.schemaVersion).to.equal(1);
+    expect(generatedManifest.scope.includedComponents).to.deep.equal([
+      'ApexClass:ScopedDependency',
+      'ApexClass:ScopedService',
+    ]);
+    expect(generatedManifest.scope.ignoredComponents).to.include('ApexClass:FutureTrunkWork');
     expect(output.success).to.equal(true);
     expect(output.artifacts.reportDir).to.equal(reportDir);
     expect(output.summary.components).to.equal(2);
@@ -85,6 +122,8 @@ describe('NUT: commit-scoped deployments', () => {
 async function createCommitScopedProject(rootDir: string): Promise<{
   projectRoot: string;
   manifestPath: string;
+  scopedCommit: string;
+  deleteCommit: string;
   scopedServicePath: string;
   deletedCandidatePath: string;
 }> {
@@ -164,6 +203,8 @@ async function createCommitScopedProject(rootDir: string): Promise<{
   return {
     projectRoot,
     manifestPath,
+    scopedCommit,
+    deleteCommit,
     scopedServicePath,
     deletedCandidatePath,
   };

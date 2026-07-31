@@ -224,7 +224,7 @@ describe('NUT: production-like deployment command validation harness', () => {
       remoteTestFailures: 0,
     });
     expect(invocations.map((invocation) => invocation.args)).to.deep.equal([
-      ['project', 'deploy', 'resume', '--job-id', '0AfREMOTE000001', '--target-org', 'release-org', '--json'],
+      ['project', 'deploy', 'resume', '--job-id', '0AfREMOTE000001', '--json'],
     ]);
   });
 

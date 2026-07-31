@@ -1,11 +1,9 @@
 import { execFile } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import { promisify } from 'node:util';
-import { XMLParser } from 'fast-xml-parser';
 import { glob } from 'glob';
 import { MetadataScannerService } from '../services/metadata-scanner-service.js';
-import type { MetadataComponent } from '../types/metadata.js';
+import type { AiEvaluationDefinition, MetadataComponent } from '../types/metadata.js';
 import {
   SfCliSpecialDeploymentTargetLookup,
   type SpecialDeploymentTargetLookup,
@@ -80,7 +78,7 @@ type SpecialDeploymentProvider = {
   plan(context: ProviderContext): Promise<SpecialDeploymentPhase>;
 };
 
-const CORE_EXCLUDED_TYPES = ['Bot', 'BotVersion', 'AiAuthoringBundle'];
+const CORE_EXCLUDED_TYPES = ['Bot', 'BotVersion', 'AiAuthoringBundle', 'AiEvaluationDefinition'];
 
 export class SpecialDeploymentPlanService {
   public async buildPlan(options: SpecialDeploymentPlanOptions = {}): Promise<SpecialDeploymentPlan> {
@@ -198,20 +196,19 @@ class AgentforceActivationProvider implements SpecialDeploymentProvider {
 
 class AiEvaluationProvider implements SpecialDeploymentProvider {
   public async plan(context: ProviderContext): Promise<SpecialDeploymentPhase> {
-    const files = await glob('**/aiEvaluationDefinitions/**/*.xml', {
-      cwd: context.projectRoot,
-      nodir: true,
-      ignore: ['**/node_modules/**', '**/.git/**'],
-    });
-    const changedFiles = files.filter((file) => isChanged(context, file)).sort();
-    const sourceSubjects = new Set(
-      context.components
-        .filter((component) => component.type === 'AiAuthoringBundle' || component.type === 'Bot')
-        .map((component) => component.name)
-    );
+    const changedPaths = new Set(context.changedPaths.map(normalizePath));
+    const evaluations = context.components
+      .filter(isAiEvaluationDefinition)
+      .map((component) => ({ component, relativePath: projectRelativePath(context.projectRoot, component.filePath) }))
+      .filter(({ relativePath }) => !context.since || changedPaths.has(relativePath))
+      .sort(
+        (left, right) =>
+          left.relativePath.localeCompare(right.relativePath) ||
+          toComponentKey(left.component).localeCompare(toComponentKey(right.component))
+      );
+    const sourceSubjects = evaluationSourceSubjects(context, changedPaths);
     const precheckErrors = await findMissingEvaluationSubjects(
-      context.projectRoot,
-      changedFiles,
+      evaluations,
       sourceSubjects,
       context.targetOrg,
       context.targetLookup
@@ -220,10 +217,10 @@ class AiEvaluationProvider implements SpecialDeploymentProvider {
     return {
       kind: 'ai-evaluations',
       label: 'Phase 4: AI evaluation metadata deploy',
-      components: changedFiles.map((file) => `AiEvaluationDefinition:${path.basename(file, '.xml')}`),
-      changedPaths: changedFiles,
+      components: evaluations.map(({ component }) => toComponentKey(component)),
+      changedPaths: evaluations.map(({ relativePath }) => relativePath),
       commands:
-        changedFiles.length > 0
+        evaluations.length > 0
           ? [
               {
                 tool: 'sf',
@@ -235,11 +232,11 @@ class AiEvaluationProvider implements SpecialDeploymentProvider {
               },
             ]
           : [],
-      skipped: changedFiles.length === 0,
-      skipReason: changedFiles.length === 0 ? 'No changed AiEvaluationDefinition files detected.' : undefined,
+      skipped: evaluations.length === 0,
+      skipReason: evaluations.length === 0 ? 'No changed AiEvaluationDefinition files detected.' : undefined,
       errors: precheckErrors,
       warnings:
-        changedFiles.length > 0 && !context.targetOrg
+        evaluations.length > 0 && !context.targetOrg
           ? ['AiEvaluationDefinition target-org subject lookup requires --target-org.']
           : undefined,
     };
@@ -328,19 +325,19 @@ function changedPathsFor(changedPaths: string[], segment: string): string[] {
   return changedPaths.filter((changedPath) => normalizePath(changedPath).includes(segment)).sort();
 }
 
-function isChanged(context: ProviderContext, filePath: string): boolean {
-  if (!context.since) {
-    return true;
-  }
-  return context.changedPaths.includes(filePath);
-}
-
 function toComponentKey(component: MetadataComponent): string {
   return `${component.type}:${component.name}`;
 }
 
 function normalizePath(filePath: string): string {
   return filePath.split(path.sep).join('/');
+}
+
+function projectRelativePath(projectRoot: string, filePath: string): string {
+  return normalizePath(path.isAbsolute(filePath) ? path.relative(projectRoot, filePath) : filePath).replace(
+    /^\.\//u,
+    ''
+  );
 }
 
 function firstPathSegment(filePath: string): string {
@@ -356,50 +353,48 @@ function withTargetOrg(args: string[], context: ProviderContext): string[] {
 }
 
 async function findMissingEvaluationSubjects(
-  projectRoot: string,
-  files: string[],
+  evaluations: Array<{ component: AiEvaluationDefinition; relativePath: string }>,
   sourceSubjects: ReadonlySet<string>,
   targetOrg: string | undefined,
   targetLookup: SpecialDeploymentTargetLookup
 ): Promise<string[]> {
-  const parser = new XMLParser({ ignoreAttributes: false });
   const errors: string[] = [];
 
-  for (const file of files) {
-    const absolutePath = path.join(projectRoot, file);
-    const content = await readFile(absolutePath, 'utf8');
-    const parsed = parser.parse(content) as Record<string, unknown>;
-    const subjectName = findXmlValue(parsed, 'subjectName');
-    if (!subjectName || sourceSubjects.has(subjectName)) {
+  for (const { component, relativePath } of evaluations) {
+    if (sourceSubjects.has(component.subjectName)) {
       continue;
     }
 
-    const existsInTarget = targetOrg ? await targetLookup.hasEvaluationSubject(targetOrg, subjectName) : false;
+    const existsInTarget = targetOrg
+      ? await targetLookup.hasEvaluationSubject(targetOrg, component.subjectName)
+      : false;
     if (!existsInTarget) {
-      errors.push(`${file}: subjectName "${subjectName}" was not found in source Agentforce bundles or Bots.`);
+      errors.push(
+        `${relativePath}: subjectName "${component.subjectName}" was not found in source Agentforce bundles or Bots.`
+      );
     }
   }
 
   return errors;
 }
 
-function findXmlValue(value: unknown, key: string): string | undefined {
-  if (!value || typeof value !== 'object') {
-    return undefined;
-  }
+function isAiEvaluationDefinition(component: MetadataComponent): component is AiEvaluationDefinition {
+  return component.type === 'AiEvaluationDefinition';
+}
 
-  const record = value as Record<string, unknown>;
-  const directValue = record[key];
-  if (typeof directValue === 'string') {
-    return directValue;
-  }
+function evaluationSourceSubjects(context: ProviderContext, changedPaths: ReadonlySet<string>): Set<string> {
+  const subjects = new Set(
+    context.components.filter((component) => component.type === 'Bot').map((component) => component.name)
+  );
 
-  for (const nested of Object.values(record)) {
-    const found = findXmlValue(nested, key);
-    if (found) {
-      return found;
+  for (const component of context.components) {
+    if (
+      component.type === 'AiAuthoringBundle' &&
+      changedPaths.has(projectRelativePath(context.projectRoot, component.filePath))
+    ) {
+      subjects.add(component.name);
     }
   }
 
-  return undefined;
+  return subjects;
 }

@@ -34,9 +34,7 @@ export class ResumeDeploymentService {
 
     const summary = summarizeDeploymentState(state);
     const targetOrg = options.targetOrg ?? state.targetOrg;
-    const remoteResume = options.targetOrg
-      ? await this.sfCli.resumeDeployment(state.deploymentId, options.targetOrg)
-      : undefined;
+    const remoteResume = options.targetOrg ? await this.sfCli.resumeDeployment(state.deploymentId) : undefined;
     if (remoteResume && !remoteResume.success) {
       throw new Error(remoteResume.output);
     }

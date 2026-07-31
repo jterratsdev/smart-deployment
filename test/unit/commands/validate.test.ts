@@ -54,7 +54,7 @@ function createScanResult(overrides: Partial<ScanResult> = {}): ScanResult {
       },
     ],
     dependencyResult,
-    projectRoot: process.cwd(),
+    projectRoot: '/tmp/smart-deployment-validate-command-tests',
     apiVersion: '61.0',
     executionTime: 25,
     errors: [],
@@ -135,6 +135,16 @@ describe('ValidateCommand', () => {
     });
     expect(result.waves).to.equal(2);
     expect(result.issueCount).to.equal(0);
+    expect(result.releaseReport?.schemaVersion).to.equal('1.0');
+    expect(result.releaseReport?.targetOrg).to.equal('test-org');
+    expect(result.releaseReport?.summary).to.deep.equal({
+      total: 2,
+      succeeded: 2,
+      failed: 0,
+      skipped: 0,
+      needsReview: 0,
+    });
+    expect(result.releaseReportPath).to.match(/release-report\.json$/u);
     expect(logs.some((message) => message.includes('Hard / Soft / Inferred: 1 / 0 / 0'))).to.be.true;
     expect(logs.some((message) => message.includes('No deployment was executed'))).to.be.true;
   });
@@ -174,6 +184,8 @@ describe('ValidateCommand', () => {
     expect(result.success).to.be.false;
     expect(result.dependencies).to.equal(1);
     expect(result.issueCount).to.equal(1);
+    expect(result.releaseReport?.outcome).to.equal('failed');
+    expect(result.releaseReport?.summary.needsReview).to.equal(2);
     expect(logs.some((message) => message.includes('Broken metadata file'))).to.be.true;
     expect(warnings.some((message) => message.includes('Validation found 1 issue'))).to.be.true;
   });

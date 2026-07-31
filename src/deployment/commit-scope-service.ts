@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import { promisify } from 'node:util';
 import { DependencyGraphBuilder } from '../dependencies/dependency-graph-builder.js';
@@ -12,6 +12,7 @@ const execFileAsync = promisify(execFile);
 export type CommitScopeOptions = {
   commits?: string[];
   manifestPath?: string;
+  outputManifestPath?: string;
 };
 
 export type CommitScopeChangeStatus = 'added' | 'changed' | 'deleted';
@@ -25,9 +26,11 @@ export type CommitScopeGitChange = {
 export type CommitScopeSummary = {
   enabled: boolean;
   commits: string[];
+  manifestPath?: string;
   changedFiles: CommitScopeGitChange[];
   changedComponents: NodeId[];
   dependencyComponents: NodeId[];
+  explicitComponents: NodeId[];
   includedComponents: NodeId[];
   ignoredComponents: NodeId[];
 };
@@ -42,11 +45,23 @@ export type CommitScopeGitChangeProvider = {
 };
 
 type CommitScopeManifest = {
+  schemaVersion?: 1;
   commits?: string[];
+  generatedAt?: string;
+  changes?: CommitScopeGitChange[];
+  scope?: {
+    changedComponents?: string[];
+    dependencyComponents?: string[];
+    explicitComponents?: string[];
+    includedComponents?: string[];
+    ignoredComponents?: string[];
+  };
+  includeComponents?: string[];
   stories?: Array<{
     id?: string;
     key?: string;
     commits?: string[];
+    includeComponents?: string[];
   }>;
 };
 
@@ -62,20 +77,30 @@ export class CommitScopeService {
   }
 
   public async apply(scanResult: ScanResult, options: CommitScopeOptions = {}): Promise<CommitScopeResult> {
-    const commits = await this.resolveCommits(scanResult.projectRoot, options);
+    const manifest = options.manifestPath
+      ? await this.readManifest(scanResult.projectRoot, options.manifestPath)
+      : undefined;
+    const commits = this.resolveCommits(options, manifest);
+    const manifestScope = manifest ? this.resolveManifestScope(manifest) : undefined;
 
-    if (commits.length === 0) {
+    if (commits.length === 0 && (manifestScope?.includedComponents.length ?? 0) === 0) {
       return {
         scanResult,
         summary: createDisabledSummary(),
       };
     }
 
-    const changedFiles = await this.gitChangeProvider.listCommitChanges(scanResult.projectRoot, commits);
-    const changedComponents = this.resolveChangedComponents(scanResult, changedFiles);
-    const changedNodeIds = this.deduplicate(changedComponents.map((component) => toNodeId(component)));
-    const dependencyNodeIds = this.collectDependencyClosure(scanResult, changedNodeIds);
-    const includedNodeIds = this.deduplicate([...changedNodeIds, ...dependencyNodeIds]);
+    const commitScope =
+      manifestScope?.hasIncludedComponentContract === true
+        ? {
+            changedFiles: manifest?.changes ?? [],
+            changedNodeIds: manifestScope.changedComponents,
+            dependencyNodeIds: manifestScope.dependencyComponents,
+            explicitNodeIds: manifestScope.explicitComponents,
+            includedNodeIds: manifestScope.includedComponents,
+          }
+        : await this.resolveScopeFromCommits(scanResult, commits, manifestScope?.explicitComponents ?? []);
+    const includedNodeIds = this.deduplicate(commitScope.includedNodeIds);
     const included = new Set(includedNodeIds);
     const scopedComponents = scanResult.components
       .filter((component) => included.has(toNodeId(component)))
@@ -87,6 +112,21 @@ export class CommitScopeService {
       .map((component) => toNodeId(component))
       .filter((nodeId) => !included.has(nodeId))
       .sort();
+    const summary: CommitScopeSummary = {
+      enabled: true,
+      commits,
+      manifestPath: options.outputManifestPath ?? options.manifestPath,
+      changedFiles: commitScope.changedFiles,
+      changedComponents: commitScope.changedNodeIds,
+      dependencyComponents: commitScope.dependencyNodeIds,
+      explicitComponents: commitScope.explicitNodeIds,
+      includedComponents: includedNodeIds,
+      ignoredComponents,
+    };
+
+    if (options.outputManifestPath) {
+      await this.writeManifest(scanResult.projectRoot, options.outputManifestPath, summary);
+    }
 
     return {
       scanResult: {
@@ -94,23 +134,13 @@ export class CommitScopeService {
         components: scopedComponents,
         dependencyResult: scopedDependencyResult,
       },
-      summary: {
-        enabled: true,
-        commits,
-        changedFiles,
-        changedComponents: changedNodeIds,
-        dependencyComponents: dependencyNodeIds,
-        includedComponents: includedNodeIds,
-        ignoredComponents,
-      },
+      summary,
     };
   }
 
-  private async resolveCommits(projectRoot: string, options: CommitScopeOptions): Promise<string[]> {
+  private resolveCommits(options: CommitScopeOptions, manifest?: CommitScopeManifest): string[] {
     const directCommits = parseCommitList(options.commits ?? []);
-    const manifestCommits = options.manifestPath
-      ? parseCommitList(extractManifestCommits(await this.readManifest(projectRoot, options.manifestPath)))
-      : [];
+    const manifestCommits = manifest ? parseCommitList(extractManifestCommits(manifest)) : [];
 
     return this.deduplicate([...directCommits, ...manifestCommits]);
   }
@@ -125,6 +155,81 @@ export class CommitScopeService {
     }
 
     return parsed;
+  }
+
+  private async writeManifest(projectRoot: string, manifestPath: string, summary: CommitScopeSummary): Promise<void> {
+    const resolvedPath = path.isAbsolute(manifestPath) ? manifestPath : path.join(projectRoot, manifestPath);
+    await mkdir(path.dirname(resolvedPath), { recursive: true });
+    await writeFile(resolvedPath, `${JSON.stringify(toManifest(summary), null, 2)}\n`, 'utf8');
+  }
+
+  private resolveManifestScope(manifest: CommitScopeManifest):
+    | {
+        changedComponents: NodeId[];
+        dependencyComponents: NodeId[];
+        explicitComponents: NodeId[];
+        includedComponents: NodeId[];
+        hasIncludedComponentContract: boolean;
+      }
+    | undefined {
+    const changedComponents = parseNodeIdList(manifest.scope?.changedComponents ?? []);
+    const dependencyComponents = parseNodeIdList(manifest.scope?.dependencyComponents ?? []);
+    const explicitComponents = parseNodeIdList([
+      ...(manifest.scope?.explicitComponents ?? []),
+      ...(manifest.includeComponents ?? []),
+      ...(manifest.stories?.flatMap((story) => story.includeComponents ?? []) ?? []),
+    ]);
+    const contractComponents = parseNodeIdList(manifest.scope?.includedComponents ?? []);
+    const includedComponents = parseNodeIdList([
+      ...contractComponents,
+      ...changedComponents,
+      ...dependencyComponents,
+      ...explicitComponents,
+    ]);
+
+    if (
+      changedComponents.length === 0 &&
+      dependencyComponents.length === 0 &&
+      explicitComponents.length === 0 &&
+      includedComponents.length === 0
+    ) {
+      return undefined;
+    }
+
+    return {
+      changedComponents,
+      dependencyComponents,
+      explicitComponents,
+      includedComponents,
+      hasIncludedComponentContract: contractComponents.length > 0,
+    };
+  }
+
+  private async resolveScopeFromCommits(
+    scanResult: ScanResult,
+    commits: string[],
+    explicitNodeIds: NodeId[]
+  ): Promise<{
+    changedFiles: CommitScopeGitChange[];
+    changedNodeIds: NodeId[];
+    dependencyNodeIds: NodeId[];
+    explicitNodeIds: NodeId[];
+    includedNodeIds: NodeId[];
+  }> {
+    const changedFiles = await this.gitChangeProvider.listCommitChanges(scanResult.projectRoot, commits);
+    const changedComponents = this.resolveChangedComponents(scanResult, changedFiles);
+    const changedNodeIds = this.deduplicate(changedComponents.map((component) => toNodeId(component)));
+    const dependencyNodeIds = this.collectDependencyClosure(scanResult, changedNodeIds);
+    const knownExplicitNodeIds = this.filterKnownNodeIds(scanResult, explicitNodeIds);
+    const includedNodeIds = this.deduplicate([...changedNodeIds, ...dependencyNodeIds, ...knownExplicitNodeIds]);
+
+    return {
+      changedFiles,
+      changedNodeIds,
+      dependencyNodeIds,
+      explicitNodeIds: knownExplicitNodeIds,
+      includedNodeIds,
+    };
   }
 
   private resolveChangedComponents(scanResult: ScanResult, changes: CommitScopeGitChange[]): MetadataComponent[] {
@@ -181,6 +286,10 @@ export class CommitScopeService {
 
     return [...byNodeId.values()].sort((left, right) => toNodeId(left).localeCompare(toNodeId(right)));
   }
+
+  private filterKnownNodeIds(scanResult: ScanResult, nodeIds: NodeId[]): NodeId[] {
+    return this.deduplicate(nodeIds.filter((nodeId) => scanResult.dependencyResult.components.has(nodeId)));
+  }
 }
 
 class CliCommitScopeGitChangeProvider implements CommitScopeGitChangeProvider {
@@ -220,6 +329,10 @@ function parseCommitList(values: string[]): string[] {
     .flatMap((value) => value.split(','))
     .map((value) => value.trim())
     .filter(Boolean);
+}
+
+function parseNodeIdList(values: string[]): NodeId[] {
+  return [...new Set(values.map((value) => value.trim()).filter((value) => value.includes(':')))].sort();
 }
 
 function extractManifestCommits(manifest: CommitScopeManifest): string[] {
@@ -296,6 +409,21 @@ function toNodeId(component: MetadataComponent): NodeId {
   return `${component.type}:${component.name}`;
 }
 
+function toManifest(summary: CommitScopeSummary): CommitScopeManifest {
+  return {
+    schemaVersion: 1,
+    commits: summary.commits,
+    changes: summary.changedFiles,
+    scope: {
+      changedComponents: summary.changedComponents,
+      dependencyComponents: summary.dependencyComponents,
+      explicitComponents: summary.explicitComponents,
+      includedComponents: summary.includedComponents,
+      ignoredComponents: summary.ignoredComponents,
+    },
+  };
+}
+
 function createDisabledSummary(): CommitScopeSummary {
   return {
     enabled: false,
@@ -303,6 +431,7 @@ function createDisabledSummary(): CommitScopeSummary {
     changedFiles: [],
     changedComponents: [],
     dependencyComponents: [],
+    explicitComponents: [],
     includedComponents: [],
     ignoredComponents: [],
   };

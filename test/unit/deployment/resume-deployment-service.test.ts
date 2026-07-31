@@ -44,7 +44,7 @@ describe('ResumeDeploymentService', () => {
 
   it('calls remote resume before saving resumed state when target org is provided', async () => {
     let savedState: DeploymentState | undefined;
-    const remoteCalls: Array<{ deploymentId: string; targetOrg: string }> = [];
+    const remoteCalls: string[] = [];
     const service = new ResumeDeploymentService(
       {
         loadState: async () => ({
@@ -65,8 +65,8 @@ describe('ResumeDeploymentService', () => {
         },
       } as never,
       {
-        resumeDeployment: async (deploymentId: string, targetOrg: string) => {
-          remoteCalls.push({ deploymentId, targetOrg });
+        resumeDeployment: async (deploymentId: string) => {
+          remoteCalls.push(deploymentId);
           return {
             success: true,
             deploymentId: '0AfRemoteResume',
@@ -82,7 +82,7 @@ describe('ResumeDeploymentService', () => {
     const summary = await service.prepareResume('standard', { targetOrg: 'test-org' });
 
     expect(summary.deploymentId).to.equal('0AfRemoteResume');
-    expect(remoteCalls).to.deep.equal([{ deploymentId: '0AfRemoteResume', targetOrg: 'test-org' }]);
+    expect(remoteCalls).to.deep.equal(['0AfRemoteResume']);
     expect(savedState?.failedWave).to.equal(undefined);
     expect(savedState?.metadata).to.deep.include({
       remoteResumeStatus: 'Succeeded',

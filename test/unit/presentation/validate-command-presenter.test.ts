@@ -5,6 +5,8 @@ import type { DeploymentValidationSummary } from '../../../src/deployment/deploy
 
 function createSummary(overrides: Partial<DeploymentValidationSummary> = {}): DeploymentValidationSummary {
   return {
+    projectRoot: '/tmp/sfdx-project',
+    componentIds: ['ApexClass:Base', 'ApexClass:Service'],
     valid: true,
     components: 2,
     dependencies: 3,
@@ -33,6 +35,34 @@ describe('ValidateCommandPresenter', () => {
     expect(formatted).to.include('Hard / Soft / Inferred: 1 / 1 / 1');
     expect(formatted).to.include('Waves: 2');
     expect(formatted).to.include('XML Files Validated: 4');
+  });
+
+  it('explains commit scope inclusion, exclusions, and retained dependencies', () => {
+    const presenter = new ValidateCommandPresenter();
+
+    const formatted = presenter.formatSummary(
+      createSummary({
+        commitScope: {
+          enabled: true,
+          commits: ['abc123'],
+          manifestPath: 'manifests/story-scope.generated.json',
+          changedFiles: [{ commit: 'abc123', status: 'changed', path: 'force-app/main/default/classes/Service.cls' }],
+          changedComponents: ['ApexClass:Service'],
+          dependencyComponents: ['ApexClass:Base'],
+          explicitComponents: ['CustomObject:Feature__c'],
+          includedComponents: ['ApexClass:Base', 'ApexClass:Service', 'CustomObject:Feature__c'],
+          ignoredComponents: ['ApexClass:FutureWork'],
+        },
+      })
+    );
+
+    expect(formatted).to.include('Commit Scope:');
+    expect(formatted).to.include('- Changed metadata: 1');
+    expect(formatted).to.include('- Dependency-retained metadata: 1');
+    expect(formatted).to.include('- Explicit metadata: 1');
+    expect(formatted).to.include('- Included metadata: 3');
+    expect(formatted).to.include('- Ignored trunk metadata: 1');
+    expect(formatted).to.include('- Scope manifest: manifests/story-scope.generated.json');
   });
 
   it('reports summary and success message for valid projects', () => {

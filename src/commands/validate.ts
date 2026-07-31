@@ -16,13 +16,17 @@ import { Flags, SfCommand, optionalOrgFlagWithDeprecations } from '@salesforce/s
 import type { CommitScopeOptions } from '../deployment/commit-scope-service.js';
 import { DeploymentValidationService } from '../deployment/deployment-validation-service.js';
 import { ValidateCommandPresenter } from '../presentation/validate-command-presenter.js';
+import { ReleaseReportCommandAdapter } from '../reports/release-report-command-adapter.js';
+import { buildValidationReportFacts } from '../reports/release-report-facts-factory.js';
 import type { MetadataDependencyKind } from '../types/metadata.js';
+import type { ReleaseReportV1 } from '../types/release-report.js';
 import { getLogger } from '../utils/logger.js';
 
 const logger = getLogger('ValidateCommand');
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('@jterrats/smart-deployment', 'validate');
 const presenter = new ValidateCommandPresenter();
+const releaseReportAdapter = new ReleaseReportCommandAdapter();
 
 type ValidateResult = {
   success: boolean;
@@ -35,8 +39,10 @@ type ValidateResult = {
     commits: string[];
     changedComponents: string[];
     dependencyComponents: string[];
+    explicitComponents: string[];
     includedComponents: string[];
     ignoredComponents: string[];
+    manifestPath?: string;
   };
   ai?: {
     analyzed: boolean;
@@ -45,6 +51,9 @@ type ValidateResult = {
     fallback?: boolean;
     overallRisk?: 'low' | 'medium' | 'high' | 'critical';
   };
+  releaseReport?: ReleaseReportV1;
+  releaseReportPath?: string;
+  releaseReportWarning?: string;
 };
 
 export default class Validate extends SfCommand<ValidateResult> {
@@ -67,6 +76,10 @@ export default class Validate extends SfCommand<ValidateResult> {
     'scope-manifest': Flags.string({
       summary: messages.getMessage('flags.scope-manifest.summary'),
     }),
+    'scope-manifest-output': Flags.string({
+      summary: messages.getMessage('flags.scope-manifest-output.summary'),
+      description: messages.getMessage('flags.scope-manifest-output.description'),
+    }),
   };
 
   public async run(): Promise<ValidateResult> {
@@ -84,7 +97,7 @@ export default class Validate extends SfCommand<ValidateResult> {
     });
     presenter.reportValidationResult(this, summary);
 
-    return {
+    const result: ValidateResult = {
       success: summary.valid,
       components: summary.components,
       dependencies: summary.dependencies,
@@ -102,12 +115,33 @@ export default class Validate extends SfCommand<ValidateResult> {
           }
         : undefined,
     };
+    const targetOrg = this.getTargetOrgIdentifier(flags['target-org']);
+    const releaseReport = await releaseReportAdapter.finalize(
+      this,
+      { kind: 'succeeded', value: result },
+      buildValidationReportFacts(summary, targetOrg, useAI),
+      { projectRoot: summary.projectRoot }
+    );
+    return { ...result, ...releaseReport };
   }
 
   private getCommitScopeOptions(flags: Record<string, unknown>): CommitScopeOptions | undefined {
     const commits = typeof flags['scope-commits'] === 'string' ? [flags['scope-commits']] : undefined;
     const manifestPath = typeof flags['scope-manifest'] === 'string' ? flags['scope-manifest'] : undefined;
+    const outputManifestPath =
+      typeof flags['scope-manifest-output'] === 'string' ? flags['scope-manifest-output'] : undefined;
 
-    return commits !== undefined || manifestPath !== undefined ? { commits, manifestPath } : undefined;
+    return commits !== undefined || manifestPath !== undefined || outputManifestPath !== undefined
+      ? { commits, manifestPath, outputManifestPath }
+      : undefined;
+  }
+
+  private getTargetOrgIdentifier(value: unknown): string | undefined {
+    if (typeof value === 'string' && value.length > 0) return value;
+    if (typeof value === 'object' && value !== null && 'getUsername' in value) {
+      const getUsername = (value as { getUsername: () => string }).getUsername;
+      return typeof getUsername === 'function' ? getUsername.call(value) : undefined;
+    }
+    return undefined;
   }
 }

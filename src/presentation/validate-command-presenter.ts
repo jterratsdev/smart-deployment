@@ -45,6 +45,20 @@ export class ValidateCommandPresenter {
       lines.push(`AI Overall Risk: ${summary.overallRisk.toUpperCase()}`);
     }
 
+    if (summary.commitScope?.enabled) {
+      lines.push('');
+      lines.push('Commit Scope:');
+      lines.push(`- Commits: ${summary.commitScope.commits.length}`);
+      lines.push(`- Changed metadata: ${summary.commitScope.changedComponents.length}`);
+      lines.push(`- Dependency-retained metadata: ${summary.commitScope.dependencyComponents.length}`);
+      lines.push(`- Explicit metadata: ${summary.commitScope.explicitComponents.length}`);
+      lines.push(`- Included metadata: ${summary.commitScope.includedComponents.length}`);
+      lines.push(`- Ignored trunk metadata: ${summary.commitScope.ignoredComponents.length}`);
+      if (summary.commitScope.manifestPath) {
+        lines.push(`- Scope manifest: ${summary.commitScope.manifestPath}`);
+      }
+    }
+
     if (summary.issues.length > 0) {
       lines.push('');
       lines.push('Issues:');

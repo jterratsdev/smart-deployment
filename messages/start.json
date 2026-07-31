@@ -29,6 +29,8 @@
   "flags.scope-commits.description": "Limits the deployment plan to metadata changed by these commits plus required dependencies.",
   "flags.scope-manifest.summary": "Path to a JSON commit or story scope manifest",
   "flags.scope-manifest.description": "Reads commits from { commits: [] } and { stories: [{ commits: [] }] } to scope validation and deployment planning.",
+  "flags.scope-manifest-output.summary": "Write the resolved story scope manifest for CI review",
+  "flags.scope-manifest-output.description": "Creates a deterministic JSON contract containing commits, changed files, included metadata, dependency-retained metadata, explicitly included metadata, and ignored metadata.",
   "flags.destructive.summary": "Delete metadata components using destructive wave manifests",
   "flags.destructive.description": "Runs the normal analysis path, then executes destructiveChanges manifests in reverse wave order.",
   "flags.rollback-from.summary": "Git ref or release tag that represents the rollback target state",

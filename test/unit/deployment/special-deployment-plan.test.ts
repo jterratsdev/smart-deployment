@@ -1,12 +1,9 @@
 import { expect } from 'chai';
-import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import * as path from 'node:path';
 import { describe, it } from 'mocha';
 import { SpecialDeploymentPlanService } from '../../../src/deployment/special-deployment-plan.js';
 import type { ScanResult } from '../../../src/services/metadata-scanner-service.js';
 import type { DependencyAnalysisResult } from '../../../src/types/dependency.js';
-import type { MetadataComponent, MetadataType } from '../../../src/types/metadata.js';
+import type { AiEvaluationDefinition, MetadataComponent, MetadataType } from '../../../src/types/metadata.js';
 
 function component(type: MetadataType, name: string, filePath: string): MetadataComponent {
   return {
@@ -16,6 +13,15 @@ function component(type: MetadataType, name: string, filePath: string): Metadata
     dependencies: new Set(),
     dependents: new Set(),
     priorityBoost: 0,
+  };
+}
+
+function evaluation(name: string, subjectName: string, filePath: string): AiEvaluationDefinition {
+  return {
+    ...component('AiEvaluationDefinition', name, filePath),
+    type: 'AiEvaluationDefinition',
+    subjectName,
+    subjectType: 'AGENT',
   };
 }
 
@@ -74,10 +80,16 @@ describe('SpecialDeploymentPlanService', () => {
               'CustomerPortal',
               'force-app/main/default/digitalExperiences/site/CustomerPortal/routes/home.json'
             ),
+            evaluation(
+              'SupportQuality',
+              'SupportAgent',
+              'force-app/main/default/aiEvaluationDefinitions/SupportQuality.aiEvaluationDefinition-meta.xml'
+            ),
           ]),
       },
       changedPathProvider: async () => [
         'force-app/main/default/aiAuthoringBundles/SupportAgent/SupportAgent.agent',
+        'force-app/main/default/aiEvaluationDefinitions/SupportQuality.aiEvaluationDefinition-meta.xml',
         'force-app/main/default/digitalExperiences/site/CustomerPortal/routes/home.json',
         'vlocity/OmniScript/Welcome/Welcome.json',
       ],
@@ -89,7 +101,12 @@ describe('SpecialDeploymentPlanService', () => {
       'DigitalExperienceBundle:CustomerPortal',
       'GenAiPlannerBundle:SupportPlanner',
     ]);
-    expect(corePhase?.excludedTypes).to.deep.equal(['Bot', 'BotVersion', 'AiAuthoringBundle']);
+    expect(corePhase?.excludedTypes).to.deep.equal([
+      'Bot',
+      'BotVersion',
+      'AiAuthoringBundle',
+      'AiEvaluationDefinition',
+    ]);
     expect(corePhase?.commands[0]?.args).to.deep.equal([
       'project',
       'deploy',
@@ -124,6 +141,10 @@ describe('SpecialDeploymentPlanService', () => {
       '<published-version:SupportAgent>',
     ]);
 
+    const evaluations = plan.phases.find((phase) => phase.kind === 'ai-evaluations');
+    expect(evaluations?.components).to.deep.equal(['AiEvaluationDefinition:SupportQuality']);
+    expect(evaluations?.errors).to.deep.equal([]);
+
     const community = plan.phases.find((phase) => phase.kind === 'community-publish');
     expect(community?.commands[0]?.args).to.deep.equal(['community', 'publish', '-n', 'CustomerPortal']);
 
@@ -155,53 +176,35 @@ describe('SpecialDeploymentPlanService', () => {
   });
 
   it('reports AiEvaluationDefinition subjectName values missing from source Agentforce metadata', async () => {
-    const projectRoot = await mkdtemp(path.join(tmpdir(), 'smart-deployment-eval-'));
-    const evalDir = path.join(projectRoot, 'force-app', 'main', 'default', 'aiEvaluationDefinitions');
-    await mkdir(evalDir, { recursive: true });
-    await writeFile(
-      path.join(evalDir, 'MissingSubject.xml'),
-      '<AiEvaluationDefinition><subjectName>MissingAgent</subjectName></AiEvaluationDefinition>',
-      'utf8'
-    );
-
     const service = new SpecialDeploymentPlanService();
+    const filePath = 'force-app/main/default/aiEvaluationDefinitions/MissingSubject.aiEvaluationDefinition-meta.xml';
     const plan = await service.buildPlan({
       scanner: {
         scan: async () => ({
-          ...scanResult([]),
-          projectRoot,
+          ...scanResult([evaluation('MissingSubject', 'MissingAgent', filePath)]),
         }),
       },
-      changedPathProvider: async () => ['force-app/main/default/aiEvaluationDefinitions/MissingSubject.xml'],
+      changedPathProvider: async () => [filePath],
     });
 
     expect(plan.success).to.equal(false);
     expect(plan.errors).to.deep.equal([
-      'force-app/main/default/aiEvaluationDefinitions/MissingSubject.xml: subjectName "MissingAgent" was not found in source Agentforce bundles or Bots.',
+      `${filePath}: subjectName "MissingAgent" was not found in source Agentforce bundles or Bots.`,
     ]);
   });
 
   it('accepts AiEvaluationDefinition subjectName values found in the target org', async () => {
-    const projectRoot = await mkdtemp(path.join(tmpdir(), 'smart-deployment-eval-'));
-    const evalDir = path.join(projectRoot, 'force-app', 'main', 'default', 'aiEvaluationDefinitions');
     const lookedUpSubjects: string[] = [];
-    await mkdir(evalDir, { recursive: true });
-    await writeFile(
-      path.join(evalDir, 'ExistingSubject.xml'),
-      '<AiEvaluationDefinition><subjectName>ExistingAgent</subjectName></AiEvaluationDefinition>',
-      'utf8'
-    );
-
     const service = new SpecialDeploymentPlanService();
+    const filePath = 'force-app/main/default/aiEvaluationDefinitions/ExistingSubject.aiEvaluationDefinition-meta.xml';
     const plan = await service.buildPlan({
       targetOrg: 'release-org',
       scanner: {
         scan: async () => ({
-          ...scanResult([]),
-          projectRoot,
+          ...scanResult([evaluation('ExistingSubject', 'ExistingAgent', filePath)]),
         }),
       },
-      changedPathProvider: async () => ['force-app/main/default/aiEvaluationDefinitions/ExistingSubject.xml'],
+      changedPathProvider: async () => [filePath],
       targetLookup: {
         hasEvaluationSubject: async (targetOrg, subjectName) => {
           expect(targetOrg).to.equal('release-org');
@@ -225,5 +228,52 @@ describe('SpecialDeploymentPlanService', () => {
       '--target-org',
       'release-org',
     ]);
+  });
+
+  it('accepts a local Bot subject and omits unchanged evaluation definitions', async () => {
+    const changedFile = 'force-app/main/default/aiEvaluationDefinitions/Zulu.aiEvaluationDefinition-meta.xml';
+    const unchangedFile = 'force-app/main/default/aiEvaluationDefinitions/Alpha.aiEvaluationDefinition-meta.xml';
+    const plan = await new SpecialDeploymentPlanService().buildPlan({
+      since: 'abc123',
+      scanner: {
+        scan: async () =>
+          scanResult([
+            evaluation('Zulu', 'SupportBot', changedFile),
+            evaluation('Alpha', 'SupportBot', unchangedFile),
+            component('Bot', 'SupportBot', 'force-app/main/default/bots/SupportBot.bot-meta.xml'),
+          ]),
+      },
+      changedPathProvider: async () => [changedFile],
+    });
+
+    const aiEvaluations = plan.phases.find((phase) => phase.kind === 'ai-evaluations');
+    expect(aiEvaluations?.components).to.deep.equal(['AiEvaluationDefinition:Zulu']);
+    expect(aiEvaluations?.changedPaths).to.deep.equal([changedFile]);
+    expect(aiEvaluations?.errors).to.deep.equal([]);
+  });
+
+  it('orders evaluation definitions by normalized project-relative path', async () => {
+    const plan = await new SpecialDeploymentPlanService().buildPlan({
+      scanner: {
+        scan: async () =>
+          scanResult([
+            evaluation(
+              'Zulu',
+              'SupportBot',
+              '/tmp/sfdx-project/force-app/main/default/aiEvaluationDefinitions/nested/Zulu.aiEvaluationDefinition-meta.xml'
+            ),
+            component('Bot', 'SupportBot', 'force-app/main/default/bots/SupportBot.bot-meta.xml'),
+            evaluation(
+              'Alpha',
+              'SupportBot',
+              '/tmp/sfdx-project/force-app/main/default/aiEvaluationDefinitions/Alpha.aiEvaluationDefinition-meta.xml'
+            ),
+          ]),
+      },
+      changedPathProvider: async () => [],
+    });
+
+    const aiEvaluations = plan.phases.find((phase) => phase.kind === 'ai-evaluations');
+    expect(aiEvaluations?.components).to.deep.equal(['AiEvaluationDefinition:Alpha', 'AiEvaluationDefinition:Zulu']);
   });
 });

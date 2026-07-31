@@ -1,3 +1,6 @@
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import { expect } from 'chai';
 import { afterEach, describe, it } from 'mocha';
 import CiPublish from '../../../src/commands/ci-publish.js';
@@ -24,6 +27,7 @@ type CiPublishCommandTestDouble = {
   parse: () => Promise<ParseResult>;
   log: (message?: string) => void;
   warn: (message?: string | Error) => void;
+  error: (message: string) => never;
 };
 
 function plan(overrides: Partial<SpecialDeploymentPlan> = {}): SpecialDeploymentPlan {
@@ -117,6 +121,14 @@ describe('CiPublishCommand', () => {
     expect(logs).to.include('Coordinated publish plan');
     expect(logs).to.include('Target Org: release-org');
     expect(logs.some((message) => message.includes('sf agent publish authoring-bundle'))).to.equal(true);
+    expect(result.releaseReport?.schemaVersion).to.equal('1.0');
+    expect(result.releaseReport?.outcome).to.equal('skipped');
+    expect(result.releaseReport?.items[0]).to.deep.include({
+      metadataType: 'AiAuthoringBundle',
+      fullName: 'SupportAgent',
+      operation: 'publish',
+      status: 'skipped',
+    });
   });
 
   it('executes the plan when dry-run is disabled', async () => {
@@ -155,7 +167,62 @@ describe('CiPublishCommand', () => {
 
     const result = await command.run();
 
-    expect(executedPlan).to.equal(result);
+    expect(executedPlan?.projectRoot).to.equal(result.projectRoot);
+    expect(result.releaseReport?.outcome).to.equal('succeeded');
+    expect(result.releaseReport?.phases[0]?.status).to.equal('succeeded');
+    expect(result.releaseReportPath).to.match(/release-report\.json$/u);
     expect(logs).to.include('Coordinated publish execution completed successfully.');
+  });
+
+  it('persists a failed report before preserving the command failure', async () => {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'ci-publish-report-failure-'));
+    SpecialDeploymentPlanService.prototype.buildPlan = async function buildPlanMock() {
+      return plan({ projectRoot, dryRun: false });
+    };
+    SpecialDeploymentPlanExecutor.prototype.execute = async function executeMock() {
+      return {
+        success: false,
+        completedPhases: [],
+        skippedPhases: [],
+        failedPhase: 'agentforce-publish',
+        exitCode: 1,
+        errors: ['Agentforce publish failed.'],
+        commands: [],
+      };
+    };
+
+    const command = new CiPublish([], {} as never);
+    (command as unknown as CiPublishCommandTestDouble).parse = async () => ({
+      flags: { 'dry-run': false, 'auto-activate': false },
+      args: {},
+      argv: [],
+      raw: [],
+      metadata: { flags: {}, args: {} },
+      nonExistentFlags: [],
+      _runtime: {},
+    });
+    (command as unknown as CiPublishCommandTestDouble).log = () => undefined;
+    (command as unknown as CiPublishCommandTestDouble).warn = () => undefined;
+    (command as unknown as CiPublishCommandTestDouble).error = (message: string) => {
+      throw new Error(message);
+    };
+
+    let thrownError: Error | undefined;
+    try {
+      await command.run();
+    } catch (error) {
+      thrownError = error as Error;
+    }
+
+    const report = JSON.parse(
+      await readFile(path.join(projectRoot, '.smart-deployment', 'reports', 'release-report.json'), 'utf8')
+    ) as { outcome: string; phases: Array<{ id: string; status: string }> };
+    expect(thrownError?.message).to.equal('Agentforce publish failed.');
+    expect(report.outcome).to.equal('failed');
+    expect(report.phases.find((phase) => phase.id === 'agentforce-publish')).to.deep.include({
+      id: 'agentforce-publish',
+      status: 'failed',
+    });
+    await rm(projectRoot, { recursive: true, force: true });
   });
 });

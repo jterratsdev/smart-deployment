@@ -15,7 +15,7 @@ describe('MetadataGapAnalysisService', () => {
 
   it('reports deterministic gaps from package manifests and source paths', async () => {
     const projectRoot = await createProject();
-    await writePackageXml(projectRoot, ['ApexClass', 'CustomApplication', 'MatchingRule', 'GenAiPlugin']);
+    await writePackageXml(projectRoot, ['ApexClass', 'CustomApplication', 'MatchingRules', 'GenAiPlugin']);
     await writeFile(
       path.join(projectRoot, 'force-app/main/default/applications/Sales.app-meta.xml'),
       '<CustomApplication />'
@@ -33,9 +33,9 @@ describe('MetadataGapAnalysisService', () => {
     expect(result.gaps.map((gap) => gap.metadataType)).to.deep.equal([
       'CustomApplication',
       'GenAiPlugin',
-      'MatchingRule',
+      'MatchingRules',
     ]);
-    expect(result.gaps.find((gap) => gap.metadataType === 'MatchingRule')).to.deep.include({
+    expect(result.gaps.find((gap) => gap.metadataType === 'MatchingRules')).to.deep.include({
       classification: 'dependency-rule',
       supportStatus: 'unsupported',
       requiresHumanReview: false,
@@ -45,6 +45,23 @@ describe('MetadataGapAnalysisService', () => {
       supportStatus: 'ordered-only',
       requiresHumanReview: true,
     });
+  });
+
+  it('derives aliases, partial support, and unknown types from capability evidence', async () => {
+    const projectRoot = await createProject();
+    await writePackageXml(projectRoot, ['ApexPage', 'CustomApplication', 'UnknownType']);
+
+    const result = await new MetadataGapAnalysisService().analyze({ sourcePath: projectRoot });
+
+    expect(
+      result.detectedTypes.map(({ metadataType, supportStatus }) => ({ metadataType, supportStatus }))
+    ).to.deep.equal([
+      { metadataType: 'ApexClass', supportStatus: 'supported' },
+      { metadataType: 'ApexPage', supportStatus: 'supported' },
+      { metadataType: 'CustomApplication', supportStatus: 'unsupported' },
+      { metadataType: 'UnknownType', supportStatus: 'unsupported' },
+    ]);
+    expect(result.gaps.map((gap) => gap.metadataType)).to.deep.equal(['CustomApplication', 'UnknownType']);
   });
 
   it('adds workflow-ready AI context without direct provider access', async () => {

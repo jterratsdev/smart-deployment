@@ -22,8 +22,11 @@ import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { getLogger } from '../utils/logger.js';
 import { StartExecutionService } from '../deployment/start-execution-service.js';
 import { DeploymentContextService } from '../deployment/deployment-context-service.js';
+import type { DeploymentContext } from '../deployment/deployment-context-service.js';
 import { ProjectAnalysisPresenter } from '../presentation/project-analysis-presenter.js';
 import { StartCommandPresenter } from '../presentation/start-command-presenter.js';
+import { StartReleaseReportCoordinator } from '../reports/start-release-report-coordinator.js';
+import type { ReleaseReportV1 } from '../types/release-report.js';
 import { DeploymentPlanReportService } from '../reports/deployment-plan-report-service.js';
 import { RollbackPlanningService, type RollbackExecutionPlan } from '../deployment/rollback-planning-service.js';
 import type { CommitScopeOptions } from '../deployment/commit-scope-service.js';
@@ -37,6 +40,7 @@ const projectAnalysisPresenter = new ProjectAnalysisPresenter();
 const presenter = new StartCommandPresenter();
 const deploymentPlanReportService = new DeploymentPlanReportService();
 const rollbackPlanningService = new RollbackPlanningService();
+const startReleaseReportCoordinator = new StartReleaseReportCoordinator();
 
 /**
  * @ac US-046-AC-1: Analyzes metadata automatically
@@ -55,8 +59,10 @@ type StartResult = {
     commits: string[];
     changedComponents: string[];
     dependencyComponents: string[];
+    explicitComponents: string[];
     includedComponents: string[];
     ignoredComponents: string[];
+    manifestPath?: string;
   };
   rollback?: {
     enabled: boolean;
@@ -75,6 +81,9 @@ type StartResult = {
     inferredDependencies?: number;
     inferenceFallback?: boolean;
   };
+  releaseReport?: ReleaseReportV1;
+  releaseReportPath?: string;
+  releaseReportWarning?: string;
 };
 
 export default class Start extends SfCommand<StartResult> {
@@ -145,6 +154,10 @@ export default class Start extends SfCommand<StartResult> {
       summary: messages.getMessage('flags.scope-manifest.summary'),
       description: messages.getMessage('flags.scope-manifest.description'),
     }),
+    'scope-manifest-output': Flags.string({
+      summary: messages.getMessage('flags.scope-manifest-output.summary'),
+      description: messages.getMessage('flags.scope-manifest-output.description'),
+    }),
     destructive: Flags.boolean({
       summary: messages.getMessage('flags.destructive.summary'),
       description: messages.getMessage('flags.destructive.description'),
@@ -171,24 +184,26 @@ export default class Start extends SfCommand<StartResult> {
     const commitScope = this.getCommitScopeOptions(flags);
     const rollbackOptions = this.getRollbackOptions(flags);
     let rollbackPlan: RollbackExecutionPlan | undefined;
+    let deploymentContext: DeploymentContext | undefined;
 
     try {
       logger.info('Starting smart deployment', { flags: this.toLoggableFlags(flags) });
 
       this.log('📊 Analyzing metadata...');
-      const deploymentContext = await deploymentContextService.buildContext({
+      const activeContext = await deploymentContextService.buildContext({
         sourcePath,
         useAI: Boolean(flags['use-ai']),
         orgType: typeof flags['org-type'] === 'string' ? flags['org-type'] : undefined,
         industry: typeof flags.industry === 'string' ? flags.industry : undefined,
         commitScope,
       });
+      deploymentContext = activeContext;
       if (rollbackOptions) {
         rollbackPlan = await rollbackPlanningService.buildExecutionPlan({
-          projectRoot: deploymentContext.scanResult.projectRoot,
+          projectRoot: activeContext.scanResult.projectRoot,
           fromRef: rollbackOptions.from,
           toRef: rollbackOptions.to,
-          currentContext: deploymentContext,
+          currentContext: activeContext,
           buildContext: async (rollbackSourcePath) =>
             deploymentContextService.buildContext({
               sourcePath: rollbackSourcePath,
@@ -198,9 +213,9 @@ export default class Start extends SfCommand<StartResult> {
             }),
         });
       }
-      projectAnalysisPresenter.reportDiagnostics(this, deploymentContext.scanResult, deploymentContext.messages);
-      const metadataCount = deploymentContext.scanResult.components.length;
-      const waves = deploymentContext.orderedWaves.length;
+      projectAnalysisPresenter.reportDiagnostics(this, activeContext.scanResult, activeContext.messages);
+      const metadataCount = activeContext.scanResult.components.length;
+      const waves = activeContext.orderedWaves.length;
       presenter.reportAnalysisSummary(this, {
         metadataCount,
         waves,
@@ -211,10 +226,10 @@ export default class Start extends SfCommand<StartResult> {
         ? [
             { deploymentContext: rollbackPlan.destructiveContext, destructive: true },
             { deploymentContext: rollbackPlan.restoreContext, destructive: false },
-          ].filter((target): target is { deploymentContext: typeof deploymentContext; destructive: boolean } =>
+          ].filter((target): target is { deploymentContext: DeploymentContext; destructive: boolean } =>
             Boolean(target.deploymentContext)
           )
-        : [{ deploymentContext, destructive: flags.destructive === true }];
+        : [{ deploymentContext: activeContext, destructive: flags.destructive === true }];
 
       await executionTargets.reduce<Promise<void>>(async (previous, target) => {
         await previous;
@@ -252,18 +267,18 @@ export default class Start extends SfCommand<StartResult> {
       presenter.reportReportGenerationStart(this);
       const reportResult =
         reportOptions.dryRun || reportOptions.validateOnly
-          ? await deploymentPlanReportService.generate(deploymentContext, reportOptions)
+          ? await deploymentPlanReportService.generate(activeContext, reportOptions)
           : undefined;
       presenter.reportDeploymentReport(this, waves);
       if (reportResult) {
         presenter.reportPlanReportsSaved(this, reportResult);
       }
 
-      return {
+      const result: StartResult = {
         success: true,
         waves,
         reports: reportResult ? { jsonPath: reportResult.jsonPath, htmlPath: reportResult.htmlPath } : undefined,
-        commitScope: deploymentContext.commitScope,
+        commitScope: activeContext.commitScope,
         rollback: rollbackPlan
           ? {
               enabled: true,
@@ -273,11 +288,25 @@ export default class Start extends SfCommand<StartResult> {
               restoreComponents: rollbackPlan.summary.restoreComponents,
             }
           : undefined,
-        ai: deploymentContext.aiContext,
+        ai: activeContext.aiContext,
       };
+      return await startReleaseReportCoordinator.finalizeSuccess(this, result, activeContext, {
+        targetOrg: this.getTargetOrgIdentifier(flags['target-org']),
+        dryRun: flags['dry-run'] === true,
+        validateOnly: flags['validate-only'] === true,
+        reportDir: typeof flags['report-dir'] === 'string' ? flags['report-dir'] : undefined,
+      });
     } catch (error) {
       // AC-10: Handle failures gracefully
       logger.error('Deployment failed', { error });
+      if (deploymentContext) {
+        await startReleaseReportCoordinator.finalizeFailure(this, error, deploymentContext, {
+          targetOrg: this.getTargetOrgIdentifier(flags['target-org']),
+          dryRun: flags['dry-run'] === true,
+          validateOnly: flags['validate-only'] === true,
+          reportDir: typeof flags['report-dir'] === 'string' ? flags['report-dir'] : undefined,
+        });
+      }
       this.error(`Deployment failed: ${error instanceof Error ? error.message : String(error)}`);
       throw error;
     } finally {
@@ -288,8 +317,12 @@ export default class Start extends SfCommand<StartResult> {
   private getCommitScopeOptions(flags: Record<string, unknown>): CommitScopeOptions | undefined {
     const commits = typeof flags['scope-commits'] === 'string' ? [flags['scope-commits']] : undefined;
     const manifestPath = typeof flags['scope-manifest'] === 'string' ? flags['scope-manifest'] : undefined;
+    const outputManifestPath =
+      typeof flags['scope-manifest-output'] === 'string' ? flags['scope-manifest-output'] : undefined;
 
-    return commits !== undefined || manifestPath !== undefined ? { commits, manifestPath } : undefined;
+    return commits !== undefined || manifestPath !== undefined || outputManifestPath !== undefined
+      ? { commits, manifestPath, outputManifestPath }
+      : undefined;
   }
 
   private getRollbackOptions(flags: Record<string, unknown>): { from: string; to: string } | undefined {
@@ -330,6 +363,8 @@ export default class Start extends SfCommand<StartResult> {
       industry: typeof flags.industry === 'string' ? flags.industry : undefined,
       'scope-commits': typeof flags['scope-commits'] === 'string' ? flags['scope-commits'] : undefined,
       'scope-manifest': typeof flags['scope-manifest'] === 'string' ? flags['scope-manifest'] : undefined,
+      'scope-manifest-output':
+        typeof flags['scope-manifest-output'] === 'string' ? flags['scope-manifest-output'] : undefined,
       destructive: flags.destructive === true,
       'rollback-from': typeof flags['rollback-from'] === 'string' ? flags['rollback-from'] : undefined,
       'rollback-to': typeof flags['rollback-to'] === 'string' ? flags['rollback-to'] : undefined,

@@ -74,7 +74,7 @@ describe('Metadata Type Definitions', () => {
     const metadataTypes = Object.keys(DEPLOYMENT_ORDER);
 
     expect(metadataTypes.length).to.be.at.least(50);
-    expect(metadataTypes.length).to.equal(81); // Current count
+    expect(metadataTypes.length).to.equal(82); // Current count
 
     // Verify some key types exist
     expect(metadataTypes).to.include('CustomObject');
@@ -82,6 +82,7 @@ describe('Metadata Type Definitions', () => {
     expect(metadataTypes).to.include('Flow');
     expect(metadataTypes).to.include('LightningComponentBundle');
     expect(metadataTypes).to.include('AiAuthoringBundle');
+    expect(metadataTypes).to.include('AiEvaluationDefinition');
     expect(metadataTypes).to.include('Profile');
   });
 

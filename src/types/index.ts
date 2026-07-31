@@ -7,6 +7,8 @@
 
 // Core metadata types
 export * from './metadata.js';
+export * from './metadata-capability.js';
+export * from './release-report.js';
 
 // Dependency graph types
 export * from './dependency.js';

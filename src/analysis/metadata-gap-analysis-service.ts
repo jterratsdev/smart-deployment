@@ -1,9 +1,9 @@
 import * as path from 'node:path';
 import { readFile } from 'node:fs/promises';
-import { DEPLOYMENT_ORDER } from '../constants/deployment-order.js';
 import { SfdxProjectDetector } from '../scanner/sfdx-project-detector.js';
 import { findDirectories, findFiles, fileExists } from '../services/scanners/scanner-runtime.js';
 import { parseXml } from '../utils/xml.js';
+import { MetadataCapabilityRegistry, metadataCapabilityRegistry } from './metadata-capability-registry.js';
 
 export type MetadataGapClassification =
   | 'registry-only'
@@ -73,37 +73,6 @@ type PackageXmlType = {
   members?: string | string[];
 };
 
-const SCANNER_SUPPORTED_TYPES = new Set<string>([
-  'AiAuthoringBundle',
-  'ApexClass',
-  'ApexTrigger',
-  'AuraDefinitionBundle',
-  'Bot',
-  'BotVersion',
-  'BrandingSet',
-  'CustomMetadata',
-  'CustomMetadataRecord',
-  'CustomObject',
-  'CustomSite',
-  'DigitalExperienceBundle',
-  'EmailTemplate',
-  'EmbeddedServiceConfig',
-  'FlexiPage',
-  'Flow',
-  'GenAiPlannerBundle',
-  'GenAiPromptTemplate',
-  'Layout',
-  'LightningComponentBundle',
-  'Network',
-  'PermissionSet',
-  'Profile',
-  'Queue',
-  'StandardValueSet',
-  'VisualforcePage',
-]);
-
-const ORDERED_TYPES = new Set<string>(Object.keys(DEPLOYMENT_ORDER));
-
 const SOURCE_DIRECTORY_TYPES: Record<string, string> = {
   aiAuthoringBundles: 'AiAuthoringBundle',
   aura: 'AuraDefinitionBundle',
@@ -148,10 +117,12 @@ const FILE_SUFFIX_TYPES: Array<[suffix: string, metadataType: string]> = [
   ['.standardValueSet-meta.xml', 'StandardValueSet'],
   ['.embeddedServiceConfig-meta.xml', 'EmbeddedServiceConfig'],
   ['.app-meta.xml', 'CustomApplication'],
-  ['.matchingRule-meta.xml', 'MatchingRule'],
+  ['.matchingRule-meta.xml', 'MatchingRules'],
 ];
 
 export class MetadataGapAnalysisService {
+  public constructor(private readonly capabilityRegistry: MetadataCapabilityRegistry = metadataCapabilityRegistry) {}
+
   public async analyze(options: MetadataGapAnalysisOptions = {}): Promise<MetadataGapAnalysisResult> {
     const sourcePath = options.sourcePath ?? process.cwd();
     const project = await SfdxProjectDetector.detect(sourcePath);
@@ -168,7 +139,7 @@ export class MetadataGapAnalysisService {
     );
 
     const detectedTypes = [...evidenceByType.values()]
-      .map((entry) => this.toDetectedType(project.projectRoot, entry))
+      .map((entry) => this.toDetectedType(project.projectRoot, project.apiVersion, entry))
       .sort((left, right) => left.metadataType.localeCompare(right.metadataType));
     const gaps = detectedTypes.filter((type) => type.supportStatus !== 'supported').map((type) => this.toGap(type));
 
@@ -266,10 +237,10 @@ export class MetadataGapAnalysisService {
     evidenceByType.set(metadataType, entry);
   }
 
-  private toDetectedType(projectRoot: string, entry: TypeEvidence): MetadataGapDetectedType {
+  private toDetectedType(projectRoot: string, apiVersion: string, entry: TypeEvidence): MetadataGapDetectedType {
     return {
       metadataType: entry.metadataType,
-      supportStatus: getSupportStatus(entry.metadataType),
+      supportStatus: getSupportStatus(this.capabilityRegistry, entry.metadataType, apiVersion),
       evidence: [...entry.evidence].map((evidence) => relativizeEvidence(projectRoot, evidence)).sort(),
       detectedFrom: [...entry.detectedFrom].sort(),
     };
@@ -335,12 +306,17 @@ function toMetadataTypeName(rawType: string): string {
     .join('');
 }
 
-function getSupportStatus(metadataType: string): MetadataGapSupportStatus {
-  if (SCANNER_SUPPORTED_TYPES.has(metadataType)) {
+function getSupportStatus(
+  registry: MetadataCapabilityRegistry,
+  metadataType: string,
+  apiVersion: string
+): MetadataGapSupportStatus {
+  const entry = registry.resolve(metadataType, apiVersion);
+  if (entry?.capabilities.discovery.status === 'proven') {
     return 'supported';
   }
 
-  return ORDERED_TYPES.has(metadataType) ? 'ordered-only' : 'unsupported';
+  return entry?.capabilities.ordering.status === 'proven' ? 'ordered-only' : 'unsupported';
 }
 
 function classifyGap(metadataType: string, supportStatus: MetadataGapSupportStatus): MetadataGapClassification {

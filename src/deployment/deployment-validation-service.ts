@@ -18,6 +18,8 @@ export type DeploymentValidationIssue = {
 };
 
 export type DeploymentValidationSummary = {
+  projectRoot: string;
+  componentIds: string[];
   valid: boolean;
   components: number;
   dependencies: number;
@@ -161,6 +163,8 @@ export class DeploymentValidationService {
     });
 
     return {
+      projectRoot: scanResult.projectRoot,
+      componentIds: scanResult.components.map((component) => `${component.type}:${component.name}`).sort(),
       valid,
       components: scanResult.components.length,
       dependencies: scanResult.dependencyResult.stats.totalDependencies,

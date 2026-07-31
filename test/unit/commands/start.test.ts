@@ -258,6 +258,9 @@ describe('StartCommand', () => {
     const result = await command.run();
 
     expect(result.success).to.equal(true);
+    expect(result.releaseReport?.targetOrg).to.equal('test-org@example.com');
+    expect(result.releaseReport?.outcome).to.equal('skipped');
+    expect(result.releaseReport?.summary.total).to.equal(2);
   });
 
   it('writes dry-run deployment plan reports to the requested report directory', async () => {
@@ -301,8 +304,20 @@ describe('StartCommand', () => {
       waves: Array<{ components: Array<{ id: string }> }>;
     };
     const html = await readFile(htmlPath, 'utf8');
+    const releaseReportPath = path.join(reportDir, 'release-report.json');
+    const releaseReport = JSON.parse(await readFile(releaseReportPath, 'utf8')) as {
+      schemaVersion: string;
+      outcome: string;
+      analysisMode: string;
+    };
 
     expect(result.reports).to.deep.equal({ jsonPath, htmlPath });
+    expect(result.releaseReportPath).to.equal(releaseReportPath);
+    expect(releaseReport).to.deep.include({
+      schemaVersion: '1.0',
+      outcome: 'skipped',
+      analysisMode: 'deterministic',
+    });
     expect(report.command.mode).to.equal('dry-run');
     expect(report.providerPhases).to.deep.include({
       name: 'deployment-execution',
@@ -356,6 +371,11 @@ describe('StartCommand', () => {
     expect(thrownError).to.be.instanceOf(Error);
     expect(thrownError?.message).to.include('Circular dependencies detected');
     expect(thrownError?.message).to.include('--allow-cycle-remediation');
+    const failedReport = JSON.parse(
+      await readFile(path.join(projectRoot, '.smart-deployment', 'reports', 'release-report.json'), 'utf8')
+    ) as { outcome: string; phases: Array<{ status: string }> };
+    expect(failedReport.outcome).to.equal('failed');
+    expect(failedReport.phases[0]?.status).to.equal('failed');
   });
 
   it('applies and restores conservative remediation edits for a simple ApexClass cycle', async () => {

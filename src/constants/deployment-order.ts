@@ -104,6 +104,7 @@ export const DEPLOYMENT_ORDER: Readonly<Record<MetadataType, number>> = Object.f
   Bot: 51, // Einstein Bots
   BotVersion: 52, // Bot versions
   AiAuthoringBundle: 53, // Agentforce authoring bundles
+  AiEvaluationDefinition: 54, // AI evaluations deploy in the special phase after agent publish
   GenAiPlugin: 53, // Einstein plugins
   FlexiPage: 54, // Lightning pages
   QuickAction: 55, // Quick actions

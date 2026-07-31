@@ -78,6 +78,8 @@ describe('DEPLOYMENT_ORDER', () => {
     // Profiles/PermissionSets should be after objects and classes
     expect(DEPLOYMENT_ORDER.Profile).to.be.greaterThan(DEPLOYMENT_ORDER.CustomObject);
     expect(DEPLOYMENT_ORDER.PermissionSet).to.be.greaterThan(DEPLOYMENT_ORDER.ApexClass);
+    expect(DEPLOYMENT_ORDER.AiEvaluationDefinition).to.be.greaterThan(DEPLOYMENT_ORDER.BotVersion);
+    expect(DEPLOYMENT_ORDER.AiEvaluationDefinition).to.be.greaterThan(DEPLOYMENT_ORDER.AiAuthoringBundle);
 
     // Object should be immutable
     expect(Object.isFrozen(DEPLOYMENT_ORDER)).to.be.true;

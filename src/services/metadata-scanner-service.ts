@@ -17,6 +17,7 @@ import type { MetadataComponent } from '../types/metadata.js';
 import type { DependencyAnalysisResult } from '../types/dependency.js';
 import { getLogger } from '../utils/logger.js';
 import {
+  parseAiEvaluationDefinitionComponent,
   parseAiAuthoringBundleComponent,
   parseBotComponent,
   parseFlowComponent,
@@ -334,6 +335,17 @@ export class MetadataScannerService {
       (filePath) => Promise.resolve(parseAiAuthoringBundleComponent(filePath))
     );
 
+    const aiEvaluationDefinitionComponents = (
+      await scanMetadataFiles(
+        packagePath,
+        '**/aiEvaluationDefinitions/**/*.aiEvaluationDefinition-meta.xml',
+        errors,
+        'AiEvaluationDefinition',
+        this.shouldIgnorePath,
+        parseAiEvaluationDefinitionComponent
+      )
+    ).sort((left, right) => normalizePath(left.filePath).localeCompare(normalizePath(right.filePath)));
+
     const authoringBundleNames = new Set(aiAuthoringBundleComponents.map((component) => component.name));
     const genAiPlannerBundleComponents = (
       await scanMetadataDirectories(
@@ -346,7 +358,13 @@ export class MetadataScannerService {
       )
     ).filter((component) => !authoringBundleNames.has(component.name));
 
-    return [...botComponents, ...genAiPromptComponents, ...aiAuthoringBundleComponents, ...genAiPlannerBundleComponents];
+    return [
+      ...botComponents,
+      ...genAiPromptComponents,
+      ...aiAuthoringBundleComponents,
+      ...aiEvaluationDefinitionComponents,
+      ...genAiPlannerBundleComponents,
+    ];
   }
 
   private async scanAdditionalMetadata(packagePath: string, errors: string[]): Promise<MetadataComponent[]> {
@@ -374,4 +392,8 @@ export class MetadataScannerService {
   /**
    * Check if file/directory exists
    */
+}
+
+function normalizePath(filePath: string): string {
+  return filePath.split(path.sep).join('/');
 }

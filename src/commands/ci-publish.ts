@@ -1,11 +1,22 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
-import { SpecialDeploymentPlanExecutor } from '../deployment/special-deployment-executor.js';
+import {
+  SpecialDeploymentPlanExecutor,
+  type SpecialDeploymentExecutionResult,
+} from '../deployment/special-deployment-executor.js';
 import { SpecialDeploymentPlanService, type SpecialDeploymentPlan } from '../deployment/special-deployment-plan.js';
+import {
+  ReleaseReportCommandAdapter,
+  type ReleaseReportCommandOutput,
+} from '../reports/release-report-command-adapter.js';
+import { buildCiPublishReportFacts } from '../reports/release-report-facts-factory.js';
 import { getLogger } from '../utils/logger.js';
 
 const logger = getLogger('CiPublishCommand');
+const releaseReportAdapter = new ReleaseReportCommandAdapter();
 
-export default class CiPublish extends SfCommand<SpecialDeploymentPlan> {
+type CiPublishResult = SpecialDeploymentPlan & ReleaseReportCommandOutput;
+
+export default class CiPublish extends SfCommand<CiPublishResult> {
   public static readonly aliases = ['smart-deployment ci-publish'];
   public static readonly summary = 'Build a coordinated metadata, Agentforce, LWR, and OmniStudio publish plan for CI.';
 
@@ -36,7 +47,7 @@ export default class CiPublish extends SfCommand<SpecialDeploymentPlan> {
     }),
   };
 
-  public async run(): Promise<SpecialDeploymentPlan> {
+  public async run(): Promise<CiPublishResult> {
     const { flags } = await this.parse(CiPublish);
     const sourcePath = typeof flags['source-path'] === 'string' ? flags['source-path'] : undefined;
     const since = typeof flags.since === 'string' ? flags.since : undefined;
@@ -55,23 +66,42 @@ export default class CiPublish extends SfCommand<SpecialDeploymentPlan> {
     });
 
     this.reportPlan(plan);
+    let execution: SpecialDeploymentExecutionResult | undefined;
+    let resultPlan = plan;
+    let executionFailure: string | undefined;
     if (!dryRun) {
-      const execution = await new SpecialDeploymentPlanExecutor().execute(plan);
+      execution = await new SpecialDeploymentPlanExecutor().execute(plan);
       if (!execution.success) {
         const message = execution.errors[0] ?? 'Coordinated publish failed.';
-        const failedPlan = {
+        executionFailure = message;
+        resultPlan = {
           ...plan,
           success: false,
           errors: [...plan.errors, message],
         };
         this.reportExecutionFailure(execution.failedPhase, execution.exitCode, message);
-        return failedPlan;
+      } else {
+        this.log('');
+        this.log('Coordinated publish execution completed successfully.');
       }
-      this.log('');
-      this.log('Coordinated publish execution completed successfully.');
     }
 
-    return plan;
+    const result = await this.finalizeReleaseReport(resultPlan, execution);
+    if (executionFailure) this.error(executionFailure);
+    return result;
+  }
+
+  private async finalizeReleaseReport(
+    plan: SpecialDeploymentPlan,
+    execution: SpecialDeploymentExecutionResult | undefined
+  ): Promise<CiPublishResult> {
+    const releaseReport = await releaseReportAdapter.finalize(
+      this,
+      { kind: 'succeeded', value: plan },
+      buildCiPublishReportFacts(plan, execution),
+      { projectRoot: plan.projectRoot }
+    );
+    return { ...plan, ...releaseReport };
   }
 
   private reportPlan(plan: SpecialDeploymentPlan): void {
@@ -106,7 +136,7 @@ export default class CiPublish extends SfCommand<SpecialDeploymentPlan> {
 
   private reportExecutionFailure(failedPhase: string | undefined, exitCode: number | undefined, message: string): void {
     this.log('');
-    this.error(
+    this.warn(
       `Coordinated publish failed in phase ${failedPhase ?? 'unknown'} with exit code ${
         exitCode ?? 'unknown'
       }: ${message}`

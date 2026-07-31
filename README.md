@@ -32,6 +32,7 @@ What is working today:
 - `sf smart-deployment ci-publish`
 - `sf smart-deployment retrieve`
 - JSON and HTML analysis reports
+- release-owner CLI summaries and stable JSON release reports for `start`, `validate`, and `ci-publish`
 - repo-level AI configuration via `.smart-deployment.json`
 
 What is still partial:
@@ -119,6 +120,25 @@ sf smart-deployment validate \
   --use-ai
 ```
 
+Generate a story scope manifest from reviewed commits, then use it as the CI release contract:
+
+```bash
+sf smart-deployment validate \
+  --source-path . \
+  --scope-commits abc123,def456 \
+  --scope-manifest-output manifests/story-scope.generated.json
+
+sf smart-deployment ci preset \
+  --source-path . \
+  --scope-manifest manifests/story-scope.generated.json \
+  --validation-mode strict
+```
+
+Story scope manifests are JSON objects with `schemaVersion: 1`, top-level `commits`, optional `changes`, and a
+`scope` object containing `changedComponents`, `dependencyComponents`, `explicitComponents`, `includedComponents`, and
+`ignoredComponents`. CI treats `scope.includedComponents` as the deployment boundary; metadata outside that list is
+ignored unless it is added through `includeComponents` or `stories[].includeComponents`.
+
 When to use each:
 
 - use `validate` for local wave plan readiness and risk checks
@@ -169,6 +189,24 @@ sf smart-deployment ci-publish \
 When executing deploy phases, Smart Deployment respects `.forceignore` by building from a temporary sanitized Salesforce project. Ignored files stay in the working tree but are not visible to package generation or `sf project deploy start`.
 For retrieve flows, `sf smart-deployment retrieve` runs `sf project retrieve start`, detects touched paths, restores `.forceignore`-protected bundle sub-paths with `git checkout HEAD -- <path>` or untracked cleanup, and can fail the command with `--strict-ignore`. Use `--normalize-meta` to opt into deterministic formatting for DigitalExperience `*_meta.json` files.
 When `--target-org` is provided, the coordinated publish flow also passes the org through to Salesforce CLI commands and checks AI evaluation subjects against source metadata or the target org before deploy.
+
+### Release Report
+
+`start`, `validate`, and `ci-publish` print a release-owner summary and write:
+
+```text
+.smart-deployment/reports/release-report.json
+```
+
+`start --report-dir <path>` relocates the report alongside the other requested report artifacts. The versioned
+`schemaVersion: "1.0"` contract includes the command, target org when supplied, deterministic or AI-enriched analysis
+mode, enrichment availability, overall outcome, totals, phases, metadata items, safe command evidence, and remediation.
+Operations (`deploy`, `publish`, `activate`, `validate`) are separate from statuses (`succeeded`, `failed`, `skipped`,
+`needs_review`) so CI can parse the artifact without scraping logs.
+
+Report creation is advisory. A build, sanitization, serialization, persistence, or optional enrichment failure emits a
+warning but does not replace the underlying command result or exit behavior. Evidence excludes raw arguments,
+stdout/stderr, stack traces, credentials, and paths outside the Salesforce project.
 
 ## Commands
 

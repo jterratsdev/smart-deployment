@@ -71,6 +71,7 @@ export type MetadataType =
   | 'Bot'
   | 'BotVersion'
   | 'AiAuthoringBundle'
+  | 'AiEvaluationDefinition'
   | 'GenAiPlugin'
   | 'FlexiPage'
   | 'QuickAction'
@@ -190,6 +191,13 @@ export type CustomObject = MetadataComponent & {
 export type CustomMetadataRecord = MetadataComponent & {
   type: 'CustomMetadataRecord';
   metadataTypeName: string;
+};
+
+export type AiEvaluationDefinition = MetadataComponent & {
+  type: 'AiEvaluationDefinition';
+  subjectName: string;
+  subjectType: 'AGENT';
+  subjectVersion?: string;
 };
 
 /**

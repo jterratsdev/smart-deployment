@@ -3,7 +3,16 @@ import * as path from 'node:path';
 import { parseBot } from '../../parsers/bot-parser.js';
 import { parseFlow } from '../../parsers/flow-parser.js';
 import { parseGenAiPrompt } from '../../parsers/genai-prompt-parser.js';
-import type { MetadataComponent } from '../../types/metadata.js';
+import type { AiEvaluationDefinition, MetadataComponent } from '../../types/metadata.js';
+import { parseSalesforceMetadata } from '../../utils/xml.js';
+
+type AiEvaluationDefinitionXml = {
+  AiEvaluationDefinition?: {
+    subjectName?: unknown;
+    subjectType?: unknown;
+    subjectVersion?: unknown;
+  };
+};
 
 function addAll(target: Set<string>, values: Iterable<string>, defaultType?: string): void {
   for (const value of values) {
@@ -65,6 +74,43 @@ export function parseAiAuthoringBundleComponent(filePath: string): MetadataCompo
   };
 }
 
+export async function parseAiEvaluationDefinitionComponent(filePath: string): Promise<AiEvaluationDefinition> {
+  const parsed = await parseSalesforceMetadata<AiEvaluationDefinitionXml>(filePath);
+  const definition = parsed.AiEvaluationDefinition;
+  if (!definition) {
+    throw new Error('Expected AiEvaluationDefinition root element.');
+  }
+
+  const subjectName = requiredString(definition.subjectName, 'subjectName');
+  const subjectType = requiredString(definition.subjectType, 'subjectType');
+  if (subjectType !== 'AGENT') {
+    throw new Error(`Unsupported subjectType "${subjectType}"; expected "AGENT".`);
+  }
+
+  const subjectVersion = optionalString(definition.subjectVersion);
+  const dependencyNodeId = `Bot:${subjectName}`;
+
+  return {
+    name: path.basename(filePath, '.aiEvaluationDefinition-meta.xml'),
+    type: 'AiEvaluationDefinition',
+    filePath,
+    subjectName,
+    subjectType,
+    subjectVersion,
+    dependencies: new Set([dependencyNodeId]),
+    dependencyDetails: [
+      {
+        nodeId: dependencyNodeId,
+        kind: 'hard',
+        source: 'parser',
+        reason: 'AiEvaluationDefinition subjectName identifies the evaluated Agentforce Bot.',
+      },
+    ],
+    dependents: new Set<string>(),
+    priorityBoost: 0,
+  };
+}
+
 export async function parseGenAiPlannerBundleComponent(directoryPath: string): Promise<MetadataComponent> {
   const bundleName = path.basename(directoryPath);
   const deps = await parseGenAiPlannerBundleDependencies(directoryPath);
@@ -116,6 +162,25 @@ function collectNamedReferences(
     }
   }
 }
+
+function requiredString(value: unknown, fieldName: string): string {
+  const normalized = optionalString(value);
+  if (!normalized) {
+    throw new Error(`Missing required ${fieldName}.`);
+  }
+
+  return normalized;
+}
+
+function optionalString(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalized = value.trim();
+  return normalized || undefined;
+}
+
 export async function parseGenAiPromptComponent(filePath: string): Promise<MetadataComponent | undefined> {
   const promptName = path.basename(filePath, '.genAiPromptTemplate-meta.xml');
   const parsed = await parseGenAiPrompt(filePath, promptName);

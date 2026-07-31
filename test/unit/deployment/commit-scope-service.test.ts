@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
@@ -70,6 +71,124 @@ describe('CommitScopeService', () => {
     expect(result.summary.commits).to.deep.equal(['story-sha']);
     expect(result.summary.changedComponents).to.deep.equal(['ApexClass:Service']);
     expect(result.summary.includedComponents).to.deep.equal(['ApexClass:Service']);
+  });
+
+  it('writes a deterministic story scope manifest from commits', async () => {
+    const projectRoot = await mkdtemp(path.join(tmpdir(), 'commit-scope-output-'));
+    tempDirs.push(projectRoot);
+    const outputPath = path.join(projectRoot, 'manifests/story-scope.generated.json');
+    const scanResult = createScanResult({
+      projectRoot,
+      components: [
+        component('ApexClass', 'Base', 'force-app/main/default/classes/Base.cls'),
+        component('ApexClass', 'Service', 'force-app/main/default/classes/Service.cls', ['ApexClass:Base']),
+        component('ApexClass', 'FutureWork', 'force-app/main/default/classes/FutureWork.cls'),
+      ],
+      edges: [['ApexClass:Service', 'ApexClass:Base']],
+    });
+    const service = createService([
+      { commit: 'abc123', status: 'changed', path: 'force-app/main/default/classes/Service.cls' },
+    ]);
+
+    const result = await service.apply(scanResult, {
+      commits: ['abc123'],
+      outputManifestPath: 'manifests/story-scope.generated.json',
+    });
+    const expectedManifest = `${JSON.stringify(
+      {
+        schemaVersion: 1,
+        commits: ['abc123'],
+        changes: [{ commit: 'abc123', status: 'changed', path: 'force-app/main/default/classes/Service.cls' }],
+        scope: {
+          changedComponents: ['ApexClass:Service'],
+          dependencyComponents: ['ApexClass:Base'],
+          explicitComponents: [],
+          includedComponents: ['ApexClass:Base', 'ApexClass:Service'],
+          ignoredComponents: ['ApexClass:FutureWork'],
+        },
+      },
+      null,
+      2
+    )}\n`;
+
+    expect(result.summary.manifestPath).to.equal('manifests/story-scope.generated.json');
+    const manifestText = readFileSync(outputPath, 'utf8');
+    expect(manifestText).to.equal(expectedManifest);
+  });
+
+  it('loads generated manifest scope as the CI release contract without querying git changes', async () => {
+    const projectRoot = await mkdtemp(path.join(tmpdir(), 'commit-scope-load-'));
+    tempDirs.push(projectRoot);
+    await mkdir(path.join(projectRoot, 'manifests'), { recursive: true });
+    await writeFile(
+      path.join(projectRoot, 'manifests/story-scope.generated.json'),
+      JSON.stringify({
+        schemaVersion: 1,
+        commits: ['abc123'],
+        scope: {
+          changedComponents: ['ApexClass:Service'],
+          dependencyComponents: ['ApexClass:Base'],
+          explicitComponents: [],
+          includedComponents: ['ApexClass:Base', 'ApexClass:Service'],
+          ignoredComponents: ['ApexClass:FutureWork'],
+        },
+      }),
+      'utf8'
+    );
+    const scanResult = createScanResult({
+      projectRoot,
+      components: [
+        component('ApexClass', 'Base', 'force-app/main/default/classes/Base.cls'),
+        component('ApexClass', 'Service', 'force-app/main/default/classes/Service.cls', ['ApexClass:Base']),
+        component('ApexClass', 'FutureWork', 'force-app/main/default/classes/FutureWork.cls'),
+      ],
+      edges: [['ApexClass:Service', 'ApexClass:Base']],
+    });
+    const service = createService([
+      { commit: 'wrong-commit', status: 'changed', path: 'force-app/main/default/classes/FutureWork.cls' },
+    ]);
+
+    const result = await service.apply(scanResult, { manifestPath: 'manifests/story-scope.generated.json' });
+
+    expect(result.summary.commits).to.deep.equal(['abc123']);
+    expect(result.summary.changedComponents).to.deep.equal(['ApexClass:Service']);
+    expect(result.summary.includedComponents).to.deep.equal(['ApexClass:Base', 'ApexClass:Service']);
+    expect(result.summary.ignoredComponents).to.deep.equal(['ApexClass:FutureWork']);
+    expect(result.scanResult.components.map((item) => item.type + ':' + item.name).sort()).to.deep.equal([
+      'ApexClass:Base',
+      'ApexClass:Service',
+    ]);
+  });
+
+  it('keeps explicitly included story manifest components inside the scope boundary', async () => {
+    const projectRoot = await mkdtemp(path.join(tmpdir(), 'commit-scope-explicit-'));
+    tempDirs.push(projectRoot);
+    await mkdir(path.join(projectRoot, 'manifests'), { recursive: true });
+    await writeFile(
+      path.join(projectRoot, 'manifests/scope.json'),
+      JSON.stringify({
+        stories: [{ id: 'US-10', commits: ['story-sha'], includeComponents: ['ApexClass:FutureWork'] }],
+      }),
+      'utf8'
+    );
+    const scanResult = createScanResult({
+      projectRoot,
+      components: [
+        component('ApexClass', 'Service', 'force-app/main/default/classes/Service.cls'),
+        component('ApexClass', 'FutureWork', 'force-app/main/default/classes/FutureWork.cls'),
+      ],
+      edges: [],
+    });
+    const service = createService([
+      { commit: 'story-sha', status: 'changed', path: 'force-app/main/default/classes/Service.cls' },
+    ]);
+
+    const result = await service.apply(scanResult, { manifestPath: 'manifests/scope.json' });
+
+    expect(result.summary.changedComponents).to.deep.equal(['ApexClass:Service']);
+    expect(result.summary.explicitComponents).to.deep.equal(['ApexClass:FutureWork']);
+    expect(result.summary.includedComponents).to.deep.equal(['ApexClass:FutureWork', 'ApexClass:Service']);
+    expect(result.summary.ignoredComponents).to.deep.equal([]);
   });
 
   it('matches bundle changes from files inside the bundle directory', async () => {

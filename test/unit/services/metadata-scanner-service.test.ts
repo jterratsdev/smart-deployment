@@ -630,6 +630,48 @@ export default class AccountCard extends LightningElement {
     ).to.not.include('Bot:PHP_Pacific_Haven_Agent');
   });
 
+  it('discovers canonical AiEvaluationDefinitions in deterministic path order with Bot dependencies', async () => {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'metadata-scanner-ai-evaluations-'));
+    tempDirectories.push(projectRoot);
+    await writeFile(
+      path.join(projectRoot, 'sfdx-project.json'),
+      JSON.stringify({ packageDirectories: [{ path: 'force-app', default: true }], sourceApiVersion: '67.0' })
+    );
+    const evaluationDir = path.join(projectRoot, 'force-app', 'main', 'default', 'aiEvaluationDefinitions');
+    await mkdir(path.join(evaluationDir, 'nested'), { recursive: true });
+    const definitionXml = (subjectName: string): string => `<?xml version="1.0" encoding="UTF-8"?>
+<AiEvaluationDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+  <subjectName>${subjectName}</subjectName>
+  <subjectType>AGENT</subjectType>
+</AiEvaluationDefinition>`;
+    await writeFile(
+      path.join(evaluationDir, 'nested', 'Zulu.aiEvaluationDefinition-meta.xml'),
+      definitionXml('ZuluAgent')
+    );
+    await writeFile(path.join(evaluationDir, 'Alpha.aiEvaluationDefinition-meta.xml'), definitionXml('AlphaAgent'));
+    await writeFile(path.join(evaluationDir, 'Ignored.xml'), definitionXml('IgnoredAgent'));
+
+    const result = await new MetadataScannerService().scan({ sourcePath: projectRoot });
+    const evaluations = result.components.filter((component) => component.type === 'AiEvaluationDefinition');
+
+    expect(evaluations.map((component) => component.name)).to.deep.equal(['Alpha', 'Zulu']);
+    expect(evaluations.map((component) => [...component.dependencies])).to.deep.equal([
+      ['Bot:AlphaAgent'],
+      ['Bot:ZuluAgent'],
+    ]);
+    const alphaEdge = result.dependencyResult.edges.find(
+      (edge) => edge.from === 'AiEvaluationDefinition:Alpha' && edge.to === 'Bot:AlphaAgent'
+    );
+    expect(alphaEdge).to.deep.include({
+      from: 'AiEvaluationDefinition:Alpha',
+      to: 'Bot:AlphaAgent',
+      type: 'hard',
+      source: 'parser',
+      reason: 'AiEvaluationDefinition subjectName identifies the evaluated Agentforce Bot.',
+    });
+    expect(result.errors).to.deep.equal([]);
+  });
+
   it('scans Employee Copilot planner bundles while excluding generated AgentScript planners', async () => {
     const projectRoot = await createEmployeeCopilotFixture();
     const scanner = new MetadataScannerService();

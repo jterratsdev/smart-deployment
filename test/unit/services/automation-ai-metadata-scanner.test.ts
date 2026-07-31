@@ -4,6 +4,7 @@ import path from 'node:path';
 import { expect } from 'chai';
 import { afterEach, describe, it } from 'mocha';
 import {
+  parseAiEvaluationDefinitionComponent,
   parseBotComponent,
   parseFlowComponent,
   parseGenAiPromptComponent,
@@ -141,5 +142,87 @@ describe('automation-ai-metadata-scanner helpers', () => {
 
     expect(prompt?.name).to.equal('SupportPrompt');
     expect([...prompt!.dependencies]).to.include.members(['Case', 'Contact']);
+  });
+
+  it('parses canonical AiEvaluationDefinition agent subjects as one hard Bot dependency', async () => {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'automation-ai-evaluation-'));
+    tempDirectories.push(projectRoot);
+    const filePath = path.join(projectRoot, 'AgentQuality.aiEvaluationDefinition-meta.xml');
+    await writeFile(
+      filePath,
+      `<?xml version="1.0" encoding="UTF-8"?>
+<AiEvaluationDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+  <name>NestedNameIsNotIdentity</name>
+  <subjectName>SupportAgent</subjectName>
+  <subjectType>AGENT</subjectType>
+  <subjectVersion>v1</subjectVersion>
+  <testCases>
+    <expectations>
+      <name>Topic_Is_Returns</name>
+      <expectedValue>Returns</expectedValue>
+    </expectations>
+    <contextVariables>
+      <name>CaseId</name>
+      <value>500000000000001</value>
+    </contextVariables>
+  </testCases>
+</AiEvaluationDefinition>`
+    );
+
+    const component = await parseAiEvaluationDefinitionComponent(filePath);
+
+    expect(component).to.deep.include({
+      name: 'AgentQuality',
+      type: 'AiEvaluationDefinition',
+      subjectName: 'SupportAgent',
+      subjectType: 'AGENT',
+      subjectVersion: 'v1',
+    });
+    expect([...component.dependencies]).to.deep.equal(['Bot:SupportAgent']);
+    expect(component.dependencyDetails).to.deep.equal([
+      {
+        nodeId: 'Bot:SupportAgent',
+        kind: 'hard',
+        source: 'parser',
+        reason: 'AiEvaluationDefinition subjectName identifies the evaluated Agentforce Bot.',
+      },
+    ]);
+  });
+
+  it('rejects malformed AiEvaluationDefinition roots and required subject fields', async () => {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'automation-ai-evaluation-invalid-'));
+    tempDirectories.push(projectRoot);
+    const cases = [
+      ['WrongRoot', '<WrongRoot><subjectName>SupportAgent</subjectName><subjectType>AGENT</subjectType></WrongRoot>'],
+      [
+        'MissingSubject',
+        '<AiEvaluationDefinition><subjectName> </subjectName><subjectType>AGENT</subjectType></AiEvaluationDefinition>',
+      ],
+      [
+        'MissingSubjectType',
+        '<AiEvaluationDefinition><subjectName>SupportAgent</subjectName></AiEvaluationDefinition>',
+      ],
+      [
+        'UnsupportedSubjectType',
+        '<AiEvaluationDefinition><subjectName>SupportAgent</subjectName><subjectType>FLOW</subjectType></AiEvaluationDefinition>',
+      ],
+    ] as const;
+
+    const errors: string[] = [];
+    for (const [name, xml] of cases) {
+      const filePath = path.join(projectRoot, `${name}.aiEvaluationDefinition-meta.xml`);
+      await writeFile(filePath, xml);
+      try {
+        await parseAiEvaluationDefinitionComponent(filePath);
+      } catch (error) {
+        errors.push((error as Error).message);
+      }
+    }
+
+    expect(errors).to.have.length(4);
+    expect(errors[0]).to.include('Expected AiEvaluationDefinition root element.');
+    expect(errors[1]).to.include('Missing required subjectName.');
+    expect(errors[2]).to.include('Missing required subjectType.');
+    expect(errors[3]).to.include('Unsupported subjectType "FLOW"; expected "AGENT".');
   });
 });
