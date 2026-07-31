@@ -33,11 +33,16 @@ describe('E2E: installed CLI release reports', function () {
   let npmCache: string;
   let realSfPath: string;
 
-  before(async () => {
+  before(async function () {
     suiteRoot = await mkdtemp(path.join(os.tmpdir(), 'smart-deployment-installed-e2e-'));
     isolatedHome = path.join(suiteRoot, 'home');
     npmCache = path.join(suiteRoot, 'npm-cache');
-    realSfPath = (await execFileAsync('/usr/bin/which', ['sf'])).stdout.trim();
+    try {
+      realSfPath = (await execFileAsync('/usr/bin/which', ['sf'])).stdout.trim();
+    } catch {
+      this.skip();
+      return;
+    }
 
     await execFileAsync('npm', ['run', 'build'], {
       cwd: process.cwd(),
