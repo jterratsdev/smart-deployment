@@ -23,7 +23,7 @@
     "@types/cucumber": "^7.0.3",
     "@types/mocha": "^10.0.10",
     "@types/node": "^24.12.4",
-    "baseline-browser-mapping": "2.10.31",
+    "baseline-browser-mapping": "2.10.37",
     "chai": "^4.5.0",
     "commitizen": "^4.3.1",
     "cz-customizable": "^7.5.4",
@@ -224,7 +224,7 @@
   },
   "resolutions": {
     "@oclif/core": "4.11.4",
-    "baseline-browser-mapping": "2.10.31",
+    "baseline-browser-mapping": "2.10.37",
     "**/filelist/**/brace-expansion": "2.1.0",
     "**/socks/**/ip-address": "10.2.0"
   },
