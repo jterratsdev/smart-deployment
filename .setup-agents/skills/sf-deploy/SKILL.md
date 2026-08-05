@@ -13,11 +13,11 @@ description: >-
 
 ## Prerequisites
 
-| Tool                       | Check                                           | Install                                                                                                      |
-| -------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Salesforce CLI             | `sf --version`                                  | [https://developer.salesforce.com/tools/salesforcecli](https://developer.salesforce.com/tools/salesforcecli) |
-| @jterrats/profiler         | `sf plugins inspect @jterrats/profiler`         | `sf plugins install @jterrats/profiler --force`                                                              |
-| @jterrats/smart-deployment | `sf plugins inspect @jterrats/smart-deployment` | `sf plugins install @jterrats/smart-deployment --force`                                                      |
+| Tool | Check | Install |
+|------|-------|---------|
+| Salesforce CLI | `sf --version` | [https://developer.salesforce.com/tools/salesforcecli](https://developer.salesforce.com/tools/salesforcecli) |
+| @jterrats/profiler | `sf plugins inspect @jterrats/profiler` | `sf plugins install @jterrats/profiler --force` |
+| @jterrats/smart-deployment | `sf plugins inspect @jterrats/smart-deployment` | `sf plugins install @jterrats/smart-deployment --force` |
 
 Before proceeding, run this check and install anything missing:
 
@@ -156,12 +156,12 @@ This picks up from the last successful wave without re-deploying completed compo
 
 The plugin respects these hard limits per wave:
 
-| Limit                    | Value                       |
-| ------------------------ | --------------------------- |
-| Max components per wave  | 300                         |
-| Max CMT records per wave | 200                         |
-| Max files per deployment | ~400-500                    |
-| Metadata types priority  | 78 types in optimized order |
+| Limit | Value |
+|-------|-------|
+| Max components per wave | 300 |
+| Max CMT records per wave | 200 |
+| Max files per deployment | ~400-500 |
+| Metadata types priority | 78 types in optimized order |
 
 ---
 
@@ -209,7 +209,6 @@ sf apex test run --target-org <alias> --test-level RunLocalTests --code-coverage
 ```
 
 Report:
-
 - Wave count and components per wave
 - Total pass/fail test count
 - Overall code coverage (must be >= 90%)
@@ -227,12 +226,12 @@ sf profiler compare --sources "<source-alias>,<target-alias>" --output-format ht
 
 ## Quick Reference
 
-| Task                     | Command                                          |
-| ------------------------ | ------------------------------------------------ |
+| Task | Command |
+|------|---------|
 | Retrieve profiles (fast) | `sf profiler retrieve -o <alias> --from-project` |
-| Compare envs             | `sf profiler compare --sources "dev,qa,prod"`    |
-| Profile docs             | `sf profiler docs --output-dir profile-docs`     |
-| Analyze deps             | `sf smart-deployment analyze`                    |
-| Validate deploy          | `sf smart-deployment validate -o <alias>`        |
-| Deploy waves             | `sf smart-deployment start -o <alias>`           |
-| Resume failed            | `sf smart-deployment resume -o <alias>`          |
+| Compare envs | `sf profiler compare --sources "dev,qa,prod"` |
+| Profile docs | `sf profiler docs --output-dir profile-docs` |
+| Analyze deps | `sf smart-deployment analyze` |
+| Validate deploy | `sf smart-deployment validate -o <alias>` |
+| Deploy waves | `sf smart-deployment start -o <alias>` |
+| Resume failed | `sf smart-deployment resume -o <alias>` |

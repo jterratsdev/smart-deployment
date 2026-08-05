@@ -14,13 +14,13 @@ description: >-
 
 ## Prerequisites
 
-| Platform     | CLI / Tool        | Check                   | Install / Configure                                            |
-| ------------ | ----------------- | ----------------------- | -------------------------------------------------------------- |
-| GitHub       | `gh`              | `gh auth status`        | `gh auth login`                                                |
-| GitLab       | `glab`            | `glab auth status`      | `glab auth login`                                              |
-| Azure DevOps | `az`              | `az account show`       | `az login && az extension add --name azure-devops`             |
-| Jira         | `curl` + env vars | `echo $JIRA_API_TOKEN`  | Set `JIRA_BASE_URL`, `JIRA_USER_EMAIL`, `JIRA_API_TOKEN`       |
-| Bitbucket    | `curl` + env vars | `echo $BITBUCKET_TOKEN` | Set `BITBUCKET_WORKSPACE`, `BITBUCKET_REPO`, `BITBUCKET_TOKEN` |
+| Platform | CLI / Tool | Check | Install / Configure |
+|----------|-----------|-------|---------------------|
+| GitHub | `gh` | `gh auth status` | `gh auth login` |
+| GitLab | `glab` | `glab auth status` | `glab auth login` |
+| Azure DevOps | `az` | `az account show` | `az login && az extension add --name azure-devops` |
+| Jira | `curl` + env vars | `echo $JIRA_API_TOKEN` | Set `JIRA_BASE_URL`, `JIRA_USER_EMAIL`, `JIRA_API_TOKEN` |
+| Bitbucket | `curl` + env vars | `echo $BITBUCKET_TOKEN` | Set `BITBUCKET_WORKSPACE`, `BITBUCKET_REPO`, `BITBUCKET_TOKEN` |
 
 > Only the CLI for the target platform is required. You do not need all of them.
 
@@ -38,13 +38,13 @@ total created, any failures, and the URLs of the new issues.
 
 Auto-detect the target platform from project files:
 
-| Indicator                            | Platform         |
-| ------------------------------------ | ---------------- |
-| `.github/` directory exists          | **GitHub**       |
-| `.gitlab-ci.yml` exists              | **GitLab**       |
-| `azure-pipelines.yml` exists         | **Azure DevOps** |
-| `JIRA_BASE_URL` env var is set       | **Jira**         |
-| `BITBUCKET_WORKSPACE` env var is set | **Bitbucket**    |
+| Indicator | Platform |
+|-----------|----------|
+| `.github/` directory exists | **GitHub** |
+| `.gitlab-ci.yml` exists | **GitLab** |
+| `azure-pipelines.yml` exists | **Azure DevOps** |
+| `JIRA_BASE_URL` env var is set | **Jira** |
+| `BITBUCKET_WORKSPACE` env var is set | **Bitbucket** |
 
 If multiple indicators match, ask the user which platform to use.
 If none match, ask: "Which issue tracker does this project use?"
@@ -56,14 +56,14 @@ If none match, ask: "Which issue tracker does this project use?"
 The story map follows the standard format from the Story Mapping skill.
 Parse each epic table to extract:
 
-| Field               | Source column                     | Maps to                           |
-| ------------------- | --------------------------------- | --------------------------------- |
-| US ID               | `US ID`                           | Issue title prefix                |
-| Title               | `User Story`                      | Issue title                       |
-| Persona             | `Persona`                         | Label                             |
-| Priority            | `Priority`                        | Label (P1/P2/P3)                  |
-| Acceptance Criteria | `Acceptance Criteria`             | Issue body                        |
-| Epic                | Table heading (`## Epic N: Name`) | Milestone, parent issue, or label |
+| Field | Source column | Maps to |
+|-------|-------------|---------|
+| US ID | `US ID` | Issue title prefix |
+| Title | `User Story` | Issue title |
+| Persona | `Persona` | Label |
+| Priority | `Priority` | Label (P1/P2/P3) |
+| Acceptance Criteria | `Acceptance Criteria` | Issue body |
+| Epic | Table heading (`## Epic N: Name`) | Milestone, parent issue, or label |
 
 Compose the issue title as: `US-NNN: <User Story text>`
 
@@ -109,7 +109,6 @@ az boards work-item query --wiql "SELECT [System.Id] FROM WorkItems WHERE [Syste
 For Jira and Bitbucket, use their respective search APIs via `curl`.
 
 If a match is found:
-
 - Report: "US-101 already exists as #<number> — skipping."
 - Do NOT create a duplicate. Move to the next story.
 
@@ -197,9 +196,9 @@ Follow this sequence for each story map sync:
 
 ## Quick Reference
 
-| Task         | GitHub                   | GitLab                     | Azure DevOps                 | Jira                   | Bitbucket               |
-| ------------ | ------------------------ | -------------------------- | ---------------------------- | ---------------------- | ----------------------- |
-| Auth check   | `gh auth status`         | `glab auth status`         | `az account show`            | `echo $JIRA_API_TOKEN` | `echo $BITBUCKET_TOKEN` |
-| Create issue | `gh issue create`        | `glab issue create`        | `az boards work-item create` | `curl POST .../issue`  | `curl POST .../issues`  |
-| Search       | `gh issue list --search` | `glab issue list --search` | `az boards work-item query`  | `curl GET .../search`  | `curl GET .../issues`   |
-| Labels       | `--label`                | `--label`                  | `--fields System.Tags`       | `labels` field         | `kind` + `priority`     |
+| Task | GitHub | GitLab | Azure DevOps | Jira | Bitbucket |
+|------|--------|--------|-------------|------|-----------|
+| Auth check | `gh auth status` | `glab auth status` | `az account show` | `echo $JIRA_API_TOKEN` | `echo $BITBUCKET_TOKEN` |
+| Create issue | `gh issue create` | `glab issue create` | `az boards work-item create` | `curl POST .../issue` | `curl POST .../issues` |
+| Search | `gh issue list --search` | `glab issue list --search` | `az boards work-item query` | `curl GET .../search` | `curl GET .../issues` |
+| Labels | `--label` | `--label` | `--fields System.Tags` | `labels` field | `kind` + `priority` |

@@ -13,11 +13,11 @@ description: >-
 
 ## Prerequisites
 
-| Requirement                   | Check                       | How to obtain                                    |
-| ----------------------------- | --------------------------- | ------------------------------------------------ |
-| `ELEMENTS_API_KEY` env var    | `echo $ELEMENTS_API_KEY`    | Elements Space → Developer → API Tokens → Create |
-| `ELEMENTS_SPACE_NAME` env var | `echo $ELEMENTS_SPACE_NAME` | Your Elements Space name (shown in the app URL)  |
-| `curl`                        | `curl --version`            | Pre-installed on macOS/Linux                     |
+| Requirement | Check | How to obtain |
+|-------------|-------|---------------|
+| `ELEMENTS_API_KEY` env var | `echo $ELEMENTS_API_KEY` | Elements Space → Developer → API Tokens → Create |
+| `ELEMENTS_SPACE_NAME` env var | `echo $ELEMENTS_SPACE_NAME` | Your Elements Space name (shown in the app URL) |
+| `curl` | `curl --version` | Pre-installed on macOS/Linux |
 
 > **Never hardcode credentials.** Always read from environment variables.
 > If variables are not set, instruct the user to add them to their shell profile
@@ -81,7 +81,6 @@ https://api.elements.cloud/v1
 ### Authentication
 
 Every request must include the header:
-
 ```
 X-API-KEY: $ELEMENTS_API_KEY
 ```
@@ -129,12 +128,12 @@ Required field: `summary`
 
 ### Responses
 
-| Code | Meaning                                                    |
-| ---- | ---------------------------------------------------------- |
-| 201  | Created — response body contains the full object with `id` |
-| 400  | Validation error — check required fields                   |
-| 401  | Unauthorized — verify `ELEMENTS_API_KEY`                   |
-| 429  | Rate limited — max 100 req/s, 5 000 req/month per Space    |
+| Code | Meaning |
+|------|---------|
+| 201 | Created — response body contains the full object with `id` |
+| 400 | Validation error — check required fields |
+| 401 | Unauthorized — verify `ELEMENTS_API_KEY` |
+| 429 | Rate limited — max 100 req/s, 5 000 req/month per Space |
 
 ---
 
@@ -142,15 +141,15 @@ Required field: `summary`
 
 When reading a story map document to push to Elements, use this mapping:
 
-| Story Map field     | Elements Requirement | Elements Story            |
-| ------------------- | -------------------- | ------------------------- |
-| Epic title          | `summary`            | —                         |
-| Epic description    | `whatIsRequired`     | —                         |
-| User story text     | —                    | `summary`                 |
-| Acceptance criteria | —                    | `acceptanceCriteria`      |
-| Priority (P1/P2/P3) | `priority` (1/2/3)   | `risk` (1/2/3)            |
-| US ID (e.g. US-101) | —                    | `externalId`              |
-| Epic → Story link   | —                    | `requirement` (parent ID) |
+| Story Map field | Elements Requirement | Elements Story |
+|-----------------|---------------------|----------------|
+| Epic title | `summary` | — |
+| Epic description | `whatIsRequired` | — |
+| User story text | — | `summary` |
+| Acceptance criteria | — | `acceptanceCriteria` |
+| Priority (P1/P2/P3) | `priority` (1/2/3) | `risk` (1/2/3) |
+| US ID (e.g. US-101) | — | `externalId` |
+| Epic → Story link | — | `requirement` (parent ID) |
 
 ---
 

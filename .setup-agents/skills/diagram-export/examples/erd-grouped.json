@@ -1,0 +1,189 @@
+{
+  "type": "er",
+  "title": "Data Model (grouped ERD example)",
+  "direction": "TB",
+  "nodes": [
+    {
+      "id": "Account",
+      "label": "Account",
+      "group": "core"
+    },
+    {
+      "id": "Territory2",
+      "label": "Territory2",
+      "group": "territory"
+    },
+    {
+      "id": "Asset",
+      "label": "Asset",
+      "group": "core"
+    },
+    {
+      "id": "Product2",
+      "label": "Product2",
+      "group": "core"
+    },
+    {
+      "id": "User",
+      "label": "User",
+      "group": "core"
+    },
+    {
+      "id": "Lead",
+      "label": "Lead",
+      "group": "sales"
+    },
+    {
+      "id": "Contact",
+      "label": "Contact",
+      "group": "sales"
+    },
+    {
+      "id": "Contract",
+      "label": "Contract",
+      "group": "sales"
+    },
+    {
+      "id": "AccountContactRelation",
+      "label": "AccountContactRelation",
+      "group": "junction"
+    },
+    {
+      "id": "Case",
+      "label": "Case",
+      "group": "service"
+    },
+    {
+      "id": "CaseComment",
+      "label": "CaseComment",
+      "group": "service"
+    },
+    {
+      "id": "Survey",
+      "label": "Survey",
+      "group": "survey"
+    },
+    {
+      "id": "SurveyInvitation",
+      "label": "SurveyInvitation",
+      "group": "survey"
+    },
+    {
+      "id": "SurveyResponse",
+      "label": "SurveyResponse",
+      "group": "survey"
+    },
+    {
+      "id": "Territory2Type",
+      "label": "Territory2Type",
+      "group": "territory"
+    },
+    {
+      "id": "Territory2Model",
+      "label": "Territory2Model",
+      "group": "territory"
+    },
+    {
+      "id": "ObjectTerritory2Association",
+      "label": "ObjectTerritory2Association",
+      "group": "junction"
+    },
+    {
+      "id": "UserTerritory2Association",
+      "label": "UserTerritory2Association",
+      "group": "junction"
+    }
+  ],
+  "edges": [
+    {
+      "from": "Account",
+      "to": "Asset",
+      "label": "instalado"
+    },
+    {
+      "from": "Asset",
+      "to": "Product2",
+      "label": "catalogo"
+    },
+    {
+      "from": "Lead",
+      "to": "Account",
+      "label": "convierte"
+    },
+    {
+      "from": "Lead",
+      "to": "Contact",
+      "label": "convierte"
+    },
+    {
+      "from": "Contact",
+      "to": "AccountContactRelation",
+      "label": "en"
+    },
+    {
+      "from": "Account",
+      "to": "AccountContactRelation",
+      "label": "tiene"
+    },
+    {
+      "from": "Account",
+      "to": "Contract",
+      "label": "convenios"
+    },
+    {
+      "from": "Account",
+      "to": "Case",
+      "label": "casos"
+    },
+    {
+      "from": "Case",
+      "to": "CaseComment",
+      "label": "notas"
+    },
+    {
+      "from": "Account",
+      "to": "SurveyInvitation",
+      "label": "NPS"
+    },
+    {
+      "from": "Survey",
+      "to": "SurveyInvitation",
+      "label": "envio"
+    },
+    {
+      "from": "SurveyInvitation",
+      "to": "SurveyResponse",
+      "label": "resp"
+    },
+    {
+      "from": "Account",
+      "to": "ObjectTerritory2Association",
+      "label": "pertenece"
+    },
+    {
+      "from": "Territory2",
+      "to": "ObjectTerritory2Association",
+      "label": "asocia"
+    },
+    {
+      "from": "Territory2",
+      "to": "UserTerritory2Association",
+      "label": "asocia"
+    },
+    {
+      "from": "User",
+      "to": "UserTerritory2Association",
+      "label": "asignado"
+    },
+    {
+      "from": "Territory2Type",
+      "to": "Territory2",
+      "label": "tipo"
+    },
+    {
+      "from": "Territory2Model",
+      "to": "Territory2",
+      "label": "jerarquia"
+    }
+  ]
+}

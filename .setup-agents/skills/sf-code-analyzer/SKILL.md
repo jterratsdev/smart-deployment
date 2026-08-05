@@ -13,10 +13,10 @@ description: >-
 
 ## Prerequisites
 
-| Tool                 | Check                                                 | Install                                                                                                      |
-| -------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Salesforce CLI       | `sf --version`                                        | [https://developer.salesforce.com/tools/salesforcecli](https://developer.salesforce.com/tools/salesforcecli) |
-| Code Analyzer plugin | `sf plugins inspect @salesforce/plugin-code-analyzer` | `sf plugins install @salesforce/plugin-code-analyzer`                                                        |
+| Tool | Check | Install |
+|------|-------|---------|
+| Salesforce CLI | `sf --version` | [https://developer.salesforce.com/tools/salesforcecli](https://developer.salesforce.com/tools/salesforcecli) |
+| Code Analyzer plugin | `sf plugins inspect @salesforce/plugin-code-analyzer` | `sf plugins install @salesforce/plugin-code-analyzer` |
 
 Before proceeding, ensure the plugin is installed:
 
@@ -54,16 +54,16 @@ sf code-analyzer run --target force-app/main/default/classes
 
 Use `--rule-selector` to pick which engines and rule categories to apply:
 
-| Engine   | Selector                | Covers                                |
-| -------- | ----------------------- | ------------------------------------- |
-| PMD      | `pmd:Recommended`       | Best practices, code style            |
-| PMD      | `pmd:Security`          | SOQL injection, CRUD/FLS, XSS         |
-| PMD      | `pmd:Performance`       | SOQL/DML in loops, large queries      |
-| PMD      | `pmd:Design`            | Complexity, coupling, class size      |
-| ESLint   | `eslint:Recommended`    | JS best practices for LWC             |
-| ESLint   | `eslint:Security`       | DOM XSS, eval, unsafe patterns        |
-| RetireJS | `retire-js:Recommended` | Known vulnerable JS libraries         |
-| CPD      | `cpd:Recommended`       | Copy-paste / duplicate code detection |
+| Engine | Selector | Covers |
+|--------|----------|--------|
+| PMD | `pmd:Recommended` | Best practices, code style |
+| PMD | `pmd:Security` | SOQL injection, CRUD/FLS, XSS |
+| PMD | `pmd:Performance` | SOQL/DML in loops, large queries |
+| PMD | `pmd:Design` | Complexity, coupling, class size |
+| ESLint | `eslint:Recommended` | JS best practices for LWC |
+| ESLint | `eslint:Security` | DOM XSS, eval, unsafe patterns |
+| RetireJS | `retire-js:Recommended` | Known vulnerable JS libraries |
+| CPD | `cpd:Recommended` | Copy-paste / duplicate code detection |
 
 ```bash
 # Apex: security + performance rules only
@@ -94,11 +94,11 @@ sf code-analyzer run --target force-app --severity-threshold 2
 sf code-analyzer run --target force-app --severity-threshold 3
 ```
 
-| Exit Code | Meaning                                         |
-| --------- | ----------------------------------------------- |
-| 0         | No violations above threshold                   |
-| 2         | Violations found at or above threshold severity |
-| Other     | Analyzer error (treat as non-blocking)          |
+| Exit Code | Meaning |
+|-----------|---------|
+| 0 | No violations above threshold |
+| 2 | Violations found at or above threshold severity |
+| Other | Analyzer error (treat as non-blocking) |
 
 ### Output Formats
 
@@ -194,12 +194,12 @@ and base your review on the objective findings.
 
 ## Quick Reference
 
-| Task                 | Command                                                                                         |
-| -------------------- | ----------------------------------------------------------------------------------------------- |
-| Full project scan    | `sf code-analyzer run --target force-app`                                                       |
-| Apex security scan   | `sf code-analyzer run --target force-app/main/default/classes --rule-selector "pmd:Security"`   |
-| LWC lint             | `sf code-analyzer run --target force-app/main/default/lwc --rule-selector "eslint:Recommended"` |
-| Block on HIGH only   | `--severity-threshold 1`                                                                        |
-| HTML report          | `--output-format html --output-file report.html`                                                |
-| List available rules | `sf code-analyzer rules list`                                                                   |
-| Staged files only    | See "Staged Files Only" recipe above                                                            |
+| Task | Command |
+|------|---------|
+| Full project scan | `sf code-analyzer run --target force-app` |
+| Apex security scan | `sf code-analyzer run --target force-app/main/default/classes --rule-selector "pmd:Security"` |
+| LWC lint | `sf code-analyzer run --target force-app/main/default/lwc --rule-selector "eslint:Recommended"` |
+| Block on HIGH only | `--severity-threshold 1` |
+| HTML report | `--output-format html --output-file report.html` |
+| List available rules | `sf code-analyzer rules list` |
+| Staged files only | See "Staged Files Only" recipe above |
