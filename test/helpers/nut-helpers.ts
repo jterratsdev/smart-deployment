@@ -2,6 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { execCmd } from '@salesforce/cli-plugins-testkit';
+import { createIsolatedGitEnvironment } from './git-environment.js';
 
 export type NutContext = {
   tempDir: string;
@@ -82,7 +83,12 @@ export function execNutCommandWithOptions<T = unknown>(
     cwd: options.cwd ?? process.cwd(),
     ensureExitCode: options.ensureExitCode ?? 0,
     cli: 'dev',
-    env: { ...process.env, ...options.env, HOME: options.homeDir, TESTKIT_HOMEDIR: options.homeDir },
+    env: createIsolatedGitEnvironment({
+      ...process.env,
+      ...options.env,
+      HOME: options.homeDir,
+      TESTKIT_HOMEDIR: options.homeDir,
+    }),
   });
 }
 

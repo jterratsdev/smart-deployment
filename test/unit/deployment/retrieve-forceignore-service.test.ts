@@ -1,17 +1,14 @@
-import { execFile } from 'node:child_process';
 import { access, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { constants as fsConstants } from 'node:fs';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
-import { promisify } from 'node:util';
 import { expect } from 'chai';
 import { afterEach, describe, it } from 'mocha';
+import { execIsolatedGit } from '../../helpers/git-environment.js';
 import {
   RetrieveForceIgnoreService,
   retrieveForceIgnoreInternals,
 } from '../../../src/deployment/retrieve-forceignore-service.js';
-
-const execFileAsync = promisify(execFile);
 
 describe('RetrieveForceIgnoreService', () => {
   const tempDirs: string[] = [];
@@ -166,5 +163,5 @@ async function exists(filePath: string): Promise<boolean> {
 }
 
 async function git(projectRoot: string, ...args: string[]): Promise<void> {
-  await execFileAsync('git', args, { cwd: projectRoot });
+  await execIsolatedGit(projectRoot, ...args);
 }

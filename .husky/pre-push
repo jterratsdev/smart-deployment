@@ -1,6 +1,14 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+# Git exports repository-local variables to hooks. Remove them before tests
+# create disposable repositories so fixture commands cannot target this repo.
+git_local_env_vars=$(git rev-parse --local-env-vars)
+for git_local_env_var in $git_local_env_vars; do
+  unset "$git_local_env_var"
+done
+unset git_local_env_var git_local_env_vars
+
 # Set wireit parallelism explicitly to avoid worker pool detection issues
 export WIREIT_PARALLEL=4
 

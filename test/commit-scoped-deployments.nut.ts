@@ -1,13 +1,10 @@
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { constants as fsConstants } from 'node:fs';
 import * as path from 'node:path';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import { expect } from 'chai';
 import { afterEach, describe, it } from 'mocha';
+import { execIsolatedGit } from './helpers/git-environment.js';
 import { cleanupNutContexts, createNutContext, execNutCommand, parseJsonStdout } from './helpers/nut-helpers.js';
-
-const execFileAsync = promisify(execFile);
 
 type CiPresetJson = {
   success: boolean;
@@ -234,5 +231,5 @@ async function commitAll(projectRoot: string, message: string): Promise<string> 
 }
 
 async function git(projectRoot: string, ...args: string[]): Promise<{ stdout: string; stderr: string }> {
-  return execFileAsync('git', args, { cwd: projectRoot });
+  return execIsolatedGit(projectRoot, ...args);
 }
