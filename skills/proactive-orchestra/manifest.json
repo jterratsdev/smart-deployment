@@ -1,0 +1,41 @@
+{
+  "id": "proactive-orchestra",
+  "name": "Proactive Orchestra",
+  "summary": "Self-bootstrap Open Orchestra workflow checks before implementation and record accepted bypasses.",
+  "triggers": [
+    "orchestra",
+    "workflow",
+    "task loop",
+    "bootstrap",
+    "pre-run",
+    "handoff",
+    "evidence"
+  ],
+  "roles": [
+    "parent",
+    "architect",
+    "developer",
+    "qa",
+    "release_manager"
+  ],
+  "capabilities": [
+    "workflow-discipline",
+    "pre-run-validation",
+    "auditability"
+  ],
+  "riskAreas": [
+    "governance",
+    "quality"
+  ],
+  "sourceGroups": [
+    "project-instructions",
+    "agent-memory"
+  ],
+  "evidence": [
+    "command",
+    "report",
+    "file"
+  ],
+  "loadBudget": "small",
+  "entry": "skills/proactive-orchestra/SKILL.md"
+}

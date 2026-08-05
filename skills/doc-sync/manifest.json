@@ -1,0 +1,58 @@
+{
+  "id": "doc-sync",
+  "name": "Doc Sync",
+  "summary": "Keep architecture docs, changelog, onboarding, runbooks, site copy, and prompt registers aligned with delivered changes.",
+  "triggers": [
+    "doc-sync",
+    "documentation",
+    "docs",
+    "changelog",
+    "readme",
+    "quickstart",
+    "runbook",
+    "architecture",
+    "adr",
+    "release notes",
+    "public site",
+    "prompt registry"
+  ],
+  "roles": [
+    "technical_writer",
+    "release_manager",
+    "architect",
+    "product_manager",
+    "product_owner",
+    "platform_engineer",
+    "support_customer_ops",
+    "parent"
+  ],
+  "capabilities": [
+    "documentation-sync",
+    "release-notes",
+    "architecture-communication",
+    "onboarding",
+    "support-readiness"
+  ],
+  "riskAreas": [
+    "documentation",
+    "architecture",
+    "release",
+    "governance"
+  ],
+  "sourceGroups": [
+    "project-instructions",
+    "product-backlog",
+    "architecture",
+    "codebase",
+    "devops-runtime",
+    "quality-security",
+    "agent-memory"
+  ],
+  "evidence": [
+    "file",
+    "report",
+    "command"
+  ],
+  "loadBudget": "normal",
+  "entry": "skills/doc-sync/SKILL.md"
+}

@@ -1,0 +1,28 @@
+---
+description: Error handling and observability standards — stack-agnostic
+alwaysApply: true
+---
+
+# Error Handling & Observability
+
+## Never Swallow Errors
+- Empty `catch {}` blocks are forbidden. At minimum: log the error, propagate it, or convert it to a user-friendly message.
+- If an error is intentionally ignored, add a comment explaining why (e.g., `// best-effort: alias set failure doesn't block auth`).
+
+## Error Types
+- Distinguish **operational errors** (expected: bad input, network timeout, auth failure) from **programmer errors** (bugs: null reference, type mismatch).
+- Operational errors: handle gracefully, inform the user, retry if appropriate.
+- Programmer errors: crash fast, log with full context, fix the code.
+
+## User-Facing Errors
+- Never show stack traces, internal paths, or raw exception messages to users.
+- Use localized strings (Custom Labels, i18n keys, constants) for all user-visible error messages. Never hardcode error text in the UI.
+
+## Logging
+- Before writing `try-catch`, scan for an existing logging framework in the project. Use it.
+- Log at the right level: `error` for unexpected failures, `warn` for degraded behavior, `info` for significant events, `debug` for diagnostic detail.
+- Include context in log entries: operation name, relevant IDs, duration. A log line like `"Error occurred"` is useless.
+
+## Fail Fast
+- Validate inputs at function entry (guard clauses), not deep in the call stack.
+- Prefer early `return` or `throw` over deeply nested `if/else` chains.

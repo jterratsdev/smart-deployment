@@ -1,0 +1,32 @@
+---
+description: Frontend architecture, state management, accessibility, and UI implementation standards
+alwaysApply: true
+---
+
+# Frontend Engineering
+
+Frontend code must keep user experience, state, accessibility, and maintainability aligned.
+
+## Architecture
+- Separate presentation, state orchestration, data access, and domain logic.
+- Keep components small and purpose-specific. Extract hooks, services, or view models when logic grows.
+- Prefer existing design system components, tokens, and layout primitives over custom styling.
+- Do not duplicate API types, validation schemas, or constants when they can be imported or generated.
+
+## State
+- Separate local UI state from server/cache state.
+- Keep state ownership close to the component or workflow that owns it.
+- Avoid global state for data that is route-local, form-local, or derivable.
+- Model loading, empty, error, success, stale, and optimistic states explicitly.
+
+## Forms
+- Forms need labels, validation, helper text, disabled states, submission states, and recovery paths.
+- Validate on the client for feedback and on the server for authority.
+- Preserve user input when validation fails.
+- Avoid destructive default actions and require confirmation for irreversible operations.
+
+## Accessibility & Responsive
+- Preserve semantic HTML, keyboard navigation, focus states, readable contrast, and screen reader labels.
+- Test common mobile, tablet, and desktop widths for user-facing flows.
+- Do not hide required information behind hover-only interactions.
+- Use tooltips for clarification, not as the only way to complete a task.

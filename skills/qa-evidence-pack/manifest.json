@@ -1,0 +1,60 @@
+{
+  "id": "qa-evidence-pack",
+  "name": "QA Evidence Pack",
+  "summary": "Create acceptance-criteria-mapped QA evidence packs with observable outcomes, artifacts, and annotated visual defect evidence.",
+  "triggers": [
+    "qa evidence",
+    "test evidence",
+    "acceptance criteria coverage",
+    "playwright",
+    "e2e",
+    "screenshot",
+    "trace",
+    "video",
+    "visual diff",
+    "annotated screenshot",
+    "cli output",
+    "stdout",
+    "stderr",
+    "api contract",
+    "integration",
+    "webhook"
+  ],
+  "roles": [
+    "qa",
+    "sdet",
+    "developer",
+    "frontend_specialist",
+    "backend_specialist",
+    "devops",
+    "sre",
+    "business_analyst",
+    "product_owner",
+    "architect",
+    "release_manager"
+  ],
+  "capabilities": [
+    "qa-evidence",
+    "acceptance-coverage",
+    "visual-annotation",
+    "external-verification"
+  ],
+  "riskAreas": ["quality", "release", "ux", "integration", "governance"],
+  "sourceGroups": [
+    "quality-security",
+    "product-backlog",
+    "codebase",
+    "agent-memory"
+  ],
+  "evidence": [
+    "command",
+    "file",
+    "screenshot",
+    "trace",
+    "video",
+    "log",
+    "report"
+  ],
+  "loadBudget": "normal",
+  "entry": "skills/qa-evidence-pack/SKILL.md"
+}

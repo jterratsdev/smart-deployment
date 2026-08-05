@@ -1,0 +1,32 @@
+---
+description: Concurrency, async jobs, retries, idempotency, and distributed workflow rules
+alwaysApply: true
+---
+
+# Concurrency & Async
+
+Concurrent and asynchronous work must be idempotent, observable, and safe under retries, partial failure, and duplicate delivery.
+
+## Concurrency Control
+- Identify shared mutable state before implementation.
+- Use transactions, optimistic concurrency, locks, leases, or compare-and-swap when multiple writers can collide.
+- Avoid relying on timing, sleep, or process-local memory for correctness.
+- Document ordering assumptions and what happens when events arrive late, duplicated, or out of order.
+
+## Async Jobs
+- Jobs must have owner, trigger, payload schema, retry policy, timeout, dead-letter handling, and observability.
+- Payloads should carry stable IDs, not large snapshots, unless snapshots are required for correctness.
+- Long-running jobs must report progress and support safe resume or retry.
+- Background work must not hide user-visible failures without surfacing status or recovery.
+
+## Retries
+- Retried operations must be idempotent or protected with idempotency keys.
+- Use bounded retries with exponential backoff and jitter.
+- Do not retry validation errors, authorization errors, or deterministic business rule failures.
+- Record retry exhaustion as an operational signal.
+
+## Distributed Workflows
+- Prefer explicit state machines for multi-step workflows.
+- Define compensation or forward-fix behavior for partial failure.
+- Use durable queues or workflow engines for critical multi-step processes instead of in-memory orchestration.
+- Emit events or audit entries for important state transitions.

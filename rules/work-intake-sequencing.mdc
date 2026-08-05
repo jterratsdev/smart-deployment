@@ -1,0 +1,39 @@
+---
+description: Work intake, GitHub issue readiness, technical refinement, and implementation sequencing
+alwaysApply: true
+---
+
+# Work Intake & Sequencing
+
+Every work block must start from a refined GitHub issue and follow a safe implementation order. Do not start coding from chat context alone.
+
+## GitHub Issue Gate
+- Before starting a work block, confirm the GitHub issue exists and record its issue number.
+- The issue must include user story or job-to-be-done, acceptance criteria, priority, scope, non-goals, technical notes, test expectations, and risk areas.
+- If the issue is missing or vague, create or refine it before implementation.
+- Use the issue number as the Backlog Item ID for commits and PRs.
+
+## Technical Refinement
+- Refine the solution with expected files/modules, domain model changes, service/integration changes, controller/CLI/API changes, data flow, failure modes, and test plan.
+- Identify impacted roles before coding: Architect, Developer, QA, Security, DevOps, SRE, DBA, UX/UI, Compliance/Privacy, Technical Writer, or Game Designer.
+- Record assumptions and open questions. Block implementation when a decision affects user behavior, data contracts, security, deployment, or compliance.
+
+## Implementation Order
+- Start with models and domain: types, schemas, entities, value objects, invariants, and validation.
+- Then implement service and integration layer: orchestration, repositories, adapters, provider interfaces, external APIs, and side effects.
+- Then implement controllers and entry points: CLI commands, API routes, UI handlers, jobs, and web controllers.
+- Finally wire evidence: unit tests, integration tests, Playwright or smoke tests, static analysis, docs, and handoff.
+
+## Security Review Trigger
+- Run a security review when work touches auth, authorization, identity, secrets, PII, payments, file paths, shell/process execution, network calls, dependency changes, encryption, TLS, cookies, sessions, CORS, webhooks, or infrastructure.
+- Production networked services must consider TLS 1.2+, certificate management, HSTS where applicable, secure cookies, least privilege, and secret rotation.
+- If security is out of scope, state why. If uncertain, involve Security before implementation.
+
+## Block Start Checklist
+- GitHub issue exists and is refined.
+- User alignment gate is complete for non-trivial work.
+- Domain/model changes are understood.
+- Service/integration boundaries are understood.
+- Controller/entry-point changes are understood.
+- Test, QA, static analysis, and evidence plan are clear.
+- Security/DevOps/SRE/DBA/Compliance review needs are explicitly included or excluded with rationale.

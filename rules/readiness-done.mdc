@@ -1,0 +1,33 @@
+---
+description: Definition of Ready and Definition of Done for agent delivery
+alwaysApply: true
+---
+
+# Readiness & Done
+
+Work must not start or finish by intuition. Use explicit entry and exit criteria so agents, users, and reviewers share the same expectations.
+
+## Definition of Ready
+- Backlog item ID, user goal, acceptance criteria, non-goals, constraints, and priority are known.
+- Backlog item exists as a GitHub issue and is technically refined before implementation.
+- The proposed solution and architecture have been discussed with the user when the task is non-trivial.
+- Required roles are identified, including the lead role and any mandatory reviewers.
+- Data, API, UI, security, infrastructure, and migration impacts are either understood or explicitly marked as out of scope.
+- Test strategy, expected evidence, and QA handoff expectations are clear.
+- Implementation order is clear: models/domain first, service/integration second, controllers/entry points third.
+
+## Not Ready
+- Do not start implementation when acceptance criteria, target user behavior, data contracts, or security implications are ambiguous.
+- Do not start implementation from chat context alone when no refined GitHub issue exists.
+- Do not fill missing product decisions with hidden implementation assumptions.
+- If blocked, state the missing decision and propose the smallest useful next step.
+
+## Definition of Done
+- Acceptance criteria are met and any deviations are documented.
+- When the user approves or requests a next concrete action, that action is in scope until delivered, blocked with evidence, or explicitly paused. Final handoff cannot list it only as follow-up work.
+- Code is implemented with focused unit tests for changed business logic.
+- QA has a test plan, execution result, evidence, and unresolved risk list.
+- User-facing work has responsive, accessibility, copy, and state checks when applicable.
+- Documentation, ADRs, migrations, release notes, or runbooks are updated when impacted.
+- Security, DevOps, and QA blockers are resolved or explicitly risk-accepted by the Product Owner.
+- Final handoff includes changed files or components, commands run, test results, evidence, known gaps, and follow-up backlog items.

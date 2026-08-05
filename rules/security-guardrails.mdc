@@ -1,0 +1,40 @@
+---
+description: Security non-negotiables for all codebases — stack-agnostic
+alwaysApply: true
+---
+
+# Security Guardrails
+
+These are non-negotiable. Violations must be fixed before code review.
+
+## Input Handling
+- **No shell interpolation.** Use array-based APIs (`execFile`, `spawn` with args array) instead of `exec` with template literals. This prevents command injection.
+- **No raw innerHTML with dynamic data.** Escape all user-provided values or use `textContent` + `createElement`. This prevents XSS.
+- **Validate external input.** URLs must start with `https://` before `fetch()`. File paths must be within expected directories (no path traversal).
+- Security review is required for auth, authorization, identity, secrets, PII, payments, file paths, shell/process execution, network calls, dependency changes, encryption, TLS, cookies, sessions, CORS, webhooks, or infrastructure.
+
+## Secrets
+- **Never hardcode credentials, tokens, API keys, or connection strings.** Use environment variables, secret managers, or Named Credentials.
+- Files that may contain secrets (`.env`, `credentials.json`, `*.pem`, `*.key`) must be in `.gitignore`.
+- If a secret is accidentally committed, rotate it immediately — removing from git history is not enough.
+
+## Dependencies
+- Pin dependency versions in lockfiles. Review changelogs before major upgrades.
+- Never install packages from untrusted sources or run `npx` on unvetted packages in CI.
+- For full dependency policy, supply chain review, and update workflow, see **dependency-management.mdc**.
+
+## Static Analysis
+- Static analysis and secret scanning must run before commit and in CI.
+- For hook policy and tool categories, see **static-analysis-githooks.mdc**.
+
+## Error Exposure
+- Never return stack traces, internal paths, or database errors to end users. Log them server-side, show a generic message client-side.
+- Distinguish between expected errors (user input) and unexpected errors (bugs). Only unexpected errors should alert/log at error level.
+
+## Infrastructure & Data
+
+- For databases, encryption, IaC, environment segregation, secrets management, scalability, and vulnerability management, see **infra-data-encryption.mdc**.
+- Production networked services must consider TLS 1.2+, certificate management, HSTS where applicable, secure cookies, least privilege, and secret rotation.
+- Local Docker Compose, dev servers, databases, caches, observability tools, and admin UIs must bind published ports to `127.0.0.1` by default.
+- Binding to `0.0.0.0`, `[::]`, or a LAN interface is a security exception. It needs a linked task, explicit rationale, no default credentials, and a time-bounded review.
+- Never expose Redis, Postgres, admin consoles, Docker socket, or internal APIs on public/LAN interfaces unless Security approves the exact use case and compensating controls.

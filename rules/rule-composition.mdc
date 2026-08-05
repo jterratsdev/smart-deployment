@@ -1,0 +1,28 @@
+---
+description: Rule file composition and modular loading strategy for agent instructions
+alwaysApply: true
+---
+
+# Rule Composition
+
+Prefer small, focused rule files referenced from a concise root file. Large monolithic instruction files are harder to maintain, easier to contradict, and waste context on rules that may not apply to the current task.
+
+## Root Files
+- Root files such as `AGENTS.md` and `CLAUDE.md` must act as entry points, not full manuals.
+- Keep root files limited to universal rules, role summaries, and pointers to specialized rule files.
+- If a section grows beyond a short summary, extract it to `rules/*.mdc` and keep only the operating principle in the root file.
+
+## Specialized Rules
+- Use one rule file per responsibility area: architecture, API design, data modeling, frontend, performance, concurrency, testing, security, delivery, collaboration, infrastructure, DevOps tooling, or product.
+- Each rule file must have a clear `description` and a single reason to change.
+- Avoid duplicating detailed guidance across files. Put the source of truth in one rule and summarize it elsewhere.
+
+## Skill-Like Loading
+- Treat specialized rule files like skills: load the relevant rule only when the task needs that domain.
+- For broad delivery work, load roles, collaboration, readiness/done, API design, data modeling, frontend, performance, concurrency, testing, security, delivery quality gates, UX/UI, release/rollback, DevOps tooling, documentation, dependency, config, code review, and AI-assisted development rules together.
+- For narrow edits, load the smallest set of rules that can govern the change safely.
+
+## Maintenance
+- Prefer adding a new focused rule file over expanding an unrelated one.
+- Review root files periodically and remove details that have moved into specialized rules.
+- If two rules conflict, keep the stricter safety, security, or quality requirement and record the decision.

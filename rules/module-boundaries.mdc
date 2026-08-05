@@ -1,0 +1,71 @@
+---
+description: Module boundaries, god-file prevention, and thin adapter standards
+alwaysApply: true
+---
+
+# Module Boundaries
+
+Every code change must preserve clear ownership boundaries. Before adding code
+to an existing file, check whether the file is already large, multi-purpose, or
+adapter-shaped. If the change would make the file harder to review, create or
+reuse the correct domain, model, service, repository, or adapter module instead.
+
+## Pre-Write Check
+
+- Inspect the target file's current responsibility, exported surface, and size
+  before editing.
+- Treat files over 300 lines, functions over 30 lines, and command/controller
+  files with business logic as god-file risk.
+- A large existing file is not a reason to keep adding to it. If the new change
+  is separable, extract the new behavior into a focused module and wire it from
+  the existing entry point.
+- If extraction is unsafe in the current task, record a follow-up debt task with
+  the reason, affected file, and proposed boundary.
+
+## Expected Layers
+
+- `model` or `types`: narrow public data contracts, discriminated unions,
+  schemas, and DTOs.
+- `domain`: pure invariants, policy decisions, validation rules, state
+  transitions, and calculations.
+- `service` or `use-case`: orchestration of domain logic, repositories, clients,
+  and side effects for one workflow.
+- `repository`, `store`, or `gateway`: persistence, file I/O, network I/O, and
+  external system adapters.
+- `commands`: CLI adapter only. Parse arguments, call services, format output,
+  and convert errors to user-safe messages.
+- `web` or `api`: HTTP/UI adapter only. Parse requests, call services, serialize
+  responses, and map errors.
+
+## Logicless Commands
+
+Command modules must remain nearly logicless. They may:
+
+- parse flags and positional arguments;
+- choose output format;
+- call one service/use-case function;
+- map expected errors to CLI messages and exit codes.
+
+Command modules must not:
+
+- own business rules or workflow policy;
+- perform direct persistence when a repository/service should own it;
+- contain repeated hardcoded registries, option lists, status sets, or provider
+  matrices;
+- implement complex loops, joins, retries, or batching;
+- become the primary test target for domain behavior.
+
+## Hardcoded Collections
+
+Repeated hardcoded values must move to a typed source of truth. This applies to
+roles, statuses, providers, commands, option lists, validators, selectors,
+fixtures, CI matrices, and any key/value collection reused by more than one
+consumer. Load `collection-standards` when this risk appears.
+
+## Review Checklist
+
+- Did the author check target file size and responsibility before writing?
+- Did new logic land in the correct layer?
+- Is the command/controller/route still a thin adapter?
+- Are repeated hardcoded collections extracted to a typed source of truth?
+- Is there a follow-up debt task when extraction was intentionally deferred?

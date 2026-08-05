@@ -1,0 +1,40 @@
+{
+  "id": "agent-learning",
+  "name": "Agent Learning",
+  "summary": "Record reusable failure lessons and promote repeated lessons into skills or rules.",
+  "triggers": [
+    "failure",
+    "failed",
+    "error",
+    "syntax",
+    "escaping",
+    "permission",
+    "lesson",
+    "learn"
+  ],
+  "roles": [
+    "parent",
+    "context_curator",
+    "toolsmith",
+    "developer",
+    "qa"
+  ],
+  "capabilities": [
+    "failure-learning",
+    "memory-hygiene",
+    "repeat-prevention"
+  ],
+  "riskAreas": [
+    "maintainability",
+    "governance"
+  ],
+  "sourceGroups": [
+    "agent-memory",
+    "codebase"
+  ],
+  "evidence": [
+    "file"
+  ],
+  "loadBudget": "small",
+  "entry": "skills/agent-learning/SKILL.md"
+}

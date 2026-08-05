@@ -1,0 +1,57 @@
+---
+description: DevOps tool categories, operational design, scalability, observability, and reporting
+alwaysApply: true
+---
+
+# DevOps Tooling & Operations
+
+DevOps decisions must cover deployability, scalability, downtime strategy, observability, reporting, security, and recovery. Tools are selected by capability, not trend.
+
+## Stack by Category
+- **IaC**: Terraform, OpenTofu, Pulumi, CloudFormation, Bicep.
+- **CI/CD**: GitHub Actions, GitLab CI, CircleCI, Buildkite.
+- **GitOps / Deploy**: Argo CD, Flux, Helm, Kustomize.
+- **Containers / Orchestration**: Docker, Kubernetes, ECS/Fargate, Cloud Run.
+- **Scalability**: Kubernetes HPA/VPA, KEDA, autoscaling groups, managed load balancers, CDN.
+- **Downtime Strategy**: rolling deploys, blue-green, canary, dark launch, feature flags with LaunchDarkly, Unleash, or OpenFeature.
+- **Observability**: OpenTelemetry for instrumentation; Prometheus/Grafana for metrics; Loki, ELK, or OpenSearch for logs; Tempo or Jaeger for traces; Datadog, New Relic, or Dynatrace when SaaS is preferred.
+- **Alerting / On-Call**: Alertmanager, PagerDuty, Opsgenie, Grafana OnCall.
+- **SLO / Error Budgets**: Nobl9, Sloth, Pyrra, Grafana SLO, Datadog SLO.
+- **Infra Reporting / FinOps**: Kubecost, OpenCost, Infracost, cloud cost explorers, Grafana dashboards.
+- **Security DevOps**: Trivy, Grype, Snyk, Dependabot, Renovate, Checkov, tfsec, Semgrep, CodeQL.
+- **Secrets**: HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, GCP Secret Manager, SOPS with age.
+- **Backups / DR**: Velero, cloud-native backups, database PITR, restore drills.
+- **Performance / Load Testing**: k6, Artillery, Locust, JMeter.
+- **Synthetic Monitoring**: Checkly, Grafana Cloud Synthetic Monitoring, Datadog Synthetics, Playwright scheduled checks.
+
+## Operational Design Gates
+- Every non-trivial system design must include scalability, downtime, observability, security, cost, and recovery considerations.
+- Do not approve infrastructure or release changes without deployment, rollback, monitoring, and ownership details.
+- Prefer managed services when they reduce operational risk without creating unacceptable lock-in or cost exposure.
+- Record tool choices and major operational trade-offs in an ADR when they affect long-term operations.
+- CI/CD, IaC, runbooks, and operational scripts that repeat command matrices, provider lists, environment maps, or resource collections must load the `collection-standards` skill.
+- Local Docker stacks must publish ports on `127.0.0.1` unless the task explicitly requires LAN/public access and Security has accepted the risk. Databases, caches, queues, admin UIs, metrics backends, and Docker socket access are private by default.
+
+## Scalability
+- Define expected traffic, data volume, concurrency, growth assumptions, and bottlenecks.
+- Prefer stateless compute, horizontal scaling, queue-based smoothing, caching, rate limits, and backpressure.
+- Autoscaling rules must name metrics, thresholds, min/max capacity, cooldown behavior, and failure modes.
+- High-traffic changes need load testing or a documented reason why it is not required.
+
+## Downtime & Availability
+- Choose a rollout strategy before release: rolling, canary, blue-green, dark launch, or feature-flagged rollout.
+- Database and API changes must be backward-compatible where possible.
+- Define RTO, RPO, degraded-mode behavior, and customer impact for critical services.
+- Runbooks must explain rollback and forward-fix paths.
+
+## Observability
+- Instrument services with logs, metrics, and traces using OpenTelemetry where practical.
+- Every production service needs dashboards for availability, latency, errors, saturation, and business-critical signals.
+- Alerts must be actionable, owned, and tied to user impact or clear operational risk.
+- Use correlation IDs or trace IDs to connect logs, traces, metrics, and user-reported issues.
+
+## Reporting
+- Infrastructure reporting must include cost, capacity, availability, error rate, latency, saturation, and deployment frequency where practical.
+- Dashboards should separate executive/product health, engineering debugging, and on-call response views.
+- Cost reporting must be tag-based and aligned to project, environment, owner, and major feature or service.
+- Reliability reporting should include SLOs, error budget burn, incidents, MTTR, and recurring failure themes.

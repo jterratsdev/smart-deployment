@@ -1,0 +1,31 @@
+---
+description: API contract, versioning, idempotency, and compatibility standards
+alwaysApply: true
+---
+
+# API Design
+
+APIs are product contracts. Design them for clarity, compatibility, safety, and operability before implementation.
+
+## Contracts
+- Define request, response, error shape, authentication, authorization, pagination, filtering, sorting, and rate limits before coding.
+- Use stable field names and explicit types. Avoid ambiguous blobs such as `metadata` unless the schema is documented.
+- Use consistent naming, casing, date formats, IDs, and enum values across endpoints.
+- Public API changes require examples for success, validation failure, authorization failure, and unexpected failure.
+
+## Compatibility
+- Prefer backward-compatible changes: add optional fields before removing or renaming anything.
+- Version breaking changes intentionally and document migration steps.
+- Do not leak internal models directly as API responses.
+- Keep error codes stable even when error messages improve.
+
+## Safety
+- Use idempotency keys for retryable create, payment, provisioning, email, or side-effecting operations.
+- Validate input at the boundary and return user-safe errors.
+- Enforce authorization per resource, not just per endpoint.
+- Apply rate limits and abuse protection for public or high-cost endpoints.
+
+## Testing
+- Add contract tests for request/response shape and error cases.
+- Add backward-compatibility tests when changing existing APIs.
+- Include tests for pagination, filtering, authorization, and idempotency when applicable.

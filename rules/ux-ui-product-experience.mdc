@@ -1,0 +1,51 @@
+---
+description: Mobile-first UX/UI, responsive design, user flows, and game guidance
+alwaysApply: true
+---
+
+# UX/UI Product Experience
+
+User-facing work must be designed around real user flows, not isolated screens. Every interface must be usable, responsive, accessible, and clear for the intended audience.
+
+## Mobile First
+- Design the smallest practical viewport first, then enhance for tablet and desktop.
+- Primary actions must remain reachable on mobile without awkward scrolling or hidden controls.
+- Text, buttons, forms, modals, menus, and navigation must not overflow or overlap at common mobile widths.
+- Touch targets must be large enough for fingers and spaced to avoid accidental taps.
+
+## Responsive Behavior
+- Define responsive layouts intentionally: stacking, wrapping, truncation, sticky areas, and overflow behavior must be planned.
+- Test key screens at mobile, tablet, and desktop breakpoints before considering UI work complete.
+- Avoid fixed-width layouts unless the format requires it. Use responsive constraints, flexible grids, and sensible max widths.
+- Dynamic content, translated text, loading states, empty states, and error states must fit without breaking the layout.
+
+## User Flows
+- Start UX work by identifying the end user, their goal, entry point, success path, failure path, and exit path.
+- Do not optimize a screen while ignoring the full workflow before and after it.
+- Every critical flow must include loading, empty, error, success, validation, and recovery states.
+- Navigation should make the user's current location, available actions, and next step obvious.
+
+## UI Copy
+- Use friendly, descriptive text that tells users what happened and what they can do next.
+- Buttons should describe the action, not the implementation detail.
+- Error messages must be specific, human-readable, and safe to show publicly.
+- Tooltips should clarify unfamiliar icons, disabled controls, abbreviations, and advanced options.
+
+## Accessibility
+- Preserve keyboard navigation, focus states, semantic structure, and readable contrast.
+- Forms need labels, validation messages, and clear relationships between fields and errors.
+- Do not rely on color alone to communicate status or severity.
+- Motion and animation must not block comprehension and should respect reduced-motion preferences when the platform supports it.
+
+## Game UX/UI
+- Games must teach controls, objectives, feedback loops, and failure recovery inside the experience.
+- Provide contextual guides, tutorials, onboarding hints, or progressive prompts when mechanics are introduced.
+- HUD elements must prioritize player state, goals, available actions, and urgent threats without covering gameplay.
+- Menus, pause screens, settings, inventory, upgrades, and dialogs must be navigable with the target input methods.
+- Feedback must be immediate and readable: input response, hit/miss, damage, rewards, progress, cooldowns, and blocked actions.
+- Difficulty, accessibility, and assistive options should be available when they meaningfully improve player inclusion.
+
+## Evidence
+- UI delivery must include screenshots or recordings for the primary responsive breakpoints when practical.
+- Game UI delivery must include evidence of onboarding, HUD readability, and input flow on the target device or viewport.
+- QA plans for user-facing work must include UX checks, not only functional assertions.

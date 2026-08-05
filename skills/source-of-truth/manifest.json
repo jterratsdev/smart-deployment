@@ -1,0 +1,47 @@
+{
+  "id": "source-of-truth",
+  "name": "Source of Truth",
+  "summary": "Select authoritative project, vendor, and workflow sources before acting.",
+  "triggers": [
+    "source",
+    "documentation",
+    "docs",
+    "official",
+    "verify",
+    "truth",
+    "context"
+  ],
+  "roles": [
+    "parent",
+    "planner",
+    "context_curator",
+    "architect",
+    "developer",
+    "qa",
+    "security",
+    "devops"
+  ],
+  "capabilities": [
+    "context-selection",
+    "provenance",
+    "source-resolution"
+  ],
+  "riskAreas": [
+    "governance",
+    "accuracy"
+  ],
+  "sourceGroups": [
+    "project-instructions",
+    "product-backlog",
+    "architecture",
+    "codebase",
+    "vendor-docs",
+    "agent-memory"
+  ],
+  "evidence": [
+    "file",
+    "report"
+  ],
+  "loadBudget": "small",
+  "entry": "skills/source-of-truth/SKILL.md"
+}

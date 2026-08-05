@@ -1,0 +1,81 @@
+---
+description: Infrastructure, data handling, encryption, and environment rules — stack-agnostic
+alwaysApply: true
+---
+
+# Infrastructure, Data & Encryption
+
+When a project involves databases, cloud infrastructure, sensitive data, or multi-environment deployments, these rules apply without exception.
+
+For DevOps tool categories, observability, SLOs, downtime strategy, scalability gates, and infrastructure reporting, see **devops-tooling.mdc**.
+
+## Environment Segregation
+
+- **Isolated environments**: dev, staging, and production must be fully isolated — separate accounts/subscriptions, separate credentials, separate network boundaries.
+- **No credential sharing**: each environment has its own secrets, service accounts, and IAM roles. Never reuse production credentials in dev/staging.
+- **Promotion flow**: code moves through environments via CI/CD pipelines only. No manual deploys to staging or production.
+- **Feature flags over environment branches**: prefer runtime feature flags to long-lived environment branches.
+
+## Infrastructure as Code (IaC)
+
+- **All infrastructure must be reproducible**: use Terraform, Pulumi, CloudFormation, Bicep, or equivalent. No manual console/portal changes in staging or production.
+- **State management**: IaC state files must be stored remotely (S3 + DynamoDB, Azure Blob, GCS) with locking. Never commit `.tfstate` to git.
+- **Modular composition**: extract reusable modules for networking, compute, storage. Follow the same SRP principle as application code.
+- **Drift detection**: run plan/preview in CI on every PR that touches infra. Alert on drift between declared and actual state.
+- **Tagging & cost visibility**: every resource must be tagged with `project`, `environment`, and `owner`. Enable cost alerts per tag.
+
+## Database
+
+- **Migrations are version-controlled**: use a migration framework (Flyway, Liquibase, Alembic, Prisma Migrate, knex). Never run DDL manually in production.
+- **Migrations must be idempotent and reversible**: every `up` must have a corresponding `down`. Test rollbacks in staging.
+- **Schema reviews**: DDL changes require the same review rigor as application code. Assess impact on indexes, constraints, and existing data.
+- **Connection pooling**: always use connection pools (PgBouncer, HikariCP, etc.). Never open unbounded connections from application code.
+- **Read replicas & caching**: for read-heavy workloads, use replicas. Cache hot data (Redis, Memcached) with explicit TTLs and invalidation strategies.
+
+## Encryption
+
+### At Rest
+- **Default-on**: all databases, object storage (S3, Blob, GCS), and backups must have encryption at rest enabled. Use AES-256 or equivalent.
+- **Key management**: use cloud KMS (AWS KMS, Azure Key Vault, GCP Cloud KMS). Application-managed keys only when KMS is not available.
+- **Key rotation**: automate key rotation (annually minimum). Document the rotation procedure.
+
+### In Transit
+- **TLS 1.2+ everywhere**: no plain HTTP, no self-signed certificates in staging or production. Enforce HSTS where applicable.
+- **mTLS for service-to-service**: when services communicate over a network, prefer mutual TLS or service mesh (Istio, Linkerd).
+- **Certificate management**: automate certificate provisioning (Let's Encrypt, ACM, cert-manager). Never commit private keys to repositories.
+
+### Sensitive Fields
+- **Passwords**: never store plaintext. Use bcrypt, scrypt, or argon2 with per-user salt. Never MD5 or SHA-family for password hashing.
+- **PII classification**: classify data fields at design time (public, internal, confidential, restricted). Document the classification in the data model.
+- **Column-level encryption / tokenization**: for SSN, credit card numbers, health data — apply field-level encryption or tokenize before storage.
+- **Audit trail**: log access to sensitive data (who, when, what). Use database audit logging or application-level audit events.
+
+## Secrets Management
+
+- **Use a vault**: AWS Secrets Manager, Azure Key Vault, HashiCorp Vault, or GCP Secret Manager. Never `.env` files baked into container images.
+- **Inject at runtime**: secrets are injected as environment variables at deployment time, never embedded in source code, config files, or CI logs.
+- **Rotate on schedule**: automated rotation for database passwords, API keys, and service account credentials. Define rotation cadence per sensitivity.
+- **Least privilege for secrets**: services access only the secrets they need. Use IAM policies / access policies to restrict scope.
+
+## Scalability
+
+- **Horizontal over vertical**: design stateless services that scale out. Externalize state to databases, caches, or queues.
+- **Rate limiting & throttling**: all public-facing APIs must implement rate limits. Internal services should have circuit breakers.
+- **Async where possible**: offload long-running work to queues (SQS, Service Bus, RabbitMQ, Pub/Sub). Keep HTTP request handlers fast.
+- **Observability**: metrics (latency, throughput, error rate), structured logs, and distributed tracing (OpenTelemetry) are mandatory for production services.
+- **Load testing**: run load tests in staging before major releases. Define SLOs (latency p95/p99, availability %) and alert when breached.
+
+## Vulnerability Management
+
+- **Dependency scanning**: run `npm audit`, `pip audit`, Snyk, or Dependabot on every PR. Block merge on critical/high CVEs.
+- **Container scanning**: scan images for OS and library vulnerabilities before pushing to registry.
+- **SAST/DAST**: integrate static analysis (CodeQL, SonarQube, Semgrep) and dynamic analysis in CI pipelines.
+- **Patch cadence**: critical CVEs patched within 48 hours. High within 1 week. Medium within 1 sprint.
+- **Incident response**: document the runbook for security incidents. Include contacts, escalation paths, and communication templates.
+
+## Backup & Disaster Recovery
+
+- **Automated backups**: daily minimum for databases. Retention per compliance requirements (minimum 30 days).
+- **Tested restores**: restore from backup at least quarterly. An untested backup is not a backup.
+- **RPO/RTO per environment**: define Recovery Point Objective and Recovery Time Objective. Production RPO < 1 hour is a common baseline.
+- **Multi-region for critical workloads**: if uptime SLA requires it, deploy active-passive or active-active across regions.

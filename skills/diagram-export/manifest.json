@@ -1,0 +1,40 @@
+{
+  "id": "diagram-export",
+  "name": "Diagram Export",
+  "summary": "Create, validate, and export architecture, workflow, and sequence diagrams.",
+  "triggers": [
+    "diagram",
+    "mermaid",
+    "architecture",
+    "flow",
+    "sequence",
+    "draw.io",
+    "lucid"
+  ],
+  "roles": [
+    "architect",
+    "business_analyst",
+    "product_manager",
+    "tech_lead",
+    "technical_writer"
+  ],
+  "capabilities": [
+    "diagramming",
+    "architecture-communication"
+  ],
+  "riskAreas": [
+    "architecture",
+    "documentation"
+  ],
+  "sourceGroups": [
+    "architecture",
+    "product-backlog",
+    "agent-memory"
+  ],
+  "evidence": [
+    "file",
+    "report"
+  ],
+  "loadBudget": "normal",
+  "entry": "skills/diagram-export/SKILL.md"
+}

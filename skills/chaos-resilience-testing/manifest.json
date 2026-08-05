@@ -1,0 +1,61 @@
+{
+  "id": "chaos-resilience-testing",
+  "name": "Chaos Resilience Testing",
+  "summary": "Design deterministic failure scenarios that prove workflows, APIs, providers, gates, budgets, and regulated flows degrade safely.",
+  "triggers": [
+    "chaos",
+    "resilience",
+    "fault injection",
+    "failure mode",
+    "provider timeout",
+    "provider unavailable",
+    "offline mode",
+    "circuit breaker",
+    "rate limit",
+    "budget exhaustion",
+    "approval race",
+    "policy failure",
+    "audit failure",
+    "stale data",
+    "corrupted state",
+    "tenant isolation",
+    "regulated flow"
+  ],
+  "roles": [
+    "qa",
+    "sdet",
+    "sre",
+    "security",
+    "architect",
+    "developer",
+    "devops",
+    "platform_engineer",
+    "release_manager"
+  ],
+  "capabilities": [
+    "resilience-testing",
+    "chaos-testing",
+    "failure-mode-analysis",
+    "operational-readiness"
+  ],
+  "riskAreas": [
+    "security",
+    "release",
+    "integration",
+    "governance",
+    "sre",
+    "devops",
+    "compliance",
+    "performance"
+  ],
+  "sourceGroups": [
+    "quality-security",
+    "devops-runtime",
+    "architecture",
+    "product-backlog",
+    "agent-memory"
+  ],
+  "evidence": ["command", "file", "log", "report", "trace"],
+  "loadBudget": "normal",
+  "entry": "skills/chaos-resilience-testing/SKILL.md"
+}

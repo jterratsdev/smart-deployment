@@ -1,0 +1,27 @@
+---
+description: Lightweight architecture decision records and design documentation
+alwaysApply: true
+---
+
+# Architecture Decisions
+
+Important architecture choices must be recorded briefly. The goal is traceability, not bureaucracy.
+
+## When to Record an ADR
+- Record an ADR when changing system boundaries, data ownership, integration contracts, authentication, authorization, infrastructure, deployment, or storage patterns.
+- Record an ADR when choosing a new framework, library, cloud service, messaging pattern, database, or testing strategy.
+- Record an ADR when a decision has meaningful trade-offs, migration cost, security impact, or rollback complexity.
+
+## ADR Format
+- Title: short decision name.
+- Status: proposed, accepted, superseded, or rejected.
+- Context: problem, constraints, and forces.
+- Decision: chosen approach.
+- Consequences: benefits, costs, risks, and follow-up work.
+- Alternatives considered: at least one reasonable option and why it was not chosen.
+
+## Decision Hygiene
+- Keep ADRs concise and link them from PRs when relevant.
+- Supersede old ADRs instead of rewriting history.
+- If a decision is reversed, record why new information changed the outcome.
+- Architecture decisions must align with security, testing, observability, and delivery quality gates.

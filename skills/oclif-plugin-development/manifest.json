@@ -1,0 +1,58 @@
+{
+  "id": "oclif-plugin-development",
+  "name": "Oclif Plugin Development",
+  "summary": "Build Open Orchestra plugins with oclif, TypeScript, command contracts, hooks, manifests, QA evidence, and secure package boundaries.",
+  "triggers": [
+    "oclif",
+    "plugin",
+    "plugins",
+    "cli plugin",
+    "command plugin",
+    "hook",
+    "hooks",
+    "manifest",
+    "plugin manifest",
+    "package exports",
+    "npm plugin",
+    "cli extension",
+    "react plugin ui",
+    "vite plugin ui",
+    "typescript plugin package"
+  ],
+  "roles": [
+    "developer",
+    "tech_lead",
+    "architect",
+    "qa",
+    "sdet",
+    "security",
+    "devops",
+    "platform_engineer",
+    "frontend_specialist"
+  ],
+  "capabilities": [
+    "plugin-development",
+    "cli-command-contracts",
+    "typescript-package-architecture",
+    "plugin-security",
+    "plugin-qa-evidence"
+  ],
+  "riskAreas": [
+    "maintainability",
+    "security",
+    "release",
+    "devops",
+    "integration",
+    "ux"
+  ],
+  "sourceGroups": [
+    "codebase",
+    "architecture",
+    "quality-security",
+    "devops-runtime",
+    "product-backlog"
+  ],
+  "evidence": ["command", "file", "report", "screenshot", "trace"],
+  "loadBudget": "normal",
+  "entry": "skills/oclif-plugin-development/SKILL.md"
+}

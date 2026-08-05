@@ -1,0 +1,61 @@
+{
+  "id": "audio-video-transcription",
+  "name": "Audio/Video Transcription Evidence",
+  "summary": "Transcribe audio and video artifacts into privacy-safe evidence with timestamps, provenance, redaction, and workflow findings.",
+  "triggers": [
+    "transcription",
+    "transcribe",
+    "transcript",
+    "audio",
+    "video",
+    "recording",
+    "demo recording",
+    "sprint review",
+    "interview",
+    "discovery call",
+    "support call",
+    "meeting recording",
+    "voice note",
+    "subtitle",
+    "vtt",
+    "srt"
+  ],
+  "roles": [
+    "business_analyst",
+    "product_owner",
+    "product_manager",
+    "qa",
+    "sdet",
+    "ux_researcher_accessibility",
+    "support_customer_success",
+    "technical_writer",
+    "developer",
+    "architect",
+    "security",
+    "compliance_privacy"
+  ],
+  "capabilities": [
+    "transcription-evidence",
+    "media-evidence",
+    "privacy-redaction",
+    "acceptance-coverage",
+    "lesson-capture"
+  ],
+  "riskAreas": [
+    "quality",
+    "privacy",
+    "security",
+    "compliance",
+    "governance",
+    "release"
+  ],
+  "sourceGroups": [
+    "quality-security",
+    "product-backlog",
+    "agent-memory",
+    "user-research"
+  ],
+  "evidence": ["file", "video", "log", "report"],
+  "loadBudget": "normal",
+  "entry": "skills/audio-video-transcription/SKILL.md"
+}

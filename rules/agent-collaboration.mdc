@@ -1,0 +1,60 @@
+---
+description: Cross-agent collaboration, handoffs, and decision protocol — stack-agnostic
+alwaysApply: true
+---
+
+# Agent Collaboration
+
+Agents must collaborate through explicit artifacts and review checkpoints. Parallel work is allowed only when responsibilities, inputs, and outputs are clear.
+
+## Shared Context
+- Start with a shared task brief: goal, backlog item, constraints, assumptions, risks, and definition of done.
+- Confirm the GitHub issue exists and has been technically refined before starting each work block.
+- Keep a visible decision log for architecture choices, scope cuts, security exceptions, and release trade-offs.
+- Treat unresolved questions as blockers when they affect user value, data contracts, security, or deployment.
+
+## User Alignment Gate
+- Before implementation, discuss the proposed solution and architecture with the user.
+- Present the plan in concrete terms: scope, files or modules likely to change, domain/model changes, service/integration changes, controller/entry-point changes, data flow, risks, trade-offs, test strategy, and expected evidence.
+- Do not start coding when the architecture, acceptance criteria, or user-visible behavior is ambiguous.
+- If the task is a trivial mechanical edit, state that no architecture decision is involved and proceed with the smallest safe change.
+- If new information invalidates the agreed plan, pause and realign with the user before continuing.
+
+## Collaboration Flow
+- Product Owner and Analyst define acceptance criteria before Developer or QA treat the task as ready.
+- Product Owner and Business Analyst must validate user stories, definitions, assumptions, acceptance criteria, non-goals, and priority with the user before approving the `po→architect` handoff.
+- If user validation is missing or scope is still ambiguous, keep the task in refinement, record the open question, and do not route it to Architect as ready-for-design.
+- Architect and Security review designs before implementation when work touches boundaries, data, auth, infra, or external integrations.
+- UX/UI Designer reviews user-facing flows before implementation when the task changes screens, copy, navigation, onboarding, or accessibility.
+- SRE, DBA, Compliance/Privacy, and Release Manager review before release when reliability, database, regulatory, or rollout risk is material.
+- Developer starts implementation only after the user alignment gate and required role reviews are complete.
+- Developer shares implementation notes, unit test evidence, and changed behavior with QA, DevOps, and Security before final verification.
+- QA, DevOps, and Security report release blockers back to Product Owner for go/no-go decisions.
+- Developer work must pass through QA review before release approval.
+
+## Handoff Contract
+- Every handoff must include: current status, files or components touched, decisions made, risks, test evidence, and remaining work.
+- Do not hand off vague ownership such as "finish the backend". Name the exact module, behavior, or artifact.
+- If another agent's output is incomplete or contradictory, pause and reconcile before building on it.
+- Developer-to-QA handoff must include unit tests added or updated, exact test commands run, known gaps, and any recommended Playwright coverage.
+
+## Parallel Work Rules
+- Split work by stable boundaries: feature slice, module, test suite, infrastructure component, or documentation artifact.
+- Agents working in parallel must publish assumptions early and update them when code or requirements change.
+- Avoid duplicate edits to the same files. If overlap is unavoidable, assign one integration owner.
+
+## Review Protocol
+- Review from the role's responsibility, not personal preference.
+- Findings must include severity, affected artifact, expected behavior, actual risk, and a concrete recommendation.
+- Approval means the reviewer accepts the residual risk for their role.
+
+## Conflict Resolution
+- Product value conflicts are resolved by Product Owner with Product Manager input.
+- Technical direction conflicts are resolved by Architect with Developer and DevOps input.
+- Verification conflicts are resolved by QA using acceptance criteria and reproducible evidence.
+- Security conflicts are resolved by Security unless the Product Owner records explicit risk acceptance.
+- UX conflicts are resolved by UX/UI Designer with Product Owner input.
+- Reliability conflicts are resolved by SRE with DevOps and Architect input.
+- Data and database conflicts are resolved by Data Engineer or DBA according to ownership.
+- Release timing conflicts are resolved by Release Manager with Product Owner input.
+- Compliance and privacy conflicts are resolved by Compliance/Privacy unless formal risk acceptance is recorded.

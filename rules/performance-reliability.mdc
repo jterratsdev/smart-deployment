@@ -1,0 +1,33 @@
+---
+description: Performance budgets, reliability design, caching, and scalability safeguards
+alwaysApply: true
+---
+
+# Performance & Reliability
+
+Performance and reliability must be designed, measured, and protected. Do not optimize blindly or defer obvious scalability risks.
+
+## Budgets
+- Define expected latency, throughput, payload size, memory, storage, and concurrency for high-impact flows.
+- User-facing flows should consider p95 and p99 latency, not only averages.
+- Establish performance budgets for page weight, render time, API latency, and query count when applicable.
+- If no budget exists, propose one before making risky design choices.
+
+## Hot Paths
+- Avoid N+1 queries, unbounded loops with I/O, repeated serialization, and large synchronous work on request paths.
+- Paginate or stream large datasets. Do not load unbounded result sets into memory.
+- Load the `collection-standards` skill when implementation, QA automation, or DevOps scripting processes repeated collections, joins lists, scans logs, builds command matrices, or must prove O(n) or bounded complexity.
+- Keep expensive work outside user-facing request paths through queues, jobs, or precomputation.
+- Measure before and after performance changes and report the evidence.
+
+## Caching
+- Cache only with clear ownership, TTL, invalidation strategy, and stale-data behavior.
+- Do not cache sensitive data unless storage, access, and expiration controls are explicit.
+- Prefer simple, observable cache strategies before multi-layer cache complexity.
+- Document cache keys and invalidation triggers for shared caches.
+
+## Reliability
+- Design for graceful degradation when dependencies fail.
+- Add timeouts, retries, backoff, and circuit breakers for networked dependencies.
+- Use bulkheads or queues to protect critical paths from non-critical workload spikes.
+- Reliability-sensitive changes need load, stress, or synthetic tests when practical.

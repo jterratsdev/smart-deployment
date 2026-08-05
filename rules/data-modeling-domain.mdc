@@ -1,0 +1,31 @@
+---
+description: Data modeling, domain boundaries, invariants, and migration discipline
+alwaysApply: true
+---
+
+# Data Modeling & Domain
+
+Data models encode business rules. Treat schema, state, and naming decisions as long-lived product contracts.
+
+## Domain Modeling
+- Use domain language in types, tables, events, and functions. Avoid generic names such as `data`, `item`, `payload`, or `status` without context.
+- Document core invariants: what must always be true, who can change it, and what events change it.
+- Model state transitions explicitly. Avoid free-form status values without an allowed transition map.
+- Use value objects or narrow types for money, dates, IDs, units, quantities, and other rule-heavy values.
+
+## Ownership
+- Assign a clear owner for each data model or bounded context.
+- Do not let unrelated modules write directly to another context's data without an explicit service, event, or contract.
+- Keep derived data traceable to its source of truth.
+
+## Schema Design
+- Design indexes from real query patterns and cardinality, not guesses.
+- Use constraints for invariants the database can enforce.
+- Avoid nullable fields unless the meaning of null is explicit.
+- Classify sensitive fields at design time and apply encryption, tokenization, retention, and audit rules when needed.
+
+## Migrations
+- Migrations must be backward-compatible when possible and safe for rolling deploys.
+- Separate expand, backfill, switch, and contract phases for risky schema changes.
+- Backfills must be resumable, observable, and rate-limited when touching production-scale data.
+- Add rollback or forward-fix instructions for every non-trivial migration.

@@ -1,0 +1,26 @@
+---
+description: Minimum documentation updates required for code, product, and operations changes
+alwaysApply: true
+---
+
+# Documentation Standards
+
+Documentation is part of delivery when behavior, operation, or integration changes. Keep it close to the thing it explains.
+
+## Update Documentation When
+- User-facing behavior, setup, configuration, API contracts, permissions, deployment, or operations change.
+- A new workflow, feature flag, environment variable, dependency, migration, or integration is introduced.
+- A bug fix changes expected behavior or removes a known limitation.
+
+## Minimum Artifacts
+- README or getting-started docs for setup, local development, and common commands.
+- API docs or contract examples for request, response, error, and auth changes.
+- Runbooks for operational tasks, incidents, migrations, rollback, and manual support procedures.
+- ADRs for important architecture choices.
+- Release notes for user-visible changes, breaking changes, migrations, and known risks.
+
+## Quality Bar
+- Documentation must be accurate, concise, and executable by someone who did not write the change.
+- Include commands, environment variables, expected outputs, and troubleshooting notes when relevant.
+- Do not duplicate source-of-truth configuration or type definitions in prose unless there is a sync check.
+- Remove obsolete docs in the same change that makes them obsolete.

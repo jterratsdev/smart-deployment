@@ -1,0 +1,41 @@
+{
+  "id": "model-evaluation",
+  "name": "Model Evaluation",
+  "summary": "Run prompt, model, provider-routing, fallback, and rubric evaluations.",
+  "triggers": [
+    "model",
+    "llm",
+    "prompt",
+    "provider",
+    "fallback",
+    "eval",
+    "rubric",
+    "routing"
+  ],
+  "roles": [
+    "ai_evaluation_engineer",
+    "toolsmith",
+    "architect",
+    "parent"
+  ],
+  "capabilities": [
+    "llm-evaluation",
+    "provider-routing",
+    "prompt-quality"
+  ],
+  "riskAreas": [
+    "governance",
+    "quality"
+  ],
+  "sourceGroups": [
+    "vendor-docs",
+    "agent-memory",
+    "quality-security"
+  ],
+  "evidence": [
+    "report",
+    "file"
+  ],
+  "loadBudget": "normal",
+  "entry": "skills/model-evaluation/SKILL.md"
+}

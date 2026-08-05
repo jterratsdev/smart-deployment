@@ -1,0 +1,41 @@
+{
+  "id": "backlog-sync",
+  "name": "Backlog Sync",
+  "summary": "Keep GitHub issues, local stories, and workflow tasks aligned.",
+  "triggers": [
+    "backlog",
+    "issue",
+    "story",
+    "epic",
+    "github",
+    "acceptance criteria",
+    "refine"
+  ],
+  "roles": [
+    "product_manager",
+    "product_owner",
+    "business_analyst",
+    "planner",
+    "parent"
+  ],
+  "capabilities": [
+    "backlog-management",
+    "story-refinement",
+    "scope-control"
+  ],
+  "riskAreas": [
+    "governance",
+    "scope"
+  ],
+  "sourceGroups": [
+    "product-backlog",
+    "project-instructions",
+    "agent-memory"
+  ],
+  "evidence": [
+    "file",
+    "report"
+  ],
+  "loadBudget": "small",
+  "entry": "skills/backlog-sync/SKILL.md"
+}

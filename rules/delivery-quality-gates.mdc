@@ -1,0 +1,61 @@
+---
+description: Required delivery flow from development through QA automation and evidence
+alwaysApply: true
+---
+
+# Delivery Quality Gates
+
+Development work is not complete when code compiles. Every implementation must move through developer verification, QA review, automation planning, and evidence capture.
+
+## Developer Gate
+
+- Developer delivers code with unit tests for new or changed business logic.
+- Unit tests must cover success paths, failure paths, and relevant boundary cases.
+- Developer must run the focused unit test suite and report the exact command and result.
+- If unit tests are not feasible, Developer must document the technical reason and propose the smallest testable refactor.
+- Developer must address API, data, frontend, performance, concurrency, config, and AI-assisted development rules when the change touches those areas.
+
+## QA Gate
+
+- QA receives the Developer handoff before release approval.
+- Workflow gate approval is not a status shortcut. `po→architect` can be approved only when the issue/task has user-validated scope, non-goals, assumptions, priority, acceptance criteria, and sizing context. `qa→release` can be approved only after real implementation evidence, QA findings, BA/PO acceptance, and Architect review when technical contracts changed.
+- Generated handoffs with `Acceptance Criteria: none` are incomplete for release purposes. Pull the criteria from the linked GitHub issue or Orchestra task, record a review finding, and block release until the criteria/evidence gap is fixed or explicitly risk-accepted by the Product Owner.
+- QA must produce a test plan covering acceptance criteria, regression areas, edge cases, data setup, and environment assumptions.
+- QA must block test planning when acceptance criteria are fragmented, non-verifiable, or only role/phase headings. Return those findings to PO/BA before release evidence is generated.
+- QA plans must include an AC-to-evidence matrix with expected observable result, actual result, artifact/command, and pass/fail/deferred status for each acceptance criterion.
+- QA must validate that the planned tests exercise the actual risk, not a weaker surrogate. For scope/split, handoff, workflow, runtime, queueing, failback, or release-gate bugs, the test data must create the condition that should trigger the guardrail.
+- QA must block when the plan substitutes a weaker surface for the requested behavior, such as browser smoke for workflow/CLI behavior, command execution without stdout/files/events checks, or API response checks without receiver-side effects for integrations.
+- QA must block when the latest user-approved or user-requested concrete action is only described as the next step, future work, or remaining work instead of completed or blocked with evidence.
+- QA must execute or explicitly defer each test case with a reason.
+- QA findings must include severity, reproduction steps, expected result, actual result, and evidence.
+- QA execution must be reviewable through a sprint-review-style evidence demo before release approval. Analyst/BA compares the executed evidence against the GitHub issue, user story, acceptance criteria, and Orchestra task; Architect reviews whether the tests cover architecture contracts, boundaries, integrations, data flow, and risk areas.
+- Analyst/BA must record comments on the GitHub issue/user story and the Orchestra task when evidence does not prove the requested behavior, acceptance criteria, or business workflow. Those findings block release until fixed or explicitly accepted as risk by the Product Owner.
+- QA approval is incomplete when only QA signs off on execution. Record Analyst/BA and Architect review outcomes, or document why a role is not applicable with Product Owner acceptance.
+
+## Automation Gate
+
+- QA and Developer must identify which manual checks should become automated tests.
+- Prefer Playwright for browser-based E2E, smoke, and regression flows.
+- Automation for every product surface must use isolated deterministic fixtures: web, mobile, desktop, CLI, API, integrations, workflow/runtime, installer, data, and generated-artifact flows. Use the configured E2E fixture path, sandbox org, emulator, container, device farm, or test environment when the user/project provides one; otherwise default local disposable fixtures to `/tmp`.
+- Automation must assert state transitions and final artifacts. For workflow-style systems, assert the automaton path: valid transition, blocked transition, loop/return transition, resume, and final release transition when applicable. For UI/mobile/API/integration systems, assert the user-visible state, device/responsive behavior, API contract, receiver-side side effect, persisted data, async job/event, or external sandbox state that proves the acceptance criterion.
+- Use Page Object pattern for Playwright suites. Selectors belong in page objects or stable test helpers, not scattered through test bodies.
+- Automated tests must be deterministic and avoid real network, clock, or randomness unless controlled by fixtures, mocks, or seeded data.
+
+## Evidence Gate
+
+- Every completed delivery must include test evidence: commands run, pass/fail result, logs or screenshots when relevant, and unresolved risks.
+- Evidence must be packaged for human review, not only recorded as command status. Use compact reports that map acceptance criteria to tests, results, and artifact paths.
+- Playwright evidence should include trace, screenshot, or video for failed E2E cases when the framework supports it.
+- User-facing delivery should include screenshots or recordings for key responsive breakpoints when practical.
+- Manual QA evidence should include tested build/version, environment, browser/device when relevant, and timestamp.
+- CLI evidence must include command, exit code, expected stdout/stderr or final state, actual result, and relevant files/events.
+- API and integration evidence must include contract results and receiver-side verification such as sandbox records, webhook/event/log output, database/query result, or a documented deferral with owner and Product Owner acceptance.
+- Visual/UI/diagram bug evidence must include actual screenshot/render, source or expected image when available, diff when practical, and annotated image overlays for ambiguous layout, spacing, alignment, clipping, connector, or text-fit issues.
+- Release approval requires visible evidence from Developer and QA, not just a verbal status.
+
+## Release Decision
+
+- Product Owner gives go/no-go using QA results, automation status, unresolved defects, and risk acceptance.
+- Security, DevOps, or QA blockers cannot be bypassed without explicit Product Owner risk acceptance.
+- A delivery with deferred tests must include the follow-up backlog item and owner before release.
+- Release approval must satisfy Definition of Done, release readiness, rollback, and documentation requirements when applicable.

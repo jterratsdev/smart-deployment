@@ -1,0 +1,32 @@
+---
+description: Release readiness, rollout, rollback, and post-release monitoring
+alwaysApply: true
+---
+
+# Release & Rollback
+
+Every release must be deployable, observable, and reversible. A feature is not ready if the team cannot monitor it or recover from it.
+
+For rollout tooling, synthetic monitoring, SLOs, on-call, and operational reporting categories, see **devops-tooling.mdc**.
+
+## Release Readiness
+- Confirm Definition of Done, QA evidence, security review, migration status, and unresolved risks before release.
+- Identify deployment target, release owner, release window, affected users, and communication needs.
+- List feature flags, configuration changes, migrations, background jobs, and third-party dependencies.
+- Verify observability exists for the changed behavior: logs, metrics, traces, dashboards, and alerts when applicable.
+
+## Rollout Strategy
+- Prefer small, reversible releases over large batches.
+- Use feature flags, canaries, phased rollout, or dark launch for risky user-facing or infrastructure changes.
+- Database changes must be backward compatible when possible and safe across rolling deploys.
+- Long-running migrations must have progress monitoring and an interruption plan.
+
+## Rollback Plan
+- Every release must state how to rollback code, configuration, feature flags, and migrations.
+- If rollback is not possible, document the forward-fix plan and get Product Owner risk acceptance before release.
+- Do not release when rollback depends on manual guesswork or undocumented production console changes.
+
+## Post-Release
+- Monitor agreed signals after release: errors, latency, saturation, conversion, usage, and user-facing failures.
+- Define who watches the release and for how long.
+- Capture incidents, regressions, and follow-up work as backlog items.

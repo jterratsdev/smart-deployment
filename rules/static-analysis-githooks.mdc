@@ -1,0 +1,32 @@
+---
+description: Static analysis tooling and mandatory pre-commit hook policy
+alwaysApply: true
+---
+
+# Static Analysis & Git Hooks
+
+Every project must run fast static analysis before commit and deeper analysis in CI. Hooks are guardrails, not replacements for review or tests.
+
+## Required Tooling
+- TypeScript/JavaScript: TypeScript typecheck, ESLint, Prettier or project formatter, dependency audit, and secret scanning.
+- Web/UI: lint accessibility rules where available and keep Playwright smoke checks available for critical flows.
+- Python: Ruff, mypy or pyright, Bandit, dependency audit, and formatter when Python code exists.
+- Infrastructure: Checkov, tfsec, or equivalent IaC scanner when Terraform, OpenTofu, Bicep, CloudFormation, or Kubernetes manifests exist.
+- Security: Semgrep or CodeQL for SAST, plus Trivy or Grype for containers when images are built.
+
+## Pre-Commit Hook
+- A pre-commit hook is mandatory before any commit.
+- The hook must run only fast checks suitable for local feedback: formatting check, lint, typecheck for touched packages when practical, secret scan, and staged-file validation.
+- The hook must fail closed. If analysis fails, the commit must not proceed.
+- Do not bypass hooks with `--no-verify` unless the user explicitly approves and a follow-up item records the reason.
+- Hook configuration must be version-controlled and reproducible for every contributor.
+
+## Pre-Push / CI
+- Slower checks belong in pre-push or CI: full test suite, Playwright E2E, SAST, dependency scan, container scan, IaC scan, and build.
+- CI must run at least the same checks as local hooks, plus deeper project-wide checks.
+- PRs cannot be approved when static analysis, typecheck, security scan, or required hooks fail.
+
+## Evidence
+- Developer handoff must include exact static analysis commands run and results.
+- CI evidence must link failed checks to logs and responsible owners.
+- Any deferred static analysis finding needs severity, owner, rationale, and follow-up backlog item.

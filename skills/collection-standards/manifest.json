@@ -1,0 +1,69 @@
+{
+  "id": "collection-standards",
+  "name": "Collection Standards",
+  "summary": "Centralize repeated collections and keep collection processing linear or explicitly bounded across product code, QA automation, and DevOps scripts.",
+  "triggers": [
+    "collection",
+    "collections",
+    "hardcoded",
+    "array",
+    "arrays",
+    "map",
+    "maps",
+    "key/value",
+    "option",
+    "options",
+    "fixture",
+    "fixtures",
+    "matrix",
+    "matrices",
+    "selector",
+    "selectors",
+    "o(n)",
+    "o(n2)",
+    "o(n^2)",
+    "complexity",
+    "nested loop",
+    "nested loops",
+    "n+1",
+    "bulk",
+    "batch"
+  ],
+  "roles": [
+    "developer",
+    "tech_lead",
+    "frontend_specialist",
+    "backend_specialist",
+    "mobile_specialist",
+    "qa",
+    "sdet",
+    "devops",
+    "platform_engineer",
+    "sre",
+    "performance_engineer"
+  ],
+  "capabilities": [
+    "maintainability",
+    "performance-safety",
+    "automation-quality"
+  ],
+  "riskAreas": [
+    "maintainability",
+    "performance",
+    "release",
+    "devops",
+    "sre"
+  ],
+  "sourceGroups": [
+    "codebase",
+    "quality-security",
+    "agent-memory"
+  ],
+  "evidence": [
+    "file",
+    "command",
+    "report"
+  ],
+  "loadBudget": "small",
+  "entry": "skills/collection-standards/SKILL.md"
+}

@@ -1,0 +1,45 @@
+{
+  "id": "release-readiness",
+  "name": "Release Readiness",
+  "summary": "Validate gates, rollback, observability, support, and customer-impact evidence.",
+  "triggers": [
+    "release",
+    "deploy",
+    "rollback",
+    "go-live",
+    "readiness",
+    "downtime",
+    "observability"
+  ],
+  "roles": [
+    "release_manager",
+    "devops",
+    "sre",
+    "platform_engineer",
+    "support_customer_ops",
+    "security"
+  ],
+  "capabilities": [
+    "release-gate",
+    "rollback-review",
+    "operational-readiness"
+  ],
+  "riskAreas": [
+    "release",
+    "sre",
+    "devops",
+    "security"
+  ],
+  "sourceGroups": [
+    "devops-runtime",
+    "quality-security",
+    "agent-memory"
+  ],
+  "evidence": [
+    "command",
+    "report",
+    "file"
+  ],
+  "loadBudget": "normal",
+  "entry": "skills/release-readiness/SKILL.md"
+}

@@ -55,3 +55,10 @@ node_modules
 # os specific files
 .DS_Store
 .idea
+
+# Open Orchestra ephemeral runtime state
+.agent-workflow/active-runtime.json
+.agent-workflow/backups/
+.agent-workflow/runtime-sessions/
+.agent-workflow/telemetry/*
+!.agent-workflow/telemetry/.gitkeep

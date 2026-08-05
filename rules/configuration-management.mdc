@@ -1,0 +1,31 @@
+---
+description: Runtime configuration, feature flags, environment variables, and typed config rules
+alwaysApply: true
+---
+
+# Configuration Management
+
+Configuration changes product behavior. Treat config as code, validate it, and make ownership explicit.
+
+## Config Design
+- Separate build-time config from runtime config.
+- Validate required configuration at startup with typed schemas and clear failure messages.
+- Use safe defaults only when they are genuinely safe for every environment.
+- Do not scatter raw environment variable reads across the codebase. Centralize config loading.
+
+## Feature Flags
+- Every feature flag needs owner, purpose, default, rollout plan, cleanup plan, and expiration condition.
+- Flags must fail safe when config is unavailable.
+- Avoid long-lived flags that create permanent parallel behavior.
+- Test both enabled and disabled paths for risky flags.
+
+## Environment Management
+- Keep dev, staging, and production configuration isolated.
+- Do not use production secrets, endpoints, or customer data in local or test environments.
+- Document required environment variables, allowed values, and examples.
+- Configuration changes that affect deployment need release notes and rollback steps.
+
+## Secrets
+- Secrets are not configuration files. Use approved secret managers and runtime injection.
+- Never log secret values, tokens, connection strings, or signed URLs.
+- Rotate secrets when access scope, ownership, or exposure risk changes.

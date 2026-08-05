@@ -1,0 +1,71 @@
+---
+description: Stack-agnostic developer implementation standards across common application stacks
+alwaysApply: true
+---
+
+# Development Engineering
+
+Developer work must start from the existing project shape, preserve the local architecture, and leave verifiable evidence that the changed production artifact works.
+
+## Project Context First
+- Read the project manifest, build files, framework config, and existing module boundaries before generating code.
+- Infer naming, layering, dependency direction, error style, logging style, and test conventions from nearby code.
+- Do not introduce a new framework pattern, repository style, package layout, or dependency injection approach without a recorded architecture decision.
+- Keep framework-specific adapters at the boundary. Domain and service code should remain portable where the product permits it.
+- Before writing to an existing file, run a module-boundary check: current file size, responsibility, exported surface, and whether the new behavior belongs in domain, model, service, repository, or adapter code.
+- Do not increase god-file risk. If a file is already large, multi-purpose, or adapter-shaped, prefer adding a focused module and wiring it from the existing entry point instead of adding more logic.
+
+## Entry Points And Layers
+- Controllers, routes, commands, triggers, handlers, jobs, and webhooks must stay thin.
+- Delegate business rules to services or domain modules, and delegate I/O to repositories, clients, gateways, or data-access modules.
+- Keep request parsing, authorization, validation, orchestration, and persistence responsibilities separate enough that each can be tested directly.
+- Public APIs and CLI commands must define request, response, errors, pagination, compatibility, and idempotency before implementation.
+- Developer-owned code, scripts, generated options, and automation helpers that repeat collection values or process collections at scale must load the `collection-standards` skill.
+- CLI command modules should be nearly logicless: parse input, call one service or use-case, format output, and convert expected errors to user-safe messages. Business rules, workflow policy, persistence, retries, batching, and duplicated registries belong outside command modules.
+
+## Bulk And Batch Safety
+- Implement for 1..N records, requests, files, events, or messages. Do not special-case only the happy-path singleton.
+- Avoid unbounded data reads, writes, queries, or network calls inside loops. Prefer set-based reads, bulk writes, batching, pagination, or bounded concurrency.
+- When collection-processing complexity matters, load `collection-standards` for O(n), map/index, and bounded-complexity guidance.
+- Make transaction boundaries explicit and keep them as small as correctness allows.
+- Add regression coverage for multi-item input when the code can receive lists, streams, queues, or batched requests.
+
+## Data Access
+- Reuse the existing data-access pattern before adding a new repository, selector, ORM helper, query builder, or gateway abstraction.
+- Model query shape from real access patterns, including filters, sort order, pagination, indexes, locking, and authorization scope.
+- Keep data ownership explicit. Unrelated modules should not write directly to another bounded context without a service, event, or contract.
+- Validate migrations, generated artifacts, or deployed metadata before relying on tests that exercise them.
+
+## Errors And Logging
+- Scan for the existing exception and logging framework before adding try/catch blocks or new error types.
+- Convert operational errors to user-safe messages at the boundary. Propagate or fail fast on programmer errors.
+- Include useful context in logs: operation name, stable IDs, duration, retry count, and external system name when relevant.
+- Never swallow errors with empty catches or generic success fallbacks.
+
+## External Integrations
+- Use configured clients, named endpoints, and typed configuration. Never hardcode endpoints, tokens, credentials, shell commands, or timeouts.
+- Validate URLs before outbound calls, validate response status before parsing, and handle non-2xx responses explicitly.
+- Define timeouts, retries, backoff, idempotency keys, circuit breaking, and observability for integrations with side effects or production impact.
+- Keep provider-specific request and response mapping in adapters so product logic does not depend on one vendor shape.
+
+## Async Workflows
+- Choose queues, jobs, events, schedulers, or workflow engines based on ordering, retry, observability, latency, and partial-failure semantics.
+- Async payloads should carry stable IDs and versioned schemas, not large mutable snapshots unless snapshots are required for correctness.
+- Define retry policy, dead-letter handling, compensation or forward-fix behavior, and user-visible recovery for critical work.
+- Tests for async code must flush or drain queued work using the framework-supported pattern.
+
+## Testing
+- Use centralized builders, factories, fixtures, or test data helpers instead of copy-pasted setup blocks.
+- Authorization-sensitive logic needs tests under representative user, role, permission, tenant, or policy contexts.
+- Add tests for bulk input, empty input, partial failure, retries, authorization denial, and malformed external responses when applicable.
+- Run static analysis before handoff and include exact commands, results, known gaps, and suggested QA coverage in the handoff.
+
+## Stack Examples
+- Java/Spring: keep controllers thin, place rules in services, use repositories for data access, define `@Transactional` boundaries deliberately, and use Testcontainers or slice tests for persistence contracts.
+- .NET: keep controllers or minimal APIs thin, place rules in application services, pass `CancellationToken`, centralize typed options, and test EF Core query behavior with realistic providers when query translation matters.
+- TypeScript/Node: route or CLI handlers should call services, services should call typed repositories or clients, config should be validated at startup, and integration tests should cover pagination, async drains, and external status handling.
+- Python: endpoint or command functions should call services, services should call repositories or clients, use pytest fixtures/builders for setup, validate settings at startup, and test migrations or ORM queries when schema behavior changes.
+
+## Handoff
+- Handoffs must state the active project conventions, data-access strategy, test strategy, changed artifacts, validation commands, known constraints, and remaining risks.
+- When a task touches security, data, async workflows, external integrations, or infrastructure, include the related review outcome before release approval.

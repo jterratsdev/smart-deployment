@@ -1,0 +1,46 @@
+{
+  "id": "playwright-evidence",
+  "name": "Playwright Evidence",
+  "summary": "Plan browser automation and attach screenshots, traces, videos, and reports.",
+  "triggers": [
+    "playwright",
+    "browser",
+    "e2e",
+    "screenshot",
+    "trace",
+    "video",
+    "responsive",
+    "web",
+    "ui"
+  ],
+  "roles": [
+    "qa",
+    "sdet",
+    "frontend_specialist",
+    "ux_ui_designer",
+    "ux_researcher_accessibility"
+  ],
+  "capabilities": [
+    "e2e-testing",
+    "browser-evidence",
+    "accessibility-check"
+  ],
+  "riskAreas": [
+    "ux",
+    "release"
+  ],
+  "sourceGroups": [
+    "quality-security",
+    "codebase",
+    "product-backlog",
+    "agent-memory"
+  ],
+  "evidence": [
+    "screenshot",
+    "trace",
+    "video",
+    "report"
+  ],
+  "loadBudget": "normal",
+  "entry": "skills/playwright-evidence/SKILL.md"
+}

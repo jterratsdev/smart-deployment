@@ -1,0 +1,45 @@
+{
+  "id": "prompt-registry",
+  "name": "Prompt Registry",
+  "summary": "Read and update .generated-prompts registers for substantial AI-generated artifacts.",
+  "triggers": [
+    "prompt",
+    "generated",
+    "artifact",
+    "code",
+    "ui",
+    "docs",
+    "diagram",
+    "eval"
+  ],
+  "roles": [
+    "parent",
+    "developer",
+    "tech_lead",
+    "frontend_specialist",
+    "backend_specialist",
+    "mobile_specialist",
+    "sdet",
+    "qa",
+    "technical_writer",
+    "ai_evaluation_engineer"
+  ],
+  "capabilities": [
+    "prompt-memory",
+    "artifact-traceability",
+    "context-continuity"
+  ],
+  "riskAreas": [
+    "maintainability",
+    "governance"
+  ],
+  "sourceGroups": [
+    "agent-memory",
+    "codebase"
+  ],
+  "evidence": [
+    "file"
+  ],
+  "loadBudget": "small",
+  "entry": "skills/prompt-registry/SKILL.md"
+}

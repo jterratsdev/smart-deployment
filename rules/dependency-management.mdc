@@ -1,0 +1,31 @@
+---
+description: Dependency updates, lockfiles, supply chain review, and vulnerability handling
+alwaysApply: true
+---
+
+# Dependency Management
+
+Dependencies are part of the product attack surface and runtime behavior. Treat them as code.
+
+## Adding Dependencies
+- Prefer the standard library or existing project dependencies before adding a new package.
+- Justify every new runtime dependency with purpose, maintenance status, license, security posture, and alternatives considered.
+- Do not add dependencies for trivial utilities that can be implemented safely in a few lines.
+- Avoid packages with low maintenance, unclear ownership, known malware history, or broad install scripts.
+
+## Versioning
+- Pin dependency versions through lockfiles and commit lockfile updates with the package manifest.
+- Do not manually edit lockfiles unless the package manager requires it and the change is reviewed.
+- Major upgrades require changelog review, migration notes, test evidence, and rollback considerations.
+- Keep dependency updates atomic unless a coordinated upgrade is required.
+
+## Supply Chain Security
+- Run dependency scanning in CI and block critical or high vulnerabilities unless risk-accepted.
+- Never run unvetted package execution commands in CI.
+- Review transitive dependency risk when adding security-sensitive, build, auth, crypto, or deployment tooling.
+- Remove unused dependencies promptly.
+
+## Automation
+- Use Dependabot, Renovate, or equivalent for routine updates where possible.
+- Group low-risk patch updates, but keep major and security updates separate.
+- Security updates must include the vulnerability identifier, affected package, fixed version, test evidence, and any compensating controls.

@@ -1,0 +1,36 @@
+---
+description: Engineering code review standards, checklists, and approval expectations
+alwaysApply: true
+---
+
+# Code Review Engineering
+
+Code review protects behavior, users, operations, and maintainability. Review risk before style.
+
+## Review Order
+- Review behavior, data safety, security, reliability, and user impact before naming or formatting.
+- Check whether the change matches the agreed solution, acceptance criteria, and Definition of Done.
+- Verify tests cover meaningful behavior, failure paths, and regression risk.
+- Confirm evidence: commands run, screenshots, logs, traces, benchmarks, or QA results when relevant.
+
+## Required Checks
+- Module boundaries: file size, responsibility, layer placement, command/controller thinness, and god-file risk.
+- API changes: contract, compatibility, auth, validation, rate limits, and error shape.
+- Data changes: migrations, indexes, constraints, backfills, rollback, and sensitive data handling.
+- UI changes: responsive layout, accessibility, copy, states, and screenshots.
+- Async changes: idempotency, retries, timeout, DLQ, and observability.
+- Infra changes: plan output, least privilege, cost, scalability, rollback, and drift risk.
+- Static analysis: pre-commit hook, lint, typecheck, secret scan, dependency scan, and SAST status.
+
+## Review Findings
+- Findings must include severity, file or artifact, risk, expected behavior, and concrete recommendation.
+- Do not approve unresolved blockers, failing CI, missing tests, or undocumented risk acceptance.
+- Nitpicks must not block unless they hide real maintainability, readability, or consistency risk.
+- If the change is too large to review reliably, request split PRs or staged rollout.
+
+## Self-Review
+- Authors must review their own diff before requesting review.
+- Authors must confirm large-file additions, command-module logic, and repeated hardcoded collections were either avoided, extracted, or recorded as explicit debt.
+- Remove debug code, dead code, unrelated formatting, and accidental files.
+- Summarize architectural decisions, trade-offs, test evidence, and known gaps in the PR.
+- Confirm static analysis and required hooks passed before requesting review.

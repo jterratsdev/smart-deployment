@@ -1,0 +1,46 @@
+{
+  "id": "static-analysis",
+  "name": "Static Analysis",
+  "summary": "Run and interpret local quality, type, dependency, secret, and security checks.",
+  "triggers": [
+    "lint",
+    "typecheck",
+    "secret",
+    "sast",
+    "precommit",
+    "dependency",
+    "scan",
+    "eslint",
+    "test"
+  ],
+  "roles": [
+    "developer",
+    "tech_lead",
+    "qa",
+    "sdet",
+    "security",
+    "devops",
+    "platform_engineer"
+  ],
+  "capabilities": [
+    "quality-gate",
+    "security-review",
+    "commit-readiness"
+  ],
+  "riskAreas": [
+    "security",
+    "release",
+    "maintainability"
+  ],
+  "sourceGroups": [
+    "codebase",
+    "quality-security",
+    "agent-memory"
+  ],
+  "evidence": [
+    "command",
+    "report"
+  ],
+  "loadBudget": "normal",
+  "entry": "skills/static-analysis/SKILL.md"
+}

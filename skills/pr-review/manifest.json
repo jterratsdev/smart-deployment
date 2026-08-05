@@ -1,0 +1,43 @@
+{
+  "id": "pr-review",
+  "name": "PR Review",
+  "summary": "Produce review findings, PR summaries, risks, rollout notes, and missing-test gaps.",
+  "triggers": [
+    "pr",
+    "pull request",
+    "review",
+    "diff",
+    "merge",
+    "release summary"
+  ],
+  "roles": [
+    "reviewer_critic",
+    "tech_lead",
+    "qa",
+    "security",
+    "release_manager",
+    "architect"
+  ],
+  "capabilities": [
+    "review",
+    "risk-summary",
+    "change-summary"
+  ],
+  "riskAreas": [
+    "release",
+    "security",
+    "maintainability"
+  ],
+  "sourceGroups": [
+    "codebase",
+    "quality-security",
+    "product-backlog",
+    "agent-memory"
+  ],
+  "evidence": [
+    "file",
+    "report"
+  ],
+  "loadBudget": "normal",
+  "entry": "skills/pr-review/SKILL.md"
+}

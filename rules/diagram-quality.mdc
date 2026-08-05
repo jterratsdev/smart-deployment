@@ -1,0 +1,37 @@
+# Diagram Quality
+
+- Classify diagram work before drawing: `semantic`, `inspired-by-reference`, or `recreation`.
+- A `recreation` must be reviewed as pixel-perfect against its source reference. Do not treat structural similarity as acceptance.
+- For `recreation`, first inventory every visible source element: containers, labels, icons, connectors, arrowheads, line styles, colors, borders, spacing, rotations, z-order, and page/canvas bounds.
+- For `recreation`, compare the rendered output against the source after every iteration and record source-vs-output gaps by element ID or visual region.
+- If a `recreation` cannot be made pixel-perfect with the chosen target, reclassify it as an approximation, state the reason, and list residual fidelity gaps before handoff.
+- High-fidelity diagram work must include a post-render visual QA pass before handoff.
+- Re-evaluate container width, height, text fit, spacing, and visual balance after real labels are placed.
+- Run global layout reflow after the diagram is populated with real content. Recalculate whether parent containers, swimlanes, grouped boxes, and cards must grow to contain child nodes, subcards, chips, icons, labels, and internal connectors with minimum padding.
+- When a parent container grows, re-evaluate neighboring element positions, connector routes, label lanes, and page/canvas bounds. Do not accept a local fix that creates a new collision elsewhere.
+- Treat text wrapping as a geometry change. After a label, pill, badge, note, callout, or card text wraps, recalculate its rendered bounding box and revalidate connector lanes, parent containment, neighboring labels, and page bounds.
+- Text wrapping or smaller text is not the default fix for overflow. Prefer growing the containing element or repositioning children unless the source reference explicitly uses tighter text.
+- Avoid connector lines crossing over containers, labels, or important symbols whenever practical.
+- Use bend points and explicit connector routing when straight lines make the diagram harder to read.
+- Prefer the simplest readable connector route: straight if line-of-sight is clear, one orthogonal bend when needed, and curves or multi-bend paths only when avoiding a real obstacle or crossing.
+- Validate every connector endpoint visually: the line must start at the source element edge and terminate at the intended target element edge, not float near it or end deep inside the shape.
+- Validate label clearance after rendering; labels must not sit on container borders, connector lines, or arrowheads unless the source explicitly requires that overlap.
+- Validate connector-label lanes after rendering; labels must sit in intentional whitespace or have an explicit readable background. Move nodes, reroute connectors, or move labels when a label touches or visually collides with a connector.
+- Validate element order after rendering; connectors and arrowheads must not be hidden behind the states or containers they connect.
+- Validate connector anchor aesthetics after rendering; choose source and target boundary points that minimize bends, avoid unnecessary travel, and keep arrowheads on clean edge points.
+- Avoid diagonal connectors when an orthogonal route can preserve the same relationship, and use visible line jumps or bridges when crossings are unavoidable.
+- Before accepting connector bends, evaluate whether a small repositioning of the connected elements can reduce bends without harming nearby layout.
+- Keep editable diagram source and rendered output geometrically equivalent; do not make SVG-only corrections that cannot be reproduced from the draw.io XML.
+- Validate annotation target clarity; annotation arrows must visibly land on the element or line they describe, and annotation text must not obscure the target.
+- For diagrams without a source reference, create a diagram contract before drawing and validate the render against that contract before handoff.
+- Source-free diagrams still require a pixel-perfect pass against their own contract before delivery: no text overflow, no clipped containers, no floating or buried connector endpoints, no unintended overlaps, no hidden arrowheads, and no incoherent whitespace.
+- For deterministic SVG pipeline work, treat the typed diagram model as the source of truth. Layout, SVG rendering, validation findings, icon references, and final deliverables must be reproducible from model input without LLM-selected absolute coordinates.
+- Icon references in deterministic diagrams should use semantic purpose plus Iconify id, resolved from a cacheable source. Tests must not require network access to fetch icons.
+- For source-free diagrams, iterate after the first render until container sizes, line routing, connector anchors, label positions, and visual balance are correct. Do not deliver an unreviewed first render.
+- For every post-render correction, re-run the full diagram review rather than checking only the edited area. A diagram passes only when the whole canvas still satisfies container containment, label clearance, connector routing, z-order, and whitespace rules.
+- A regenerated diagram must materially change geometry for the finding it claims to fix. If two versions preserve the same collision, overflow, endpoint gap, or unnecessary route bend, change the layout strategy instead of only re-rendering.
+- Preserve source text orientation when labels are vertical or diagonal; use explicit draw.io rotation values instead of approximating rotated labels with spacing or line breaks.
+- Validate exported artifacts, then inspect the rendered output against the source PDF, screenshot, or design reference at the fidelity level declared for the task.
+- Record residual fidelity gaps explicitly when a diagram is an approximation rather than pixel-perfect.
+- Before final delivery, clean diagram artifacts. Keep only the accepted editable source, accepted render, prompt master or final prompt, and minimum QA evidence needed for traceability. Archive or exclude intermediate previews, failed renders, temporary prompts, and one-off correction notes from the final deliverable.
+- Do not delete iteration evidence that is needed for audit. Move it to workflow evidence, an explicit archive folder, or an ignored output location, then point the final handoff to the accepted artifact paths.

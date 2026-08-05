@@ -1,0 +1,32 @@
+---
+description: SOLID principles and clean architecture guardrails — stack-agnostic
+alwaysApply: true
+---
+
+# SOLID & Clean Architecture
+
+## Single Responsibility (SRP)
+- One module = one reason to change. If a file mixes UI rendering with business logic, data access with orchestration, or config with behavior — split it.
+- Max **300 lines per file**. Max **30 lines per function**. Max **5 parameters** (use options object beyond that).
+- Template literals embedding >20 lines of CSS, JS, or HTML must be extracted to separate files.
+
+## Open/Closed (OCP)
+- Prefer data-driven designs over per-variant functions. Use config maps + one generic function instead of N nearly-identical functions.
+- Use handler/strategy maps (`Record<EventType, Handler>`) instead of `switch` statements with >5 cases.
+
+## Liskov Substitution (LSP)
+- Subclasses/implementations must honor the contract of their parent. Never override a method to throw "not supported" — redesign the hierarchy instead.
+
+## Interface Segregation (ISP)
+- No `Record<string, unknown>`, `any`, or `object` in public APIs. Define narrow, purpose-specific types.
+- Use TypeScript generics (`<T>`) instead of loose types + inline `as` casts.
+
+## Dependency Inversion (DIP)
+- Import from barrel exports (`index.ts`), not deep internal paths. Every public symbol must be re-exported from the package barrel.
+- Use static `import` statements. Never use `require()` in TypeScript unless technically justified and documented.
+- Depend on abstractions (interfaces/types), not concrete implementations, when crossing module boundaries.
+
+## Separation of Concerns
+- **View layer**: layout and event binding only. No business logic, no data fetching.
+- **Service layer**: orchestration, external calls, state mutations.
+- **Data layer**: queries, I/O, serialization. No UI references.

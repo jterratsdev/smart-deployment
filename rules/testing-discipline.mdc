@@ -1,0 +1,67 @@
+---
+description: TDD, BDD, and testing best practices — stack-agnostic
+alwaysApply: true
+---
+
+# Testing Discipline
+
+## Test-Driven Development (TDD)
+
+- Write the test **before** or **alongside** the implementation. At minimum, tests must exist before the PR.
+- Red → Green → Refactor. Start with a failing test, make it pass with minimal code, then clean up.
+- Every development task must include unit tests for new or changed business logic before it is handed to QA.
+
+## Behavior-Driven Development (BDD)
+
+- Test **behavior**, not implementation. Test what the function does, not how it does it.
+- Name tests as specifications: `it('rejects orders with zero quantity')`, not `it('test1')`.
+- One assertion per test method. If you need multiple, it's multiple behaviors — split them.
+
+## Test Structure
+
+- **Arrange → Act → Assert.** Separate setup, execution, and verification with blank lines.
+- Use factory functions or builders for test data — never copy-paste fixtures across test files.
+- QA automation, E2E suites, contract tests, and test scripts that repeat fixture collections, selectors, expected outputs, or command matrices must load the `collection-standards` skill.
+- Tests must be deterministic. No reliance on system clock, network, or random values without seeding.
+
+## Sync Tests
+
+- If data is duplicated across packages (e.g., type definitions, config arrays), a test must assert both copies are identical.
+- Schema changes in a source of truth must break a test somewhere — if they don't, add one.
+
+## Coverage
+
+- Target **90%+ line coverage** for business logic. Infrastructure/glue code can be lower.
+- Coverage is a floor, not a goal. 100% coverage with bad assertions is worse than 80% with good ones.
+
+## E2E / Integration
+
+- Prefer Playwright for browser-based E2E, smoke, and regression automation.
+- Use the Page Object pattern for UI tests. Selectors live in page objects, not test bodies.
+- Tag tests by speed/scope (`@smoke`, `@regression`) so CI can run fast feedback loops.
+- Capture evidence for E2E failures with traces, screenshots, or videos when supported by the framework.
+- E2E tests for any product surface must run against isolated disposable fixtures: web apps, mobile apps, desktop apps, CLI, APIs, integrations, workflows, runtimes, installers, file-system flows, data pipelines, and generated artifacts. Use the user/project-configured E2E fixture path, device farm, sandbox org, emulator, container, or test environment when one is explicitly provided; otherwise default local disposable fixtures to `/tmp`. Each test creates its own users/data/project/tasks/roles/acceptance criteria/expected artifacts as applicable; never rely on the developer's current repo state as the tested product state.
+- QA must choose fixture data that reproduces the risk being validated. If the acceptance criterion is about oversized stories, split decisions, phase returns, queueing, or specialist roles, the E2E must create an oversized/cross-cutting task with enough paths, roles, acceptance criteria, and risk signals to force that behavior.
+- Every E2E must assert the resulting state, not only that the action executed. Validate UI-visible state, navigation, accessibility, device/responsive behavior, API contracts, receiver-side integration state, database/mock records, files, events, handoff contents, stdout/stderr, exit code, push notifications, background jobs, generated artifacts, or release-readiness output as applicable.
+- For workflow automata, E2E must validate state transitions and loops: allowed transition, blocked transition, return-to-dev/architect/BA when findings fail, and resume behavior after the corrective state is satisfied.
+- Include negative and edge scenarios when they are the reason for the change. A happy-path smoke is insufficient for bugs involving guardrails, split detection, security boundaries, QA failback, or release blocking.
+- QA, SDET, Developer, BA, Architect, and Release work that produces or reviews evidence must load the `qa-evidence-pack` skill when it involves acceptance criteria coverage, Playwright/browser artifacts, CLI stdout/stderr, API contracts, integration side effects, screenshots, visual diffs, or annotated defect evidence.
+- Keep large screenshots, videos, traces, logs, API payloads, and visual diffs as files. Summarize them in a compact evidence report so agents do not consume context with raw artifacts.
+
+## QA Handoff
+
+- Developer must provide QA with test commands run, pass/fail results, covered scenarios, and known gaps.
+- QA must produce a test plan before release approval and map every acceptance criterion to automated, manual, contract/mock, or deferred evidence.
+- QA must reject fragmented acceptance criteria before planning tests. Role names, phase names, headings, and partial clauses are not executable criteria and must return to PO/BA for rewrite.
+- QA plans must include an AC-to-evidence matrix with: acceptance criterion, test type, fixture/setup, command or artifact, expected observable result, actual result, and pass/fail/deferred status.
+- QA must challenge weak tests before approving: if the test fixture is too small to exercise the bug, uses only the happy path, does not create the expected failure/return condition, or does not inspect the artifact/state that proves the acceptance criterion, QA must block or request changes.
+- QA must reject weaker surrogate tests. Validate the affected product surface directly: workflow/CLI/API/integration/generated artifact/mobile/desktop/data behavior cannot be approved only by a generic browser smoke or command-executed check.
+- QA evidence must validate observable outcomes, not only execution. CLI checks assert exit code, stdout/stderr, files, events, or final state; browser checks assert visible user-facing state; API checks assert response contract and side effects; integration checks assert sandbox/mock/contract/webhook/event/log outcomes or defer with owner and rationale.
+- Evidence summaries or metadata must name the covered acceptance criterion or explicitly state that all acceptance criteria are covered. Smoke and regression checks are useful but do not count as acceptance coverage unless they map to an acceptance criterion.
+- Visual/UI/diagram defect evidence must include source or expected image when available, actual screenshot/render, diff image when practical, and an annotated screenshot for ambiguous failures. Use red boxes for broken bounds/overlap, orange arrows for wrong connectors or flow, yellow translucent areas for excess spacing, blue guide lines for alignment, and short defect labels.
+- Executed QA evidence must receive a sprint-review-style cross-review before release: Analyst/Business Analyst compares the evidence against the GitHub issue, user story, acceptance criteria, and Orchestra task, while Architect validates technical contract, integration, boundary, data-flow, and risk coverage.
+- Analyst/Business Analyst must comment on the GitHub issue/user story and Orchestra task when the evidence does not prove the requested behavior, misses acceptance criteria, or exposes workflow gaps. These findings block release until fixed or explicitly risk-accepted by the Product Owner.
+- If Analyst/BA or Architect review is not applicable, QA must record the rationale and Product Owner acceptance before release.
+- QA and Developer must decide which manual checks should be automated, preferring Playwright for browser flows.
+- User-facing QA plans must include responsive, accessibility, copy, tooltip, loading, empty, error, success, and recovery-state checks.
+- API, data, async, performance, and config changes must include targeted regression checks for contract, migration, idempotency, latency, and environment behavior when applicable.

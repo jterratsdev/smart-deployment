@@ -1,0 +1,31 @@
+---
+description: DRY, naming, and clean code standards — stack-agnostic
+alwaysApply: true
+---
+
+# DRY & Clean Code
+
+## Don't Repeat Yourself
+- **Single Source of Truth for data.** If a constant, type, or config exists in one place, every consumer must import or derive from it — never copy-paste.
+- When work touches repeated collections, option sets, fixtures, matrices, or collection-processing complexity, load the `collection-standards` skill instead of embedding detailed collection rules here.
+- When two blocks share >5 lines of identical structure, extract a reusable function.
+- Cross-package type sharing: define once, import at build time, or add a sync test. Never maintain parallel copies.
+
+## Naming
+- Names must reveal intent. `processData()` is vague — `validateOrderItems()` is clear.
+- Booleans: prefix with `is`, `has`, `can`, `should` (e.g., `isValid`, `hasPermission`).
+- Functions that return a value: name by what they return. Functions that perform actions: name by the action.
+- No abbreviations except universally known ones (`id`, `url`, `db`, `config`).
+
+## Magic Values
+- No hardcoded timeouts, CLI commands, path segments, or error messages scattered in code. Define named constants at module scope or in a shared constants file.
+- Repeated inline styles or CSS values must be extracted to variables or design tokens.
+
+## Dead Code
+- Never commit commented-out code, `console.log` debris, or unused imports. Delete them — git preserves history.
+- Never commit `eslint-disable`, `@SuppressWarnings`, or `// @ts-ignore` without a linked issue explaining why.
+
+## Comments
+- Code should be self-documenting. Comments explain **why**, not **what**.
+- Delete obvious comments: `// increment counter`, `// return result`, `// handle error`.
+- Acceptable: non-obvious business rules, performance trade-offs, workarounds with linked tickets.

@@ -1,0 +1,53 @@
+---
+description: Safe and verifiable AI-assisted software development practices
+alwaysApply: true
+---
+
+# AI-Assisted Development
+
+AI-generated work must meet the same engineering bar as human-written work. Speed does not replace verification.
+
+## Grounding
+- Inspect the existing codebase before proposing or editing code.
+- Do not invent APIs, files, dependencies, commands, environment variables, or product requirements.
+- When uncertain, state the assumption, verify locally, or ask the user before implementation.
+- Prefer existing project patterns over generic generated patterns.
+
+## Implementation
+- Keep AI-generated changes scoped to the agreed plan.
+- Do not rewrite unrelated code, rename public APIs, or reformat broad areas without explicit need.
+- Add tests and evidence for AI-generated behavior like any other change.
+- Generated code must be understandable, maintainable, typed, and aligned with security rules.
+
+## Review
+- Treat AI output as untrusted until reviewed.
+- Check generated code for hallucinated imports, broken edge cases, security regressions, and excessive abstraction.
+- Do not accept generated explanations as proof. Use tests, builds, type checks, docs, or runtime evidence.
+- Record prompts, assumptions, or model-specific behavior when they materially affect product behavior or repeatability.
+
+## User Alignment
+- Discuss the approach with the user before non-trivial AI-assisted implementation.
+- Explain trade-offs clearly and identify risks introduced by generated code.
+- If generated code reveals a better or riskier path than agreed, pause and realign before continuing.
+
+## Prompt Registry
+
+- Use `.generated-prompts/` as the durable prompt register for generated or substantially changed artifacts.
+- Before creating or substantially changing an artifact, read the relevant register file to preserve conventions, constraints, decisions, and known risks.
+- After substantial changes, add or update one entry for the artifact with task, active role, key decisions, evidence, and the final prompt or a concise prompt summary.
+- Keep only the latest prompt in each entry; rely on git history for prior versions. Do not update entries for typos, formatting-only edits, or single-line mechanical fixes.
+
+## Skill Loading
+
+- Keep primary agent instruction files as short indexes plus non-negotiable rules.
+- Load detailed skills only when task signals, active roles, touched paths, or risk areas require them.
+- Prefer skill summaries first; load full skill instructions, assets, scripts, and examples only at execution time.
+- Record selected skills in task context, handoffs, evidence, and final summaries when they materially shaped the work.
+
+## Source of Truth and Learning
+
+- Select authoritative source groups before acting: project instructions, backlog, architecture, codebase, quality/security, DevOps/runtime, vendor docs, and agent memory.
+- Prefer local project sources first and official vendor documentation for current APIs, frameworks, cloud services, providers, and tools.
+- When an action fails in a reusable way, record the lesson in `.agent-workflow/agent-lessons.jsonl` with operation, error signature, root cause, fix, prevention, and verification.
+- Before repeating risky operations, search prior lessons for matching tool, command, error signature, or operation.
+- Promote repeated lessons into the relevant skill or rule instead of letting agents rediscover the same failure.
