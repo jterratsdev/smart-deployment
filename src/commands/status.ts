@@ -71,7 +71,7 @@ export default class Status extends SfCommand<StatusResult> {
       const summary = await statusService.getStatus({ refreshRemote: targetOrg !== undefined, targetOrg });
       const formattedStatus = statusService.formatStatus(summary);
 
-      presenter.reportStatus(this, summary, formattedStatus);
+      if (!this.jsonEnabled()) presenter.reportStatus(this, summary, formattedStatus);
 
       if (!summary.hasState) {
         return {
@@ -96,6 +96,8 @@ export default class Status extends SfCommand<StatusResult> {
             ? 'Failed'
             : summary.status === 'completed'
             ? 'Completed'
+            : summary.status === 'paused'
+            ? 'Paused'
             : 'Not Started',
         canResume: summary.resumable,
         waveGraph: summary.waveGraph,

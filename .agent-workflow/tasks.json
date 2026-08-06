@@ -568,5 +568,41 @@
     "status": "done",
     "createdAt": "2026-05-14T16:46:33.665Z",
     "updatedAt": "2026-05-14T16:46:33.670Z"
+  },
+  {
+    "id": "SD-DATAKIT-PAUSES",
+    "title": "Data Kit support and CI/CD wave checkpoints",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Detect and group Data Kits from verified Salesforce source metadata, preserve deployment dependencies, and implement CI/CD-agnostic pre/post-wave checkpoints with safe resume.",
+    "assumptions": [],
+    "risks": [
+      "Live Data Cloud lifecycle remains to be smoke-tested against a licensed org before release claims full activation support."
+    ],
+    "paths": ["src/services/scanners", "src/deployment", "src/waves", "src/types", "test", "docs/architecture"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-08-05T18:57:58.438Z",
+    "updatedAt": "2026-08-06T16:44:53.562Z",
+    "blockedReason": "qa requested changes: Implementation and focused tests pass. Residual gaps: command-level JSON pause E2E is not covered; generic failed-wave resume still prepares state rather than executing; rollback checkpoints are intentionally rejected; CI preset does not yet render planned checkpoints. Full suite has 2 pre-existing installed-CLI ANSI JSON parsing failures.",
+    "scope": "Data Kit source detection and dependencies, CI/CD manual checkpoints, local failed-wave continuation, CI reports, JSON-safe CLI output; rollback and cycle-remediation checkpoints fail closed.",
+    "testStrategy": "Compile, test TypeScript, full npm test, checkpoint NUT, installed CLI JSON E2E, focused ESLint, git diff check.",
+    "qaGate": {
+      "executionStatus": "passed"
+    }
+  },
+  {
+    "id": "SD-DATAKIT-PAUSES-developer-e7fa32",
+    "title": "[DEVELOPER] SD-DATAKIT-PAUSES",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-08-05T18:58:20.543Z",
+    "updatedAt": "2026-08-05T18:58:20.576Z"
   }
 ]

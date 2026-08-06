@@ -1,4 +1,5 @@
 import { CycleRemediationPlanner } from '../dependencies/cycle-remediation-planner.js';
+import type { ManualCheckpoint, ReachedManualCheckpoint } from '../types/manual-checkpoint.js';
 import { CycleRemediationRunner } from './cycle-remediation-runner.js';
 import { DeploymentContext } from './deployment-context-service.js';
 import { DeploymentRunner } from './deployment-runner.js';
@@ -22,9 +23,18 @@ export type StartExecutionOptions = {
   sourcePath?: string;
   deploymentContext: DeploymentContext;
   log: (message: string) => void;
+  checkpoints?: ManualCheckpoint[];
+  approvedCheckpointIds?: ReadonlySet<string>;
+  startExecutionIndex?: number;
+  deploymentId?: string;
+  planFingerprint?: string;
+  contextOptions?: Omit<import('./deployment-context-service.js').DeploymentContextBuildOptions, 'sourcePath'>;
 };
 
-export type StartExecutionResult = { kind: 'skipped'; reason: 'dry-run' | 'validate-only' } | { kind: 'executed' };
+export type StartExecutionResult =
+  | { kind: 'skipped'; reason: 'dry-run' | 'validate-only' }
+  | { kind: 'completed' }
+  | { kind: 'paused'; checkpoint: ReachedManualCheckpoint };
 
 type StartExecutionServiceDependencies = {
   testPlanService?: TestPlanService;
@@ -102,7 +112,7 @@ export class StartExecutionService {
     const sfCli = this.createSfCli();
     const stateManager = this.createStateManager(options.sourcePath);
     const tracker = this.createTracker();
-    const deploymentId = this.createDeploymentId();
+    const deploymentId = options.deploymentId ?? this.createDeploymentId();
 
     if (!options.targetOrg) {
       throw new Error('The --target-org flag is required for real deployments.');
@@ -113,6 +123,9 @@ export class StartExecutionService {
     }
 
     if (remediationPlan && remediationPlan.cycles.length > 0) {
+      if ((options.checkpoints?.length ?? 0) > 0) {
+        throw new Error('Manual wave checkpoints are not supported during cycle remediation deployments.');
+      }
       await this.cycleRemediationRunner.execute({
         deploymentId,
         targetOrg: options.targetOrg,
@@ -127,10 +140,10 @@ export class StartExecutionService {
         log: options.log,
       });
 
-      return { kind: 'executed' };
+      return { kind: 'completed' };
     }
 
-    await this.deploymentRunner.execute({
+    const result = await this.deploymentRunner.execute({
       deploymentId,
       targetOrg: options.targetOrg,
       sourcePath: options.sourcePath,
@@ -146,9 +159,14 @@ export class StartExecutionService {
       sfCli,
       aiContext,
       log: options.log,
+      checkpoints: options.checkpoints,
+      approvedCheckpointIds: options.approvedCheckpointIds,
+      startExecutionIndex: options.startExecutionIndex,
+      planFingerprint: options.planFingerprint,
+      contextOptions: options.contextOptions,
     });
 
-    return { kind: 'executed' };
+    return result;
   }
 
   private async assertDynamicQueryFieldsAreSafe(

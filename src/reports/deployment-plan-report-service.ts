@@ -4,6 +4,7 @@ import type { DeploymentContext } from '../deployment/deployment-context-service
 import type { NodeId } from '../types/dependency.js';
 import type { MetadataType } from '../types/metadata.js';
 import type { Wave } from '../waves/wave-builder.js';
+import type { ManualCheckpoint } from '../types/manual-checkpoint.js';
 
 export type DeploymentPlanReportOptions = {
   reportDir?: string;
@@ -13,6 +14,7 @@ export type DeploymentPlanReportOptions = {
   validateOnly: boolean;
   destructive?: boolean;
   skipTests: boolean;
+  checkpoints?: ManualCheckpoint[];
 };
 
 export type DeploymentPlanReportResult = {
@@ -54,6 +56,7 @@ export type DeploymentPlanReport = {
   }>;
   blockers: string[];
   warnings: string[];
+  checkpoints: ManualCheckpoint[];
   waves: Array<{
     number: number;
     componentCount: number;
@@ -125,6 +128,7 @@ export class DeploymentPlanReportService {
       providerPhases: this.createProviderPhases(context, mode, validationPassed),
       blockers,
       warnings,
+      checkpoints: [...(options.checkpoints ?? [])],
       waves: context.orderedWaves.map((wave) => this.createWaveReport(wave)),
     };
   }
@@ -147,6 +151,17 @@ export class DeploymentPlanReportService {
       report.waves.length > 0
         ? report.waves.map((wave) => this.toWaveRow(wave)).join('')
         : '<tr><td colspan="6">No deployment waves generated.</td></tr>';
+    const checkpointItems =
+      report.checkpoints.length > 0
+        ? report.checkpoints
+            .map(
+              (checkpoint) =>
+                `<li><code>${escapeHtml(checkpoint.id)}</code>: ${escapeHtml(checkpoint.phase)} wave ${
+                  checkpoint.waveNumber
+                }${checkpoint.message ? ` - ${escapeHtml(checkpoint.message)}` : ''}</li>`
+            )
+            .join('')
+        : '<li>No manual checkpoints configured.</li>';
 
     return `
 <!DOCTYPE html>
@@ -199,6 +214,9 @@ export class DeploymentPlanReportService {
 
   <h2>Warnings</h2>
   <ul>${warningItems}</ul>
+
+  <h2>Manual Checkpoints</h2>
+  <ul>${checkpointItems}</ul>
 
   <h2>Waves</h2>
   <table>

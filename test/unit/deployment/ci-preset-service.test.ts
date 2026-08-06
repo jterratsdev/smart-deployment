@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import { expect } from 'chai';
@@ -83,6 +83,10 @@ describe('CiPresetService', () => {
     const tempDir = await mkdtemp(path.join(tmpdir(), 'ci-preset-service-'));
     tempDirs.push(tempDir);
     DeploymentContextService.prototype.buildContext = async () => createBlockedContext(tempDir);
+    await writeFile(
+      path.join(tempDir, '.smart-deployment.json'),
+      JSON.stringify({ checkpoints: [{ id: 'approve-flow', phase: 'before', waveNumber: 1 }] })
+    );
 
     const reportDir = path.join(tempDir, 'reports');
     const result = await new CiPresetService().run({
@@ -95,6 +99,7 @@ describe('CiPresetService', () => {
     });
     const report = JSON.parse(await readFile(result.artifacts.jsonPath, 'utf8')) as {
       summary: { status: string; blockers: number };
+      checkpoints: Array<{ id: string }>;
     };
 
     expect(result.exitCode).to.equal(2);
@@ -113,6 +118,8 @@ describe('CiPresetService', () => {
       ['deployment_exit_code']: '2',
     });
     expect(report.summary).to.deep.include({ status: 'blocked', blockers: 1 });
+    expect(result.checkpoints).to.deep.equal([{ id: 'approve-flow', phase: 'before', waveNumber: 1 }]);
+    expect(report.checkpoints).to.deep.equal(result.checkpoints);
   });
 
   it('keeps warn-only and local-only modes at exit code zero for plan blockers', async () => {

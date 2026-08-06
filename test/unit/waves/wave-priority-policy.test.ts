@@ -34,4 +34,15 @@ describe('wave priority policy', () => {
 
     expect(compareWavePriority(edgeTypesByFrom, 'ApexClass:HardFirst', 'ApexClass:SoftLater')).to.be.lessThan(0);
   });
+
+  it('uses the canonical deployment order for Data Cloud metadata', () => {
+    const edgeTypesByFrom = buildEdgeTypesByFrom([]);
+
+    expect(
+      compareWavePriority(edgeTypesByFrom, 'DataSourceObject:Knowledge_Home', 'DataPackageKitDefinition:Store_Kit')
+    ).to.be.lessThan(0);
+    expect(
+      compareWavePriority(edgeTypesByFrom, 'DataPackageKitDefinition:Store_Kit', 'DataPackageKitObject:Store_Kit_123')
+    ).to.be.lessThan(0);
+  });
 });

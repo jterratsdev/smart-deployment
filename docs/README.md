@@ -23,6 +23,7 @@ This directory contains the current documentation for the Smart Deployment plugi
 - [Architecture overview](architecture/ARCHITECTURE.md)
 - [Project-agnostic design](architecture/PROJECT_AGNOSTIC_DESIGN.md)
 - [Metadata extensibility](architecture/METADATA_EXTENSIBILITY.md)
+- [ADR-001: CI/CD-agnostic manual wave checkpoints](architecture/ADR-001-CI-CD-WAVE-CHECKPOINTS.md)
 
 These architecture docs are still useful, but some sections are higher-level than the current implementation. When in doubt, prefer the command implementations in `src/commands/`.
 
