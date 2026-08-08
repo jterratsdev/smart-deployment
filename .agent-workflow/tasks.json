@@ -667,5 +667,44 @@
     "status": "pending",
     "createdAt": "2026-08-07T18:44:37.054Z",
     "updatedAt": "2026-08-07T18:44:37.054Z"
+  },
+  {
+    "id": "SD-RELEASE-1.5.0",
+    "title": "Prepare Data Kit and checkpoint release 1.5.0",
+    "ownerRole": "release_manager",
+    "dependencies": [],
+    "goal": "Bump the package to 1.5.0, validate release artifacts, push the feature branch, and open a reviewed PR to main.",
+    "acceptanceCriteria": [
+      "package.json and npm-shrinkwrap.json identify version 1.5.0.",
+      "Build, tests, lint, audit, and npm pack dry-run results are recorded.",
+      "The feature branch is pushed and a PR against main is created."
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["package.json", "npm-shrinkwrap.json"],
+    "workflow": {
+      "requiredRoles": ["release_manager"],
+      "optionalRoles": ["qa", "developer"],
+      "phaseSequence": ["developer", "qa", "release"]
+    },
+    "status": "done",
+    "createdAt": "2026-08-08T00:47:25.870Z",
+    "updatedAt": "2026-08-08T00:49:28.620Z",
+    "testStrategy": "Build, tests, lint, runtime audit, npm pack dry-run, version consistency, npm version availability.",
+    "qaGate": {
+      "executionStatus": "passed"
+    }
+  },
+  {
+    "id": "SD-RELEASE-1.5.0-developer-a26f6b",
+    "title": "[DEVELOPER] SD-RELEASE-1.5.0",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-08-08T00:47:26.325Z",
+    "updatedAt": "2026-08-08T00:47:26.325Z"
   }
 ]
