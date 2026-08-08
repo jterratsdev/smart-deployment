@@ -604,5 +604,68 @@
     "status": "done",
     "createdAt": "2026-08-05T18:58:20.543Z",
     "updatedAt": "2026-08-05T18:58:20.576Z"
+  },
+  {
+    "id": "SD-DATACLOUD-ORG-VALIDATION",
+    "title": "Validate Data Kit lifecycle against licensed Data Cloud org",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "goal": "Run a non-destructive retrieve and analysis harness against an explicitly approved licensed Data Cloud org and record exact lifecycle evidence.",
+    "acceptanceCriteria": [
+      "No target-org metadata or data is modified.",
+      "DataPackageKitDefinition, DataPackageKitObject, and DataSourceObject retrieval behavior is recorded.",
+      "The plugin analyzes retrieved metadata and reports dependency waves.",
+      "All org identifiers and retrieved customer metadata are excluded from committed fixtures and reports."
+    ],
+    "assumptions": [],
+    "risks": [
+      "Full DataPackageKitDefinition/DataPackageKitObject lifecycle remains unverified in a live org containing a Data Kit."
+    ],
+    "paths": ["docs/research", "test/e2e", "src/deployment"],
+    "workflow": {
+      "requiredRoles": ["qa"],
+      "phaseSequence": ["architect", "developer", "security", "qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-08-07T18:44:19.694Z",
+    "updatedAt": "2026-08-07T18:57:10.520Z",
+    "architectureApproval": {
+      "userApproved": true,
+      "approvedBy": "architect",
+      "approvedAt": "2026-08-07T18:48:00Z"
+    },
+    "qaGate": {
+      "plan": "Use only non-client org aliases; run metadata list/retrieve only; store retrieved source under OS temp; analyze locally; sanitize evidence; skip full-kit assertions when no kit exists.",
+      "executionStatus": "passed"
+    },
+    "riskGate": {
+      "impactAreas": ["org-selection", "metadata-confidentiality", "read-only-contract"]
+    },
+    "scope": "Read-only metadata listing/retrieve and local analysis against an explicitly approved non-client Data Cloud training org; live full Data Kit validation deferred because no available non-client org contains kit metadata.",
+    "testStrategy": "Opt-in live read-only harness, plugin scan and WaveBuilder assertions, full npm test, TypeScript compile, focused lint, security review."
+  },
+  {
+    "id": "SD-DATACLOUD-ORG-VALIDATION-architect-313bba",
+    "title": "[ARCHITECT] SD-DATACLOUD-ORG-VALIDATION",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-08-07T18:44:37.013Z",
+    "updatedAt": "2026-08-07T18:44:37.052Z"
+  },
+  {
+    "id": "SD-DATACLOUD-ORG-VALIDATION-developer-313bba",
+    "title": "[DEVELOPER] SD-DATACLOUD-ORG-VALIDATION",
+    "ownerRole": "developer",
+    "dependencies": ["SD-DATACLOUD-ORG-VALIDATION-architect-313bba"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-08-07T18:44:37.054Z",
+    "updatedAt": "2026-08-07T18:44:37.054Z"
   }
 ]

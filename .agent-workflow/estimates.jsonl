@@ -2,3 +2,4 @@
 {"id":"est-1778774415036-us6u","taskId":"NEXT-003-PROVIDER-RESEARCH","sizingLabel":"s","soloEstimateDays":1,"aiUnguidedEstimateDays":0.5,"confidence":"medium","declaredBy":"architect","declaredAt":"2026-05-14T16:00:15.036Z"}
 {"id":"est-1778776713035-7too","taskId":"NEXT-003-PLAN","sizingLabel":"m","soloEstimateDays":2,"aiUnguidedEstimateDays":1,"confidence":"medium","declaredBy":"architect","declaredAt":"2026-05-14T16:38:33.035Z"}
 {"id":"est-1785956284376-cebdbd","taskId":"SD-DATAKIT-PAUSES","sizingLabel":"xl","soloEstimateDays":12,"aiUnguidedEstimateDays":6,"aiGuidedEstimateDays":3,"confidence":"medium","declaredBy":"pm","declaredAt":"2026-08-05T18:58:04.376Z"}
+{"id":"est-1786128268335-9058a7","taskId":"SD-DATACLOUD-ORG-VALIDATION","sizingLabel":"m","soloEstimateDays":3,"aiUnguidedEstimateDays":2,"aiGuidedEstimateDays":1,"confidence":"medium","declaredBy":"pm","declaredAt":"2026-08-07T18:44:28.335Z"}

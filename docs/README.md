@@ -17,6 +17,7 @@ This directory contains the current documentation for the Smart Deployment plugi
 - [Issue implementation matrix](ISSUE_IMPLEMENTATION_MATRIX.md)
 - [Parser safety](PARSER_SAFETY.md)
 - [Error catalog](ERROR_CATALOG.md)
+- [Data Cloud retrieve validation](research/DATACLOUD_RETRIEVE_VALIDATION.md)
 
 ## Architecture Docs
 
