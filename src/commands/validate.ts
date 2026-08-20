@@ -95,7 +95,7 @@ export default class Validate extends SfCommand<ValidateResult> {
       useAI,
       commitScope,
     });
-    presenter.reportValidationResult(this, summary);
+    if (!this.jsonEnabled()) presenter.reportValidationResult(this, summary);
 
     const result: ValidateResult = {
       success: summary.valid,

@@ -1,7 +1,7 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { parseXml } from '../../utils/xml.js';
-import type { MetadataComponent, MetadataType } from '../../types/metadata.js';
+import type { MetadataComponent, MetadataDependencyReference, MetadataType } from '../../types/metadata.js';
 import { getLogger } from '../../utils/logger.js';
 import { buildScannerError, findDirectories, findFiles } from './scanner-runtime.js';
 
@@ -9,7 +9,12 @@ type SimpleFileScanner = {
   type: MetadataType;
   pattern: string;
   suffix: string;
-  parseDependencies?: (filePath: string) => Promise<Set<string>>;
+  parseDependencies?: (filePath: string) => Promise<ParsedDependencies>;
+};
+
+type ParsedDependencies = {
+  dependencies: Set<string>;
+  dependencyDetails?: MetadataDependencyReference[];
 };
 
 type BundleScanner = {
@@ -50,6 +55,22 @@ const SIMPLE_FILE_SCANNERS: SimpleFileScanner[] = [
     type: 'CustomSite',
     pattern: '**/sites/**/*.site-meta.xml',
     suffix: '.site-meta.xml',
+  },
+  {
+    type: 'DataSourceObject',
+    pattern: '**/dataSourceObjects/**/*.dataSourceObject-meta.xml',
+    suffix: '.dataSourceObject-meta.xml',
+  },
+  {
+    type: 'DataPackageKitDefinition',
+    pattern: '**/dataPackageKitDefinitions/**/*.dataPackageKitDefinition-meta.xml',
+    suffix: '.dataPackageKitDefinition-meta.xml',
+  },
+  {
+    type: 'DataPackageKitObject',
+    pattern: '**/DataPackageKitObjects/**/*.DataPackageKitObject-meta.xml',
+    suffix: '.DataPackageKitObject-meta.xml',
+    parseDependencies: parseDataPackageKitObjectDependencies,
   },
 ];
 
@@ -92,11 +113,14 @@ async function scanSimpleFileMetadata(
       .filter((filePath) => !shouldIgnore(filePath))
       .map(async (filePath) => {
         try {
+          const parsedDependencies = scanner.parseDependencies
+            ? await scanner.parseDependencies(filePath)
+            : { dependencies: new Set<string>() };
           return createComponent({
             name: path.basename(filePath, scanner.suffix),
             type: scanner.type,
             filePath,
-            dependencies: scanner.parseDependencies ? await scanner.parseDependencies(filePath) : new Set<string>(),
+            ...parsedDependencies,
           });
         } catch (error) {
           const errorMessage = buildScannerError(scanner.type, filePath, error);
@@ -151,32 +175,50 @@ function createComponent(options: {
   type: MetadataType;
   filePath: string;
   dependencies: Set<string>;
+  dependencyDetails?: MetadataDependencyReference[];
 }): MetadataComponent {
   return {
     name: options.name,
     type: options.type,
     filePath: options.filePath,
     dependencies: options.dependencies,
+    dependencyDetails: options.dependencyDetails,
     dependents: new Set<string>(),
     priorityBoost: 0,
   };
 }
 
-async function parseEmbeddedServiceConfigDependencies(filePath: string): Promise<Set<string>> {
+async function parseEmbeddedServiceConfigDependencies(filePath: string): Promise<ParsedDependencies> {
   const parsed = parseMetadataXml(await fs.readFile(filePath, 'utf-8'));
   const dependencies = new Set<string>();
   addXmlTextDependencies(dependencies, parsed, 'brandingSet', 'BrandingSet');
   addXmlTextDependencies(dependencies, parsed, 'site', 'CustomSite');
   addXmlTextDependencies(dependencies, parsed, 'aiAuthoringBundle', 'AiAuthoringBundle');
   addXmlTextDependencies(dependencies, parsed, 'agent', 'AiAuthoringBundle');
-  return dependencies;
+  return { dependencies };
 }
 
-async function parseNetworkDependencies(filePath: string): Promise<Set<string>> {
+async function parseNetworkDependencies(filePath: string): Promise<ParsedDependencies> {
   const parsed = parseMetadataXml(await fs.readFile(filePath, 'utf-8'));
   const dependencies = new Set<string>();
   addXmlTextDependencies(dependencies, parsed, 'site', 'CustomSite');
-  return dependencies;
+  return { dependencies };
+}
+
+async function parseDataPackageKitObjectDependencies(filePath: string): Promise<ParsedDependencies> {
+  const parsed = parseMetadataXml(await fs.readFile(filePath, 'utf-8'));
+  const parentNames = collectXmlValues(parsed, 'parentDataPackageKitDefinitionName');
+  const dependencyDetails = [...new Set(parentNames)].map((parentName) => ({
+    nodeId: `DataPackageKitDefinition:${parentName}`,
+    kind: 'hard' as const,
+    source: 'parser' as const,
+    reason: 'DataPackageKitObject parentDataPackageKitDefinitionName identifies its parent Data Kit.',
+  }));
+
+  return {
+    dependencies: new Set(dependencyDetails.map((dependency) => dependency.nodeId)),
+    dependencyDetails,
+  };
 }
 
 async function parseDigitalExperienceBundleDependencies(directoryPath: string): Promise<Set<string>> {

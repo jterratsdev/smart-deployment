@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import { expect } from 'chai';
 import { afterEach, describe, it } from 'mocha';
@@ -267,6 +267,52 @@ describe('NUT: validate, status, and resume commands', () => {
     expect(state.metadata?.lastKnownStatus).to.equal('Failed');
     expect(manifest).to.include('<members>BrokenClass</members>');
     expect(calls.some((call) => call.args.join(' ').startsWith('project deploy start'))).to.equal(true);
+  });
+
+  it('start pauses at a configured checkpoint and resume approves it with JSON output', async () => {
+    const { tempDir, homeDir } = await createNutContext();
+    tempDirs.push(tempDir);
+    const projectRoot = await createSalesforceProject(tempDir, 'checkpoint-project', {
+      'force-app/main/default/classes/CheckpointClass.cls': 'public class CheckpointClass {}\n',
+      'force-app/main/default/classes/CheckpointClass.cls-meta.xml': [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">',
+        '  <apiVersion>61.0</apiVersion>',
+        '  <status>Active</status>',
+        '</ApexClass>',
+        '',
+      ].join('\n'),
+    });
+    await writeFile(
+      path.join(projectRoot, '.smart-deployment.json'),
+      JSON.stringify({ checkpoints: [{ id: 'approve-wave', phase: 'before', waveNumber: 1 }] })
+    );
+    const fakeSf = await createFakeSfCli(tempDir, 'success');
+
+    const startResult = execNutCommandWithOptions(
+      `start --source-path ${projectRoot} --target-org fake-org --skip-tests --json`,
+      { homeDir, env: fakeSf.env }
+    );
+    const startOutput = parseJsonStdout<{ outcome: string; checkpoint?: { id: string } }>(
+      startResult.shellOutput.stdout
+    );
+    const pausedState = await readDeploymentState(projectRoot);
+    const callsBeforeResume = await fakeSf.readCalls();
+
+    expect(startOutput.outcome).to.equal('paused');
+    expect(startOutput.checkpoint?.id).to.equal('approve-wave');
+    expect(pausedState.status).to.equal('paused');
+    expect(callsBeforeResume).to.deep.equal([]);
+
+    const resumeResult = execNutCommandWithOptions(
+      `resume --source-path ${projectRoot} --target-org fake-org --approve-checkpoint approve-wave --json`,
+      { homeDir, env: fakeSf.env }
+    );
+    const resumeOutput = parseJsonStdout<{ success: boolean; outcome: string }>(resumeResult.shellOutput.stdout);
+    const callsAfterResume = await fakeSf.readCalls();
+
+    expect(resumeOutput).to.deep.include({ success: true, outcome: 'completed' });
+    expect(callsAfterResume.filter((call) => call.args.join(' ').startsWith('project deploy start'))).to.have.length(1);
   });
 
   it('status refreshes persisted state from sf project deploy report when target org is provided', async () => {

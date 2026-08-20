@@ -14,6 +14,8 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { getLogger } from '../utils/logger.js';
+import type { ManualCheckpoint, ReachedManualCheckpoint } from '../types/manual-checkpoint.js';
+import type { CommitScopeOptions } from './commit-scope-service.js';
 import type { CycleSourceEditRecord } from './cycle-source-editor.js';
 
 const logger = getLogger('StateManager');
@@ -38,6 +40,25 @@ export type DeploymentState = {
     waveNumber: number;
     error: string;
     timestamp: string;
+  };
+  status?: 'running' | 'paused' | 'failed' | 'completed';
+  pausedCheckpoint?: ReachedManualCheckpoint;
+  approvedCheckpointIds?: string[];
+  execution?: {
+    sourcePath: string;
+    orderedWaveNumbers: number[];
+    nextExecutionIndex: number;
+    destructive: boolean;
+    skipTests: boolean;
+    apiVersion?: string;
+    planFingerprint: string;
+    checkpoints: ManualCheckpoint[];
+    contextOptions?: {
+      useAI?: boolean;
+      orgType?: string;
+      industry?: string;
+      commitScope?: CommitScopeOptions;
+    };
   };
   cycleRemediation?: CycleRemediationState;
   metadata?: Record<string, unknown>;
@@ -66,7 +87,9 @@ export class StateManager {
     logger.info('Saving deployment state', { state });
 
     await fs.mkdir(this.stateDir, { recursive: true });
-    await fs.writeFile(this.stateFile, JSON.stringify(state, null, 2), 'utf-8');
+    const temporaryFile = `${this.stateFile}.${process.pid}.tmp`;
+    await fs.writeFile(temporaryFile, JSON.stringify(state, null, 2), 'utf-8');
+    await fs.rename(temporaryFile, this.stateFile);
   }
 
   /**
@@ -78,9 +101,12 @@ export class StateManager {
       const state = JSON.parse(content) as DeploymentState;
       logger.info('Loaded deployment state', { state });
       return this.normalizeState(state);
-    } catch {
-      logger.info('No previous deployment state found');
-      return null;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        logger.info('No previous deployment state found');
+        return null;
+      }
+      throw new Error(`Failed to load deployment state: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -101,17 +127,48 @@ export class StateManager {
     return state?.failedWave !== undefined;
   }
 
+  public async hasResumableDeployment(): Promise<boolean> {
+    const state = await this.loadState();
+    return state?.failedWave !== undefined || state?.pausedCheckpoint !== undefined;
+  }
+
   public getStateFilePath(): string {
     return this.stateFile;
   }
 
   private normalizeState(state: DeploymentState): DeploymentState {
     if (state.cycleRemediation === undefined) {
-      return state;
+      return {
+        ...state,
+        completedWaves: [...state.completedWaves],
+        ...(state.approvedCheckpointIds === undefined
+          ? {}
+          : { approvedCheckpointIds: [...state.approvedCheckpointIds] }),
+        ...(state.execution === undefined
+          ? {}
+          : {
+              execution: {
+                ...state.execution,
+                orderedWaveNumbers: [...state.execution.orderedWaveNumbers],
+                checkpoints: state.execution.checkpoints.map((checkpoint) => ({ ...checkpoint })),
+              },
+            }),
+      };
     }
 
     return {
       ...state,
+      completedWaves: [...state.completedWaves],
+      ...(state.approvedCheckpointIds === undefined ? {} : { approvedCheckpointIds: [...state.approvedCheckpointIds] }),
+      ...(state.execution === undefined
+        ? {}
+        : {
+            execution: {
+              ...state.execution,
+              orderedWaveNumbers: [...state.execution.orderedWaveNumbers],
+              checkpoints: state.execution.checkpoints.map((checkpoint) => ({ ...checkpoint })),
+            },
+          }),
       cycleRemediation: {
         ...state.cycleRemediation,
         completedPhases: [...state.cycleRemediation.completedPhases],

@@ -183,7 +183,7 @@ describe('StartExecutionService', () => {
       log: () => {},
     });
 
-    expect(result.kind).to.equal('executed');
+    expect(result.kind).to.equal('completed');
     expect(sfCli.deployCalls).to.have.lengthOf(2);
     expect(sfCli.deployCalls.map((call) => path.basename(call.manifestPath))).to.deep.equal([
       'wave-001.xml',
@@ -286,7 +286,7 @@ describe('StartExecutionService', () => {
       log: () => {},
     });
 
-    expect(result.kind).to.equal('executed');
+    expect(result.kind).to.equal('completed');
     expect(sfCli.deployCalls).to.have.lengthOf(2);
     expect(sfCli.deployCalls.map((call) => path.basename(call.destructiveChangesPath ?? ''))).to.deep.equal([
       'wave-002-destructiveChanges.xml',

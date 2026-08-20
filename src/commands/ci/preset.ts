@@ -88,7 +88,7 @@ export default class CiPreset extends SfCommand<CiPresetResult> {
       this.error(`CI preset failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
-    this.reportResult(result);
+    if (!this.jsonEnabled()) this.reportResult(result);
 
     if (result.exitCode !== 0) {
       this.exit(result.exitCode);

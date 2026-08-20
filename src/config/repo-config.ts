@@ -2,6 +2,7 @@ import * as fs from 'node:fs/promises';
 import * as syncFs from 'node:fs';
 import * as path from 'node:path';
 import type { LLMProviderName } from '../ai/llm-provider.js';
+import type { ManualCheckpoint } from '../types/manual-checkpoint.js';
 
 export type UserPriorities = {
   [metadataId: string]: number;
@@ -51,6 +52,7 @@ export type DeploymentConfig = {
   cache?: RepoCacheConfig;
   ci?: RepoCiConfig;
   reports?: RepoReportConfig;
+  checkpoints?: ManualCheckpoint[];
 };
 
 export function getRepoConfigPath(baseDir?: string): string {
@@ -65,6 +67,20 @@ export async function loadRepoConfig(baseDir?: string): Promise<DeploymentConfig
     return JSON.parse(content) as DeploymentConfig;
   } catch {
     return {};
+  }
+}
+
+export async function loadRepoConfigStrict(baseDir?: string): Promise<DeploymentConfig> {
+  const configPath = getRepoConfigPath(baseDir);
+  try {
+    return JSON.parse(await fs.readFile(configPath, 'utf-8')) as DeploymentConfig;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return {};
+    }
+    throw new Error(
+      `Failed to load deployment config ${configPath}: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }
 

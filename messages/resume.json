@@ -1,10 +1,12 @@
 {
-  "summary": "Resume a failed deployment",
+  "summary": "Resume a failed or paused deployment",
   "examples": [
     "<%= config.bin %> <%= command.id %> --source-path force-app",
-    "<%= config.bin %> <%= command.id %> --source-path force-app --retry-strategy quick"
+    "<%= config.bin %> <%= command.id %> --source-path force-app --retry-strategy quick",
+    "<%= config.bin %> <%= command.id %> --source-path . --approve-checkpoint activate-decision-table"
   ],
   "flags.target-org.summary": "Target Salesforce org alias or username for remote deployment resume",
   "flags.source-path.summary": "Path to the Salesforce project containing deployment state",
-  "flags.retry-strategy.summary": "Retry strategy to use when resuming the deployment"
+  "flags.retry-strategy.summary": "Retry strategy to use when resuming the deployment",
+  "flags.approve-checkpoint.summary": "Approve a paused manual checkpoint and continue the remaining waves"
 }

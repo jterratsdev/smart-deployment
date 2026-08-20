@@ -143,4 +143,34 @@ describe('deployment-state-summary', () => {
     expect(summary.cycleRemediation).to.equal(undefined);
     expect(formatDeploymentStatus(summary).join('\n')).not.to.include('Cycle Remediation:');
   });
+
+  it('reports a manual checkpoint as paused and resumable', () => {
+    const state = {
+      deploymentId: 'deploy-paused',
+      targetOrg: 'test-org',
+      timestamp: '2026-08-05T00:00:00.000Z',
+      totalWaves: 3,
+      completedWaves: [1],
+      currentWave: 2,
+      pausedCheckpoint: {
+        id: 'activate-table',
+        phase: 'after' as const,
+        waveNumber: 1,
+        message: 'Activate the Decision Table',
+        deploymentId: 'deploy-paused',
+        executionIndex: 1,
+        totalExecutionWaves: 3,
+        reachedAt: '2026-08-05T00:00:00.000Z',
+        planFingerprint: 'sha256:test',
+      },
+    };
+
+    const summary = summarizeDeploymentState(state);
+
+    expect(summary.status).to.equal('Paused');
+    expect(summary.canResume).to.equal(true);
+    expect(summary.remainingWaves).to.equal(2);
+    expect(formatDeploymentStatus(summary)).to.include('Checkpoint: activate-table (after wave 1)');
+    expect(formatDeploymentStatus(summary)).to.include('Manual Action: Activate the Decision Table');
+  });
 });

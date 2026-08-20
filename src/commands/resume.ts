@@ -28,6 +28,8 @@ type ResumeResult = {
   resumedFromWave: number;
   remainingWaves: number;
   deploymentId: string;
+  outcome?: 'completed' | 'paused' | 'prepared';
+  checkpoint?: { id: string; phase: 'before' | 'after'; waveNumber: number; message?: string };
 };
 
 export default class Resume extends SfCommand<ResumeResult> {
@@ -48,6 +50,9 @@ export default class Resume extends SfCommand<ResumeResult> {
       options: ['standard', 'quick', 'validate-only'],
       default: 'standard',
     }),
+    'approve-checkpoint': Flags.string({
+      summary: messages.getMessage('flags.approve-checkpoint.summary'),
+    }),
   };
 
   public async run(): Promise<ResumeResult> {
@@ -60,15 +65,67 @@ export default class Resume extends SfCommand<ResumeResult> {
       logger.info('Resuming deployment', { flags });
 
       const retryStrategy = flags['retry-strategy'] as ResumeRetryStrategy;
-      const resumeService = new ResumeDeploymentService(new StateManager({ baseDir: sourcePath }));
+      const stateManager = new StateManager({ baseDir: sourcePath });
+      const resumeService = new ResumeDeploymentService(stateManager);
+      if (typeof flags['approve-checkpoint'] === 'string') {
+        const state = await new StateManager({ baseDir: sourcePath }).loadState();
+        const result = await resumeService.resumeCheckpoint({
+          approveCheckpoint: flags['approve-checkpoint'],
+          targetOrg,
+          sourcePath,
+        });
+        return {
+          success: true,
+          resumedFromWave: state?.pausedCheckpoint?.waveNumber ?? state?.currentWave ?? 0,
+          remainingWaves:
+            result.kind === 'paused'
+              ? Math.max(0, result.checkpoint.totalExecutionWaves - result.checkpoint.executionIndex)
+              : 0,
+          deploymentId: state?.deploymentId ?? '',
+          outcome: result.kind === 'skipped' ? 'prepared' : result.kind,
+          checkpoint:
+            result.kind === 'paused'
+              ? {
+                  id: result.checkpoint.id,
+                  phase: result.checkpoint.phase,
+                  waveNumber: result.checkpoint.waveNumber,
+                  message: result.checkpoint.message,
+                }
+              : undefined,
+        };
+      }
+      const state = await stateManager.loadState();
+      if (state?.failedWave && state.execution) {
+        const result = await resumeService.resumeFailedWaves({ targetOrg, sourcePath });
+        return {
+          success: true,
+          resumedFromWave: state.failedWave.waveNumber,
+          remainingWaves:
+            result.kind === 'paused'
+              ? Math.max(0, result.checkpoint.totalExecutionWaves - result.checkpoint.executionIndex)
+              : 0,
+          deploymentId: state.deploymentId,
+          outcome: result.kind === 'skipped' ? 'prepared' : result.kind,
+          checkpoint:
+            result.kind === 'paused'
+              ? {
+                  id: result.checkpoint.id,
+                  phase: result.checkpoint.phase,
+                  waveNumber: result.checkpoint.waveNumber,
+                  message: result.checkpoint.message,
+                }
+              : undefined,
+        };
+      }
       const summary = await resumeService.prepareResume(retryStrategy, { targetOrg });
-      presenter.reportResumePreparation(this, summary, retryStrategy);
+      if (!this.jsonEnabled()) presenter.reportResumePreparation(this, summary, retryStrategy);
 
       return {
         success: true,
         resumedFromWave: summary.currentWave,
         remainingWaves: summary.remainingWaves,
         deploymentId: summary.deploymentId,
+        outcome: 'prepared',
       };
     } catch (error) {
       logger.error('Resume failed', { error });

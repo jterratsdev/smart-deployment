@@ -13,7 +13,7 @@ const logger = getLogger('DeploymentStatusService');
 
 export type DeploymentStatusSummary = {
   hasState: boolean;
-  status: 'not-started' | 'in-progress' | 'failed' | 'completed';
+  status: 'not-started' | 'in-progress' | 'paused' | 'failed' | 'completed';
   deploymentId?: string;
   targetOrg?: string;
   currentWave: number;
@@ -26,6 +26,12 @@ export type DeploymentStatusSummary = {
   testStatus: 'unknown' | 'pending' | 'not-run';
   testStatusText: string;
   cycleRemediation?: CycleRemediationStatusSummary;
+  pausedCheckpoint?: {
+    id: string;
+    phase: 'before' | 'after';
+    waveNumber: number;
+    message?: string;
+  };
   waveGraph?: WaveGraph;
   timestamp?: string;
   stateFilePath: string;
@@ -70,7 +76,7 @@ export class DeploymentStatusService {
       };
     }
 
-    if (options.refreshRemote) {
+    if (options.refreshRemote && state.pausedCheckpoint === undefined) {
       state = await this.refreshRemoteStatus(state, options.targetOrg);
     }
 
@@ -90,13 +96,16 @@ export class DeploymentStatusService {
       currentWave: summary.currentWave,
       totalWaves: summary.totalWaves,
       completedWaves: summary.completedWaves,
-      remainingWaves: this.expandRemainingWaves(summary.currentWave, summary.remainingWaves, summary.totalWaves),
+      remainingWaves:
+        state.execution?.orderedWaveNumbers.slice(state.execution.nextExecutionIndex) ??
+        this.expandRemainingWaves(summary.currentWave, summary.remainingWaves, summary.totalWaves),
       failedWaveNumber: summary.failedWaveNumber,
       failedWaveError: summary.failureReason,
       resumable: summary.canResume,
       testStatus: this.normalizeTestStatus(summary.testStatus),
       testStatusText: summary.testStatus,
       cycleRemediation: summary.cycleRemediation,
+      pausedCheckpoint: summary.pausedCheckpoint,
       waveGraph: buildWaveGraphFromState(state),
       timestamp: summary.lastUpdated,
       stateFilePath: this.stateManager.getStateFilePath(),
@@ -156,6 +165,7 @@ export class DeploymentStatusService {
       failedWaveNumber: summary.failedWaveNumber,
       failureReason: summary.failedWaveError,
       cycleRemediation: summary.cycleRemediation,
+      pausedCheckpoint: summary.pausedCheckpoint,
     }).join('\n');
   }
 
@@ -243,7 +253,7 @@ export class DeploymentStatusService {
   }
 
   private normalizeStatus(
-    status: 'Not Started' | 'In Progress' | 'Failed' | 'Completed'
+    status: 'Not Started' | 'In Progress' | 'Paused' | 'Failed' | 'Completed'
   ): DeploymentStatusSummary['status'] {
     switch (status) {
       case 'Not Started':
@@ -252,6 +262,8 @@ export class DeploymentStatusService {
         return 'in-progress';
       case 'Failed':
         return 'failed';
+      case 'Paused':
+        return 'paused';
       default:
         return 'completed';
     }
@@ -275,7 +287,7 @@ export class DeploymentStatusService {
 
   private toDisplayStatus(
     status: DeploymentStatusSummary['status']
-  ): 'Not Started' | 'In Progress' | 'Failed' | 'Completed' {
+  ): 'Not Started' | 'In Progress' | 'Paused' | 'Failed' | 'Completed' {
     switch (status) {
       case 'not-started':
         return 'Not Started';
@@ -283,6 +295,8 @@ export class DeploymentStatusService {
         return 'In Progress';
       case 'failed':
         return 'Failed';
+      case 'paused':
+        return 'Paused';
       default:
         return 'Completed';
     }

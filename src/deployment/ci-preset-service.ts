@@ -1,5 +1,7 @@
 import * as path from 'node:path';
 import { DeploymentPlanReportService, type DeploymentPlanReport } from '../reports/deployment-plan-report-service.js';
+import { loadRepoConfigStrict } from '../config/repo-config.js';
+import { validateManualCheckpoints, type ManualCheckpoint } from '../types/manual-checkpoint.js';
 import type { CommitScopeOptions } from './commit-scope-service.js';
 import { DeploymentContextService } from './deployment-context-service.js';
 
@@ -32,6 +34,7 @@ export type CiPresetResult = {
   };
   blockers: string[];
   warnings: string[];
+  checkpoints: ManualCheckpoint[];
 };
 
 type CiPresetServiceDependencies = {
@@ -56,6 +59,9 @@ export class CiPresetService {
       industry: options.industry,
       commitScope: options.commitScope,
     });
+    const config = await loadRepoConfigStrict(context.scanResult.projectRoot);
+    const checkpoints = config.checkpoints ?? [];
+    validateManualCheckpoints(checkpoints, context.orderedWaves);
     const reportResult = await this.deploymentPlanReportService.generate(context, {
       reportDir: options.reportDir,
       targetOrg: options.targetOrg,
@@ -64,6 +70,7 @@ export class CiPresetService {
       validateOnly: options.validationMode !== 'local-only',
       skipTests: options.skipTests,
       destructive: false,
+      checkpoints,
     });
     const exitCode = this.resolveExitCode(reportResult.report, options.validationMode);
     const reportDir = path.dirname(reportResult.jsonPath);
@@ -91,6 +98,7 @@ export class CiPresetService {
       },
       blockers: reportResult.report.blockers,
       warnings: reportResult.report.warnings,
+      checkpoints,
     };
   }
 

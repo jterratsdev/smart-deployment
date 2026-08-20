@@ -231,6 +231,8 @@ describe('E2E: installed CLI release reports', function () {
       OPENAI_API_KEY: '',
       AGENTFORCE_ACCESS_TOKEN: '',
       SF_DISABLE_TELEMETRY: 'true',
+      FORCE_COLOR: '0',
+      NO_COLOR: '1',
       ...overrides,
     };
   }
