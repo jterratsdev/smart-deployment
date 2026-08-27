@@ -12,6 +12,7 @@ import { expect } from 'chai';
 import { MetadataScannerService } from '../../src/services/metadata-scanner-service.js';
 import { WaveBuilder } from '../../src/waves/wave-builder.js';
 import { ManifestGenerator } from '../../src/deployment/manifest-generator.js';
+import { WavePostProcessor } from '../../src/waves/wave-post-processor.js';
 
 describe('Agentforce deployment pipeline integration', () => {
   const temporaryProjects: string[] = [];
@@ -77,6 +78,46 @@ actions:
       })
     );
     expect(root).to.be.a('string');
+    return project;
+  }
+
+  async function createSharedAgentforceFixture(): Promise<string> {
+    const project = await createFixture();
+    const files: Record<string, string> = {
+      'force-app/main/default/classes/SharedAction.cls': `public class SharedAction {
+          public static String run() {
+            return Templates.generatePromptTemplate('SharedPrompt');
+          }
+        }`,
+      'force-app/main/default/classes/SharedAction.cls-meta.xml':
+        '<?xml version="1.0"?><ApexClass xmlns="http://soap.sforce.com/2006/04/metadata"><apiVersion>65.0</apiVersion><status>Active</status></ApexClass>',
+      'force-app/main/default/flows/SharedSupport.flow-meta.xml': `<?xml version="1.0"?>
+        <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+          <processType>AutoLaunchedFlow</processType><status>Active</status>
+          <actionCalls><actionType>apex</actionType><actionName>SharedAction</actionName><name>Run</name></actionCalls>
+        </Flow>`,
+      'force-app/main/default/genAiFunctions/SharedFunction/SharedFunction.genAiFunction-meta.xml': `<?xml version="1.0"?>
+        <GenAiFunction xmlns="http://soap.sforce.com/2006/04/metadata">
+          <invocationTarget>SharedSupport</invocationTarget><invocationTargetType>flow</invocationTargetType>
+        </GenAiFunction>`,
+      'force-app/main/default/genAiPlugins/SupportPlugin/SupportPlugin.genAiPlugin-meta.xml': `<?xml version="1.0"?>
+        <GenAiPlugin xmlns="http://soap.sforce.com/2006/04/metadata">
+          <genAiFunctions><functionName>SharedFunction</functionName></genAiFunctions>
+        </GenAiPlugin>`,
+      'force-app/main/default/genAiPromptTemplates/SharedPrompt.genAiPromptTemplate-meta.xml': `<?xml version="1.0"?>
+        <GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+          <developerName>SharedPrompt</developerName><masterLabel>Shared Prompt</masterLabel>
+          <relatedEntity>Case</relatedEntity><status>Published</status><type>Flex</type>
+        </GenAiPromptTemplate>`,
+    };
+
+    await Promise.all(
+      Object.entries(files).map(async ([relativePath, content]) => {
+        const filePath = path.join(project, relativePath);
+        await fs.mkdir(path.dirname(filePath), { recursive: true });
+        await fs.writeFile(filePath, content, 'utf8');
+      })
+    );
     return project;
   }
 
@@ -156,5 +197,48 @@ actions:
       firstManifests.manifests.map((manifest) => [manifest.fileName, manifest.content])
     );
     expect(secondManifests.manifests.some((manifest) => manifest.content.includes('SupportAgent'))).to.be.true;
+  });
+
+  it('protects a shared Flow from preventive simplification through Agentforce consumers', async () => {
+    const project = await createSharedAgentforceFixture();
+    const scan = await new MetadataScannerService().scan({ sourcePath: project });
+    const components = scan.dependencyResult.components;
+
+    expect(components.get('GenAiFunction:SharedFunction')?.dependencies).to.include('Flow:SharedSupport');
+    expect(components.get('GenAiPlugin:SupportPlugin')?.dependencies).to.include('GenAiFunction:SharedFunction');
+
+    const processor = new WavePostProcessor(components, {
+      syncPSG: false,
+      syncFlows: false,
+      syncFlexiPages: false,
+      syncTestClasses: false,
+      splitLargeWaves: false,
+    });
+    const result = processor.processWaves([
+      {
+        number: 1,
+        components: ['Flow:SharedSupport', 'GenAiFunction:SharedFunction', 'GenAiPlugin:SupportPlugin'],
+        metadata: { componentCount: 3, types: [], maxDepth: 0, hasCircularDeps: false, estimatedTime: 0 },
+      },
+      {
+        number: 2,
+        components: ['ApexClass:SharedAction'],
+        metadata: { componentCount: 1, types: [], maxDepth: 0, hasCircularDeps: false, estimatedTime: 0 },
+      },
+      {
+        number: 3,
+        components: ['GenAiPromptTemplate:SharedPrompt'],
+        metadata: { componentCount: 1, types: [], maxDepth: 0, hasCircularDeps: false, estimatedTime: 0 },
+      },
+    ]);
+
+    expect(result.componentsToSimplify.has('Flow:SharedSupport')).to.equal(false);
+    expect(result.waves.flatMap((currentWave) => currentWave.components)).to.have.members([
+      'Flow:SharedSupport',
+      'GenAiFunction:SharedFunction',
+      'GenAiPlugin:SupportPlugin',
+      'ApexClass:SharedAction',
+      'GenAiPromptTemplate:SharedPrompt',
+    ]);
   });
 });
