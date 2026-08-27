@@ -23,7 +23,7 @@ describe('DEPLOYMENT_ORDER', () => {
    */
   it('should assign code-tier priority to ApexClass', () => {
     expect(DEPLOYMENT_ORDER.ApexClass).to.be.greaterThan(DEPLOYMENT_ORDER.CustomField);
-    expect(DEPLOYMENT_ORDER.ApexClass).to.equal(31);
+    expect(DEPLOYMENT_ORDER.ApexClass).to.equal(32);
   });
 
   /**
@@ -31,7 +31,7 @@ describe('DEPLOYMENT_ORDER', () => {
    */
   it('should assign priority after ApexClass to ApexTrigger', () => {
     expect(DEPLOYMENT_ORDER.ApexTrigger).to.be.greaterThan(DEPLOYMENT_ORDER.ApexClass);
-    expect(DEPLOYMENT_ORDER.ApexTrigger).to.equal(36);
+    expect(DEPLOYMENT_ORDER.ApexTrigger).to.equal(37);
   });
 
   /**
@@ -39,7 +39,7 @@ describe('DEPLOYMENT_ORDER', () => {
    */
   it('should assign priority after Apex to Flow', () => {
     expect(DEPLOYMENT_ORDER.Flow).to.be.greaterThan(DEPLOYMENT_ORDER.ApexTrigger);
-    expect(DEPLOYMENT_ORDER.Flow).to.equal(48);
+    expect(DEPLOYMENT_ORDER.Flow).to.equal(49);
   });
 
   /**
@@ -87,7 +87,7 @@ describe('DEPLOYMENT_ORDER', () => {
 describe('getDeploymentPriority', () => {
   it('should return priority for known metadata type', () => {
     expect(getDeploymentPriority('CustomObject')).to.equal(6);
-    expect(getDeploymentPriority('ApexClass')).to.equal(31);
+    expect(getDeploymentPriority('ApexClass')).to.equal(32);
   });
 
   it('should return default priority (99) for unknown metadata type', () => {

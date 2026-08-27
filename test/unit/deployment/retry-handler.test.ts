@@ -44,7 +44,7 @@ describe('RetryHandler', () => {
 
   it('reports the final failed attempt as not scheduled for retry', async () => {
     const handler = new RetryHandler({ maxRetries: 0, initialDelay: 0, maxDelay: 0 });
-    let attempt: { attempt: number; willRetry: boolean } | undefined;
+    let attempt: { attempt: number; willRetry: boolean; error: Error } | undefined;
 
     try {
       await handler.executeWithRetry(
@@ -58,7 +58,9 @@ describe('RetryHandler', () => {
       );
       expect.fail('expected final attempt to throw');
     } catch {
-      expect(attempt).to.deep.equal({ attempt: 1, willRetry: false });
+      expect(attempt?.attempt).to.equal(1);
+      expect(attempt?.willRetry).to.equal(false);
+      expect(attempt?.error.message).to.equal('TIMEOUT');
     }
   });
 
