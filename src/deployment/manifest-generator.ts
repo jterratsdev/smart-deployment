@@ -13,7 +13,6 @@ import type { Wave } from '../waves/wave-builder.js';
 import type { MetadataComponent, MetadataType } from '../types/metadata.js';
 import type { NodeId } from '../types/dependency.js';
 import type { Manifest } from '../types/deployment.js';
-import type { AgentforceService } from '../ai/agentforce-service.js';
 import { MetadataTypeMapper } from './metadata-type-mapper.js';
 
 const logger = getLogger('ManifestGenerator');
@@ -100,8 +99,6 @@ export type ManifestGenerationOptions = {
   projectRoot: string;
   /** Map of NodeId to MetadataComponent */
   componentMap: Map<NodeId, MetadataComponent>;
-  /** Optional AgentforceService for type inference */
-  agentforceService?: AgentforceService;
   /** Manifest adjustments: components to add to first wave and remove from last wave */
   manifestAdjustments?: ManifestAdjustment[];
 };
@@ -117,8 +114,8 @@ export type ManifestGenerationResult = {
  */
 export class ManifestGenerator {
   private typeMapper: MetadataTypeMapper;
-  public constructor(agentforceService?: AgentforceService) {
-    this.typeMapper = new MetadataTypeMapper(agentforceService);
+  public constructor() {
+    this.typeMapper = new MetadataTypeMapper();
   }
 
   /**
@@ -126,11 +123,6 @@ export class ManifestGenerator {
    */
   public async generateManifests(waves: Wave[], options: ManifestGenerationOptions): Promise<ManifestGenerationResult> {
     logger.info('Generating manifests', { waves: waves.length, outputDir: options.outputDir });
-
-    // Update type mapper with provided agentforce service if available
-    if (options.agentforceService) {
-      this.typeMapper = new MetadataTypeMapper(options.agentforceService);
-    }
 
     const result: ManifestGenerationResult = {
       manifests: [],
@@ -260,7 +252,7 @@ export class ManifestGenerator {
         }
       }
 
-      // Use type mapper (with Agentforce fallback)
+      // Use the deterministic mapping table; unknown types are warned and skipped.
       const salesforceType = await this.typeMapper.mapToSalesforceType(component.type);
       if (!salesforceType) {
         logger.warn('Unknown metadata type (could not map to Salesforce type)', { type: component.type, nodeId });

@@ -17,22 +17,15 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
-import { Org } from '@salesforce/core';
 import { getLogger } from '../../utils/logger.js';
 import { DeploymentPlanManager } from '../../utils/deployment-plan-manager.js';
 import { MetadataScannerService } from '../../services/metadata-scanner-service.js';
 import { WaveBuilder } from '../../waves/wave-builder.js';
-import { DependencyInferenceService } from '../../ai/dependency-inference-service.js';
-import { AgentforcePriorityService } from '../../ai/agentforce-priority-service.js';
-import { AIEnhancedPriorityWaveGenerator } from '../../waves/priority-wave-generator-ai.js';
-import { DependencyMerger } from '../../dependencies/dependency-merger.js';
 import type { PriorityOverride } from '../../types/deployment-plan.js';
 import type { DependencyGraph, NodeId } from '../../types/dependency.js';
 import type { MetadataComponent } from '../../types/metadata.js';
 import type { Wave } from '../../waves/wave-builder.js';
-import type { InferredDependency } from '../../types/dependency.js';
 import { ManifestGenerator } from '../../deployment/manifest-generator.js';
-import { AgentforceService } from '../../ai/agentforce-service.js';
 import { validateManifestCompleteness } from '../../utils/manifest-completeness-validator.js';
 import { validateAgentforceTargets } from '../../validation/agentforce-target-validator.js';
 import { createNodeId } from '../../utils/node-id.js';
@@ -48,10 +41,6 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
       char: 'p',
       default: '.',
     }),
-    'target-org': Flags.string({
-      summary: 'Target org (optional, used for AI authentication)',
-      char: 'o',
-    }),
     'save-plan': Flags.boolean({
       summary: 'Save deployment plan for CI/CD',
       description: 'Generates deployment-plan.json for use in CI/CD pipelines',
@@ -60,17 +49,6 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
     'plan-path': Flags.string({
       summary: 'Custom path for deployment plan',
       description: 'Override default .smart-deployment/deployment-plan.json',
-    }),
-    'use-ai': Flags.boolean({
-      summary: 'Use Agentforce AI for intelligent analysis',
-      default: false,
-    }),
-    'org-type': Flags.string({
-      summary: 'Organization type (Production, Sandbox, Developer)',
-      options: ['Production', 'Sandbox', 'Developer'],
-    }),
-    industry: Flags.string({
-      summary: 'Industry context for AI analysis',
     }),
     output: Flags.string({
       summary: 'Output file path',
@@ -98,7 +76,6 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
       logger.info('Analyzing metadata', {
         sourcePath: flags['source-path'],
         savePlan: flags['save-plan'],
-        useAI: flags['use-ai'],
       });
 
       this.log('📊 Analyzing metadata...');
@@ -110,59 +87,8 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
       });
 
       const components = scanResult.components.length;
-      let dependencies = scanResult.dependencyResult.stats.totalDependencies;
-      let dependencyGraph = scanResult.dependencyResult.graph;
-      let inferenceResult:
-        | { dependencies: InferredDependency[]; highConfidenceCount: number; fallbackToStatic?: boolean }
-        | undefined;
-
-      // AI Dependency Inference (US-055)
-      if (flags['use-ai']) {
-        this.log('');
-        this.log('🤖 Using Agentforce for dependency inference...');
-
-        // Try to get access token from org if target-org is provided
-        let accessToken: string | undefined;
-        if (flags['target-org']) {
-          try {
-            const org = await Org.create({ aliasOrUsername: flags['target-org'] });
-            const connection = org.getConnection();
-            const authFields = connection.getAuthInfoFields();
-            accessToken = authFields.accessToken;
-            logger.info('Using access token from authenticated org', {
-              hasToken: !!accessToken,
-              tokenPrefix: accessToken ? accessToken.substring(0, 10) + '...' : 'none',
-            });
-          } catch (error) {
-            logger.warn('Could not get access token from org, will use API key or mock', { error });
-          }
-        }
-
-        const inferenceService = new DependencyInferenceService();
-        if (accessToken) {
-          // Set access token in the service's AgentforceService instance
-          inferenceService.agentforceService.setApiKeyFromOrg(accessToken);
-        }
-
-        inferenceResult = await inferenceService.inferDependencies(scanResult.components, dependencyGraph);
-
-        if (inferenceResult.dependencies.length > 0) {
-          this.log(`   ✅ Inferred ${inferenceResult.dependencies.length} additional dependencies`);
-          this.log(`   📊 High confidence: ${inferenceResult.highConfidenceCount}`);
-
-          // Convert components to Map for DependencyMerger
-          const componentsMap = new Map(scanResult.components.map((c) => [createNodeId(c.type, c.name), c]));
-
-          // Merge inferred dependencies with static graph
-          const merger = new DependencyMerger();
-          const mergedResult = merger.merge(componentsMap, inferenceResult.dependencies);
-
-          dependencyGraph = mergedResult.graph;
-          dependencies = mergedResult.stats.totalDependencies;
-        } else if (inferenceResult.fallbackToStatic) {
-          this.log('   ⚠️  Agentforce unavailable, using static analysis only');
-        }
-      }
+      const dependencies = scanResult.dependencyResult.stats.totalDependencies;
+      const dependencyGraph = scanResult.dependencyResult.graph;
 
       const cycles = scanResult.dependencyResult.circularDependencies.length;
       this.log(`✅ Found ${components} components with ${dependencies} dependencies`);
@@ -211,60 +137,6 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
       // Store manifest adjustments for later use if --create-manifest is enabled
       const manifestAdjustments = postProcessResult.manifestAdjustments;
 
-      let aiStats: { aiAdjustments: number; unknownTypesDetected: number; unknownTypes: string[] } | undefined;
-
-      // AI Priority Weighting (US-057)
-      if (flags['use-ai']) {
-        this.log('');
-        this.log('🤖 Using Agentforce for priority weighting...');
-
-        // Try to get access token from org if target-org is provided
-        let accessToken: string | undefined;
-        if (flags['target-org']) {
-          try {
-            const org = await Org.create({ aliasOrUsername: flags['target-org'] });
-            const connection = org.getConnection();
-            const authFields = connection.getAuthInfoFields();
-            accessToken = authFields.accessToken;
-            logger.debug('Using access token from authenticated org for priority service');
-          } catch (error) {
-            logger.warn('Could not get access token from org, will use API key or mock', { error });
-          }
-        }
-
-        const priorityService = new AgentforcePriorityService({
-          enabled: true,
-          autoApply: false, // Don't auto-apply in analyze command
-          apiKey: accessToken, // Use org access token if available
-        });
-
-        const aiGenerator = new AIEnhancedPriorityWaveGenerator({
-          agentforceService: priorityService,
-          orgType: flags['org-type'],
-          industry: flags.industry,
-        });
-
-        // Convert components to Map for AI generator
-        const componentsMap = new Map(scanResult.components.map((c) => [createNodeId(c.type, c.name), c]));
-
-        // Apply AI priorities
-        const prioritizedWaves = await aiGenerator.applyPriorityWavesAsync(waveResult.waves, componentsMap);
-
-        waveResult = {
-          ...waveResult,
-          waves: prioritizedWaves,
-        };
-
-        aiStats = aiGenerator.getAIStats();
-        if (aiStats && aiStats.aiAdjustments > 0) {
-          this.log(`   ✅ AI analyzed ${scanResult.components.length} components`);
-          this.log(`   📊 AI adjustments applied: ${aiStats.aiAdjustments}`);
-          if (aiStats.unknownTypesDetected > 0) {
-            this.log(`   🔍 Unknown types detected: ${aiStats.unknownTypes.join(', ')}`);
-          }
-        }
-      }
-
       this.log(`✅ Generated ${waveResult.waves.length} deployment wave(s)`);
       this.log(`   Total components: ${waveResult.totalComponents}`);
       if (waveResult.unplacedComponents.length > 0) {
@@ -276,40 +148,7 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
         this.log('');
         this.log('📄 Generating manifests...');
 
-        // Initialize AgentforceService if AI is enabled
-        let agentforceService: AgentforceService | undefined;
-        if (flags['use-ai']) {
-          try {
-            let accessToken: string | undefined;
-            if (flags['target-org']) {
-              try {
-                const org = await Org.create({ aliasOrUsername: flags['target-org'] });
-                const connection = org.getConnection();
-                const authFields = connection.getAuthInfoFields();
-                accessToken = authFields.accessToken;
-                logger.debug('Using access token from authenticated org for manifest generation');
-              } catch (error) {
-                logger.warn('Could not get access token for manifest generation', { error });
-              }
-            }
-
-            agentforceService = new AgentforceService({
-              enabled: true,
-              apiKey: accessToken,
-            });
-
-            if (accessToken) {
-              agentforceService.setApiKeyFromOrg(accessToken);
-            }
-
-            const model = agentforceService.getConfig().model;
-            this.log(`   🤖 Using Agentforce (model: ${model}) for metadata type mapping...`);
-          } catch (error) {
-            logger.warn('Could not initialize Agentforce for manifest generation', { error });
-          }
-        }
-
-        const manifestGenerator = new ManifestGenerator(agentforceService);
+        const manifestGenerator = new ManifestGenerator();
         const manifestDir = path.join(scanResult.projectRoot, '.smart-deployment', 'manifests');
 
         // Build component map for manifest generation
@@ -327,7 +166,6 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
           componentMap,
           outputDir: manifestDir,
           validateFiles: true,
-          agentforceService,
           manifestAdjustments,
         });
 
@@ -424,9 +262,6 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
         }
 
         const plan = DeploymentPlanManager.createPlan(planWaves, priorities, {
-          aiEnabled: flags['use-ai'],
-          orgType: flags['org-type'],
-          industry: flags.industry,
           generatedBy: 'smart-deployment CLI',
         });
 
@@ -462,8 +297,6 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
             totalDependencies: dependencies,
             circularDependencies: scanResult.dependencyResult.circularDependencies.length,
             totalWaves: waveResult.waves.length,
-            aiInferenceUsed: flags['use-ai'] && (inferenceResult?.dependencies.length ?? 0) > 0,
-            aiPriorityUsed: flags['use-ai'] && (aiStats?.aiAdjustments ?? 0) > 0,
           },
         });
         this.log(`📄 Report saved to: ${flags.output as string} (format: ${reportFormat})`);
@@ -487,8 +320,6 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
       totalDependencies: number;
       circularDependencies: number;
       totalWaves: number;
-      aiInferenceUsed: boolean;
-      aiPriorityUsed: boolean;
     };
     circularDependencies: Array<{ cycle: string[] }>;
   }): Promise<void> {
@@ -600,18 +431,6 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
     <div class="warning">
       <strong>⚠️ Warning:</strong> ${stats.circularDependencies} circular dependency cycle(s) detected.
       These may cause deployment issues.
-    </div>
-    `
-        : ''
-    }
-
-    ${
-      stats.aiInferenceUsed || stats.aiPriorityUsed
-        ? `
-    <div class="stat-card">
-      <strong>🤖 AI Enhanced</strong>
-      <p>Dependency Inference: ${stats.aiInferenceUsed ? '✅' : '❌'}</p>
-      <p>Priority Weighting: ${stats.aiPriorityUsed ? '✅' : '❌'}</p>
     </div>
     `
         : ''

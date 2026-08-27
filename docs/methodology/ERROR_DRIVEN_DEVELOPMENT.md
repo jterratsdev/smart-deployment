@@ -1,5 +1,7 @@
 # ⚠️ Error-Driven Development (EDD)
 
+> Historical external-AI scenarios in this document are retained for traceability only.
+
 ## 🎯 Definition
 
 **Error-Driven Development (EDD)** is a software development methodology that complements TDD and BDD, focusing on designing and testing **error scenarios, exceptions, and edge cases first** before implementing the happy path.
@@ -21,7 +23,7 @@ TDD (Test-Driven Development)
 ├─ Focus: Correct functionality
 └─ Question: "Does it work as expected?"
 
-BDD (Behavior-Driven Development)  
+BDD (Behavior-Driven Development)
 ├─ Focus: User behavior
 └─ Question: "Can the user do X?"
 
@@ -52,48 +54,48 @@ EDD (Error-Driven Development) ← NEW
 
 #### Functional Utils (EDD)
 
-| Function | Error Scenario | Expected Behavior |
-|----------|----------------|-------------------|
-| `pipe()` | Null function in pipeline | Throw TypeError with clear message |
-| `pipe()` | Function returns undefined | Propagate undefined (don't crash) |
-| `pipe()` | Async function in sync pipe | Throw error explaining async/sync mismatch |
-| `pipe()` | Error in intermediate function | Propagate error with full stack trace |
-| `compose()` | Infinite composition (cycle) | Detect and throw StackOverflowError |
-| `memoize()` | Impure function (random) | Warning about non-deterministic behavior |
-| `memoize()` | Cache overflow (>10MB) | Evict oldest + warning |
+| Function    | Error Scenario                 | Expected Behavior                          |
+| ----------- | ------------------------------ | ------------------------------------------ |
+| `pipe()`    | Null function in pipeline      | Throw TypeError with clear message         |
+| `pipe()`    | Function returns undefined     | Propagate undefined (don't crash)          |
+| `pipe()`    | Async function in sync pipe    | Throw error explaining async/sync mismatch |
+| `pipe()`    | Error in intermediate function | Propagate error with full stack trace      |
+| `compose()` | Infinite composition (cycle)   | Detect and throw StackOverflowError        |
+| `memoize()` | Impure function (random)       | Warning about non-deterministic behavior   |
+| `memoize()` | Cache overflow (>10MB)         | Evict oldest + warning                     |
 
 **Test Count**: 15 negative tests
 
 #### Graph Algorithms (EDD)
 
-| Function | Error Scenario | Expected Behavior |
-|----------|----------------|-------------------|
-| `topologicalSort()` | Graph with cycle | Detect cycle + return cyclic nodes |
-| `topologicalSort()` | Null/undefined graph | Throw error with helpful message |
-| `topologicalSort()` | Empty graph | Return empty array (not error) |
-| `topologicalSort()` | Node references non-existent | Warning + continue without edge |
-| `detectCycles()` | Extremely large graph | Timeout after 30s + partial result |
-| `calculateDepth()` | Depth > 1000 (possible cycle) | Error with cycle message |
-| `findShortestPath()` | Start == End | Return empty path (valid) |
-| `findShortestPath()` | No path exists | Return null (don't throw) |
+| Function             | Error Scenario                | Expected Behavior                  |
+| -------------------- | ----------------------------- | ---------------------------------- |
+| `topologicalSort()`  | Graph with cycle              | Detect cycle + return cyclic nodes |
+| `topologicalSort()`  | Null/undefined graph          | Throw error with helpful message   |
+| `topologicalSort()`  | Empty graph                   | Return empty array (not error)     |
+| `topologicalSort()`  | Node references non-existent  | Warning + continue without edge    |
+| `detectCycles()`     | Extremely large graph         | Timeout after 30s + partial result |
+| `calculateDepth()`   | Depth > 1000 (possible cycle) | Error with cycle message           |
+| `findShortestPath()` | Start == End                  | Return empty path (valid)          |
+| `findShortestPath()` | No path exists                | Return null (don't throw)          |
 
 **Test Count**: 12 negative tests
 
 #### File System Utils (EDD)
 
-| Function | Error Scenario | Expected Behavior |
-|----------|----------------|-------------------|
-| `readProjectFile()` | File doesn't exist | Error with full path and suggestion |
-| `readProjectFile()` | Permission denied | Error with permission instructions |
-| `readProjectFile()` | File > 100MB | Error with size limit |
-| `readProjectFile()` | Binary file (not UTF-8) | Error with encoding info |
-| `readProjectFile()` | Broken symlink | Error with symlink info |
-| `scanDirectory()` | Directory doesn't exist | Error with path and create suggestion |
-| `scanDirectory()` | Permission denied in subdirectory | Skip + warning + continue |
-| `scanDirectory()` | Infinite symlink loop | Detect + error |
-| `parseXml()` | Malformed XML | Error with exact line and column |
-| `parseXml()` | Very large XML (>50MB) | Streaming parse or error |
-| `parseXml()` | XML with external entities (XXE) | Block + security warning |
+| Function            | Error Scenario                    | Expected Behavior                     |
+| ------------------- | --------------------------------- | ------------------------------------- |
+| `readProjectFile()` | File doesn't exist                | Error with full path and suggestion   |
+| `readProjectFile()` | Permission denied                 | Error with permission instructions    |
+| `readProjectFile()` | File > 100MB                      | Error with size limit                 |
+| `readProjectFile()` | Binary file (not UTF-8)           | Error with encoding info              |
+| `readProjectFile()` | Broken symlink                    | Error with symlink info               |
+| `scanDirectory()`   | Directory doesn't exist           | Error with path and create suggestion |
+| `scanDirectory()`   | Permission denied in subdirectory | Skip + warning + continue             |
+| `scanDirectory()`   | Infinite symlink loop             | Detect + error                        |
+| `parseXml()`        | Malformed XML                     | Error with exact line and column      |
+| `parseXml()`        | Very large XML (>50MB)            | Streaming parse or error              |
+| `parseXml()`        | XML with external entities (XXE)  | Block + security warning              |
 
 **Test Count**: 18 negative tests
 
@@ -105,61 +107,61 @@ EDD (Error-Driven Development) ← NEW
 
 #### Apex Parser (EDD)
 
-| Error Scenario | Input | Expected Behavior |
-|----------------|-------|-------------------|
-| Invalid syntax | `public class {` | Parse error with exact line |
-| Empty class | `public class Empty {}` | Parse OK but warning |
-| Invalid encoding | ISO-8859-1 with special chars | Detect encoding + helpful error |
-| Unclosed comment | `/* open comment` | Error with location |
-| Unclosed string | `String s = "unclosed` | Error with line |
-| Direct circular dependency | A extends A | Error + suggestion |
-| Extends non-existent class | `extends GhostClass` | Warning (might be managed) |
-| Corrupted file | Binary data in .cls | Clear error about corruption |
-| Class name differs from file | File: A.cls, Class: B | Warning + use class name |
-| Multiple classes in file | 2+ public classes | Error (invalid in Apex) |
-| Test class without @isTest | Ends with _Test but no annotation | Warning |
-| Trigger without object | `trigger X on () {}` | Parse error with suggestion |
-| Inner class reference | Outer.Inner usage | Detect + add dependency |
-| Vulnerable SOQL injection | String concat in SOQL | Security warning |
-| File > 1MB | Class with 10000+ lines | Performance warning |
+| Error Scenario               | Input                              | Expected Behavior               |
+| ---------------------------- | ---------------------------------- | ------------------------------- |
+| Invalid syntax               | `public class {`                   | Parse error with exact line     |
+| Empty class                  | `public class Empty {}`            | Parse OK but warning            |
+| Invalid encoding             | ISO-8859-1 with special chars      | Detect encoding + helpful error |
+| Unclosed comment             | `/* open comment`                  | Error with location             |
+| Unclosed string              | `String s = "unclosed`             | Error with line                 |
+| Direct circular dependency   | A extends A                        | Error + suggestion              |
+| Extends non-existent class   | `extends GhostClass`               | Warning (might be managed)      |
+| Corrupted file               | Binary data in .cls                | Clear error about corruption    |
+| Class name differs from file | File: A.cls, Class: B              | Warning + use class name        |
+| Multiple classes in file     | 2+ public classes                  | Error (invalid in Apex)         |
+| Test class without @isTest   | Ends with \_Test but no annotation | Warning                         |
+| Trigger without object       | `trigger X on () {}`               | Parse error with suggestion     |
+| Inner class reference        | Outer.Inner usage                  | Detect + add dependency         |
+| Vulnerable SOQL injection    | String concat in SOQL              | Security warning                |
+| File > 1MB                   | Class with 10000+ lines            | Performance warning             |
 
 **Test Count**: 25 negative tests
 
 #### Flow Parser (EDD)
 
-| Error Scenario | Input | Expected Behavior |
-|----------------|-------|-------------------|
-| Corrupted XML | Invalid XML structure | Error with exact line |
-| Unsupported API version | API version 70.0 | Warning + continue |
+| Error Scenario              | Input                         | Expected Behavior               |
+| --------------------------- | ----------------------------- | ------------------------------- |
+| Corrupted XML               | Invalid XML structure         | Error with exact line           |
+| Unsupported API version     | API version 70.0              | Warning + continue              |
 | Non-existent Apex reference | actionName: GhostClass.method | Warning + add dependency anyway |
-| Loop without exit condition | Loop without break | Infinite loop warning |
-| Decision without default | Decision without else | Warning |
-| Uninitialized variable | Variable used without value | Warning |
-| Screen without fields | Empty screen flow | Warning |
-| Non-existent GenAI prompt | Reference to missing template | Warning + continue |
-| Circular subflow | FlowA → FlowB → FlowA | Cycle error |
-| Flow without start element | No start | Critical error |
-| Very complex flow | >200 elements | Performance warning |
-| Invalid schedule | Malformed cron expression | Warning |
+| Loop without exit condition | Loop without break            | Infinite loop warning           |
+| Decision without default    | Decision without else         | Warning                         |
+| Uninitialized variable      | Variable used without value   | Warning                         |
+| Screen without fields       | Empty screen flow             | Warning                         |
+| Non-existent GenAI prompt   | Reference to missing template | Warning + continue              |
+| Circular subflow            | FlowA → FlowB → FlowA         | Cycle error                     |
+| Flow without start element  | No start                      | Critical error                  |
+| Very complex flow           | >200 elements                 | Performance warning             |
+| Invalid schedule            | Malformed cron expression     | Warning                         |
 
 **Test Count**: 20 negative tests
 
 #### LWC Parser (EDD)
 
-| Error Scenario | Input | Expected Behavior |
-|----------------|-------|-------------------|
-| Missing .js file | Only .html and .js-meta.xml | Error + instructions |
-| Missing .html file | Only .js | Warning (might be TS only) |
-| Missing .js-meta.xml | No metadata | Critical error |
-| Invalid import path | `import from '@salesforce/apex/Ghos.method'` | Warning |
-| Circular LWC imports | LWC1 → LWC2 → LWC1 | Cycle error |
-| JS syntax error | Invalid JavaScript | Parse error |
-| Uncompiled TypeScript | .ts file without .js | Error with instructions |
-| Wire adapter without import | @wire used without import | Error |
-| API property without decorator | public property without @api | Warning |
-| Event handler typo | onclick instead of onclick | Warning |
-| LDS error | recordId undefined | Warning |
-| Very large CSS | >100KB CSS | Performance warning |
+| Error Scenario                 | Input                                        | Expected Behavior          |
+| ------------------------------ | -------------------------------------------- | -------------------------- |
+| Missing .js file               | Only .html and .js-meta.xml                  | Error + instructions       |
+| Missing .html file             | Only .js                                     | Warning (might be TS only) |
+| Missing .js-meta.xml           | No metadata                                  | Critical error             |
+| Invalid import path            | `import from '@salesforce/apex/Ghos.method'` | Warning                    |
+| Circular LWC imports           | LWC1 → LWC2 → LWC1                           | Cycle error                |
+| JS syntax error                | Invalid JavaScript                           | Parse error                |
+| Uncompiled TypeScript          | .ts file without .js                         | Error with instructions    |
+| Wire adapter without import    | @wire used without import                    | Error                      |
+| API property without decorator | public property without @api                 | Warning                    |
+| Event handler typo             | onclick instead of onclick                   | Warning                    |
+| LDS error                      | recordId undefined                           | Warning                    |
+| Very large CSS                 | >100KB CSS                                   | Performance warning        |
 
 **Test Count**: 20 negative tests
 
@@ -171,74 +173,70 @@ EDD (Error-Driven Development) ← NEW
 
 #### Metadata Scanner (EDD)
 
-| Error Scenario | Condition | Expected Behavior |
-|----------------|-----------|-------------------|
-| Empty project | No metadata found | Helpful error + guide |
-| Invalid sfdx-project.json | Malformed JSON | Error with exact line |
-| Missing sfdx-project.json | Doesn't exist | Fallback to src/ + warning |
-| Empty packageDirectories | Empty array | Error + suggestion |
-| Path doesn't exist | Invalid packageDirectory path | Error with path |
-| Permission denied | No read access | Error with permission instructions |
-| Symlink loop | Infinite symlink | Detect + error |
-| Invalid .forceignore | Incorrect syntax | Warning + ignore bad lines |
-| Too many files | >50,000 files | Performance warning + continue |
-| Mixed structure | Source + Metadata API mixed | Warning + continue |
-| Circular package dependencies | Package A → B → A | Error + graph |
-| Unknown metadata type | New unsupported type | Warning + skip |
-| Disk full | ENOSPC error | Clear error + space required |
+| Error Scenario                | Condition                     | Expected Behavior                  |
+| ----------------------------- | ----------------------------- | ---------------------------------- |
+| Empty project                 | No metadata found             | Helpful error + guide              |
+| Invalid sfdx-project.json     | Malformed JSON                | Error with exact line              |
+| Missing sfdx-project.json     | Doesn't exist                 | Fallback to src/ + warning         |
+| Empty packageDirectories      | Empty array                   | Error + suggestion                 |
+| Path doesn't exist            | Invalid packageDirectory path | Error with path                    |
+| Permission denied             | No read access                | Error with permission instructions |
+| Symlink loop                  | Infinite symlink              | Detect + error                     |
+| Invalid .forceignore          | Incorrect syntax              | Warning + ignore bad lines         |
+| Too many files                | >50,000 files                 | Performance warning + continue     |
+| Mixed structure               | Source + Metadata API mixed   | Warning + continue                 |
+| Circular package dependencies | Package A → B → A             | Error + graph                      |
+| Unknown metadata type         | New unsupported type          | Warning + skip                     |
+| Disk full                     | ENOSPC error                  | Clear error + space required       |
 
 **Test Count**: 20 negative tests
 
 #### Dependency Resolver (EDD)
 
-| Error Scenario | Condition | Expected Behavior |
-|----------------|-----------|-------------------|
-| Circular dependency | A → B → C → A | Detect + break cycle + warning |
-| Managed package dependency | Reference to namespace__Class | Skip (not deployable) |
-| Non-existent dependency | Reference to deleted component | Warning + continue |
-| Very large graph | >10,000 nodes | Use optimized algorithm |
-| Insufficient memory | OOM during analysis | Graceful error + suggestion |
-| Contradictory heuristic | Infers A→B and B→A | Warning + use static |
-| AI timeout | Agentforce doesn't respond | Fallback to static + warning |
-| AI returns garbage | Invalid JSON from AI | Fallback + log error |
-| Component without type | Metadata without type mapping | Error + component name |
-| Depth > 50 | Very nested dependencies | Complexity warning |
+| Error Scenario             | Condition                       | Expected Behavior              |
+| -------------------------- | ------------------------------- | ------------------------------ |
+| Circular dependency        | A → B → C → A                   | Detect + break cycle + warning |
+| Managed package dependency | Reference to namespace\_\_Class | Skip (not deployable)          |
+| Non-existent dependency    | Reference to deleted component  | Warning + continue             |
+| Very large graph           | >10,000 nodes                   | Use optimized algorithm        |
+| Insufficient memory        | OOM during analysis             | Graceful error + suggestion    |
+| Contradictory heuristic    | Infers A→B and B→A              | Warning + use static           |
+| AI returns garbage         | Invalid JSON from AI            | Fallback + log error           |
+| Component without type     | Metadata without type mapping   | Error + component name         |
+| Depth > 50                 | Very nested dependencies        | Complexity warning             |
 
 **Test Count**: 15 negative tests
 
 #### Wave Generator (EDD)
 
-| Error Scenario | Condition | Expected Behavior |
-|----------------|-----------|-------------------|
-| Very large wave | >1000 components | Auto-split + warning |
-| CMT exceeds limit | >500 records in wave | Auto-split to 200/wave |
-| No test classes found | Apex deployment without tests | Critical warning |
-| Missing test dependency | Test without production class | Warning + deploy anyway |
-| Empty wave generated | 0 components | Skip wave |
-| Contradictory priority | Impossible order | Error + suggestion |
-| Deploy order conflict | User override vs dependencies | Warning + use dependencies |
-| Unsplittable component | Component > limit | Error + component name |
-| AI suggests invalid order | AI breaks dependencies | Ignore suggestion + warning |
-| Optimization creates cycle | Merge creates circular dependency | Revert optimization |
+| Error Scenario             | Condition                         | Expected Behavior           |
+| -------------------------- | --------------------------------- | --------------------------- |
+| Very large wave            | >1000 components                  | Auto-split + warning        |
+| CMT exceeds limit          | >500 records in wave              | Auto-split to 200/wave      |
+| No test classes found      | Apex deployment without tests     | Critical warning            |
+| Missing test dependency    | Test without production class     | Warning + deploy anyway     |
+| Empty wave generated       | 0 components                      | Skip wave                   |
+| Contradictory priority     | Impossible order                  | Error + suggestion          |
+| Deploy order conflict      | User override vs dependencies     | Warning + use dependencies  |
+| Unsplittable component     | Component > limit                 | Error + component name      |
+| AI suggests invalid order  | AI breaks dependencies            | Ignore suggestion + warning |
+| Optimization creates cycle | Merge creates circular dependency | Revert optimization         |
 
 **Test Count**: 15 negative tests
 
-#### Agentforce Service (EDD)
-
-| Error Scenario | Condition | Expected Behavior |
-|----------------|-----------|-------------------|
-| Invalid API key | 401 Unauthorized | Clear error + instructions |
-| API timeout | Request > 30s | Retry 3x + fallback |
-| Rate limit exceeded | 429 Too Many Requests | Backoff + retry + warning |
-| API returns 500 | Server error | Retry + fallback if fails |
-| Malformed response | Invalid JSON | Fallback + log error |
-| Very large response | >10MB response | Error + limit |
-| Missing Named Credential | NC doesn't exist | Error + instructions |
-| Low inference confidence | <0.3 confidence | Ignore inference + warning |
-| AI hallucination | AI invents dependencies | Validate against real metadata |
-| Very long prompt | >100K tokens | Truncate + warning |
-| Corrupted cache | Redis/file error | Clear cache + continue |
-| Concurrent requests | Race condition | Queue + serialize |
+| Error Scenario           | Condition               | Expected Behavior              |
+| ------------------------ | ----------------------- | ------------------------------ |
+| API timeout              | Request > 30s           | Retry 3x + fallback            |
+| Rate limit exceeded      | 429 Too Many Requests   | Backoff + retry + warning      |
+| API returns 500          | Server error            | Retry + fallback if fails      |
+| Malformed response       | Invalid JSON            | Fallback + log error           |
+| Very large response      | >10MB response          | Error + limit                  |
+| Missing Named Credential | NC doesn't exist        | Error + instructions           |
+| Low inference confidence | <0.3 confidence         | Ignore inference + warning     |
+| AI hallucination         | AI invents dependencies | Validate against real metadata |
+| Very long prompt         | >100K tokens            | Truncate + warning             |
+| Corrupted cache          | Redis/file error        | Clear cache + continue         |
+| Concurrent requests      | Race condition          | Queue + serialize              |
 
 **Test Count**: 18 negative tests
 
@@ -267,11 +265,6 @@ Feature: Error Handling and Recovery
     And the exit code should be 1
 
   @error-handling @network
-  Scenario: Agentforce API is unavailable
-    Given Agentforce is configured
-    But the API endpoint is unreachable
-    When I run "sf smart-deployment start --use-ai"
-    Then I should see warning "Agentforce unavailable, falling back to static analysis"
     And the deployment should continue with static analysis only
     And the exit code should be 0
 ```
@@ -321,9 +314,7 @@ try {
 ```typescript
 async function analyzeWithAI(components: Component[]) {
   try {
-    return await agentforceService.analyze(components);
   } catch (error) {
-    logger.warn('Agentforce unavailable, falling back to static analysis');
     return await staticAnalyze(components);
   }
 }
@@ -334,13 +325,13 @@ async function analyzeWithAI(components: Component[]) {
 ```typescript
 async function generateWaves(components: Component[]) {
   let optimizedWaves = null;
-  
+
   try {
     optimizedWaves = await aiOptimize(components);
   } catch (error) {
     logger.warn('AI optimization failed, using standard generation');
   }
-  
+
   return optimizedWaves || standardWaveGeneration(components);
 }
 ```
@@ -351,7 +342,7 @@ async function generateWaves(components: Component[]) {
 async function deployWave(wave: Wave) {
   const maxRetries = 3;
   let lastError;
-  
+
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await sfDeploy(wave);
@@ -361,7 +352,7 @@ async function deployWave(wave: Wave) {
       await sleep(Math.pow(2, i) * 1000); // Exponential backoff
     }
   }
-  
+
   throw new DeploymentError('Max retries exceeded', { lastError });
 }
 ```
@@ -369,17 +360,16 @@ async function deployWave(wave: Wave) {
 ### Pattern 5: Circuit Breaker
 
 ```typescript
-class AgentforceCircuitBreaker {
   private failures = 0;
   private lastFailTime = 0;
   private readonly threshold = 5;
   private readonly timeout = 60000; // 1 minute
-  
+
   async call<T>(fn: () => Promise<T>): Promise<T> {
     if (this.isOpen()) {
       throw new Error('Circuit breaker OPEN: too many failures');
     }
-    
+
     try {
       const result = await fn();
       this.onSuccess();
@@ -389,9 +379,9 @@ class AgentforceCircuitBreaker {
       throw error;
     }
   }
-  
+
   private isOpen(): boolean {
-    return this.failures >= this.threshold 
+    return this.failures >= this.threshold
       && Date.now() - this.lastFailTime < this.timeout;
   }
 }
@@ -401,14 +391,14 @@ class AgentforceCircuitBreaker {
 
 ## 🎯 Error Categories & Handling
 
-| Category | Examples | Handling Strategy |
-|----------|----------|-------------------|
-| **User Error** | Invalid input, missing file | Clear error + suggestion |
-| **System Error** | OOM, disk full | Graceful fail + workaround |
-| **Network Error** | API timeout, no connection | Retry + fallback |
-| **Logic Error** | Circular deps, conflicts | Detect early + fix suggestion |
+| Category           | Examples                     | Handling Strategy             |
+| ------------------ | ---------------------------- | ----------------------------- |
+| **User Error**     | Invalid input, missing file  | Clear error + suggestion      |
+| **System Error**   | OOM, disk full               | Graceful fail + workaround    |
+| **Network Error**  | API timeout, no connection   | Retry + fallback              |
+| **Logic Error**    | Circular deps, conflicts     | Detect early + fix suggestion |
 | **External Error** | SF API error, AI unavailable | Fallback + degrade gracefully |
-| **Security Error** | Permissions, credentials | Clear error + security info |
+| **Security Error** | Permissions, credentials     | Clear error + security info   |
 
 ---
 

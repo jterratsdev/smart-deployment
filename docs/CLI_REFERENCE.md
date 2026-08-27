@@ -22,12 +22,11 @@ sf smart-deployment analyze [FLAGS]
 | Flag                | Short | Type    | Required | Default                                  | Description                                         |
 | ------------------- | ----- | ------- | -------- | ---------------------------------------- | --------------------------------------------------- |
 | `--source-path`     | `-p`  | string  | No       | `.`                                      | Path to analyze (defaults to current directory)     |
-| `--target-org`      | `-o`  | string  | No       | None                                     | Target org (optional, used for AI authentication)   |
+| `--target-org`      | `-o`  | string  | No       | None                                     | Target org (optional)                               |
 | `--save-plan`       |       | boolean | No       | `false`                                  | Save deployment plan for CI/CD                      |
 | `--plan-path`       |       | string  | No       | `.smart-deployment/deployment-plan.json` | Custom path for deployment plan                     |
-| `--use-ai`          |       | boolean | No       | `false`                                  | Use Agentforce AI for intelligent analysis          |
 | `--org-type`        |       | string  | No       | Auto-detect                              | Organization type (Production, Sandbox, Developer)  |
-| `--industry`        |       | string  | No       | None                                     | Industry context for AI analysis                    |
+| `--industry`        |       | string  | No       | None                                     | Industry context for analysis                       |
 | `--output`          |       | string  | No       | None                                     | Output file path                                    |
 | `--format`          | `-f`  | string  | No       | `json`                                   | Output format (json\|html)                          |
 | `--create-manifest` |       | boolean | No       | `false`                                  | Generate package.xml manifests for deployment waves |
@@ -43,12 +42,6 @@ sf smart-deployment analyze --source-path force-app
 
 # Save deployment plan
 sf smart-deployment analyze --save-plan
-
-# Analysis with AI
-sf smart-deployment analyze --use-ai --target-org myorg
-
-# Analysis with industry context
-sf smart-deployment analyze --use-ai --industry Fintech --org-type Production
 
 # Custom plan path
 sf smart-deployment analyze --save-plan --plan-path custom-plan.json
@@ -79,24 +72,19 @@ sf smart-deployment start --target-org <org> [FLAGS]
 
 ### Flags
 
-| Flag                        | Short | Type    | Required | Default                       | Description                                               |
-| --------------------------- | ----- | ------- | -------- | ----------------------------- | --------------------------------------------------------- |
-| `--target-org`              | `-o`  | string  | **Yes**  | None                          | Target Salesforce org for deployment                      |
-| `--dry-run`                 | `-d`  | boolean | No       | `false`                       | Preview deployment without executing                      |
-| `--validate-only`           | `-v`  | boolean | No       | `false`                       | Validate deployment without committing changes            |
-| `--no-test-run`             |       | boolean | No       | `false`                       | Skip tests (sandbox only, ignored in production)          |
-| `--run-wave-test`           |       | boolean | No       | `false`                       | Run only test classes included in each wave               |
-| `--use-ai`                  |       | boolean | No       | `false`                       | Use Agentforce AI for intelligent priority weighting      |
-| `--ai-auto`                 |       | boolean | No       | `false`                       | Auto-apply AI recommendations with confidence > threshold |
-| `--ai-confidence-threshold` |       | string  | No       | `0.8`                         | Minimum AI confidence to auto-apply (0-1)                 |
-| `--org-type`                |       | string  | No       | Auto-detect                   | Organization type (Production, Sandbox, Developer)        |
-| `--industry`                |       | string  | No       | None                          | Industry context for AI analysis                          |
-| `--use-plan`                |       | string  | No       | None                          | Use saved deployment plan (CI/CD)                         |
-| `--strict`                  |       | boolean | No       | `false`                       | Strict mode (requires --use-plan)                         |
-| `--source-path`             | `-p`  | string  | No       | `.`                           | Source path to deploy                                     |
-| `--test-level`              |       | string  | No       | SF CLI default                | Explicit Salesforce test level                            |
-| `--resume`                  |       | boolean | No       | Auto-resume when state exists | Resume from a previous failed state                       |
-| `--ignore-conflicts`        |       | boolean | No       | `false`                       | Pass conflict/warning ignore options to Salesforce CLI    |
+| Flag                 | Short | Type    | Required | Default                       | Description                                            |
+| -------------------- | ----- | ------- | -------- | ----------------------------- | ------------------------------------------------------ |
+| `--target-org`       | `-o`  | string  | **Yes**  | None                          | Target Salesforce org for deployment                   |
+| `--dry-run`          | `-d`  | boolean | No       | `false`                       | Preview deployment without executing                   |
+| `--validate-only`    | `-v`  | boolean | No       | `false`                       | Validate deployment without committing changes         |
+| `--no-test-run`      |       | boolean | No       | `false`                       | Skip tests (sandbox only, ignored in production)       |
+| `--run-wave-test`    |       | boolean | No       | `false`                       | Run only test classes included in each wave            |
+| `--use-plan`         |       | string  | No       | None                          | Use saved deployment plan (CI/CD)                      |
+| `--strict`           |       | boolean | No       | `false`                       | Strict mode (requires --use-plan)                      |
+| `--source-path`      | `-p`  | string  | No       | `.`                           | Source path to deploy                                  |
+| `--test-level`       |       | string  | No       | SF CLI default                | Explicit Salesforce test level                         |
+| `--resume`           |       | boolean | No       | Auto-resume when state exists | Resume from a previous failed state                    |
+| `--ignore-conflicts` |       | boolean | No       | `false`                       | Pass conflict/warning ignore options to Salesforce CLI |
 
 ### Test Execution Flags
 
@@ -137,14 +125,9 @@ sf smart-deployment start --target-org mysandbox --no-test-run
 # Run wave-specific tests (production)
 sf smart-deployment start --target-org prod --run-wave-test
 
-# Use AI prioritization
-sf smart-deployment start --target-org myorg --use-ai --ai-auto
-
 # Use saved deployment plan (CI/CD)
 sf smart-deployment start --target-org prod --use-plan .smart-deployment/deployment-plan.json --strict
 
-# AI with custom confidence threshold
-sf smart-deployment start --target-org myorg --use-ai --ai-auto --ai-confidence-threshold 0.9
 ```
 
 ### Output
@@ -319,42 +302,17 @@ The command result contains:
 - **Description**: Path to source code directory
 - **Example**: `--source-path force-app` or `-p force-app`
 
-### AI Flags
-
-#### `--use-ai`
-
-- **Type**: boolean
-- **Default**: `false`
-- **Description**: Enable Agentforce AI for intelligent analysis
-- **Example**: `--use-ai`
-
-#### `--ai-auto`
-
-- **Type**: boolean
-- **Default**: `false`
-- **Requires**: `--use-ai`
-- **Description**: Auto-apply AI recommendations with confidence > threshold
-- **Example**: `--use-ai --ai-auto`
-
-#### `--ai-confidence-threshold`
-
-- **Type**: string (number 0-1)
-- **Default**: `0.8`
-- **Requires**: `--ai-auto`
-- **Description**: Minimum AI confidence to auto-apply (0-1)
-- **Example**: `--ai-confidence-threshold 0.9`
-
 #### `--org-type`
 
 - **Type**: string
 - **Options**: `Production`, `Sandbox`, `Developer`
-- **Description**: Organization type for AI context
+- **Description**: Organization type for deployment context
 - **Example**: `--org-type Production`
 
 #### `--industry`
 
 - **Type**: string
-- **Description**: Industry context for AI analysis
+- **Description**: Industry context for analysis
 - **Example**: `--industry Fintech`
 
 ### CI/CD Flags

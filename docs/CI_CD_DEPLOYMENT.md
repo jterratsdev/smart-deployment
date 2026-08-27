@@ -32,7 +32,7 @@ Development → Generate Plan → Review Plan → Commit Plan → CI/CD Deploy
 ```bash
 # Analyze with AI and save plan
 sf smart-deployment analyze \
-  --use-ai \
+  \
   --org-type Production \
   --industry Fintech \
   --save-plan
@@ -149,7 +149,7 @@ sf smart-deployment start \
 # Uses AI but verifies against plan
 sf smart-deployment start \
   --target-org prod \
-  --use-ai \
+  \
   --verify-against-plan deployment-plan.json \
   --max-diff 10%
 
@@ -171,7 +171,7 @@ sf smart-deployment start \
 # Try AI, fallback to plan on error
 sf smart-deployment start \
   --target-org prod \
-  --use-ai \
+  \
   --use-plan deployment-plan.json \
   --ai-timeout 10s
 
@@ -184,7 +184,6 @@ sf smart-deployment start \
 - Attempts AI analysis (with timeout)
 - Falls back to plan if:
   - AI timeout
-  - AI service unavailable
   - AI returns error
 
 ---
@@ -228,7 +227,7 @@ export SF_MAX_DIFF=10%
 
 ```bash
 # Developer machine
-$ sf smart-deployment analyze --save-plan --use-ai
+$ sf smart-deployment analyze --save-plan
 ✅ Plan saved
 
 # Commit and push
@@ -245,7 +244,7 @@ $ sf smart-deployment start --use-plan deployment-plan.json
 
 ```bash
 # Developer made changes
-$ sf smart-deployment analyze --save-plan --use-ai
+$ sf smart-deployment analyze --save-plan
 ⚠️  Plan changed: 5 new components, 2 removed
 ✅ New plan saved
 
@@ -334,7 +333,7 @@ sf smart-deployment start --use-plan deployment-plan.json
 
 ```bash
 # Week before release
-sf smart-deployment analyze --save-plan --use-ai
+sf smart-deployment analyze --save-plan
 
 # Review in PR (3 approvals required)
 # Merge to main
@@ -426,13 +425,5 @@ done
 
 ## 📚 Related Documentation
 
-- [AI Priority Weighting](./AGENTFORCE_INTEGRATION.md)
 - [Wave Generation](./ARCHITECTURE.md#wave-generation)
 - [Error Handling](./ERROR_HANDLING.md)
-
-
-
-
-
-
-

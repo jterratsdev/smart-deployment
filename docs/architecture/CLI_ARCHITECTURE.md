@@ -2,10 +2,12 @@
 
 This document outlines the command-line interface (CLI) architecture for the `smart-deployment` plugin, focusing on the two primary workflows: **validation** (local, predictive) and **deployment** (remote, execution).
 
+> Historical design notes: predictive external-AI sections are retained for traceability only and are not part of the current implementation.
+
 ## 🎯 Design Philosophy
 
 1. **Validate Locally, Deploy Remotely**: Catch errors before they hit Salesforce APIs
-2. **AI-Powered Prediction**: Use Agentforce to predict deployment failures before they happen
+2. **Predictive Analysis**: Identify potential deployment failures before they happen
 3. **Fail Fast**: Block deployments that are likely to fail based on static analysis and AI inference
 4. **Transparent**: Show users exactly what will be deployed and why
 
@@ -58,9 +60,9 @@ sf smart deploy validate [path] [flags]
 - ✅ Detect circular dependencies
 - ✅ Generate tentative deployment waves
 
-#### Phase 3: AI Predictive Analysis (Agentforce)
+#### Phase 3: Predictive Analysis (historical proposal)
 
-- 🤖 Analyze potential deployment errors using Agentforce:
+- Analyze potential deployment errors using a predictive service:
   - **Missing References**: Field references non-existent object, Lookup to missing object
   - **Permission Issues**: Profile without CustomObject permission, PermissionSet missing field access
   - **Flow Errors**: Flow references non-existent ApexClass or Screen
@@ -69,7 +71,7 @@ sf smart deploy validate [path] [flags]
   - **Custom Metadata Issues**: Potential `UNABLE_TO_LOCK_ROW` if >200 records in wave
   - **Test Coverage**: Apex classes without test coverage (warns, doesn't block)
 
-**Batching Strategy for Agentforce**:
+**Batching Strategy (historical proposal)**:
 
 - Batch 1: Critical dependencies (Triggers → Handlers)
 - Batch 2: Service layer (Services → Tests)
@@ -257,12 +259,11 @@ sf smart deploy start force-app --target-org uat --skip-validation  # Step 2 (in
 
 ---
 
-## 🧠 AI Integration: Agentforce Token Management
+## 🧠 Predictive Service Token Management (historical proposal)
 
 ### Challenge
 
 - **10,000 files** × **average 500 tokens/file** = **5M tokens**
-- Agentforce limit: **~200K tokens per request**
 - Solution: **Intelligent batching**
 
 ### Batching Strategy
@@ -350,10 +351,9 @@ function createBatch(components: MetadataComponent[], maxTokens: number): Metada
 - [ ] Build graph
 - [ ] Detect circular dependencies
 
-### Phase 3: AI Predictive Validator (Agentforce)
+### Phase 3: Predictive Validator (historical proposal)
 
 - [ ] Implement batching strategy
-- [ ] Integrate Agentforce API
 - [ ] Analyze missing references
 - [ ] Predict permission issues
 - [ ] Generate warnings
@@ -386,6 +386,5 @@ function createBatch(components: MetadataComponent[], maxTokens: number): Metada
 ## 🔗 Related Documentation
 
 - [Metadata Extensibility](./METADATA_EXTENSIBILITY.md)
-- [Agentforce Integration](../guides/AGENTFORCE_INTEGRATION.md)
 - [Error-Driven Development](../methodology/ERROR_DRIVEN_DEVELOPMENT.md)
 - [Testing Strategy](../methodology/TESTING_STRATEGY.md)

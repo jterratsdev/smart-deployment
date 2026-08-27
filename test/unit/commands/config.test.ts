@@ -43,43 +43,43 @@ describe('ConfigCommand', () => {
   });
 
   it('persists a typed value with --set', async () => {
-    parseStub.resolves(parsedFlags({ set: 'ai.enabled=true', get: undefined }));
+    parseStub.resolves(parsedFlags({ set: 'deployment.dryRun=true', get: undefined }));
 
     const result = await configCommand.run();
     const saved = JSON.parse(await fs.readFile(path.join(directory, '.smart-deployment.json'), 'utf8')) as any;
 
     expect(result.success).to.equal(true);
-    expect(saved.ai.enabled).to.equal(true);
+    expect(saved.deployment.dryRun).to.equal(true);
   });
 
   it('supports compatible keys that are not in older config files', async () => {
-    parseStub.resolves(parsedFlags({ set: 'ai.apiKey=test-key', get: undefined }));
+    parseStub.resolves(parsedFlags({ set: 'deployment.timeout=60000', get: undefined }));
 
     await configCommand.run();
     const saved = JSON.parse(await fs.readFile(path.join(directory, '.smart-deployment.json'), 'utf8')) as any;
 
-    expect(saved.ai.apiKey).to.equal('test-key');
+    expect(saved.deployment.timeout).to.equal(60000);
   });
 
   it('prints a value with --get', async () => {
-    parseStub.resolves(parsedFlags({ set: undefined, get: 'ai.confidenceThreshold' }));
+    parseStub.resolves(parsedFlags({ set: undefined, get: 'deployment.testLevel' }));
     const logStub = sinon.stub(configCommand, 'log');
 
     const result = await configCommand.run();
 
     expect(result.success).to.equal(true);
-    expect(logStub.calledWith('0.9')).to.equal(true);
+    expect(logStub.calledWith('RunLocalTests')).to.equal(true);
   });
 
   it('rejects invalid values', async () => {
-    parseStub.resolves(parsedFlags({ set: 'ai.enabled=invalid', get: undefined }));
+    parseStub.resolves(parsedFlags({ set: 'deployment.dryRun=invalid', get: undefined }));
 
     try {
       await configCommand.run();
       expect.fail('expected invalid value error');
     } catch (error) {
       expect(error).to.be.instanceOf(Error);
-      expect((error as Error).message).to.contain("Invalid value for 'ai.enabled'");
+      expect((error as Error).message).to.contain("Invalid value for 'deployment.dryRun'");
     }
   });
 
@@ -91,9 +91,14 @@ describe('ConfigCommand', () => {
     await expectRejected(() => configCommand.run(), 'Configuration key not found');
   });
 
+  it('rejects removed AI configuration keys', async () => {
+    parseStub.resolves(parsedFlags({ set: 'ai.enabled=true', get: undefined }));
+    await expectRejected(() => configCommand.run(), "Unknown configuration key 'ai.enabled'");
+  });
+
   it('reports malformed or unreadable configuration files', async () => {
     await fs.writeFile(path.join(directory, '.smart-deployment.json'), '{invalid');
-    parseStub.resolves(parsedFlags({ set: undefined, get: 'ai.enabled' }));
+    parseStub.resolves(parsedFlags({ set: undefined, get: 'deployment.dryRun' }));
     await expectRejected(() => configCommand.run(), 'Invalid JSON');
 
     await fs.rm(path.join(directory, '.smart-deployment.json'));

@@ -7,11 +7,11 @@ import type { MetadataType } from './metadata.js';
 import type { Wave } from '../waves/wave-builder.js';
 
 /**
- * Priority override from AI or manual configuration
+ * Priority override from manual configuration
  */
 export interface PriorityOverride {
   priority: number;
-  source: 'ai' | 'manual' | 'static';
+  source: 'manual' | 'static';
   confidence?: number;
   reason?: string;
   appliedAt?: string;
@@ -24,10 +24,6 @@ export interface DeploymentPlanMetadata {
   version: string;
   generatedAt: string;
   generatedBy?: string;
-  aiEnabled: boolean;
-  aiModel?: string;
-  orgType?: string;
-  industry?: string;
   totalComponents: number;
   totalWaves: number;
   estimatedTime: number;
@@ -85,10 +81,3 @@ export interface PlanComparison {
     difference: number;
   };
 }
-
-
-
-
-
-
-

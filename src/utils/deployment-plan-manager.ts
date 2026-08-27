@@ -97,10 +97,6 @@ export class DeploymentPlanManager {
     waves: Wave[],
     priorityOverrides: Record<string, PriorityOverride>,
     options: {
-      aiEnabled?: boolean;
-      aiModel?: string;
-      orgType?: string;
-      industry?: string;
       generatedBy?: string;
     } = {}
   ): DeploymentPlan {
@@ -124,10 +120,6 @@ export class DeploymentPlanManager {
         version: this.PLAN_VERSION,
         generatedAt: new Date().toISOString(),
         generatedBy: options.generatedBy,
-        aiEnabled: options.aiEnabled ?? false,
-        aiModel: options.aiModel,
-        orgType: options.orgType,
-        industry: options.industry,
         totalComponents,
         totalWaves: waves.length,
         estimatedTime,

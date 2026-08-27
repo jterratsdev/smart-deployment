@@ -179,12 +179,14 @@ End-to-end test script that validates smart-deployment commands against a real S
 ### Prerequisites
 
 1. **Salesforce CLI** installed and authenticated:
+
    ```bash
    sf --version
    sf org list
    ```
 
 2. **Plugin linked**:
+
    ```bash
    sf plugins link
    ```
@@ -220,8 +222,7 @@ export E2E_TARGET_ORG=your-org-alias
 3. **Test 3: Validate command** - Check-only deployment validation
 4. **Test 4: Start with --dry-run** - Simulates deployment without executing
 5. **Test 5: Start with --validate-only** - Validates waves without deploying
-6. **Test 6: Analyze with --use-ai** - AI-powered analysis (if Agentforce available)
-7. **Test 7: Error handling** - Invalid orgs, missing flags, etc.
+6. **Test 7: Error handling** - Invalid orgs, missing flags, etc.
 
 ### Safety Validations
 
@@ -267,6 +268,7 @@ Test 1: Analyze command (basic)
 #### Error: "No suitable authorized orgs found"
 
 Authenticate to a dev/qa org:
+
 ```bash
 sf org login web --alias dev
 export E2E_TARGET_ORG=dev
@@ -276,6 +278,7 @@ export E2E_TARGET_ORG=dev
 #### Error: "Plugin smart-deployment is not installed"
 
 Link the plugin:
+
 ```bash
 sf plugins link
 ```
@@ -283,6 +286,7 @@ sf plugins link
 #### Error: "Test failed! Cleaning up..."
 
 Check the output above the error for specific failure details. Common issues:
+
 - Org authentication expired
 - Insufficient permissions
 - Network connectivity issues

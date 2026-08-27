@@ -1,12 +1,14 @@
 # 📋 Pending Tasks - Smart Deployment Plugin
 
-**Last Updated**: December 14, 2025
+**Last Updated**: August 27, 2026
 
 Complete list of pending tasks and improvements for the Smart Deployment Plugin.
 
 ---
 
 ## 🔴 Open Issues
+
+No open issues currently block the core deployment workflow.
 
 ## 🟡 Incremental Improvements
 
@@ -21,21 +23,11 @@ Complete list of pending tasks and improvements for the Smart Deployment Plugin.
   - User-friendly network error messages
 - **Priority**: Medium
 
-#### US-073: Agentforce Error Handling
-
-- **Status**: 🟡 70% Complete
-- **Missing**:
-  - Integration with AgentforceService
-  - AI usage statistics reporting
-  - Better fallback strategies
-- **Priority**: Medium
-
 #### US-074: Deployment Error Handling
 
-- **Status**: 🟡 75% Complete
+- **Status**: 🟢 90% Complete
 - **Missing**:
-  - Save/restore deployment state (partially done)
-  - Resume from failure logic (TODO in resume.ts)
+  - Persist and restore complete historical wave reports
   - Different retry strategies
 - **Priority**: Medium
 
@@ -71,16 +63,7 @@ Complete list of pending tasks and improvements for the Smart Deployment Plugin.
 
 ### High Priority
 
-1. **`src/commands/resume.ts:82`**
-
-   ```typescript
-   // TODO: Actually resume deployment by executing remaining waves
-   // This would require integration with SfCliIntegration
-   ```
-
-   **Status**: Partial implementation (loads state, regenerates waves, but doesn't execute)
-
-2. **`src/commands/start.ts:234`**
+1. **`src/commands/start.ts:234`**
    ```typescript
    // TODO: Integrate AI priority weighting
    ```
@@ -88,7 +71,7 @@ Complete list of pending tasks and improvements for the Smart Deployment Plugin.
 
 ### Medium Priority
 
-3. **`src/commands/start.ts:254`**
+2. **`src/commands/start.ts:254`**
    ```typescript
    // const skipTests = flags['skip-tests'] as boolean; // TODO: Use when implementing test execution
    ```
@@ -124,8 +107,6 @@ Complete list of pending tasks and improvements for the Smart Deployment Plugin.
 
 1. **Integration Tests**
 
-   - Resume deployment flow
-   - Error recovery scenarios
    - Data provisioning between waves
 
 2. **Performance Tests**
@@ -159,7 +140,7 @@ Complete list of pending tasks and improvements for the Smart Deployment Plugin.
 | ---------------------------- | ----- | ----------- |
 | **Open Issues**              | 0     | Enhancement |
 | **Incremental Improvements** | 6     | Low-Medium  |
-| **Code TODOs**               | 3     | Medium      |
+| **Code TODOs**               | 2     | Medium      |
 | **Documentation Updates**    | 3     | High-Medium |
 | **Testing Improvements**     | 2     | Medium      |
 | **Technical Debt**           | 3     | Low-Medium  |
@@ -172,7 +153,7 @@ Complete list of pending tasks and improvements for the Smart Deployment Plugin.
 
 1. ✅ Update `README.md` with current status
 2. ✅ Update `docs/README.md` with new links
-3. ✅ Complete `resume` command implementation
+3. ✅ Complete `resume` command implementation and local integration coverage
 
 ### Short Term (Next Sprint)
 
@@ -186,4 +167,4 @@ Complete list of pending tasks and improvements for the Smart Deployment Plugin.
 
 ---
 
-**Note**: Most pending items are incremental improvements or nice-to-have features. The core functionality is complete and production-ready.
+**Note**: The deployment workflow is deterministic and does not depend on external AI services. Remaining items are hardening, reporting, coverage, and additional metadata support.

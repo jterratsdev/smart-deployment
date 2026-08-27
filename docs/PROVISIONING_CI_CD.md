@@ -3,6 +3,7 @@
 ## Problem
 
 In CI/CD there is no user input, but data provisioning (Custom Metadata Records, Custom Settings, etc.) between waves may require:
+
 - Specific data that must be created before deploying dependent metadata
 - Validation that data exists before continuing
 - Deterministic error handling
@@ -25,12 +26,14 @@ In CI/CD there is no user input, but data provisioning (Custom Metadata Records,
 When `sf smart-deployment analyze --save-plan` is executed, the system:
 
 1. **Scans source files** to detect:
+
    - Custom Metadata Records (`.md-meta.xml` files)
    - Custom Settings (`.settings-meta.xml` files)
    - Record Types (`.recordType-meta.xml` files)
    - Picklist Values (`.field-meta.xml` files with values)
 
 2. **Identifies dependencies** between metadata and data:
+
    - Which metadata depends on which data?
    - In which wave should provisioning be executed?
 
@@ -87,10 +90,7 @@ for (const wave of orderedWaves) {
   // 2. Check if provisioning is required after this wave
   if (wave.provisioning?.required) {
     // 3. Execute provisioning automatically (no pauses)
-    const provisioningResult = await executeProvisioning(
-      wave.provisioning.records,
-      targetOrg
-    );
+    const provisioningResult = await executeProvisioning(wave.provisioning.records, targetOrg);
 
     // 4. Validate that provisioning was successful
     if (!provisioningResult.success) {
@@ -146,14 +146,12 @@ const dataProvisioner = new DataProvisioner();
 
 for (const wave of waves) {
   // Detect provisioning needs for this wave
-  const provisioningNeeds = dataProvisioner.detectProvisioningNeeds(
-    wave.components.map(id => componentMap.get(id))
-  );
+  const provisioningNeeds = dataProvisioner.detectProvisioningNeeds(wave.components.map((id) => componentMap.get(id)));
 
   if (provisioningNeeds.length > 0) {
     wave.provisioning = {
       required: true,
-      records: provisioningNeeds.map(need => ({
+      records: provisioningNeeds.map((need) => ({
         type: need.type,
         name: need.name,
         filePath: need.filePath,
@@ -191,7 +189,7 @@ if (wave.provisioning?.required) {
       waveNumber: wave.number,
       records: wave.provisioning.records,
       estimatedTime: wave.provisioning.records.length * 1000,
-      dependencies: wave.provisioning.records.flatMap(r => r.dependsOn),
+      dependencies: wave.provisioning.records.flatMap((r) => r.dependsOn),
     },
     orgApi // Salesforce connection
   );
@@ -200,7 +198,7 @@ if (wave.provisioning?.required) {
     // Fail deterministically
     throw new Error(
       `Provisioning failed for Wave ${wave.number}: ` +
-      provisioningResult.errors.map(e => `${e.record}: ${e.error}`).join(', ')
+        provisioningResult.errors.map((e) => `${e.record}: ${e.error}`).join(', ')
     );
   }
 
@@ -229,6 +227,7 @@ sf smart-deployment start \
 ```
 
 **Behavior:**
+
 - ✅ Provisioning executes automatically
 - ✅ No pauses or manual input
 - ✅ Failures are deterministic
@@ -240,10 +239,10 @@ sf smart-deployment start \
 # In local development
 sf smart-deployment start \
   --target-org dev \
-  --use-ai
 ```
 
 **Behavior:**
+
 - ✅ Provisioning executes automatically
 - ⚠️ May show warnings if data is missing
 - ℹ️ May suggest reviewing data manually (but does not pause)
@@ -258,6 +257,7 @@ sf smart-deployment validate \
 ```
 
 **Behavior:**
+
 - ✅ Detects provisioning needs
 - ✅ Validates that data can be created
 - ✅ Does not execute provisioning, only validates
@@ -453,4 +453,3 @@ export SF_PROVISIONING_FAIL_ON_ERROR=true
 - [US-107: Data Provisioning Between Waves](./USER_STORIES.md#us-107-data-provisioning-between-waves)
 - [CI/CD Deployment Guide](./CI_CD_DEPLOYMENT.md)
 - [State Manager Architecture](./ARCHITECTURE_DECISION_STATE_MANAGER.md)
-

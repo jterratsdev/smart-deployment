@@ -26,15 +26,6 @@ Create a `.smart-deployment.json` file in your project root:
   "$schema": "./schemas/config.schema.json",
   "version": "1.0",
 
-  "ai": {
-    "enabled": false,
-    "confidenceThreshold": 0.9,
-    "maxDiffFromPlan": 0.1,
-    "timeout": 10000,
-    "fallbackToStaticOnError": true,
-    "model": "claude-sonnet"
-  },
-
   "cicd": {
     "requireApprovedPlan": true,
     "planPath": ".smart-deployment/deployment-plan.json",
@@ -68,74 +59,38 @@ Create a `.smart-deployment.json` file in your project root:
 
 ---
 
-## 🤖 AI Configuration
-
-### `ai.enabled`
-- **Type**: boolean
-- **Default**: `false`
-- **Description**: Enable Agentforce AI integration
-- **Example**: `"enabled": true`
-
-### `ai.confidenceThreshold`
-- **Type**: number (0-1)
-- **Default**: `0.9`
-- **Description**: Minimum AI confidence to auto-apply recommendations
-- **Example**: `"confidenceThreshold": 0.9`
-
-### `ai.maxDiffFromPlan`
-- **Type**: number (0-1)
-- **Default**: `0.1`
-- **Description**: Maximum difference from plan before warning (10%)
-- **Example**: `"maxDiffFromPlan": 0.1`
-
-### `ai.timeout`
-- **Type**: number (milliseconds)
-- **Default**: `10000`
-- **Description**: AI request timeout
-- **Example**: `"timeout": 30000`
-
-### `ai.fallbackToStaticOnError`
-- **Type**: boolean
-- **Default**: `true`
-- **Description**: Fallback to static analysis if AI fails
-- **Example**: `"fallbackToStaticOnError": true`
-
-### `ai.model`
-- **Type**: string
-- **Default**: `"claude-sonnet"`
-- **Options**: `claude-sonnet`, `gpt-4o`, `gemini-1.5-pro`, `gemini-1.5-flash`, `einstein-gpt`
-- **Description**: AI model to use
-- **Example**: `"model": "gemini-1.5-pro"`
-
----
-
 ## 🚀 CI/CD Configuration
 
 ### `cicd.requireApprovedPlan`
+
 - **Type**: boolean
 - **Default**: `true`
 - **Description**: Require approved deployment plan in CI/CD
 - **Example**: `"requireApprovedPlan": true`
 
 ### `cicd.planPath`
+
 - **Type**: string
 - **Default**: `".smart-deployment/deployment-plan.json"`
 - **Description**: Path to deployment plan file
 - **Example**: `"planPath": "custom-plan.json"`
 
 ### `cicd.strictMode`
+
 - **Type**: boolean
 - **Default**: `true`
 - **Description**: Enable strict mode (requires plan, no AI)
 - **Example**: `"strictMode": true`
 
 ### `cicd.maxDiffPercentage`
+
 - **Type**: number
 - **Default**: `20`
 - **Description**: Maximum diff percentage before failing
 - **Example**: `"maxDiffPercentage": 20`
 
 ### `cicd.validateBeforeDeploy`
+
 - **Type**: boolean
 - **Default**: `true`
 - **Description**: Validate deployment before executing
@@ -146,30 +101,35 @@ Create a `.smart-deployment.json` file in your project root:
 ## 📦 Deployment Configuration
 
 ### `deployment.targetOrg`
+
 - **Type**: string
 - **Default**: `"${TARGET_ORG}"`
 - **Description**: Default target org (supports environment variables)
 - **Example**: `"targetOrg": "myorg"` or `"targetOrg": "${TARGET_ORG}"`
 
 ### `deployment.dryRun`
+
 - **Type**: boolean
 - **Default**: `false`
 - **Description**: Default to dry-run mode
 - **Example**: `"dryRun": false`
 
 ### `deployment.validateOnly`
+
 - **Type**: boolean
 - **Default**: `false`
 - **Description**: Default to validate-only mode
 - **Example**: `"validateOnly": false`
 
 ### `deployment.skipTests`
+
 - **Type**: boolean
 - **Default**: `false`
 - **Description**: Default to skip tests (sandbox only)
 - **Example**: `"skipTests": false`
 
 ### `deployment.testLevel`
+
 - **Type**: string
 - **Default**: `"RunLocalTests"`
 - **Options**: `NoTestRun`, `RunLocalTests`, `RunSpecifiedTests`, `RunAllTestsInOrg`
@@ -177,6 +137,7 @@ Create a `.smart-deployment.json` file in your project root:
 - **Example**: `"testLevel": "RunLocalTests"`
 
 ### `deployment.maxComponentsPerWave`
+
 - **Type**: number
 - **Default**: `300`
 - **Description**: Maximum components per wave (Salesforce limit)
@@ -184,6 +145,7 @@ Create a `.smart-deployment.json` file in your project root:
 - **Example**: `"maxComponentsPerWave": 300`
 
 ### `deployment.maxCmtRecordsPerWave`
+
 - **Type**: number
 - **Default**: `200`
 - **Description**: Maximum Custom Metadata records per wave
@@ -195,10 +157,12 @@ Create a `.smart-deployment.json` file in your project root:
 ## 🎯 Priority Configuration
 
 ### `priorities`
+
 - **Type**: object
 - **Description**: Component priority overrides
 - **Format**: `"ComponentType:ComponentName": priority (0-100)`
 - **Example**:
+
 ```json
 {
   "priorities": {
@@ -210,6 +174,7 @@ Create a `.smart-deployment.json` file in your project root:
 ```
 
 **Priority Values**:
+
 - `100`: Critical (deploy first)
 - `90-99`: High priority
 - `50-89`: Normal priority
@@ -220,6 +185,7 @@ Create a `.smart-deployment.json` file in your project root:
 ## 📝 Logging Configuration
 
 ### `logging.level`
+
 - **Type**: string
 - **Default**: `"info"`
 - **Options**: `debug`, `info`, `warn`, `error`
@@ -227,12 +193,14 @@ Create a `.smart-deployment.json` file in your project root:
 - **Example**: `"level": "debug"`
 
 ### `logging.file`
+
 - **Type**: string
 - **Default**: `".smart-deployment/logs/deployment.log"`
 - **Description**: Log file path
 - **Example**: `"file": ".smart-deployment/logs/deployment.log"`
 
 ### `logging.console`
+
 - **Type**: boolean
 - **Default**: `true`
 - **Description**: Enable console logging
@@ -243,15 +211,6 @@ Create a `.smart-deployment.json` file in your project root:
 ## 🌍 Environment Variables
 
 You can override configuration using environment variables:
-
-### AI Configuration
-
-```bash
-export SF_AI_ENABLED=true
-export SF_AI_CONFIDENCE_THRESHOLD=0.9
-export SF_AI_TIMEOUT=30000
-export SF_AI_MODEL=gemini-1.5-pro
-```
 
 ### CI/CD Configuration
 
@@ -300,26 +259,15 @@ sf smart-deployment config --set cicd.strictMode=true
 
 Configuration is resolved in this order (highest to lowest):
 
-1. **CLI Flags** - `--use-ai`, `--strict`, etc.
-2. **Environment Variables** - `SF_AI_ENABLED`, `SF_STRICT_MODE`, etc.
+1. **CLI Flags** - `--strict`, etc.
+2. **Environment Variables** - `SF_STRICT_MODE`, etc.
 3. **Configuration File** - `.smart-deployment.json`
 4. **Defaults** - Built-in defaults
 
 ### Example
 
 ```bash
-# .smart-deployment.json
-{
-  "ai": { "enabled": false }
-}
-
-# Environment variable
-export SF_AI_ENABLED=true
-
-# CLI flag
-sf smart-deployment analyze --use-ai
-
-# Result: AI is enabled (CLI flag wins)
+# Configuration is applied from the selected source, environment, and defaults.
 ```
 
 ---
@@ -394,6 +342,7 @@ The plugin validates configuration on startup:
 ### Validation Errors
 
 If configuration is invalid, the plugin will:
+
 1. Show validation errors
 2. Fall back to defaults for invalid values
 3. Continue with valid configuration
@@ -409,11 +358,3 @@ If configuration is invalid, the plugin will:
 ---
 
 **Last Updated**: December 14, 2025
-
-
-
-
-
-
-
-

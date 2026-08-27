@@ -408,43 +408,14 @@ else
     exit 1
 fi
 
-# Test 6: Analyze with --use-ai flag (if Agentforce available)
+# Test 6: Error Handling
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 6: Analyze with --use-ai flag"
-log_info "═══════════════════════════════════════════"
-
-log_info "Running: sf analyze --use-ai..."
-ANALYZE_AI_OUTPUT=$(sf analyze --source-path . --use-ai 2>&1 || true)
-echo "$ANALYZE_AI_OUTPUT"
-
-# Check if AI analysis completed (may fail if Agentforce unavailable)
-if echo "$ANALYZE_AI_OUTPUT" | grep -q -E "(AI|Agentforce|analysis|components)" || [ $? -eq 0 ]; then
-    if echo "$ANALYZE_AI_OUTPUT" | grep -q -i "error\|fail\|unavailable"; then
-        log_warning "AI analysis may have failed (Agentforce may be unavailable)"
-    else
-        log_success "AI analysis command executed"
-    fi
-else
-    log_warning "AI analysis command may have issues"
-fi
-
-# SAFETY VALIDATION
-if git diff --quiet HEAD -- force-app/main/default/classes/DummyTest.cls 2>/dev/null; then
-    log_success "✓ DummyTest.cls unchanged"
-else
-    log_error "CRITICAL: DummyTest.cls was modified!"
-    exit 1
-fi
-
-# Test 7: Error Handling
-log_info ""
-log_info "═══════════════════════════════════════════"
-log_info "Test 7: Error Handling & Edge Cases"
+log_info "Test 6: Error Handling & Edge Cases"
 log_info "═══════════════════════════════════════════"
 
 # Test 7a: Invalid org username
-log_info "Step 7a: Testing invalid org username..."
+log_info "Step 6a: Testing invalid org username..."
 if sf validate --target-org "invalid-org-username@nonexistent.com" --source-path . 2>&1 | grep -q -E "(No.*org|not found|not authorized|invalid)"; then
     log_success "✓ Invalid org: Clear error message shown"
 else
@@ -457,7 +428,7 @@ else
 fi
 
 # Test 7b: Missing required flag
-log_info "Step 7b: Testing missing --target-org flag..."
+log_info "Step 6b: Testing missing --target-org flag..."
 if sf start --dry-run 2>&1 | grep -q -E "(required|target-org|missing)"; then
     log_success "✓ Missing flag: Clear error message shown"
 else
@@ -467,7 +438,7 @@ fi
 # Final summary
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_success "Core E2E tests completed! (Tests 1-7)"
+log_success "Core E2E tests completed! (Tests 1-6)"
 log_info "═══════════════════════════════════════════"
 log_info "Test project location: $TEST_PROJECT_DIR"
 log_info ""
@@ -477,7 +448,6 @@ log_info "  ✓ Analyze with --save-plan creates deployment plan"
 log_info "  ✓ Validate command works"
 log_info "  ✓ Start with --dry-run works (no file modifications)"
 log_info "  ✓ Start with --validate-only works"
-log_info "  ✓ Analyze with --use-ai works (or fails gracefully)"
 log_info "  🛡️  Git safety confirmed (no unintended file modifications)"
 log_info "  🛡️  DummyTest.cls NEVER modified (verified in all tests)"
 log_info "  🛡️  DummyObject__c NEVER modified (verified in all tests)"
@@ -503,4 +473,3 @@ else
 fi
 
 log_success "All E2E tests completed successfully!"
-

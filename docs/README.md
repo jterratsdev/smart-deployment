@@ -17,11 +17,8 @@ Technical architecture and design patterns:
 
 Implementation guides and integration documentation:
 
-- **[AGENTFORCE_INTEGRATION.md](guides/AGENTFORCE_INTEGRATION.md)** - AI-powered dependency inference with Salesforce LLM
-- **[AGENTFORCE_TOKEN_LIMITS.md](guides/AGENTFORCE_TOKEN_LIMITS.md)** - Token usage and limits guide
 - **[ACCEPTANCE_CRITERIA_TESTING.md](guides/ACCEPTANCE_CRITERIA_TESTING.md)** - Acceptance criteria validation workflow
 - **[GITHUB_SETUP.md](guides/GITHUB_SETUP.md)** - GitHub Actions setup guide
-- **[MEMORY_VS_API_COSTS.md](guides/MEMORY_VS_API_COSTS.md)** - Cost analysis for AI models
 - **[SELF_LEARNING_ANALYZER.md](guides/SELF_LEARNING_ANALYZER.md)** - Self-learning dependency analyzer workflow
 
 ### 🧪 Methodology (`/methodology`)
@@ -52,13 +49,6 @@ Deployment and CI/CD documentation:
 - **[CI_CD_DEPLOYMENT.md](CI_CD_DEPLOYMENT.md)** - Plan-based CI/CD deployment strategy
 - **[PROVISIONING_CI_CD.md](PROVISIONING_CI_CD.md)** - Data provisioning in CI/CD pipelines
 - **[CI_CD_OPTIMIZATION.md](CI_CD_OPTIMIZATION.md)** - CI/CD optimization strategy
-
-### 🤖 AI Integration
-
-Agentforce and AI integration guides:
-
-- **[AGENTFORCE_API_KEY_SETUP.md](AGENTFORCE_API_KEY_SETUP.md)** - Agentforce authentication and setup
-- **[AI_AUTO_APPLY.md](AI_AUTO_APPLY.md)** - AI auto-apply feature documentation
 
 ### 🛡️ Error Handling
 
@@ -106,7 +96,6 @@ Safety and quality guidelines:
 
 - [Plugin Proposal](proposals/SF_SMART_DEPLOYMENT_PLUGIN_PROPOSAL.md)
 - [User Stories Catalog](USER_STORIES.md)
-- [Agentforce Integration](guides/AGENTFORCE_INTEGRATION.md)
 - [Documentation Status](DOCUMENTATION_STATUS.md)
 - [User Guide](USER_GUIDE.md) - End-user documentation
 
@@ -168,12 +157,10 @@ When adding new documentation:
 
 - [x] Architecture design
 - [x] Testing strategy
-- [x] Agentforce integration
 - [x] Project structure design
 
 ### Phase 2: Implementation Guides ✅
 
-- [x] Agentforce integration guide
 - [x] CI/CD deployment guide
 - [x] Error handling integration guide
 - [x] Testing strategy guide

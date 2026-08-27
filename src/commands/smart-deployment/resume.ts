@@ -13,7 +13,6 @@
 import * as path from 'node:path';
 
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
-import { Org } from '@salesforce/core';
 import { getLogger } from '../../utils/logger.js';
 import { StateManager } from '../../deployment/state-manager.js';
 import { MetadataScannerService } from '../../services/metadata-scanner-service.js';
@@ -24,7 +23,7 @@ import type { DeploymentResult } from '../../deployment/sf-cli-integration.js';
 import { DeploymentTracker } from '../../deployment/deployment-tracker.js';
 import { ManifestGenerator } from '../../deployment/manifest-generator.js';
 import { ManifestValidator } from '../../deployment/manifest-validator.js';
-import { AgentforceService } from '../../ai/agentforce-service.js';
+import { WavePostProcessor } from '../../waves/wave-post-processor.js';
 import type { MetadataComponent } from '../../types/metadata.js';
 import { createNodeId } from '../../utils/node-id.js';
 import { validateAgentforceTargets } from '../../validation/agentforce-target-validator.js';
@@ -39,7 +38,7 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
   public static readonly summary = 'Resume failed deployment';
   public static readonly flags = {
     'target-org': Flags.string({ summary: 'Target org', char: 'o', required: true }),
-    'source-path': Flags.string({ summary: 'Source path', char: 'p' }),
+    'source-path': Flags.string({ summary: 'Source path', char: 'p', default: '.' }),
   };
 
   public async run(): Promise<{ success: boolean; resumedFromWave?: number }> {
@@ -58,14 +57,18 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
 
     // Load deployment state
     const state = await stateManager.loadState();
-    if (!state?.failedWave) {
+    if (!state) {
       this.log('ℹ️  No deployment state found');
       return { success: false };
     }
 
-    this.log(`🔄 Resuming from wave ${state.failedWave.waveNumber}`);
-    this.log(`   Previous error: ${state.failedWave.error}`);
-    this.log(`   Failed at: ${state.failedWave.timestamp}`);
+    if (state.failedWave) {
+      this.log(`🔄 Resuming from wave ${state.failedWave.waveNumber}`);
+      this.log(`   Previous error: ${state.failedWave.error}`);
+      this.log(`   Failed at: ${state.failedWave.timestamp}`);
+    } else {
+      this.log('🔄 Resuming deployment from persisted state');
+    }
 
     // Re-scan metadata to regenerate waves
     const sourcePath = flags['source-path'];
@@ -83,7 +86,6 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
     }
 
     // Apply post-processing to optimize waves (same as start command)
-    const { WavePostProcessor } = await import('../../waves/wave-post-processor.js');
     const postProcessor = new WavePostProcessor(componentMap, {
       syncPSG: true,
       syncFlows: true,
@@ -106,14 +108,30 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
     const orderedWaves = getWavesInExecutionOrder(waveResult);
 
     // Find waves to resume from
-    const failedWaveNumber = state.failedWave.waveNumber;
-    const wavesToResume = orderedWaves.filter((wave) => wave.number >= failedWaveNumber);
+    // Keep the persisted wave numbers as the source of truth. In particular,
+    // do not turn a sparse completed list into a range based on the failed wave.
+    const completedWaves = new Set(
+      state.completedWaves.filter((waveNumber) => Number.isInteger(waveNumber) && waveNumber > 0)
+    );
+    const firstIncompleteWave = orderedWaves.find((wave) => !completedWaves.has(wave.number));
+    const failedWaveNumber = state.failedWave?.waveNumber ?? firstIncompleteWave?.number ?? 0;
+    const wavesToResume = orderedWaves.filter(
+      (wave) => failedWaveNumber > 0 && wave.number >= failedWaveNumber && !completedWaves.has(wave.number)
+    );
 
     this.log(`📊 Resuming ${wavesToResume.length} waves (from wave ${failedWaveNumber})`);
 
     if (wavesToResume.length === 0) {
       this.log('ℹ️  No waves to resume (all waves already completed)');
       const now = new Date().toISOString();
+      await stateManager.saveState({
+        ...state,
+        status: 'completed',
+        totalWaves: orderedWaves.length,
+        completedWaves: orderedWaves.map((wave) => wave.number),
+        currentWave: orderedWaves.length > 0 ? orderedWaves[orderedWaves.length - 1].number : undefined,
+        failedWave: undefined,
+      });
       await stateManager.clearState();
       this.log(
         new DeploymentReporter().generateReport({
@@ -147,32 +165,7 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
     // are reflected in the manifests, even for waves that were already deployed
     this.log('\n📄 Generating manifests for all waves...');
 
-    let agentforceService: AgentforceService | undefined;
-    try {
-      // Try to get access token from org
-      let accessToken: string | undefined;
-      try {
-        const org = await Org.create({ aliasOrUsername: targetOrg });
-        const connection = org.getConnection();
-        const authFields = connection.getAuthInfoFields();
-        accessToken = authFields.accessToken;
-      } catch (error) {
-        logger.warn('Could not get access token for manifest generation', { error });
-      }
-
-      agentforceService = new AgentforceService({
-        enabled: true,
-        apiKey: accessToken,
-      });
-
-      if (accessToken) {
-        agentforceService.setApiKeyFromOrg(accessToken);
-      }
-    } catch (error) {
-      logger.warn('Could not initialize Agentforce for manifest generation', { error });
-    }
-
-    const manifestGenerator = new ManifestGenerator(agentforceService);
+    const manifestGenerator = new ManifestGenerator();
     const manifestDir = path.join(scanResult.projectRoot, '.smart-deployment', 'manifests');
     // Generate manifests for ALL waves, not just remaining ones
     // This ensures Custom Metadata Records and other post-processed components
@@ -182,7 +175,6 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
       componentMap,
       outputDir: manifestDir,
       validateFiles: true,
-      agentforceService,
       manifestAdjustments, // Pass manifest adjustments from post-processing
     });
 
@@ -250,7 +242,7 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
         status: success ? 'SUCCESS' : 'FAILED',
         success,
         totalWaves: orderedWaves.length,
-        completedWaves: state.completedWaves.length + waveReports.filter((wave) => wave.success).length,
+        completedWaves: completedWaves.size,
         totalComponents: orderedWaves.reduce((total, item) => total + item.components.length, 0),
         totalComponentFailures: waveReports.reduce((total, wave) => total + (wave.componentFailures ?? 0), 0),
         totalTests: waveReports.reduce((total, wave) => total + (wave.testsRun ?? 0), 0),
@@ -310,14 +302,31 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
           `deployment-wave-${wave.number}`,
           async ({ attempt, error, willRetry }) => {
             retryAttempts[String(wave.number)] = previousAttempts + attempt;
-            if (!willRetry) return;
+            if (!willRetry) {
+              await stateManager.saveState({
+                status: 'failed',
+                deploymentId,
+                targetOrg,
+                timestamp: new Date().toISOString(),
+                totalWaves: orderedWaves.length,
+                completedWaves: [...completedWaves].sort((a, b) => a - b),
+                currentWave: wave.number,
+                failedWave: {
+                  waveNumber: wave.number,
+                  error: error.message,
+                  timestamp: new Date().toISOString(),
+                },
+                metadata: { ...state.metadata, retryAttempts },
+              });
+              return;
+            }
             await stateManager.saveState({
               status: 'failed',
               deploymentId,
               targetOrg,
               timestamp: new Date().toISOString(),
               totalWaves: orderedWaves.length,
-              completedWaves: Array.from({ length: wave.number - 1 }, (_, i) => i + 1),
+              completedWaves: [...completedWaves].sort((a, b) => a - b),
               currentWave: wave.number,
               failedWave: {
                 waveNumber: wave.number,
@@ -354,7 +363,7 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
           targetOrg,
           timestamp: new Date().toISOString(),
           totalWaves: orderedWaves.length,
-          completedWaves: Array.from({ length: wave.number }, (_, i) => i + 1),
+          completedWaves: [...completedWaves.add(wave.number)].sort((a, b) => a - b),
           currentWave: wave.number,
           metadata: { ...state.metadata, retryAttempts },
         });
@@ -385,7 +394,7 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
           targetOrg,
           timestamp: new Date().toISOString(),
           totalWaves: orderedWaves.length,
-          completedWaves: Array.from({ length: wave.number - 1 }, (_, i) => i + 1),
+          completedWaves: [...completedWaves].sort((a, b) => a - b),
           currentWave: wave.number,
           failedWave: {
             waveNumber: wave.number,
@@ -410,7 +419,7 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
       targetOrg,
       timestamp: new Date().toISOString(),
       totalWaves: orderedWaves.length,
-      completedWaves: Array.from({ length: orderedWaves.length }, (_, i) => i + 1),
+      completedWaves: orderedWaves.map((wave) => wave.number),
       currentWave: orderedWaves.length,
       metadata: { ...state.metadata, retryAttempts },
     });

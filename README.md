@@ -22,7 +22,6 @@ smart-deployment/
 │   ├── dependencies/                            # Dependency analysis
 │   ├── waves/                                   # Wave generation/execution
 │   ├── deployment/                              # Deployment orchestration
-│   ├── ai/                                      # Agentforce integration
 │   ├── utils/                                   # Helpers
 │   ├── types/                                   # Type definitions
 │   └── constants/                               # Configuration
@@ -54,8 +53,7 @@ The project has progressed significantly beyond Phase 1. Major features implemen
 - **Parsers**: 17+ metadata parsers (Apex, Flow, LWC, Custom Objects, etc.)
 - **Waves**: Complete wave generation system with splitting, merging, validation
 - **Deployment**: Manifest generation, SF CLI integration, state management
-- **AI Integration**: Agentforce integration for dependency inference and priority weighting
-- **Tests**: 95 `.test.ts` files. The latest local full run reported 1,503 passing and 7 failing cases.
+- **Tests**: The local suite passes; E2E-style checks run through shell scripts.
 
 ## 🎯 Current Implementation
 
@@ -125,7 +123,6 @@ src/waves/
 ├── ✅ wave-validator.ts          # Validate wave integrity
 ├── ✅ wave-executor.ts           # Execute waves in order
 ├── ✅ priority-wave-generator.ts # Priority-based waves
-├── ✅ priority-wave-generator-ai.ts # AI-enhanced waves
 ├── ✅ test-optimizer.ts          # Test optimization
 ├── ✅ wave-metadata-generator.ts # Wave metadata
 └── ✅ wave-diff-generator.ts     # Wave comparison
@@ -161,21 +158,7 @@ src/deployment/
 └── ✅ deployment-reporter.ts     # Reporting
 ```
 
-### 8. ✅ AI Integration (Agentforce)
-
-```bash
-src/ai/
-├── ✅ agentforce-service.ts      # Core Agentforce service
-├── ✅ dependency-inference-service.ts # Dependency inference
-├── ✅ agentforce-priority-service.ts # Priority weighting
-├── ✅ wave-validation-service.ts # Wave validation
-├── ✅ prompt-builder.ts          # Prompt construction
-├── ✅ response-parser.ts         # AI response parsing
-├── ✅ circuit-breaker.ts         # Circuit breaker pattern
-└── ✅ agentforce-error-handler.ts # Error handling
-```
-
-### 9. ✅ CLI Commands
+### 8. ✅ CLI Commands
 
 ```bash
 src/commands/
@@ -199,9 +182,9 @@ yarn test:nuts              # Salesforce integration/NUT tests
 
 **Test Coverage**:
 
-- **1,503 passing and 7 failing cases** in the latest local full test run
+- **Full local test suite**: Passing
 - **Unit Tests**: Comprehensive coverage for all modules
-- **E2E-style checks**: `scripts/e2e-test.sh` (7 numbered tests) and `scripts/e2e-test-grg.sh` (24 numbered tests). No specs currently exist under `test/e2e/`.
+- **E2E-style checks**: `scripts/e2e-test.sh` and `scripts/e2e-test-grg.sh`. No specs currently exist under `test/e2e/`.
 - **Coverage**: High coverage across parsers, services, and commands
 
 ### 8. Publication
@@ -218,8 +201,8 @@ The plugin follows a **layered architecture** with functional programming princi
 
 ```
 Commands → Core → Services → Parsers → Utils
-    ↓                ↓
-Generators      AI Services (Agentforce)
+     ↓                ↓
+Generators      Metadata validation
 ```
 
 ### Key Principles
@@ -228,19 +211,6 @@ Generators      AI Services (Agentforce)
 - **Modularity**: Small, testable, reusable components
 - **Type Safety**: Strict TypeScript
 - **Project Agnostic**: Works with any Salesforce project structure
-- **AI-Enhanced**: Agentforce for intelligent dependency inference
-
----
-
-## 🤖 Agentforce Integration
-
-The plugin uses **Agentforce** (Salesforce's LLM) for:
-
-1. **Dependency Inference**: Detect non-obvious dependencies
-2. **Priority Weighting**: Suggest optimal deployment order
-3. **Wave Validation**: Validate generated deployment waves
-4. **Test Optimization**: Suggest relevant tests per wave
-5. **Risk Assessment**: Evaluate deployment risk
 
 ---
 
@@ -294,7 +264,6 @@ The analyzer must use exact names expected by SF CLI in package.xml:
 
 - [Salesforce CLI Plugin Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_plugins.meta/sfdx_cli_plugins/)
 - [Salesforce Metadata API](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/)
-- [Agentforce DX Documentation](https://developer.salesforce.com/docs/einstein/genai/guide/agent-dx.html)
 - [OCLIF Framework](https://oclif.io/)
 
 ---

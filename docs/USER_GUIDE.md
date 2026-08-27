@@ -71,12 +71,11 @@ sf smart-deployment analyze --save-plan
 | Flag            | Short | Description                             | Default                                  |
 | --------------- | ----- | --------------------------------------- | ---------------------------------------- |
 | `--source-path` | `-p`  | Path to analyze                         | `.` (current directory)                  |
-| `--target-org`  | `-o`  | Target org (for AI auth)                | None                                     |
+| `--target-org`  | `-o`  | Target org                              | None                                     |
 | `--save-plan`   |       | Save deployment plan                    | `false`                                  |
 | `--plan-path`   |       | Custom plan path                        | `.smart-deployment/deployment-plan.json` |
-| `--use-ai`      |       | Enable AI analysis                      | `false`                                  |
 | `--org-type`    |       | Org type (Production/Sandbox/Developer) | Auto-detect                              |
-| `--industry`    |       | Industry context for AI                 | None                                     |
+| `--industry`    |       | Industry context for analysis           | None                                     |
 | `--output`      | `-o`  | Output file path                        | Console                                  |
 | `--format`      | `-f`  | Output format (json\|html)              | `json`                                   |
 
@@ -86,14 +85,9 @@ sf smart-deployment analyze --save-plan
 # Basic analysis
 sf smart-deployment analyze
 
-# Analysis with AI
-sf smart-deployment analyze --use-ai --target-org myorg --org-type Production
-
 # Save plan for CI/CD
 sf smart-deployment analyze --save-plan --plan-path custom-plan.json
 
-# Analysis with industry context
-sf smart-deployment analyze --use-ai --industry Fintech --org-type Production
 ```
 
 ### Output
@@ -127,19 +121,16 @@ sf smart-deployment start --target-org myorg --validate-only
 
 ### Flags
 
-| Flag                        | Short | Description                   | Default  |
-| --------------------------- | ----- | ----------------------------- | -------- |
-| `--target-org`              | `-o`  | Target org (required)         | Required |
-| `--dry-run`                 | `-d`  | Preview without deploying     | `false`  |
-| `--validate-only`           | `-v`  | Validate without committing   | `false`  |
-| `--no-test-run`             |       | Skip tests (sandbox only)     | `false`  |
-| `--run-wave-test`           |       | Run only wave test classes    | `false`  |
-| `--use-ai`                  |       | Enable AI prioritization      | `false`  |
-| `--ai-auto`                 |       | Auto-apply AI recommendations | `false`  |
-| `--ai-confidence-threshold` |       | AI confidence threshold (0-1) | `0.8`    |
-| `--use-plan`                |       | Use saved deployment plan     | None     |
-| `--strict`                  |       | Strict mode (requires plan)   | `false`  |
-| `--source-path`             | `-p`  | Source path                   | `.`      |
+| Flag              | Short | Description                 | Default  |
+| ----------------- | ----- | --------------------------- | -------- |
+| `--target-org`    | `-o`  | Target org (required)       | Required |
+| `--dry-run`       | `-d`  | Preview without deploying   | `false`  |
+| `--validate-only` | `-v`  | Validate without committing | `false`  |
+| `--no-test-run`   |       | Skip tests (sandbox only)   | `false`  |
+| `--run-wave-test` |       | Run only wave test classes  | `false`  |
+| `--use-plan`      |       | Use saved deployment plan   | None     |
+| `--strict`        |       | Strict mode (requires plan) | `false`  |
+| `--source-path`   | `-p`  | Source path                 | `.`      |
 
 ### Test Execution Flags
 
@@ -181,9 +172,6 @@ sf smart-deployment start --target-org myorg
 
 # Dry-run to preview
 sf smart-deployment start --target-org myorg --dry-run
-
-# Deploy with AI prioritization
-sf smart-deployment start --target-org myorg --use-ai --ai-auto
 
 # Use saved deployment plan (CI/CD)
 sf smart-deployment start --target-org prod --use-plan .smart-deployment/deployment-plan.json --strict
@@ -361,7 +349,7 @@ sf smart-deployment start --target-org myorg
 
 ```bash
 # Development: Generate plan
-sf smart-deployment analyze --save-plan --use-ai --org-type Production
+sf smart-deployment analyze --save-plan --org-type Production
 
 # Commit plan to Git
 git add .smart-deployment/deployment-plan.json
@@ -394,18 +382,9 @@ sf smart-deployment start \
   --no-test-run
 ```
 
-### Workflow 5: AI-Enhanced Deployment
+### Workflow 5: Deterministic Deployment
 
-```bash
-# Use AI for intelligent prioritization
-sf smart-deployment start \
-  --target-org myorg \
-  --use-ai \
-  --ai-auto \
-  --ai-confidence-threshold 0.9 \
-  --org-type Production \
-  --industry Fintech
-```
+Use an approved plan and strict mode when the deployment must be reproducible.
 
 ---
 
@@ -419,13 +398,6 @@ Create a `.smart-deployment.json` file in your project root:
 {
   "$schema": "./schemas/config.schema.json",
   "version": "1.0",
-
-  "ai": {
-    "enabled": false,
-    "confidenceThreshold": 0.9,
-    "timeout": 10000,
-    "model": "claude-sonnet"
-  },
 
   "cicd": {
     "requireApprovedPlan": true,
@@ -455,10 +427,6 @@ Create a `.smart-deployment.json` file in your project root:
 ### Environment Variables
 
 ```bash
-# AI Configuration
-export SF_AI_ENABLED=true
-export SF_AI_CONFIDENCE_THRESHOLD=0.9
-
 # CI/CD Configuration
 export SF_STRICT_MODE=true
 export SF_DEPLOYMENT_PLAN=.smart-deployment/deployment-plan.json
@@ -486,7 +454,7 @@ sf smart-deployment start --target-org myorg  # Without analyzing first
 
 ```bash
 # Development: Generate plan
-sf smart-deployment analyze --save-plan --use-ai
+sf smart-deployment analyze --save-plan
 
 # CI/CD: Use plan
 sf smart-deployment start --use-plan deployment-plan.json --strict
@@ -546,14 +514,6 @@ sf smart-deployment start --target-org prod --no-test-run
 
 # Correct
 sf smart-deployment start --target-org prod --run-wave-test
-```
-
-### Issue: "Agentforce API key not configured"
-
-**Solution**: Use `--target-org` for authentication:
-
-```bash
-sf smart-deployment analyze --use-ai --target-org myorg
 ```
 
 ---

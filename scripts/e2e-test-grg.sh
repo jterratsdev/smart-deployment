@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # E2E Test Script for @smart-deployment plugin
-# Configured for grg-ss-agentforce project and grg-support org
+# Configured for the GRG project and grg-support org
 
 set -e  # Exit on any error
 
@@ -31,7 +31,7 @@ log_error() {
 
 # Configuration
 TARGET_ORG="grg-support"
-PROJECT_PATH="$HOME/dev/grg-ss-agentforce"
+PROJECT_PATH="$HOME/dev/grg-ss"
 
 log_info "═══════════════════════════════════════════"
 log_info "Smart Deployment E2E Tests"
@@ -409,105 +409,27 @@ else
     log_warning "Validate-only output unclear (check above)"
 fi
 
-# Test 6: Analyze with --use-ai flag (with target-org for real authentication)
+# Test 6: Start command with dry-run (manifest generation and validation)
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 6: Analyze with --use-ai flag (real auth)"
+log_info "Test 6: Start with dry-run (manifest generation)"
 log_info "═══════════════════════════════════════════"
 
-log_info "Running: sf analyze --source-path . --use-ai --target-org $TARGET_ORG"
-ANALYZE_AI_OUTPUT=$(sf analyze --source-path . --use-ai --target-org "$TARGET_ORG" 2>&1)
-ANALYZE_AI_EXIT_CODE=$?
-
-echo "$ANALYZE_AI_OUTPUT"
-
-# Check exit code
-if [ $ANALYZE_AI_EXIT_CODE -ne 0 ]; then
-    log_error "Analyze with --use-ai failed with exit code $ANALYZE_AI_EXIT_CODE"
-    exit 1
-fi
-
-# Validate AI-specific messages
-if ! echo "$ANALYZE_AI_OUTPUT" | grep -q "🤖 Using Agentforce"; then
-    log_error "Missing AI indicator: '🤖 Using Agentforce'"
-    exit 1
-fi
-
-# Check for authentication success
-if echo "$ANALYZE_AI_OUTPUT" | grep -q "Using access token from authenticated org\|API key set from org"; then
-    log_success "✓ Real authentication confirmed (using org access token)"
-elif echo "$ANALYZE_AI_OUTPUT" | grep -q "No API key configured\|using mock"; then
-    log_warning "⚠️  Using mock responses (no real authentication)"
-else
-    log_info "ℹ️  Authentication status unclear"
-fi
-
-# Validate AI analysis completed
-if echo "$ANALYZE_AI_OUTPUT" | grep -q "✅ AI analyzed\|AI adjustments applied\|Inferred.*dependencies"; then
-    AI_COMPONENTS=$(echo "$ANALYZE_AI_OUTPUT" | grep -oE "AI analyzed [0-9]+ components" | grep -oE "[0-9]+" | head -1)
-    AI_ADJUSTMENTS=$(echo "$ANALYZE_AI_OUTPUT" | grep -oE "AI adjustments applied: [0-9]+" | grep -oE "[0-9]+" | head -1)
-    AI_DEPENDENCIES=$(echo "$ANALYZE_AI_OUTPUT" | grep -oE "Inferred [0-9]+ additional dependencies" | grep -oE "[0-9]+" | head -1)
-
-    if [ -n "$AI_COMPONENTS" ]; then
-        log_info "  ✓ AI analyzed components: $AI_COMPONENTS"
-    fi
-    if [ -n "$AI_ADJUSTMENTS" ]; then
-        log_info "  ✓ AI adjustments: $AI_ADJUSTMENTS"
-    fi
-    if [ -n "$AI_DEPENDENCIES" ]; then
-        log_info "  ✓ AI inferred dependencies: $AI_DEPENDENCIES"
-    fi
-
-    log_success "AI analysis completed successfully"
-elif echo "$ANALYZE_AI_OUTPUT" | grep -q "Agentforce unavailable\|using static analysis"; then
-    log_warning "AI unavailable, using static analysis (acceptable fallback)"
-else
-    log_warning "AI analysis status unclear"
-fi
-
-# Validate basic analyze output still present
-if ! echo "$ANALYZE_AI_OUTPUT" | grep -q "✅ Found.*components.*dependencies"; then
-    log_error "Missing basic analyze success message"
-    exit 1
-fi
-
-if ! echo "$ANALYZE_AI_OUTPUT" | grep -q "✅ Generated.*deployment wave"; then
-    log_error "Missing wave generation success message"
-    exit 1
-fi
-
-# Extract wave count
-AI_WAVES=$(echo "$ANALYZE_AI_OUTPUT" | grep -oE "Generated [0-9]+ deployment wave" | grep -oE "[0-9]+" | head -1)
-if [ -n "$AI_WAVES" ] && [ "$AI_WAVES" -gt 0 ]; then
-    log_info "  ✓ AI analysis waves: $AI_WAVES"
-fi
-
-# Test 7: Start command with --use-ai (manifest generation and validation)
-log_info ""
-log_info "═══════════════════════════════════════════"
-log_info "Test 7: Start with --use-ai (manifest generation)"
-log_info "═══════════════════════════════════════════"
-
-log_info "Running: sf start --target-org $TARGET_ORG --dry-run --use-ai"
-START_AI_OUTPUT=$(sf start --target-org "$TARGET_ORG" --dry-run --use-ai 2>&1)
+log_info "Running: sf start --target-org $TARGET_ORG --dry-run"
+START_AI_OUTPUT=$(sf start --target-org "$TARGET_ORG" --dry-run 2>&1)
 START_AI_EXIT_CODE=$?
 
 echo "$START_AI_OUTPUT"
 
 # Check exit code
 if [ $START_AI_EXIT_CODE -ne 0 ]; then
-    log_error "Start --dry-run --use-ai failed with exit code $START_AI_EXIT_CODE"
+    log_error "Start --dry-run failed with exit code $START_AI_EXIT_CODE"
     exit 1
 fi
 
 # Validate manifest generation messages
 if echo "$START_AI_OUTPUT" | grep -q "📄 Generating manifests"; then
     log_success "✓ Manifest generation detected"
-
-    # Check for Agentforce usage in manifest generation
-    if echo "$START_AI_OUTPUT" | grep -q "🤖.*metadata type mapping"; then
-        log_success "✓ Agentforce used for metadata type mapping"
-    fi
 
     # Validate manifests were created
     if [ -d ".smart-deployment/manifests" ]; then
@@ -547,21 +469,12 @@ if echo "$START_AI_OUTPUT" | grep -q "🔍 Validating manifests"; then
     fi
 fi
 
-# Validate AI wave validation
-if echo "$START_AI_OUTPUT" | grep -q "🤖 Using Agentforce for wave validation"; then
-    log_success "✓ AI wave validation detected"
+log_success "Start --dry-run executed successfully"
 
-    if echo "$START_AI_OUTPUT" | grep -q "Overall risk\|potential issues\|optimization suggestions"; then
-        log_success "✓ AI validation results displayed"
-    fi
-fi
-
-log_success "Start --dry-run --use-ai executed successfully"
-
-# Test 8: Start command with --no-test-run flag (sandbox only)
+# Test 7: Start command with --no-test-run flag (sandbox only)
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 8: Start with --no-test-run flag"
+log_info "Test 7: Start with --no-test-run flag"
 log_info "═══════════════════════════════════════════"
 
 # Detect if org is production or sandbox
@@ -634,12 +547,12 @@ else
     fi
 fi
 
-log_success "Test 8 passed: --no-test-run flag behavior validated"
+log_success "Test 7 passed: --no-test-run flag behavior validated"
 
-# Test 9: Start command with --run-wave-test flag
+# Test 8: Start command with --run-wave-test flag
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 9: Start with --run-wave-test flag"
+log_info "Test 8: Start with --run-wave-test flag"
 log_info "═══════════════════════════════════════════"
 
 log_info "Running: sf start --target-org $TARGET_ORG --dry-run --run-wave-test"
@@ -670,12 +583,12 @@ else
     log_warning "⚠️  --run-wave-test output unclear (may use different format)"
 fi
 
-log_success "Test 9 passed: --run-wave-test flag behavior validated"
+log_success "Test 8 passed: --run-wave-test flag behavior validated"
 
-# Test 10: Start command with default behavior (no test flags)
+# Test 9: Start command with default behavior (no test flags)
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 10: Start with default test behavior"
+log_info "Test 9: Start with default test behavior"
 log_info "═══════════════════════════════════════════"
 
 log_info "Running: sf start --target-org $TARGET_ORG --dry-run (no test flags)"
@@ -702,12 +615,12 @@ else
     log_warning "⚠️  Default test behavior output unclear"
 fi
 
-log_success "Test 10 passed: Default test behavior validated"
+log_success "Test 9 passed: Default test behavior validated"
 
-# Test 11: Start command with --use-plan flag (CI/CD workflow)
+# Test 10: Start command with --use-plan flag (CI/CD workflow)
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 11: Start with --use-plan flag"
+log_info "Test 10: Start with --use-plan flag"
 log_info "═══════════════════════════════════════════"
 
 # Ensure we have a deployment plan from Test 2
@@ -742,15 +655,15 @@ if [ -f ".smart-deployment/deployment-plan.json" ]; then
         log_warning "⚠️  Plan loading message not found"
     fi
 
-    log_success "Test 11 passed: --use-plan flag validated"
+    log_success "Test 10 passed: --use-plan flag validated"
 else
-    log_warning "⚠️  Skipping Test 11: No deployment plan available"
+    log_warning "⚠️  Skipping Test 10: No deployment plan available"
 fi
 
-# Test 12: Start command with --strict --use-plan (CI/CD safety)
+# Test 11: Start command with --strict --use-plan (CI/CD safety)
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 12: Start with --strict --use-plan"
+log_info "Test 11: Start with --strict --use-plan"
 log_info "═══════════════════════════════════════════"
 
 if [ -f ".smart-deployment/deployment-plan.json" ]; then
@@ -773,15 +686,15 @@ if [ -f ".smart-deployment/deployment-plan.json" ]; then
         log_warning "⚠️  Strict mode output unclear"
     fi
 
-    log_success "Test 12 passed: --strict --use-plan validated"
+    log_success "Test 11 passed: --strict --use-plan validated"
 else
-    log_warning "⚠️  Skipping Test 12: No deployment plan available"
+    log_warning "⚠️  Skipping Test 11: No deployment plan available"
 fi
 
-# Test 13: Start command with --strict without --use-plan (should fail)
+# Test 12: Start command with --strict without --use-plan (should fail)
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 13: Start with --strict (without --use-plan, should fail)"
+log_info "Test 12: Start with --strict (without --use-plan, should fail)"
 log_info "═══════════════════════════════════════════"
 
 log_info "Running: sf start --target-org $TARGET_ORG --dry-run --strict"
@@ -801,39 +714,12 @@ else
     log_warning "⚠️  Error message format may have changed"
 fi
 
-log_success "Test 13 passed: --strict validation works correctly"
+log_success "Test 12 passed: --strict validation works correctly"
 
-# Test 14: Start command with --ai-auto flag
+# Test 13: Resume command (without failed deployment)
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 14: Start with --ai-auto flag"
-log_info "═══════════════════════════════════════════"
-
-log_info "Running: sf start --target-org $TARGET_ORG --dry-run --use-ai --ai-auto"
-START_AIAUTO_OUTPUT=$(sf start --target-org "$TARGET_ORG" --dry-run --use-ai --ai-auto 2>&1)
-START_AIAUTO_EXIT_CODE=$?
-
-echo "$START_AIAUTO_OUTPUT"
-
-# Check exit code
-if [ $START_AIAUTO_EXIT_CODE -ne 0 ]; then
-    log_error "Start --dry-run --use-ai --ai-auto failed with exit code $START_AIAUTO_EXIT_CODE"
-    exit 1
-fi
-
-# Validate AI auto mode
-if echo "$START_AIAUTO_OUTPUT" | grep -q "🤖 Using Agentforce\|AI.*auto"; then
-    log_success "✓ AI auto mode detected"
-else
-    log_warning "⚠️  AI auto mode output unclear"
-fi
-
-log_success "Test 14 passed: --ai-auto flag validated"
-
-# Test 15: Resume command (without failed deployment)
-log_info ""
-log_info "═══════════════════════════════════════════"
-log_info "Test 15: Resume command (no failed deployment)"
+log_info "Test 13: Resume command (no failed deployment)"
 log_info "═══════════════════════════════════════════"
 
 log_info "Running: sf resume --target-org $TARGET_ORG"
@@ -851,12 +737,12 @@ else
     log_warning "⚠️  Resume exit code: $RESUME_EXIT_CODE (may be expected)"
 fi
 
-log_success "Test 15 passed: Resume command validated"
+log_success "Test 13 passed: Resume command validated"
 
-# Test 16: Status command
+# Test 14: Status command
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 16: Status command"
+log_info "Test 14: Status command"
 log_info "═══════════════════════════════════════════"
 
 log_info "Running: sf status --target-org $TARGET_ORG"
@@ -876,12 +762,12 @@ else
     log_warning "⚠️  Status exit code: $STATUS_EXIT_CODE (may be expected)"
 fi
 
-log_success "Test 16 passed: Status command validated"
+log_success "Test 14 passed: Status command validated"
 
-# Test 17: Analyze with --locale flag
+# Test 15: Analyze with --locale flag
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 17: Analyze with --locale flag"
+log_info "Test 15: Analyze with --locale flag"
 log_info "═══════════════════════════════════════════"
 
 log_info "Running: sf analyze --source-path . --locale es"
@@ -902,12 +788,12 @@ else
     log_warning "⚠️  Analyze --locale output unclear"
 fi
 
-log_success "Test 17 passed: --locale flag validated"
+log_success "Test 15 passed: --locale flag validated"
 
-# Test 18: Start with --locale flag
+# Test 16: Start with --locale flag
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 18: Start with --locale flag"
+log_info "Test 16: Start with --locale flag"
 log_info "═══════════════════════════════════════════"
 
 log_info "Running: sf start --target-org $TARGET_ORG --dry-run --locale es"
@@ -927,12 +813,12 @@ else
     log_warning "⚠️  Start --locale output unclear"
 fi
 
-log_success "Test 18 passed: Start --locale flag validated"
+log_success "Test 16 passed: Start --locale flag validated"
 
-# Test 19: Analyze with --plan-path flag
+# Test 17: Analyze with --plan-path flag
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 19: Analyze with --plan-path flag"
+log_info "Test 17: Analyze with --plan-path flag"
 log_info "═══════════════════════════════════════════"
 
 CUSTOM_PLAN_PATH=".smart-deployment/custom-plan.json"
@@ -960,12 +846,12 @@ else
     log_warning "⚠️  Custom plan file not found at $CUSTOM_PLAN_PATH"
 fi
 
-log_success "Test 19 passed: --plan-path flag validated"
+log_success "Test 17 passed: --plan-path flag validated"
 
-# Test 20: Start with conflicting test flags (should handle gracefully)
+# Test 18: Start with conflicting test flags (should handle gracefully)
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 20: Start with conflicting test flags"
+log_info "Test 18: Start with conflicting test flags"
 log_info "═══════════════════════════════════════════"
 
 log_info "Running: sf start --target-org $TARGET_ORG --dry-run --no-test-run --run-wave-test"
@@ -990,12 +876,12 @@ else
     fi
 fi
 
-log_success "Test 20 passed: Conflicting flags handled"
+log_success "Test 18 passed: Conflicting flags handled"
 
-# Test 21: Analyze with --output --format json (report generation)
+# Test 19: Analyze with --output --format json (report generation)
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 21: Analyze with --output --format json"
+log_info "Test 19: Analyze with --output --format json"
 log_info "═══════════════════════════════════════════"
 
 REPORT_JSON_PATH="$PROJECT_PATH/.smart-deployment/analysis-report.json"
@@ -1042,12 +928,12 @@ if echo "$ANALYZE_JSON_OUTPUT" | grep -q "📄 Report saved\|Report saved to"; t
     log_success "✓ Report generation message shown"
 fi
 
-log_success "Test 21 passed: JSON report generation validated"
+log_success "Test 19 passed: JSON report generation validated"
 
-# Test 22: Analyze with --output --format html (report generation)
+# Test 20: Analyze with --output --format html (report generation)
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 22: Analyze with --output --format html"
+log_info "Test 20: Analyze with --output --format html"
 log_info "═══════════════════════════════════════════"
 
 REPORT_HTML_PATH="$PROJECT_PATH/.smart-deployment/analysis-report.html"
@@ -1094,12 +980,12 @@ if echo "$ANALYZE_HTML_OUTPUT" | grep -q "📄 Report saved\|Report saved to"; t
     log_success "✓ Report generation message shown"
 fi
 
-log_success "Test 22 passed: HTML report generation validated"
+log_success "Test 20 passed: HTML report generation validated"
 
-# Test 23: Enhanced Resume command test
+# Test 21: Enhanced Resume command test
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 23: Enhanced Resume command test"
+log_info "Test 21: Enhanced Resume command test"
 log_info "═══════════════════════════════════════════"
 
 log_info "Running: sf resume --target-org $TARGET_ORG --source-path $PROJECT_PATH"
@@ -1132,12 +1018,12 @@ else
     log_warning "⚠️  Resume command failed (may be expected if no failed deployment)"
 fi
 
-log_success "Test 23 passed: Enhanced resume command validated"
+log_success "Test 21 passed: Enhanced resume command validated"
 
-# Test 24: Enhanced Status command test
+# Test 22: Enhanced Status command test
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 24: Enhanced Status command test"
+log_info "Test 22: Enhanced Status command test"
 log_info "═══════════════════════════════════════════"
 
 log_info "Running: sf status --target-org $TARGET_ORG"
@@ -1168,12 +1054,12 @@ else
     fi
 fi
 
-log_success "Test 24 passed: Enhanced status command validated"
+log_success "Test 22 passed: Enhanced status command validated"
 
 # Final summary
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_success "All E2E tests completed! (Tests 1-24)"
+log_success "All E2E tests completed! (Tests 1-22)"
 log_info "═══════════════════════════════════════════"
 log_info "Project: $PROJECT_PATH"
 log_info "Org: $TARGET_ORG"
@@ -1185,15 +1071,12 @@ log_info "  ✓ Analyze with --save-plan"
 log_info "  ✓ Validate command"
 log_info "  ✓ Start with --dry-run (manifest generation)"
 log_info "  ✓ Start with --validate-only (manifest validation)"
-log_info "  ✓ Analyze with --use-ai"
-log_info "  ✓ Start with --use-ai (manifest + AI validation)"
 log_info "  ✓ Start with --no-test-run (org type aware)"
 log_info "  ✓ Start with --run-wave-test"
 log_info "  ✓ Start with default test behavior"
 log_info "  ✓ Start with --use-plan (CI/CD workflow)"
 log_info "  ✓ Start with --strict --use-plan (CI/CD safety)"
 log_info "  ✓ Start with --strict validation (should fail)"
-log_info "  ✓ Start with --ai-auto"
 log_info "  ✓ Resume command"
 log_info "  ✓ Status command"
 log_info "  ✓ Analyze with --locale"
@@ -1209,13 +1092,10 @@ log_info "Features validated:"
 log_info "  ✓ Manifest generation (package.xml per wave)"
 log_info "  ✓ Manifest validation against source"
 log_info "  ✓ Enhanced error messages with suggestions"
-log_info "  ✓ AI metadata type mapping"
-log_info "  ✓ AI wave validation"
 log_info "  ✓ Test execution flags (--no-test-run, --run-wave-test)"
 log_info "  ✓ Production org test requirement enforcement"
 log_info "  ✓ SF CLI standard test behavior"
 log_info "  ✓ CI/CD workflow (--use-plan, --strict)"
-log_info "  ✓ AI automation (--ai-auto)"
 log_info "  ✓ Resume functionality"
 log_info "  ✓ Status monitoring"
 log_info "  ✓ Internationalization (--locale)"
@@ -1231,4 +1111,3 @@ log_info "      These are expected and safe to commit if needed."
 log_info ""
 
 log_success "✅ E2E tests completed successfully!"
-

@@ -21,8 +21,6 @@ import sinon, { SinonStub } from 'sinon';
 import Analyze from '../../../src/commands/smart-deployment/analyze.js';
 import { MetadataScannerService } from '../../../src/services/metadata-scanner-service.js';
 import { WaveBuilder } from '../../../src/waves/wave-builder.js';
-import { DependencyInferenceService } from '../../../src/ai/dependency-inference-service.js';
-import { AIEnhancedPriorityWaveGenerator } from '../../../src/waves/priority-wave-generator-ai.js';
 import { DeploymentPlanManager } from '../../../src/utils/deployment-plan-manager.js';
 import { createMockComponent } from '../../helpers/test-helpers.js';
 
@@ -31,8 +29,6 @@ describe('AnalyzeCommand', () => {
   let analyzeCommand: Analyze;
   let scannerStub: SinonStub;
   let waveBuilderStub: SinonStub;
-  let inferenceServiceStub: SinonStub;
-  let aiGeneratorStub: SinonStub;
   let planManagerStub: SinonStub;
 
   beforeEach(() => {
@@ -44,9 +40,6 @@ describe('AnalyzeCommand', () => {
         'target-org': undefined,
         'save-plan': false,
         'plan-path': undefined,
-        'use-ai': false,
-        'org-type': undefined,
-        industry: undefined,
         output: undefined,
         format: 'json',
         'create-manifest': false,
@@ -112,37 +105,6 @@ describe('AnalyzeCommand', () => {
       },
     });
 
-    // Stub DependencyInferenceService
-    inferenceServiceStub = sinon.stub(DependencyInferenceService.prototype, 'inferDependencies').resolves({
-      dependencies: [],
-      totalInferred: 0,
-      highConfidenceCount: 0,
-      executionTime: 0,
-      usedCache: false,
-      fallbackToStatic: false,
-    });
-
-    // Stub AIEnhancedPriorityWaveGenerator
-    aiGeneratorStub = sinon.stub(AIEnhancedPriorityWaveGenerator.prototype, 'applyPriorityWavesAsync').resolves([
-      {
-        number: 1,
-        components: ['ApexClass:TestClass', 'CustomObject:TestObject__c'],
-        metadata: {
-          componentCount: 2,
-          types: ['ApexClass', 'CustomObject'],
-          maxDepth: 0,
-          hasCircularDeps: false,
-          estimatedTime: 5,
-        },
-      },
-    ]);
-    sinon.stub(AIEnhancedPriorityWaveGenerator.prototype, 'getAIStats').returns({
-      aiAdjustments: 0,
-      aiExecutionTime: 0,
-      unknownTypesDetected: 0,
-      unknownTypes: [],
-    });
-
     // Stub DeploymentPlanManager
     planManagerStub = sinon.stub(DeploymentPlanManager, 'savePlan').resolves();
     sinon.stub(DeploymentPlanManager, 'createPlan').returns({
@@ -152,7 +114,6 @@ describe('AnalyzeCommand', () => {
       metadata: {
         version: '1.0.0',
         generatedAt: new Date().toISOString(),
-        aiEnabled: false,
         generatedBy: 'test',
         totalComponents: 0,
         totalWaves: 0,
@@ -185,9 +146,6 @@ describe('AnalyzeCommand', () => {
           'target-org': undefined,
           'save-plan': false,
           'plan-path': undefined,
-          'use-ai': false,
-          'org-type': undefined,
-          industry: undefined,
           output: undefined,
           format: 'json',
           'create-manifest': false,
@@ -235,9 +193,6 @@ describe('AnalyzeCommand', () => {
           'target-org': undefined,
           'save-plan': false,
           'plan-path': undefined,
-          'use-ai': false,
-          'org-type': undefined,
-          industry: undefined,
           output: path.join(tempDir, 'report.json'),
           format: 'json',
           'create-manifest': false,
@@ -263,9 +218,6 @@ describe('AnalyzeCommand', () => {
           'target-org': undefined,
           'save-plan': false,
           'plan-path': undefined,
-          'use-ai': false,
-          'org-type': undefined,
-          industry: undefined,
           output: path.join(tempDir, 'report.html'),
           format: 'html',
           'create-manifest': false,
@@ -290,9 +242,6 @@ describe('AnalyzeCommand', () => {
           'target-org': undefined,
           'save-plan': false,
           'plan-path': undefined,
-          'use-ai': false,
-          'org-type': undefined,
-          industry: undefined,
           output: path.join(tempDir, 'report.json'),
           format: 'json',
           'create-manifest': false,
@@ -317,9 +266,6 @@ describe('AnalyzeCommand', () => {
           'target-org': undefined,
           'save-plan': false,
           'plan-path': undefined,
-          'use-ai': false,
-          'org-type': undefined,
-          industry: undefined,
           output: path.join(tempDir, 'report.json'),
           format: 'json',
           'create-manifest': false,
@@ -342,9 +288,6 @@ describe('AnalyzeCommand', () => {
           'target-org': undefined,
           'save-plan': false,
           'plan-path': undefined,
-          'use-ai': false,
-          'org-type': undefined,
-          industry: undefined,
           output: outputPath,
           format: 'json',
           'create-manifest': false,
@@ -368,9 +311,6 @@ describe('AnalyzeCommand', () => {
           'target-org': undefined,
           'save-plan': false,
           'plan-path': undefined,
-          'use-ai': false,
-          'org-type': undefined,
-          industry: undefined,
           output: path.join(tempDir, 'report.json'),
           format: 'json',
           'create-manifest': false,
@@ -392,9 +332,6 @@ describe('AnalyzeCommand', () => {
           'target-org': undefined,
           'save-plan': false,
           'plan-path': undefined,
-          'use-ai': false,
-          'org-type': undefined,
-          industry: undefined,
           output: path.join(tempDir, 'report.html'),
           format: 'html',
           'create-manifest': false,
@@ -475,56 +412,6 @@ describe('AnalyzeCommand', () => {
     });
   });
 
-  describe('AI Integration', () => {
-    it('should use AI dependency inference when --use-ai is provided', async () => {
-      ((analyzeCommand as any).parse as SinonStub).resolves({
-        flags: {
-          'source-path': '.',
-          'target-org': undefined,
-          'save-plan': false,
-          'plan-path': undefined,
-          'use-ai': true,
-          'org-type': undefined,
-          industry: undefined,
-          output: undefined,
-          format: 'json',
-          'create-manifest': false,
-        },
-        args: {},
-        argv: [],
-        raw: [],
-        metadata: {} as any,
-      });
-      await analyzeCommand.run();
-
-      expect(inferenceServiceStub.called).to.be.true;
-    });
-
-    it('should use AI priority weighting when --use-ai is provided', async () => {
-      ((analyzeCommand as any).parse as SinonStub).resolves({
-        flags: {
-          'source-path': '.',
-          'target-org': undefined,
-          'save-plan': false,
-          'plan-path': undefined,
-          'use-ai': true,
-          'org-type': undefined,
-          industry: undefined,
-          output: undefined,
-          format: 'json',
-          'create-manifest': false,
-        },
-        args: {},
-        argv: [],
-        raw: [],
-        metadata: {} as any,
-      });
-      await analyzeCommand.run();
-
-      expect(aiGeneratorStub.called).to.be.true;
-    });
-  });
-
   describe('Plan Saving', () => {
     it('should save deployment plan when --save-plan is provided', async () => {
       ((analyzeCommand as any).parse as SinonStub).resolves({
@@ -533,9 +420,6 @@ describe('AnalyzeCommand', () => {
           'target-org': undefined,
           'save-plan': true,
           'plan-path': undefined,
-          'use-ai': false,
-          'org-type': undefined,
-          industry: undefined,
           output: undefined,
           format: 'json',
           'create-manifest': false,
@@ -558,9 +442,6 @@ describe('AnalyzeCommand', () => {
           'target-org': undefined,
           'save-plan': true,
           'plan-path': customPath,
-          'use-ai': false,
-          'org-type': undefined,
-          industry: undefined,
           output: undefined,
           format: 'json',
           'create-manifest': false,

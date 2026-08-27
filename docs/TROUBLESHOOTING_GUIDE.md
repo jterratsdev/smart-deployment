@@ -12,11 +12,13 @@ Common issues and solutions for the Smart Deployment Plugin.
 ### Issue: "No components found"
 
 **Symptoms**:
+
 ```
 ✅ Found 0 components with 0 dependencies
 ```
 
 **Possible Causes**:
+
 1. Wrong source path
 2. Project not in SFDX format
 3. Metadata files not in expected locations
@@ -41,6 +43,7 @@ cat sfdx-project.json
 ### Issue: "Deployment plan not found"
 
 **Symptoms**:
+
 ```
 ❌ Error: Deployment plan not found: .smart-deployment/deployment-plan.json
 💡 Run: sf smart-deployment analyze --save-plan
@@ -63,6 +66,7 @@ sf smart-deployment analyze --save-plan --plan-path custom-plan.json
 ### Issue: "Tests required in production"
 
 **Symptoms**:
+
 ```
 ⚠️  Production org detected: --no-test-run is ignored (tests are required in production)
 ```
@@ -84,41 +88,17 @@ sf smart-deployment start --target-org prod
 
 ---
 
-### Issue: "Agentforce API key not configured"
-
-**Symptoms**:
-```
-⚠️  Agentforce unavailable, using static analysis only
-```
-
-**Solutions**:
-
-```bash
-# Solution 1: Use --target-org for authentication (Recommended)
-sf smart-deployment analyze --use-ai --target-org myorg
-
-# Solution 2: Configure environment variable
-export AGENTFORCE_API_KEY=your-api-key
-sf smart-deployment analyze --use-ai
-
-# Solution 3: Authenticate org first
-sf org login web --alias myorg
-sf smart-deployment analyze --use-ai --target-org myorg
-```
-
-**Prevention**: Always authenticate your org before using AI features.
-
----
-
 ### Issue: "Manifest validation failed"
 
 **Symptoms**:
+
 ```
 ❌ Manifest validation failed
    Component 'ApexClass:MyClass' listed in manifest not found in scanned project
 ```
 
 **Possible Causes**:
+
 1. Component was deleted but still in manifest
 2. Component name mismatch
 3. File path changed
@@ -141,6 +121,7 @@ ls force-app/main/default/classes/MyClass.cls
 ### Issue: "Circular dependencies detected"
 
 **Symptoms**:
+
 ```
 ⚠️  168 component(s) couldn't be placed (circular deps)
 ```
@@ -148,12 +129,14 @@ ls force-app/main/default/classes/MyClass.cls
 **Solutions**:
 
 1. **Review circular dependencies**:
+
    ```bash
    sf smart-deployment analyze --format html --output deps.html
    # Open deps.html to visualize circular dependencies
    ```
 
 2. **Break circular dependencies**:
+
    - Refactor code to remove circular references
    - Use dependency injection
    - Split components if necessary
@@ -169,6 +152,7 @@ ls force-app/main/default/classes/MyClass.cls
 ### Issue: "Wave too large"
 
 **Symptoms**:
+
 ```
 ⚠️  Wave 1 exceeds maximum component limit (300)
 ```
@@ -178,6 +162,7 @@ ls force-app/main/default/classes/MyClass.cls
 The plugin automatically splits large waves. If you see this warning:
 
 1. **Check wave splitting**:
+
    ```bash
    sf smart-deployment analyze
    # Check output for wave counts
@@ -194,6 +179,7 @@ The plugin automatically splits large waves. If you see this warning:
 ### Issue: "Deployment failed at wave X"
 
 **Symptoms**:
+
 ```
 ❌ Wave 3 failed: Deployment failed: FIELD_CUSTOM_VALIDATION_EXCEPTION
 ```
@@ -201,11 +187,13 @@ The plugin automatically splits large waves. If you see this warning:
 **Solutions**:
 
 1. **Check deployment status**:
+
    ```bash
    sf smart-deployment status --target-org myorg
    ```
 
 2. **Review error details**:
+
    - Check logs: `.smart-deployment/logs/deployment.log`
    - Review SF CLI output for specific errors
 
@@ -217,18 +205,19 @@ The plugin automatically splits large waves. If you see this warning:
 
 **Common Deployment Errors**:
 
-| Error | Solution |
-|-------|----------|
-| `FIELD_CUSTOM_VALIDATION_EXCEPTION` | Check validation rules |
-| `INSUFFICIENT_ACCESS_OR_READONLY` | Verify profile/permission set access |
-| `DUPLICATE_VALUE` | Check for duplicate records |
-| `UNKNOWN_EXCEPTION` | Review Salesforce debug logs |
+| Error                               | Solution                             |
+| ----------------------------------- | ------------------------------------ |
+| `FIELD_CUSTOM_VALIDATION_EXCEPTION` | Check validation rules               |
+| `INSUFFICIENT_ACCESS_OR_READONLY`   | Verify profile/permission set access |
+| `DUPLICATE_VALUE`                   | Check for duplicate records          |
+| `UNKNOWN_EXCEPTION`                 | Review Salesforce debug logs         |
 
 ---
 
 ### Issue: "Strict mode requires --use-plan"
 
 **Symptoms**:
+
 ```
 ❌ Strict mode requires --use-plan
 💡 Run: sf smart-deployment analyze --save-plan
@@ -251,6 +240,7 @@ sf smart-deployment start --target-org prod --use-plan .smart-deployment/deploym
 ### Issue: "Plan diff too high"
 
 **Symptoms**:
+
 ```
 ❌ Error: Component diff too high: 25% (max: 20%)
 ```
@@ -278,6 +268,7 @@ sf smart-deployment start --target-org prod --use-plan plan.json --max-diff 30
 ### Issue: "No deployment state found"
 
 **Symptoms**:
+
 ```
 ℹ️  No deployment state found
 ```
@@ -285,11 +276,13 @@ sf smart-deployment start --target-org prod --use-plan plan.json --max-diff 30
 **Solutions**:
 
 This is normal if:
+
 - No deployment has been started
 - Previous deployment completed successfully
 - State file was deleted
 
 **To resume a failed deployment**:
+
 1. Check if deployment actually failed
 2. Verify state file exists: `.smart-deployment/deployment-state.json`
 3. If missing, start fresh deployment
@@ -384,12 +377,14 @@ cat .smart-deployment/deployment-plan.json
 **Solutions**:
 
 1. **Use caching**:
+
    - Dependency cache is enabled by default
    - Cache is stored in `.smart-deployment/cache/`
 
 2. **Disable AI** (if not needed):
+
    ```bash
-   # Don't use --use-ai if not needed
+   # Don't use if not needed
    sf smart-deployment analyze
    ```
 
@@ -404,11 +399,13 @@ cat .smart-deployment/deployment-plan.json
 **Solutions**:
 
 1. **Use wave-specific tests**:
+
    ```bash
    sf smart-deployment start --target-org myorg --run-wave-test
    ```
 
 2. **Skip tests in sandbox**:
+
    ```bash
    sf smart-deployment start --target-org mysandbox --no-test-run
    ```
@@ -425,6 +422,7 @@ cat .smart-deployment/deployment-plan.json
 ### Issue: "Org not authenticated"
 
 **Symptoms**:
+
 ```
 ❌ Error: No org found with alias: myorg
 ```
@@ -445,8 +443,9 @@ sf org list
 ### Issue: "Access token expired"
 
 **Symptoms**:
+
 ```
-⚠️  Agentforce unavailable: Access token expired
+
 ```
 
 **Solutions**:
@@ -521,11 +520,3 @@ Before deploying:
 ---
 
 **Last Updated**: December 14, 2025
-
-
-
-
-
-
-
-

@@ -20,8 +20,7 @@ import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
-import { Messages } from '@salesforce/core';
-import { Org } from '@salesforce/core';
+import { Messages, Org } from '@salesforce/core';
 import { getLogger } from '../../utils/logger.js';
 import { DeploymentPlanManager } from '../../utils/deployment-plan-manager.js';
 import { MetadataScannerService } from '../../services/metadata-scanner-service.js';
@@ -29,15 +28,11 @@ import { WaveBuilder } from '../../waves/wave-builder.js';
 import { getWavesInExecutionOrder } from '../../waves/wave-executor.js';
 import { SfCliIntegration } from '../../deployment/sf-cli-integration.js';
 import { StateManager } from '../../deployment/state-manager.js';
-import { DeploymentTracker } from '../../deployment/deployment-tracker.js';
 import { ManifestGenerator } from '../../deployment/manifest-generator.js';
 import { ManifestValidator } from '../../deployment/manifest-validator.js';
-import { WaveValidationService } from '../../ai/wave-validation-service.js';
-import { AgentforceService } from '../../ai/agentforce-service.js';
 import { MetadataSimplifier } from '../../deployment/metadata-simplifier.js';
-import { DependencyAvailabilityAnalyzer } from '../../dependencies/dependency-availability-analyzer.js';
-import type { MetadataComponent } from '../../types/metadata.js';
 import type { NodeId } from '../../types/dependency.js';
+import type { MetadataComponent } from '../../types/metadata.js';
 import { createNodeId, parseNodeId } from '../../utils/node-id.js';
 import type { Wave } from '../../waves/wave-builder.js';
 import type { ScanResult } from '../../services/metadata-scanner-service.js';
@@ -45,6 +40,8 @@ import { OutputFormatter } from '../../utils/output-formatter.js';
 import { validateManifestCompleteness } from '../../utils/manifest-completeness-validator.js';
 import { validateAgentforceTargets } from '../../validation/agentforce-target-validator.js';
 import { DeploymentReporter, type DeploymentReport, type WaveReport } from '../../deployment/deployment-reporter.js';
+import { DeploymentTracker } from '../../deployment/deployment-tracker.js';
+import { DependencyAvailabilityAnalyzer } from '../../dependencies/dependency-availability-analyzer.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('smart-deployment', 'start');
@@ -65,7 +62,6 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
    * @ac US-046-AC-5: Supports --dry-run flag
    * @ac US-046-AC-6: Supports --validate-only flag
    * @ac US-046-AC-7: Supports --skip-tests flag
-   * @ac US-057-AC-1: Send component list to Agentforce
    */
   public static readonly flags = {
     'target-org': Flags.string({
@@ -113,30 +109,6 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       summary: 'Test level to use for deployment',
       options: ['NoTestRun', 'RunSpecifiedTests', 'RunLocalTests', 'RunAllTestsInOrg'],
     }),
-    'use-ai': Flags.boolean({
-      summary: 'Use Agentforce AI for intelligent priority weighting',
-      description: 'Enables AI-powered analysis for deployment prioritization',
-      default: false,
-    }),
-    'ai-auto': Flags.boolean({
-      summary: 'Auto-apply AI recommendations with confidence > 80%',
-      description: 'Automatically applies AI priorities without prompting (requires --use-ai)',
-      default: false,
-    }),
-    'ai-confidence-threshold': Flags.string({
-      summary: 'Minimum AI confidence to auto-apply (0-1)',
-      description: 'Default: 0.8 (80%). Only used with --ai-auto',
-      default: '0.8',
-    }),
-    'org-type': Flags.string({
-      summary: 'Organization type (Production, Sandbox, Developer)',
-      description: 'Helps AI provide context-aware recommendations',
-      options: ['Production', 'Sandbox', 'Developer'],
-    }),
-    industry: Flags.string({
-      summary: 'Industry context for AI analysis (e.g., Fintech, Healthcare)',
-      description: 'Provides business context to AI for better prioritization',
-    }),
     'use-plan': Flags.string({
       summary: 'Use pre-approved deployment plan',
     }),
@@ -183,7 +155,6 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
           { label: 'Generated', value: new Date(plan.metadata.generatedAt).toLocaleString() },
           { label: 'Components', value: plan.metadata.totalComponents },
           { label: 'Waves', value: plan.metadata.totalWaves },
-          ...(plan.metadata.aiEnabled ? [{ label: 'AI-enhanced', value: 'Yes' }] : []),
         ]);
       }
 
@@ -197,18 +168,6 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       output.section('Generating Deployment Waves', '🌊');
       const waves = await this.generateWaves(flags, output, sourcePath);
       output.success(`Generated ${waves} waves`);
-
-      // AC US-057-AC-6: Report AI decisions
-      if (flags['use-ai']) {
-        const threshold = parseFloat(flags['ai-confidence-threshold'] || '0.8');
-        const mode = flags['ai-auto'] ? 'auto' : 'manual-review';
-        output.subsection('AI-Enhanced Prioritization', '🤖');
-        output.keyValue('Mode', mode);
-        output.keyValue('Confidence Threshold', `${(threshold * 100).toFixed(0)}%`);
-        if (!flags['ai-auto']) {
-          output.tip('Use --ai-auto to automatically apply high-confidence recommendations');
-        }
-      }
 
       // AC-3: Execute deployment
       const deploymentId = `deployment-${Date.now()}`;
@@ -278,72 +237,11 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     const waveBuilder = new WaveBuilder();
     let waveResult = waveBuilder.generateWaves(scanResult.dependencyResult.graph);
 
-    // AI Priority Weighting (US-057) - if --use-ai is enabled
-    if (flags['use-ai']) {
-      output.subsection('Using Agentforce for Intelligent Prioritization', '🤖');
-
-      try {
-        // Try to get access token from org if target-org is provided
-        let accessToken: string | undefined;
-        const targetOrg = flags['target-org'] as string | undefined;
-        if (targetOrg && !flags['dry-run']) {
-          try {
-            const org = await Org.create({ aliasOrUsername: targetOrg });
-            const connection = org.getConnection();
-            const authFields = connection.getAuthInfoFields();
-            accessToken = authFields.accessToken;
-            logger.debug('Using access token from authenticated org for priority service');
-          } catch (error) {
-            logger.warn('Could not get access token from org, will use API key or mock', { error });
-          }
-        }
-
-        const { AgentforcePriorityService } = await import('../../ai/agentforce-priority-service.js');
-        const { AIEnhancedPriorityWaveGenerator } = await import('../../waves/priority-wave-generator-ai.js');
-
-        const priorityService = new AgentforcePriorityService({
-          enabled: true,
-          autoApply: false, // Don't auto-apply in start command (user controls via flags)
-          apiKey: accessToken,
-        });
-
-        const aiGenerator = new AIEnhancedPriorityWaveGenerator({
-          agentforceService: priorityService,
-          orgType: flags['org-type'] as string | undefined,
-          industry: flags.industry as string | undefined,
-        });
-
-        // Convert components to Map for AI generator
-        const componentsMap = new Map<string, MetadataComponent>();
-        for (const component of scanResult.components) {
-          const nodeId = createNodeId(component.type, component.name);
-          componentsMap.set(nodeId, component);
-        }
-
-        // Apply AI priorities
-        const prioritizedWaves = await aiGenerator.applyPriorityWavesAsync(waveResult.waves, componentsMap);
-
-        waveResult = {
-          ...waveResult,
-          waves: prioritizedWaves,
-        };
-
-        const aiStats = aiGenerator.getAIStats();
-        if (aiStats && aiStats.aiAdjustments > 0) {
-          this.log(`   ✅ AI adjusted ${aiStats.aiAdjustments} component priorities`);
-        }
-      } catch (error) {
-        logger.warn('AI priority weighting failed, continuing with static priorities', { error });
-        this.warn('   ⚠️  Could not apply AI priorities, using static prioritization');
-      }
-    }
-
     const orderedWaves = getWavesInExecutionOrder(waveResult);
 
     logger.info('Waves generated', {
       totalWaves: orderedWaves.length,
       totalComponents: waveResult.totalComponents,
-      aiEnabled: !!flags['use-ai'],
     });
 
     return orderedWaves.length;
@@ -464,56 +362,6 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     const manifestAdjustments = postProcessResult.manifestAdjustments;
     const componentsToSimplify = postProcessResult.componentsToSimplify;
 
-    // AI Priority Weighting (US-057) - if --use-ai is enabled
-    if (flags['use-ai']) {
-      output.subsection('Applying AI Priority Weighting', '🤖');
-
-      try {
-        // Try to get access token from org
-        let accessToken: string | undefined;
-        try {
-          const org = await Org.create({ aliasOrUsername: targetOrg });
-          const connection = org.getConnection();
-          const authFields = connection.getAuthInfoFields();
-          accessToken = authFields.accessToken;
-          logger.debug('Using access token from authenticated org for priority service');
-        } catch (error) {
-          logger.warn('Could not get access token from org, will use API key or mock', { error });
-        }
-
-        const { AgentforcePriorityService } = await import('../../ai/agentforce-priority-service.js');
-        const { AIEnhancedPriorityWaveGenerator } = await import('../../waves/priority-wave-generator-ai.js');
-
-        const priorityService = new AgentforcePriorityService({
-          enabled: true,
-          autoApply: false,
-          apiKey: accessToken,
-        });
-
-        const aiGenerator = new AIEnhancedPriorityWaveGenerator({
-          agentforceService: priorityService,
-          orgType: flags['org-type'] as string | undefined,
-          industry: flags.industry as string | undefined,
-        });
-
-        // Apply AI priorities
-        const prioritizedWaves = await aiGenerator.applyPriorityWavesAsync(waveResult.waves, componentMap);
-
-        waveResult = {
-          ...waveResult,
-          waves: prioritizedWaves,
-        };
-
-        const aiStats = aiGenerator.getAIStats();
-        if (aiStats && aiStats.aiAdjustments > 0) {
-          this.log(`   ✅ AI adjusted ${aiStats.aiAdjustments} component priorities`);
-        }
-      } catch (error) {
-        logger.warn('AI priority weighting failed, continuing with static priorities', { error });
-        this.warn('   ⚠️  Could not apply AI priorities, using static prioritization');
-      }
-    }
-
     const orderedWaves = getWavesInExecutionOrder(waveResult);
 
     if (dryRun) {
@@ -548,55 +396,13 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     // Generate manifests for all waves (needed for state tracking)
     output.section('Generating Manifests', '📄');
 
-    // Initialize AgentforceService if --use-ai is enabled
-    // Uses flexible model support - model can be configured via:
-    // 1. .smart-deployment.json (ai.model)
-    // 2. getRecommendedModel() for automatic selection based on org size
-    // 3. Environment variables or CLI flags
-    let agentforceService: AgentforceService | undefined;
-    if (flags['use-ai']) {
-      try {
-        let accessToken: string | undefined;
-        if (targetOrg && !flags['dry-run']) {
-          try {
-            const org = await Org.create({ aliasOrUsername: targetOrg });
-            const connection = org.getConnection();
-            const authFields = connection.getAuthInfoFields();
-            accessToken = authFields.accessToken;
-          } catch (error) {
-            logger.warn('Could not get access token for manifest generation', { error });
-          }
-        }
-
-        // AgentforceService already supports flexible models
-        // Model selection is handled by the service based on config
-        agentforceService = new AgentforceService({
-          enabled: true,
-          apiKey: accessToken,
-          // Model comes from .smart-deployment.json or defaults to 'agentforce-1'
-          // Can be overridden via getRecommendedModel() if needed
-        });
-
-        if (accessToken) {
-          agentforceService.setApiKeyFromOrg(accessToken);
-        }
-
-        const model = agentforceService.getConfig().model;
-        output.subsection('Using Agentforce for Metadata Type Mapping', '🤖');
-        output.keyValue('Model', model);
-      } catch (error) {
-        logger.warn('Could not initialize Agentforce for manifest generation', { error });
-      }
-    }
-
-    const manifestGenerator = new ManifestGenerator(agentforceService);
+    const manifestGenerator = new ManifestGenerator();
     const manifestDir = path.join(scanResult.projectRoot, '.smart-deployment', 'manifests');
     const manifestResult = await manifestGenerator.generateManifests(orderedWaves, {
       projectRoot: scanResult.projectRoot,
       componentMap,
       outputDir: manifestDir,
       validateFiles: true,
-      agentforceService,
       manifestAdjustments,
     });
 
@@ -739,77 +545,6 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       }
     } else {
       output.success(`All ${deployableScannedCount} deployable component(s) are accounted for in manifests`);
-    }
-
-    // AI Wave Validation (if --use-ai is enabled)
-    if (flags['use-ai']) {
-      output.blank();
-      output.subsection('Using Agentforce for Wave Validation', '🤖');
-
-      try {
-        // Try to get access token from org if target-org is provided
-        let accessToken: string | undefined;
-        if (targetOrg && !flags['dry-run']) {
-          try {
-            const org = await Org.create({ aliasOrUsername: targetOrg });
-            const connection = org.getConnection();
-            const authFields = connection.getAuthInfoFields();
-            accessToken = authFields.accessToken;
-            logger.info('Using access token from authenticated org for wave validation');
-          } catch (error) {
-            logger.warn('Could not get access token from org, will use API key or mock', { error });
-          }
-        }
-
-        const waveValidationAgentforceService = new AgentforceService({
-          enabled: true,
-          apiKey: accessToken,
-        });
-
-        if (accessToken) {
-          waveValidationAgentforceService.setApiKeyFromOrg(accessToken);
-        }
-
-        const waveValidationService = new WaveValidationService(waveValidationAgentforceService);
-        const validationResult = await waveValidationService.validateWaves(orderedWaves);
-
-        if (validationResult.aiAnalyzed) {
-          output.success(`Analyzed ${orderedWaves.length} waves`);
-          output.keyValue('Overall risk', validationResult.overallRisk.toUpperCase(), '📊');
-
-          if (validationResult.issues.length > 0) {
-            this.log(`   ⚠️  Found ${validationResult.issues.length} potential issues:`);
-            validationResult.issues.slice(0, 5).forEach((issue) => {
-              const icon = issue.severity === 'critical' ? '❌' : '⚠️';
-              this.log(`      ${icon} ${issue.message}`);
-            });
-            if (validationResult.issues.length > 5) {
-              this.log(`      ... and ${validationResult.issues.length - 5} more`);
-            }
-          }
-
-          if (validationResult.optimizations.length > 0) {
-            this.log(`   💡 ${validationResult.optimizations.length} optimization suggestions:`);
-            validationResult.optimizations.slice(0, 3).forEach((opt) => {
-              this.log(`      • ${opt.description}`);
-            });
-          }
-
-          if (
-            validationResult.overallRisk === 'high' ||
-            validationResult.issues.some((i) => i.severity === 'critical')
-          ) {
-            this.warn('\n⚠️  High-risk deployment detected. Consider reviewing waves before proceeding.');
-          }
-        } else {
-          this.log('   ⚠️  Agentforce unavailable, skipping AI validation');
-        }
-      } catch (error) {
-        logger.warn('Wave validation with Agentforce failed', { error });
-        this.warn('   ⚠️  Could not validate waves with Agentforce, continuing with static validation only');
-      }
-
-      this.log('');
     }
 
     // Initialize deployment services (reuse stateManager from above)

@@ -1,7 +1,7 @@
 /**
  * smart-deployment:config command - US-051
  *
- * @ac US-051-AC-1: Set Agentforce configuration
+ * @ac US-051-AC-1: Set deployment configuration
  * @ac US-051-AC-2: Set default test level
  * @ac US-051-AC-3: Set timeout values
  * @ac US-051-AC-4: Set retry strategies
@@ -23,7 +23,6 @@ const TEST_LEVELS = ['NoTestRun', 'RunLocalTests', 'RunSpecifiedTests', 'RunAllT
 
 // These entries are supported even when they are not present in older config files.
 const COMPATIBLE_KEYS: Record<string, (value: string) => unknown> = {
-  'ai.apiKey': (value) => value,
   'deployment.timeout': parseNonNegativeNumber,
   'deployment.retry.maxAttempts': parsePositiveInteger,
 };

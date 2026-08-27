@@ -34,6 +34,7 @@ sf smart-deployment start --target-org myorg  # Without analyzing first
 ```
 
 **Why**:
+
 - Identifies circular dependencies
 - Shows deployment waves
 - Highlights potential issues
@@ -50,6 +51,7 @@ sf smart-deployment analyze --format html --output waves.html
 ```
 
 **Check**:
+
 - Wave count (too many waves = slow deployment)
 - Component distribution (even distribution is better)
 - Circular dependencies (should be minimal)
@@ -60,7 +62,7 @@ sf smart-deployment analyze --format html --output waves.html
 
 ```bash
 # Development: Generate plan
-sf smart-deployment analyze --save-plan --use-ai --org-type Production
+sf smart-deployment analyze --save-plan --org-type Production
 
 # Commit plan
 git add .smart-deployment/deployment-plan.json
@@ -69,6 +71,7 @@ git push
 ```
 
 **Benefits**:
+
 - Deterministic deployments
 - Pre-approved wave structure
 - Faster CI/CD (no AI calls)
@@ -90,6 +93,7 @@ git push
 ```
 
 **When to Use**:
+
 - Critical business components
 - Components with external dependencies
 - Components that must deploy first/last
@@ -116,6 +120,7 @@ sf smart-deployment start \
 ```
 
 **Why**:
+
 - Faster than `RunLocalTests`
 - Only tests relevant to wave
 - Still meets Salesforce requirements
@@ -133,6 +138,7 @@ sf smart-deployment status --target-org myorg --watch
 ```
 
 **Benefits**:
+
 - Real-time progress
 - Early error detection
 - Better visibility
@@ -151,6 +157,7 @@ sf smart-deployment start --target-org newenv  # Without dry-run
 ```
 
 **Why**:
+
 - Validates deployment without committing
 - Identifies issues early
 - Safe testing
@@ -169,6 +176,7 @@ sf smart-deployment resume --target-org myorg
 ```
 
 **Benefits**:
+
 - No need to restart from beginning
 - Faster recovery
 - State persistence
@@ -190,6 +198,7 @@ sf project deploy report --target-org myorg
 ```
 
 **Check**:
+
 - All waves completed
 - No failed components
 - Tests passed
@@ -207,6 +216,7 @@ grep -i "warning" .smart-deployment/logs/deployment.log
 ```
 
 **Why**:
+
 - Identifies potential issues
 - Documents deployment
 - Helps with troubleshooting
@@ -239,6 +249,7 @@ sf smart-deployment start \
 ```
 
 **Why**:
+
 - Requires pre-approved plan
 - Prevents unexpected changes
 - Deterministic deployments
@@ -249,13 +260,14 @@ sf smart-deployment start \
 
 ```bash
 # Development: Generate plan
-sf smart-deployment analyze --save-plan --use-ai
+sf smart-deployment analyze --save-plan
 
 # CI/CD: Use plan (no AI calls)
 sf smart-deployment start --use-plan plan.json --strict
 ```
 
 **Benefits**:
+
 - Faster CI/CD (no AI calls)
 - Pre-approved structure
 - Consistent deployments
@@ -272,6 +284,7 @@ sf smart-deployment start --target-org prod --use-plan plan.json
 ```
 
 **Why**:
+
 - Catches issues early
 - Validates against target org
 - Prevents production failures
@@ -289,6 +302,7 @@ env:
 ```
 
 **Benefits**:
+
 - Secure credential management
 - Environment-specific config
 - No hardcoded values
@@ -309,10 +323,11 @@ sf smart-deployment start \
   --strict
 
 # ❌ Bad
-sf smart-deployment start --target-org prod --use-ai  # No plan
+sf smart-deployment start --target-org prod  # No plan
 ```
 
 **Why**:
+
 - Pre-approved structure
 - Deterministic deployments
 - Audit trail
@@ -330,6 +345,7 @@ sf smart-deployment start \
 ```
 
 **Benefits**:
+
 - Faster than `RunLocalTests`
 - Still meets requirements
 - Optimized test execution
@@ -339,6 +355,7 @@ sf smart-deployment start \
 **Best Practice**: Schedule deployments during maintenance windows.
 
 **Why**:
+
 - Reduces user impact
 - Allows for rollback time
 - Better monitoring
@@ -348,6 +365,7 @@ sf smart-deployment start \
 **Best Practice**: Always have a rollback plan ready.
 
 **Rollback Options**:
+
 - Previous deployment plan
 - Git revert + redeploy
 - Manual component removal
@@ -392,6 +410,7 @@ sf smart-deployment analyze --format html --output deps.html
 **Best Practice**: Verify waves don't exceed limits.
 
 **Limits**:
+
 - Max 300 components per wave
 - Max 200 CMT records per wave
 - Max ~400-500 files per deployment
@@ -415,7 +434,7 @@ sf smart-deployment start --target-org myorg
 
 ```bash
 # ❌ Bad (CI/CD)
-sf smart-deployment start --target-org prod --use-ai
+sf smart-deployment start --target-org prod
 
 # ✅ Good (CI/CD)
 sf smart-deployment start --target-org prod --use-plan plan.json --strict
@@ -455,11 +474,3 @@ sf smart-deployment status --target-org prod --watch
 ---
 
 **Last Updated**: December 14, 2025
-
-
-
-
-
-
-
-

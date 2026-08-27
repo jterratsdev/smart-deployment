@@ -7,10 +7,10 @@
 **Flags:**
 
 - `--source-path` (char: `-p`, default: `.`) ✅ Cubierto
-- `--target-org` (char: `-o`) ✅ Cubierto (con --use-ai)
+- `--target-org` (char: `-o`) ✅ Cubierto (con)
 - `--save-plan` ✅ Cubierto
 - `--plan-path` ❌ NO cubierto
-- `--use-ai` ✅ Cubierto
+- `` ✅ Cubierto
 - `--org-type` ❌ NO cubierto
 - `--industry` ❌ NO cubierto
 - `--output` (char: `-o`) ❌ NO cubierto
@@ -20,7 +20,7 @@
 
 - ✅ Test 1: `analyze --source-path .`
 - ✅ Test 2: `analyze --source-path . --save-plan`
-- ✅ Test 6: `analyze --source-path . --use-ai --target-org`
+- ✅ Test 6: `analyze --source-path . --target-org`
 
 **Falta cubrir:**
 
@@ -29,7 +29,7 @@
 - `analyze --industry Healthcare`
 - `analyze --output report.json`
 - `analyze --format html`
-- Combinaciones: `analyze --use-ai --org-type Production --industry Healthcare`
+- Combinaciones: `analyze --org-type Production --industry Healthcare`
 
 ### 2. `start`
 
@@ -41,8 +41,8 @@
 - `--skip-tests` (deprecated) ⚠️ Mencionado pero no probado explícitamente
 - `--no-test-run` ✅ Cubierto (Test 8)
 - `--run-wave-test` ✅ Cubierto (Test 9)
-- `--use-ai` ✅ Cubierto (Test 7)
-- `--ai-auto` ❌ NO cubierto
+- `` ✅ Cubierto (Test 7)
+- `` ❌ NO cubierto
 - `--ai-confidence-threshold` ❌ NO cubierto
 - `--org-type` ❌ NO cubierto
 - `--industry` ❌ NO cubierto
@@ -54,7 +54,7 @@
 
 - ✅ Test 4: `start --target-org X --dry-run`
 - ✅ Test 5: `start --target-org X --validate-only`
-- ✅ Test 7: `start --target-org X --dry-run --use-ai`
+- ✅ Test 7: `start --target-org X --dry-run`
 - ✅ Test 8: `start --target-org X --dry-run --no-test-run` (org-aware)
 - ✅ Test 9: `start --target-org X --dry-run --run-wave-test`
 - ✅ Test 10: `start --target-org X --dry-run` (default)
@@ -63,12 +63,12 @@
 
 - `start --target-org X --use-plan plan.json`
 - `start --target-org X --strict --use-plan plan.json`
-- `start --target-org X --dry-run --ai-auto --ai-confidence-threshold 0.9`
+- `start --target-org X --dry-run
 - `start --target-org X --dry-run --org-type Production`
 - `start --target-org X --dry-run --industry Healthcare`
 - `start --target-org X --dry-run --source-path custom/path`
 - Combinaciones conflictivas: `--no-test-run` + `--run-wave-test` (debería fallar o priorizar)
-- Combinaciones: `--use-ai` + `--ai-auto` + `--org-type Production`
+- Combinaciones: `+` + `--org-type Production`
 
 ### 3. `validate`
 
@@ -162,7 +162,6 @@
 
 ### Media Prioridad (Funcionalidad Importante)
 
-5. ✅ `start --ai-auto` (AI automation)
 6. ✅ `analyze --plan-path` (custom plan paths)
 7. ✅ `config` command (configuration management)
 
@@ -179,15 +178,15 @@
 
 - `--dry-run --use-plan plan.json` ✅ CRÍTICO
 - `--strict --use-plan plan.json` ✅ CRÍTICO
-- `--use-ai --ai-auto --org-type Production` ⚠️ IMPORTANTE
+- ` --org-type Production` ⚠️ IMPORTANTE
 - `--no-test-run --run-wave-test` (conflicto) ⚠️ IMPORTANTE
-- `--dry-run --use-ai --org-type Production --industry Healthcare` ⚠️ NICE TO HAVE
+- `--dry-run --org-type Production --industry Healthcare` ⚠️ NICE TO HAVE
 
 ### `analyze` command:
 
-- `--use-ai --target-org X --org-type Production` ⚠️ IMPORTANTE
+- ` --target-org X --org-type Production` ⚠️ IMPORTANTE
 - `--save-plan --plan-path custom/path.json` ⚠️ IMPORTANTE
-- `--use-ai --industry Healthcare` ⚠️ NICE TO HAVE
+- ` --industry Healthcare` ⚠️ NICE TO HAVE
 
 ## 📝 Notas
 

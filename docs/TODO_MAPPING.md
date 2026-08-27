@@ -151,17 +151,10 @@ Mapeo completo de TODOs a User Stories específicas, organizadas por prioridad.
 
 ## 🟡 SHOULD HAVE (Media Prioridad)
 
-### Epic 6: Agentforce Integration
+### Epic 6: Additional deployment improvements
 
-| TODO ID | User Story | Issue | Story Points | Descripción                                              |
-| ------- | ---------- | ----- | ------------ | -------------------------------------------------------- |
-| -       | US-054     | #54   | 3            | **Agentforce Service Setup** - Conectar a Agentforce API |
-| -       | US-055     | #55   | 5            | **AI Dependency Inference** - Inferir deps no obvias     |
-| -       | US-056     | #56   | 3            | **AI Wave Validation** - Validar waves con AI            |
-| -       | US-057     | #57   | 3            | **AI Priority Weighting** - Sugerir prioridades          |
-| -       | US-060     | #60   | 3            | **AI Circuit Breaker** - Circuit breaker para AI         |
-
-**Subtotal Epic 6**: 17 story points (de 21 total)
+| TODO ID | User Story | Issue | Story Points | Descripción |
+| ------- | ---------- | ----- | ------------ | ----------- |
 
 ---
 

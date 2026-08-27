@@ -23,8 +23,8 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 
 **Scripts Available:**
 
-- ✅ `scripts/e2e-test-grg.sh` - Comprehensive E2E-style suite (24 numbered tests)
-- ✅ `scripts/e2e-test.sh` - Basic E2E-style suite (7 numbered tests)
+- ✅ `scripts/e2e-test-grg.sh` - Comprehensive E2E-style suite (22 numbered tests)
+- ✅ `scripts/e2e-test.sh` - Basic E2E-style suite (6 numbered tests)
 - ✅ `docs/E2E_COVERAGE_ANALYSIS.md` - Coverage documentation
 
 **Tests Covered:**
@@ -34,19 +34,17 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 3. ✅ Validate command
 4. ✅ Start with --dry-run
 5. ✅ Start with --validate-only
-6. ✅ Analyze with --use-ai
-7. ✅ Start with --use-ai
-8. ✅ Start with --no-test-run (org-aware)
-9. ✅ Start with --run-wave-test
-10. ✅ Start with default test behavior
-11. ✅ Start with --use-plan
-12. ✅ Start with --strict --use-plan
-13. ✅ Start with --strict validation
-14. ✅ Start with --ai-auto
-15. ✅ Resume command
-16. ✅ Status command
-17. ✅ Analyze with --plan-path
-18. ✅ Start with conflicting test flags
+6. ✅ Start with deterministic manifest generation
+7. ✅ Start with --no-test-run (org-aware)
+8. ✅ Start with --run-wave-test
+9. ✅ Start with default test behavior
+10. ✅ Start with --use-plan
+11. ✅ Start with --strict --use-plan
+12. ✅ Start with --strict validation
+13. ✅ Resume command
+14. ✅ Status command
+15. ✅ Analyze with --plan-path
+16. ✅ Start with conflicting test flags
 
 ### Coverage Analysis
 
@@ -56,8 +54,8 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 - **Flags Covered**: 3 (30%)
 - **Missing**:
   - `--plan-path` (custom plan paths)
-  - `--org-type` (AI context)
-  - `--industry` (AI context)
+  - `--org-type` (deployment context)
+  - `--industry` (analysis context)
   - `--output` (report generation)
   - `--format` (JSON/HTML reports)
 
@@ -66,7 +64,6 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 - **Flags Total**: 15
 - **Flags Covered**: 6 (40%)
 - **Missing**:
-  - `--ai-confidence-threshold`
   - `--org-type`
   - `--industry`
   - `--source-path`
@@ -155,7 +152,6 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 - ✅ Dependencies (11 files)
 - ✅ Waves (7 files)
 - ✅ Deployment (4 files)
-- ✅ AI Services (8 files)
 - ✅ Utils (11 files)
 - ✅ Errors (2 files)
 - ✅ Validators (2 files)

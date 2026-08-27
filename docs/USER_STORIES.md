@@ -15,7 +15,6 @@ This document contains user stories derived from the Smart Deployment Plugin arc
 | **E3: Dependency Analysis**    | 10      | Must Have   | 34           |
 | **E4: Wave Generation**        | 8       | Must Have   | 21           |
 | **E5: CLI Commands**           | 8       | Must Have   | 21           |
-| **E6: Agentforce Integration** | 7       | Should Have | 21           |
 | **E7: Testing Infrastructure** | 10      | Must Have   | 34           |
 | **E8: Error Handling**         | 8       | Should Have | 21           |
 | **E9: Project Scanner**        | 6       | Must Have   | 13           |
@@ -554,7 +553,6 @@ This document contains user stories derived from the Smart Deployment Plugin arc
 
 **As a** developer
 **I want** to parse GenAI Prompt Templates
-**So that** I can handle AI-powered feature deployments
 
 **Acceptance Criteria**:
 
@@ -1013,7 +1011,7 @@ This document contains user stories derived from the Smart Deployment Plugin arc
 - [ ] Supports `--target-org` flag
 - [ ] Supports `--test-level` flag
 - [ ] Supports `--dry-run` flag
-- [ ] Supports `--use-ai` flag
+- [ ] Supports `` flag
 - [ ] Shows progress bar
 - [ ] Generates deployment report
 - [ ] Handles failures gracefully
@@ -1037,7 +1035,7 @@ This document contains user stories derived from the Smart Deployment Plugin arc
 - [ ] Generates deployment waves
 - [ ] Outputs analysis report (JSON/HTML)
 - [ ] Supports `--output-format` flag
-- [ ] Supports `--use-ai` flag
+- [ ] Supports `` flag
 - [ ] Shows statistics
 - [ ] Highlights issues (cycles, etc.)
 - [ ] No deployment execution
@@ -1121,7 +1119,6 @@ This document contains user stories derived from the Smart Deployment Plugin arc
 
 **Acceptance Criteria**:
 
-- [ ] Set Agentforce configuration
 - [ ] Set default test level
 - [ ] Set timeout values
 - [ ] Set retry strategies
@@ -1176,156 +1173,7 @@ This document contains user stories derived from the Smart Deployment Plugin arc
 
 ---
 
-## 🤖 EPIC 6: Agentforce Integration
-
-**Goal**: Integrate Salesforce AI for intelligent analysis
-
-### US-054: Agentforce Service Setup
-
-**As a** developer
-**I want** to connect to Agentforce API
-**So that** I can use AI capabilities
-
-**Acceptance Criteria**:
-
-- [ ] Configure API endpoint
-- [ ] Handle authentication (API key/Named Credential)
-- [ ] Support multiple models
-- [ ] Implement retry logic
-- [ ] Handle rate limiting
-- [ ] Monitor API usage
-
-**Priority**: Should Have
-**Story Points**: 3
-**Dependencies**: None
-
----
-
-### US-055: AI Dependency Inference
-
-**As a** user
-**I want** AI to infer non-obvious dependencies
-**So that** I can catch missed relationships
-
-**Acceptance Criteria**:
-
-- [ ] Send component context to Agentforce
-- [ ] Receive dependency inferences
-- [ ] Parse AI responses
-- [ ] Confidence scoring
-- [ ] Fallback to static analysis if AI fails
-- [ ] Cache AI results
-
-**Priority**: Should Have
-**Story Points**: 5
-**Dependencies**: US-054
-
----
-
-### US-056: AI Wave Validation
-
-**As a** user
-**I want** AI to validate deployment waves
-**So that** I can catch business logic issues
-
-**Acceptance Criteria**:
-
-- [ ] Send wave structure to Agentforce
-- [ ] Receive validation feedback
-- [ ] Identify potential issues
-- [ ] Suggest optimizations
-- [ ] Risk assessment per wave
-- [ ] Apply AI suggestions (optional)
-
-**Priority**: Should Have
-**Story Points**: 3
-**Dependencies**: US-054, US-038
-
----
-
-### US-057: AI Priority Weighting
-
-**As a** user
-**I want** AI to suggest component priorities
-**So that** I can deploy in optimal order
-
-**Acceptance Criteria**:
-
-- [ ] Send component list to Agentforce
-- [ ] Receive priority recommendations
-- [ ] Consider business criticality
-- [ ] Consider failure impact
-- [ ] Merge with static priorities
-- [ ] Report AI decisions
-
-**Priority**: Should Have
-**Story Points**: 3
-**Dependencies**: US-054
-
----
-
-### US-058: AI Prompt Builder
-
-**As a** developer
-**I want** to build effective AI prompts
-**So that** I get useful responses
-
-**Acceptance Criteria**:
-
-- [ ] Context-aware prompt generation
-- [ ] Include relevant metadata snippets
-- [ ] Optimize token usage
-- [ ] Template-based prompts
-- [ ] Version prompts
-- [ ] A/B test prompts
-
-**Priority**: Should Have
-**Story Points**: 2
-**Dependencies**: US-054
-
----
-
-### US-059: AI Response Parser
-
-**As a** developer
-**I want** to parse AI responses reliably
-**So that** I can extract actionable information
-
-**Acceptance Criteria**:
-
-- [ ] Parse JSON responses
-- [ ] Handle malformed responses
-- [ ] Extract structured data
-- [ ] Validate response schema
-- [ ] Handle AI hallucinations
-- [ ] Confidence scoring
-
-**Priority**: Should Have
-**Story Points**: 2
-**Dependencies**: US-054
-
----
-
-### US-060: AI Circuit Breaker
-
-**As a** developer
-**I want** circuit breaker pattern for AI calls
-**So that** I can handle AI service failures
-
-**Acceptance Criteria**:
-
-- [ ] Track failure rate
-- [ ] Open circuit after N failures
-- [ ] Automatic fallback to static analysis
-- [ ] Reset after timeout
-- [ ] Monitor circuit state
-- [ ] Alert on circuit open
-
-**Priority**: Should Have
-**Story Points**: 3
-**Dependencies**: US-054
-
----
+## 🧪 EPIC 6: Testing Infrastructure
 
 ## 🧪 EPIC 7: Testing Infrastructure
 
@@ -1405,7 +1253,6 @@ This document contains user stories derived from the Smart Deployment Plugin arc
 - [ ] 16 tests for metadata scanner
 - [ ] 12 tests for dependency resolver
 - [ ] 15 tests for wave generator
-- [ ] 14 tests for Agentforce service
 - [ ] 90% code coverage for services
 - [ ] Mock external dependencies
 
@@ -1587,8 +1434,6 @@ This document contains user stories derived from the Smart Deployment Plugin arc
 **Dependencies**: US-008
 
 ---
-
-### US-073: Agentforce Error Handling
 
 **As a** developer
 **I want** graceful AI failure handling
@@ -2013,7 +1858,6 @@ Estimated Timeline: 14 weeks (2-week sprints)
 
 ### Sprint 10: AI & Error Handling (42 pts)
 
-- Epic 6: Agentforce Integration (21 pts)
 - Epic 8: Error Handling (21 pts)
 
 ---

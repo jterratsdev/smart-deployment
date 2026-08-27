@@ -12,7 +12,6 @@ Complete TypeScript API reference for the Smart Deployment Plugin.
 - [Services](#services)
 - [Wave Generation](#wave-generation)
 - [Deployment](#deployment)
-- [AI Services](#ai-services)
 - [Dependencies](#dependencies)
 - [Parsers](#parsers)
 - [Utilities](#utilities)
@@ -35,12 +34,14 @@ Scans Salesforce project metadata and builds dependency graph.
 Scans project metadata and builds dependency graph.
 
 **Parameters**:
+
 - `options.sourcePath?: string` - Source path (default: `.`)
 - `options.ignorePatterns?: string[]` - Patterns to ignore
 
 **Returns**: `Promise<ScanResult>`
 
 **Example**:
+
 ```typescript
 import { MetadataScannerService } from './services/metadata-scanner-service.js';
 
@@ -52,6 +53,7 @@ console.log(`Found ${result.dependencyResult.stats.totalDependencies} dependenci
 ```
 
 **ScanResult**:
+
 ```typescript
 interface ScanResult {
   components: MetadataComponent[];
@@ -81,11 +83,13 @@ Generates deployment waves from dependency graph.
 Generates deployment waves using topological sort.
 
 **Parameters**:
+
 - `graph: DependencyGraph` - Dependency graph
 
 **Returns**: `WaveGenerationResult`
 
 **Example**:
+
 ```typescript
 import { WaveBuilder } from './waves/wave-builder.js';
 
@@ -93,12 +97,13 @@ const builder = new WaveBuilder();
 const result = builder.generateWaves(dependencyGraph);
 
 console.log(`Generated ${result.waves.length} waves`);
-result.waves.forEach(wave => {
+result.waves.forEach((wave) => {
   console.log(`Wave ${wave.number}: ${wave.components.length} components`);
 });
 ```
 
 **WaveGenerationResult**:
+
 ```typescript
 interface WaveGenerationResult {
   waves: Wave[];
@@ -123,6 +128,7 @@ Splits large waves to comply with Salesforce limits.
 Splits a wave into multiple smaller waves.
 
 **Parameters**:
+
 - `wave: Wave` - Wave to split
 - `options.maxComponents?: number` - Max components per wave (default: 300)
 - `options.maxCmtRecords?: number` - Max CMT records per wave (default: 200)
@@ -130,13 +136,14 @@ Splits a wave into multiple smaller waves.
 **Returns**: `Wave[]`
 
 **Example**:
+
 ```typescript
 import { WaveSplitter } from './waves/wave-splitter.js';
 
 const splitter = new WaveSplitter();
 const splitWaves = splitter.splitWave(largeWave, {
   maxComponents: 300,
-  maxCmtRecords: 200
+  maxCmtRecords: 200,
 });
 ```
 
@@ -153,12 +160,14 @@ Validates deployment waves.
 Validates waves for correctness.
 
 **Parameters**:
+
 - `waves: Wave[]` - Waves to validate
 - `graph: DependencyGraph` - Dependency graph
 
 **Returns**: `ValidationResult`
 
 **Example**:
+
 ```typescript
 import { WaveValidator } from './waves/wave-validator.js';
 
@@ -187,24 +196,25 @@ Generates `package.xml` files for deployment waves.
 Generates manifests for all waves.
 
 **Parameters**:
+
 - `waves: Wave[]` - Deployment waves
 - `options.sourcePath?: string` - Source path
 - `options.validateFiles?: boolean` - Validate files exist
-- `options.agentforceService?: AgentforceService` - AI service for type mapping
 
 **Returns**: `Promise<ManifestGenerationResult>`
 
 **Example**:
+
 ```typescript
 import { ManifestGenerator } from './deployment/manifest-generator.js';
 
 const generator = new ManifestGenerator();
 const result = await generator.generateManifests(waves, {
   sourcePath: 'force-app',
-  validateFiles: true
+  validateFiles: true,
 });
 
-result.manifests.forEach(manifest => {
+result.manifests.forEach((manifest) => {
   console.log(`Wave ${manifest.waveNumber}: ${manifest.path}`);
 });
 ```
@@ -222,12 +232,14 @@ Validates generated manifests against source.
 Validates manifest against source project.
 
 **Parameters**:
+
 - `manifest: Manifest` - Manifest to validate
 - `sourcePath: string` - Source path
 
 **Returns**: `Promise<ValidationResult>`
 
 **Example**:
+
 ```typescript
 import { ManifestValidator } from './deployment/manifest-validator.js';
 
@@ -252,6 +264,7 @@ Integrates with Salesforce CLI for deployments.
 Executes deployment via SF CLI.
 
 **Parameters**:
+
 - `options.targetOrg: string` - Target org
 - `options.sourcePath?: string` - Source path
 - `options.manifestPath?: string` - Manifest path
@@ -262,6 +275,7 @@ Executes deployment via SF CLI.
 **Returns**: `Promise<DeploymentResult>`
 
 **Example**:
+
 ```typescript
 import { SfCliIntegration } from './deployment/sf-cli-integration.js';
 
@@ -270,7 +284,7 @@ const result = await sfCli.deploy({
   targetOrg: 'myorg',
   manifestPath: '.smart-deployment/wave-1/package.xml',
   testLevel: 'RunSpecifiedTests',
-  testClasses: ['MyTestClass']
+  testClasses: ['MyTestClass'],
 });
 ```
 
@@ -287,11 +301,13 @@ Manages deployment state for resume capability.
 Saves deployment state.
 
 **Parameters**:
+
 - `state: DeploymentState` - Deployment state
 
 **Returns**: `Promise<void>`
 
 **Example**:
+
 ```typescript
 import { StateManager } from './deployment/state-manager.js';
 
@@ -301,7 +317,7 @@ await stateManager.saveState({
   deploymentId: 'deploy-123',
   targetOrg: 'myorg',
   currentWave: 3,
-  completedWaves: [1, 2]
+  completedWaves: [1, 2],
 });
 ```
 
@@ -316,78 +332,6 @@ Loads deployment state.
 Checks if there's a failed deployment.
 
 **Returns**: `Promise<boolean>`
-
----
-
-## AI Services
-
-### AgentforceService
-
-Core Agentforce AI service.
-
-**Location**: `src/ai/agentforce-service.ts`
-
-#### Methods
-
-##### `inferDependencies(components: MetadataComponent[], options?: InferenceOptions): Promise<DependencyInferenceResult>`
-
-Infers dependencies using AI.
-
-**Parameters**:
-- `components: MetadataComponent[]` - Components to analyze
-- `options.orgType?: string` - Org type
-- `options.industry?: string` - Industry context
-
-**Returns**: `Promise<DependencyInferenceResult>`
-
-**Example**:
-```typescript
-import { AgentforceService } from './ai/agentforce-service.js';
-
-const service = new AgentforceService();
-const result = await service.inferDependencies(components, {
-  orgType: 'Production',
-  industry: 'Fintech'
-});
-```
-
-### DependencyInferenceService
-
-Service for AI-powered dependency inference.
-
-**Location**: `src/ai/dependency-inference-service.ts`
-
-#### Methods
-
-##### `inferDependencies(components: MetadataComponent[], options?: InferenceOptions): Promise<InferenceResult>`
-
-Infers dependencies using Agentforce.
-
-**Parameters**:
-- `components: MetadataComponent[]` - Components
-- `options.orgType?: string` - Org type
-- `options.industry?: string` - Industry
-
-**Returns**: `Promise<InferenceResult>`
-
-### AgentforcePriorityService
-
-Service for AI-powered priority weighting.
-
-**Location**: `src/ai/agentforce-priority-service.ts`
-
-#### Methods
-
-##### `calculatePriorities(components: MetadataComponent[], options?: PriorityOptions): Promise<PriorityResult>`
-
-Calculates component priorities using AI.
-
-**Parameters**:
-- `components: MetadataComponent[]` - Components
-- `options.orgType?: string` - Org type
-- `options.industry?: string` - Industry
-
-**Returns**: `Promise<PriorityResult>`
 
 ---
 
@@ -406,6 +350,7 @@ Builds dependency graph from components.
 Builds dependency graph.
 
 **Parameters**:
+
 - `components: MetadataComponent[]` - Components
 
 **Returns**: `DependencyGraph`
@@ -423,6 +368,7 @@ Detects circular dependencies.
 Detects circular dependencies.
 
 **Parameters**:
+
 - `graph: DependencyGraph` - Dependency graph
 
 **Returns**: `Cycle[]`
@@ -440,6 +386,7 @@ Merges static and AI-inferred dependencies.
 Merges dependency graphs.
 
 **Parameters**:
+
 - `staticDeps: DependencyGraph` - Static dependencies
 - `aiDeps: DependencyGraph` - AI-inferred dependencies
 - `options.conflictResolution?: 'static' | 'ai' | 'merge'` - Conflict resolution
@@ -463,6 +410,7 @@ Base parser with error resilience.
 Parses metadata file with error handling.
 
 **Parameters**:
+
 - `filePath: string` - File path
 - `content: string` - File content
 
@@ -481,6 +429,7 @@ Parses Apex class files.
 Parses Apex class.
 
 **Parameters**:
+
 - `filePath: string` - File path
 - `content: string` - Class content
 
@@ -503,11 +452,13 @@ Structured logging utility.
 Gets logger instance.
 
 **Parameters**:
+
 - `name: string` - Logger name
 
 **Returns**: `Logger`
 
 **Example**:
+
 ```typescript
 import { getLogger } from './utils/logger.js';
 
@@ -529,6 +480,7 @@ Aggregates and reports errors.
 Adds error to aggregation.
 
 **Parameters**:
+
 - `error: ErrorInfo` - Error information
 
 ##### `generateReport(): ErrorReport`
@@ -550,6 +502,7 @@ Handles retries with exponential backoff.
 Executes function with retry logic.
 
 **Parameters**:
+
 - `fn: () => Promise<T>` - Function to execute
 - `operation: string` - Operation name
 
@@ -625,11 +578,3 @@ interface DependencyGraph {
 ---
 
 **Last Updated**: December 14, 2025
-
-
-
-
-
-
-
-
