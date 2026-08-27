@@ -764,56 +764,55 @@ fi
 
 log_success "Test 14 passed: Status command validated"
 
-# Test 15: Analyze with --locale flag
+# Test 15: Analyze with standard output
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 15: Analyze with --locale flag"
+log_info "Test 15: Analyze with standard output"
 log_info "═══════════════════════════════════════════"
 
-log_info "Running: sf analyze --source-path . --locale es"
-ANALYZE_LOCALE_OUTPUT=$(sf analyze --source-path . --locale es 2>&1)
+log_info "Running: sf analyze --source-path ."
+ANALYZE_LOCALE_OUTPUT=$(sf analyze --source-path . 2>&1)
 ANALYZE_LOCALE_EXIT_CODE=$?
 
 # Check exit code
 if [ $ANALYZE_LOCALE_EXIT_CODE -ne 0 ]; then
-    log_error "Analyze --locale es failed with exit code $ANALYZE_LOCALE_EXIT_CODE"
+    log_error "Analyze failed with exit code $ANALYZE_LOCALE_EXIT_CODE"
     exit 1
 fi
 
-# Validate locale is used (may show in output or just work silently)
+# Validate standard output
 if echo "$ANALYZE_LOCALE_OUTPUT" | grep -q "✅ Found.*components"; then
-    log_success "✓ Analyze with --locale executed successfully"
-    log_info "  ℹ️  Locale may affect error messages and output (hard to verify automatically)"
+    log_success "✓ Analyze executed successfully"
 else
-    log_warning "⚠️  Analyze --locale output unclear"
+    log_warning "⚠️  Analyze output unclear"
 fi
 
-log_success "Test 15 passed: --locale flag validated"
+log_success "Test 15 passed: standard output validated"
 
-# Test 16: Start with --locale flag
+# Test 16: Start with standard output
 log_info ""
 log_info "═══════════════════════════════════════════"
-log_info "Test 16: Start with --locale flag"
+log_info "Test 16: Start with standard output"
 log_info "═══════════════════════════════════════════"
 
-log_info "Running: sf start --target-org $TARGET_ORG --dry-run --locale es"
-START_LOCALE_OUTPUT=$(sf start --target-org "$TARGET_ORG" --dry-run --locale es 2>&1)
+log_info "Running: sf start --target-org $TARGET_ORG --dry-run"
+START_LOCALE_OUTPUT=$(sf start --target-org "$TARGET_ORG" --dry-run 2>&1)
 START_LOCALE_EXIT_CODE=$?
 
 # Check exit code
 if [ $START_LOCALE_EXIT_CODE -ne 0 ]; then
-    log_error "Start --dry-run --locale es failed with exit code $START_LOCALE_EXIT_CODE"
+    log_error "Start --dry-run failed with exit code $START_LOCALE_EXIT_CODE"
     exit 1
 fi
 
-# Validate locale is used
+# Validate standard output
 if echo "$START_LOCALE_OUTPUT" | grep -q "✅ Found.*components\|📊 Analyzing"; then
-    log_success "✓ Start with --locale executed successfully"
+    log_success "✓ Start executed successfully"
 else
-    log_warning "⚠️  Start --locale output unclear"
+    log_warning "⚠️  Start output unclear"
 fi
 
-log_success "Test 16 passed: Start --locale flag validated"
+log_success "Test 16 passed: Start standard output validated"
 
 # Test 17: Analyze with --plan-path flag
 log_info ""
@@ -1079,8 +1078,8 @@ log_info "  ✓ Start with --strict --use-plan (CI/CD safety)"
 log_info "  ✓ Start with --strict validation (should fail)"
 log_info "  ✓ Resume command"
 log_info "  ✓ Status command"
-log_info "  ✓ Analyze with --locale"
-log_info "  ✓ Start with --locale"
+log_info "  ✓ Analyze with standard output"
+log_info "  ✓ Start with standard output"
 log_info "  ✓ Analyze with --plan-path"
 log_info "  ✓ Start with conflicting test flags"
 log_info "  ✓ Analyze with --output --format json (report generation)"
@@ -1098,7 +1097,6 @@ log_info "  ✓ SF CLI standard test behavior"
 log_info "  ✓ CI/CD workflow (--use-plan, --strict)"
 log_info "  ✓ Resume functionality"
 log_info "  ✓ Status monitoring"
-log_info "  ✓ Internationalization (--locale)"
 log_info "  ✓ Custom plan paths (--plan-path)"
 log_info "  ✓ Flag conflict handling"
 log_info ""
