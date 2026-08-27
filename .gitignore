@@ -65,3 +65,6 @@ node_modules
 /.setup-agents/rules/**
 /.setup-agents/skills/**
 # <<< setup-agents (managed) <<<
+
+# Local deployment runtime state
+.smart-deployment/deployment-state.json
