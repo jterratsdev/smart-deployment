@@ -33,6 +33,8 @@ export type SimplificationOptions = {
   currentWaveNumber: number;
   /** Component map for dependency lookup */
   componentMap: Map<NodeId, MetadataComponent>;
+  /** Components whose references must never be removed during simplification. */
+  protectedComponents?: Set<NodeId>;
 };
 
 export type SimplificationResult = {
@@ -256,6 +258,9 @@ export class MetadataSimplifier {
       }
 
       // Check if component has dependencies not yet available
+      if (options.protectedComponents?.has(nodeId)) {
+        continue;
+      }
       const unavailableDeps = this.getUnavailableDependencies(component, availableUpToWave, options.componentMap);
 
       if (unavailableDeps.length > 0) {

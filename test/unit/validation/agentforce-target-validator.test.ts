@@ -76,4 +76,99 @@ describe('AgentforceTargetValidator', () => {
     expect(result.valid).to.equal(false);
     expect(result.issues.some((issue) => issue.message.includes('absent from all generated manifests'))).to.equal(true);
   });
+
+  it('validates all Agentforce component target types and Salesforce prompt mapping', () => {
+    const targetIds = [
+      'GenAiFunction:FunctionOne',
+      'GenAiPlugin:PluginOne',
+      'GenAiPlannerBundle:PlannerOne',
+      'AiAuthoringBundle:AgentOne',
+      'GenAiPromptTemplate:PromptOne',
+    ];
+    const consumerId = 'AiAuthoringBundle:Consumer';
+    const components = new Map<string, MetadataComponent>([
+      [consumerId, component('AiAuthoringBundle', 'Consumer', targetIds)],
+      ...targetIds.map((id) => {
+        const separator = id.indexOf(':');
+        return [id, component(id.slice(0, separator) as MetadataComponent['type'], id.slice(separator + 1))] as const;
+      }),
+    ]);
+    const result = validateAgentforceTargets(
+      [wave(1, ...targetIds), wave(2, consumerId)],
+      [
+        manifest({
+          GenAiFunction: ['FunctionOne'],
+          GenAiPlugin: ['PluginOne'],
+          GenAiPlannerBundle: ['PlannerOne'],
+          AiAuthoringBundle: ['AgentOne'],
+          // package.xml uses the Salesforce spelling, not the internal type.
+          GenAIPromptTemplate: ['PromptOne'],
+        }),
+      ],
+      components
+    );
+
+    expect(result.valid).to.equal(true);
+    expect(result.issues).to.deep.equal([]);
+  });
+
+  it('treats a target absent from source as an external-org warning', () => {
+    const consumerId = 'GenAiFunction:ExternalConsumer';
+    const result = validateAgentforceTargets(
+      [wave(1, consumerId)],
+      [manifest({ GenAiFunction: ['ExternalConsumer'] })],
+      new Map([[consumerId, component('GenAiFunction', 'ExternalConsumer', ['Flow:ManagedFlow'])]])
+    );
+
+    expect(result.valid).to.equal(true);
+    expect(result.issues).to.have.length(1);
+    expect(result.issues[0].severity).to.equal('warning');
+  });
+
+  it('uses the earliest wave when a target is repeated by manifest adjustments', () => {
+    const targetId = 'Flow:CreateCase';
+    const consumerId = 'GenAiFunction:CreateCaseAction';
+    const result = validateAgentforceTargets(
+      [wave(1, targetId), wave(2, consumerId), wave(3, targetId)],
+      [manifest({ Flow: ['CreateCase'] }), manifest({ GenAiFunction: ['CreateCaseAction'] })],
+      new Map([
+        [targetId, component('Flow', 'CreateCase')],
+        [consumerId, component('GenAiFunction', 'CreateCaseAction', [targetId])],
+      ])
+    );
+
+    expect(result.valid).to.equal(true);
+  });
+
+  it('rejects a same-wave target because targets must be deployed first', () => {
+    const targetId = 'Flow:CreateCase';
+    const consumerId = 'GenAiPlugin:CasePlugin';
+    const result = validateAgentforceTargets(
+      [wave(1, targetId, consumerId)],
+      [manifest({ Flow: ['CreateCase'], GenAiPlugin: ['CasePlugin'] })],
+      new Map([
+        [targetId, component('Flow', 'CreateCase')],
+        [consumerId, component('GenAiPlugin', 'CasePlugin', [targetId])],
+      ])
+    );
+
+    expect(result.valid).to.equal(false);
+    expect(result.issues.some((issue) => issue.message.includes('not before'))).to.equal(true);
+  });
+
+  it('parses target names containing colons without losing the name', () => {
+    const targetId = 'Flow:Namespace:CreateCase';
+    const consumerId = 'GenAiFunction:CreateCaseAction';
+    const result = validateAgentforceTargets(
+      [wave(1, targetId), wave(2, consumerId)],
+      [manifest({ Flow: ['Namespace:CreateCase'], GenAiFunction: ['CreateCaseAction'] })],
+      new Map([
+        [targetId, component('Flow', 'Namespace:CreateCase')],
+        [consumerId, component('GenAiFunction', 'CreateCaseAction', [targetId])],
+      ])
+    );
+
+    expect(result.valid).to.equal(true);
+    expect(result.issues).to.deep.equal([]);
+  });
 });

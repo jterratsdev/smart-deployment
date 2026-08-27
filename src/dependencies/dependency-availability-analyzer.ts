@@ -28,6 +28,8 @@ export type SharedComponentAssessment = {
   componentId: NodeId;
   consumers: NodeId[];
   isShared: boolean;
+  /** A consumer chain reaches an Agentforce component that must retain its references. */
+  isHighImpact?: boolean;
 };
 
 /** Classifies dependency availability without mutating the dependency graph. */
@@ -122,15 +124,41 @@ export class DependencyAvailabilityAnalyzer {
       .map((assessment) => assessment.dependencyId);
   }
 
-  /** Returns direct project consumers that make a component high-impact. */
+  /**
+   * Returns project consumers through the reverse dependency graph.
+   *
+   * A Flow used by a GenAiFunction is also considered shared when that function
+   * is consumed by a GenAiPlugin or AiAuthoringBundle. Keeping the traversal
+   * here avoids relying on every parser to populate `dependents` consistently.
+   */
   public assessSharedComponent(componentId: NodeId): SharedComponentAssessment {
     const consumers: NodeId[] = [];
-    for (const [candidateId, component] of this.componentMap.entries()) {
-      if (candidateId !== componentId && component.dependencies.has(componentId)) {
+    const visited = new Set<NodeId>([componentId]);
+    const pending = [componentId];
+
+    while (pending.length > 0) {
+      const dependencyId = pending.pop()!;
+      for (const [candidateId, component] of this.componentMap.entries()) {
+        if (visited.has(candidateId) || !component.dependencies.has(dependencyId)) {
+          continue;
+        }
+        visited.add(candidateId);
         consumers.push(candidateId);
+        pending.push(candidateId);
       }
     }
-    return { componentId, consumers, isShared: consumers.length > 1 };
+
+    const isHighImpact = consumers.some((consumerId) => {
+      const type = this.componentMap.get(consumerId)?.type;
+      return type === 'GenAiPlugin' || type === 'AiAuthoringBundle';
+    });
+
+    return {
+      componentId,
+      consumers,
+      isShared: consumers.length > 1 || isHighImpact,
+      isHighImpact,
+    };
   }
 
   private buildWaveMap(waves: Wave[]): Map<NodeId, number> {

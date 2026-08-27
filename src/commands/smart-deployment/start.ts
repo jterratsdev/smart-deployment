@@ -611,6 +611,12 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     for (const issue of agentforceValidation.issues) {
       output.warning(`Agentforce target ${issue.consumer} -> ${issue.target}: ${issue.message}`);
     }
+    if (agentforceValidation.issues.some((issue) => issue.severity === 'error')) {
+      this.error(
+        'Agentforce target validation failed. Targets must be present in manifests and deployed before consumers.'
+      );
+      return;
+    }
     if (agentforceValidation.valid) {
       output.success('Agentforce targets are ordered and included in manifests');
     }
@@ -767,6 +773,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
         const simplifier = new MetadataSimplifier();
         let preventiveSimplification: Awaited<ReturnType<typeof simplifier.simplifyWaveMetadata>> | undefined;
         const componentsToSimplifyInWave = new Map<NodeId, { unavailableDeps: NodeId[]; targetWave: number }>();
+        const protectedSharedComponents = new Set<NodeId>();
 
         // Only simplify references classified as genuinely unavailable. A
         // same-wave dependency is not automatically a missing dependency.
@@ -774,6 +781,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
           const simplifyInfo = componentsToSimplify.get(nodeId);
           if (simplifyInfo && simplifyInfo.targetWave > wave.number) {
             if (availabilityAnalyzer.assessSharedComponent(nodeId).isShared) {
+              protectedSharedComponents.add(nodeId);
               logger.warn('Skipping preventive simplification for shared component', {
                 nodeId,
                 consumers: availabilityAnalyzer.assessSharedComponent(nodeId).consumers,
@@ -806,6 +814,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
           const unavailableDeps = availabilityAnalyzer.unavailableDependencies(nodeId, wave, orderedWaves);
           if (unavailableDeps.length > 0) {
             if (availabilityAnalyzer.assessSharedComponent(nodeId).isShared) {
+              protectedSharedComponents.add(nodeId);
               logger.warn('Skipping preventive simplification for shared component', {
                 nodeId,
                 consumers: availabilityAnalyzer.assessSharedComponent(nodeId).consumers,
@@ -835,6 +844,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
             allWaves: orderedWaves,
             currentWaveNumber: wave.number,
             componentMap,
+            protectedComponents: protectedSharedComponents,
           });
 
           if (preventiveSimplification.simplified && preventiveSimplification.tempFiles.size > 0) {
@@ -1233,6 +1243,9 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
                   allWaves: orderedWaves,
                   currentWaveNumber: wave.number,
                   componentMap,
+                  protectedComponents: new Set(
+                    wave.components.filter((nodeId) => availabilityAnalyzer.assessSharedComponent(nodeId).isShared)
+                  ),
                 });
 
                 if (simplificationResult.simplified && simplificationResult.tempFiles.size > 0) {

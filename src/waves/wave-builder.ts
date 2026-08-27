@@ -161,16 +161,20 @@ export class WaveBuilder {
    */
   public generateWaves(graph: DependencyGraph): WaveResult {
     const startTime = Date.now();
+    // Cycle breaking is a planning concern; never mutate the caller's graph.
+    const planningGraph: DependencyGraph = new Map(
+      Array.from(graph.entries(), ([nodeId, deps]) => [nodeId, new Set(deps)])
+    );
 
     // Calculate in-degree for all nodes
-    const inDegree = this.calculateInDegree(graph);
+    const inDegree = this.calculateInDegree(planningGraph);
     const waves: Wave[] = [];
     const processed = new Set<NodeId>();
     const unplacedComponents: NodeId[] = [];
     let waveNumber = 1;
 
     // Build waves using topological sort
-    while (processed.size < graph.size) {
+    while (processed.size < planningGraph.size) {
       // Find nodes with in-degree 0
       const currentWave: NodeId[] = [];
 
@@ -183,7 +187,7 @@ export class WaveBuilder {
       // No progress - circular dependency detected
       if (currentWave.length === 0) {
         const remaining: NodeId[] = [];
-        for (const nodeId of graph.keys()) {
+        for (const nodeId of planningGraph.keys()) {
           if (!processed.has(nodeId)) {
             remaining.push(nodeId);
           }
@@ -195,7 +199,7 @@ export class WaveBuilder {
 
         if (this.options.handleCircularDeps) {
           // Try to automatically resolve cycles by breaking them
-          const resolved = this.resolveCircularDependencies(graph, remaining, processed, inDegree);
+          const resolved = this.resolveCircularDependencies(planningGraph, remaining, processed, inDegree);
 
           if (resolved.broken) {
             logger.info('Automatically resolved circular dependencies', {
@@ -265,7 +269,7 @@ export class WaveBuilder {
       }
 
       // Update in-degrees: reduce count for nodes that depended on current wave nodes
-      for (const [nodeId, deps] of graph.entries()) {
+      for (const [nodeId, deps] of planningGraph.entries()) {
         if (processed.has(nodeId)) continue;
 
         // Count how many of its dependencies were in the current wave
@@ -405,9 +409,9 @@ export class WaveBuilder {
         edgesBroken.push({ from: edge.from, to: edge.to });
 
         // Update in-degree
-        const currentDegree = inDegree.get(edge.to) ?? 0;
+        const currentDegree = inDegree.get(edge.from) ?? 0;
         if (currentDegree > 0) {
-          inDegree.set(edge.to, currentDegree - 1);
+          inDegree.set(edge.from, currentDegree - 1);
         }
 
         logger.debug('Broke cycle edge', {
@@ -510,9 +514,9 @@ export class WaveBuilder {
         edgesBroken.push({ from: edge.from, to: edge.to });
 
         // Update in-degree
-        const currentDegree = inDegree.get(edge.to) ?? 0;
+        const currentDegree = inDegree.get(edge.from) ?? 0;
         if (currentDegree > 0) {
-          inDegree.set(edge.to, currentDegree - 1);
+          inDegree.set(edge.from, currentDegree - 1);
         }
 
         logger.debug('Broke edge by heuristic', {

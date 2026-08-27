@@ -19,6 +19,7 @@ import { getLogger } from '../utils/logger.js';
 import type { MetadataComponent, MetadataType } from '../types/metadata.js';
 import type { NodeId } from '../types/dependency.js';
 import type { Wave } from './wave-builder.js';
+import { DependencyAvailabilityAnalyzer } from '../dependencies/dependency-availability-analyzer.js';
 
 const logger = getLogger('WavePostProcessor');
 
@@ -119,7 +120,19 @@ export class WavePostProcessor {
     }
 
     // Store components that need preventive simplification
-    const componentsToSimplify = conflictResolution.componentsToSimplify;
+    const availabilityAnalyzer = new DependencyAvailabilityAnalyzer(this.componentMap);
+    const componentsToSimplify = new Map(conflictResolution.componentsToSimplify);
+    for (const nodeId of componentsToSimplify.keys()) {
+      const sharedAssessment = availabilityAnalyzer.assessSharedComponent(nodeId);
+      if (sharedAssessment.isShared) {
+        componentsToSimplify.delete(nodeId);
+        logger.warn('Skipping preventive simplification for shared component', {
+          nodeId,
+          consumers: sharedAssessment.consumers,
+          highImpact: sharedAssessment.isHighImpact,
+        });
+      }
+    }
 
     if (componentsToSimplify.size > 0) {
       logger.info('Components marked for preventive simplification', {

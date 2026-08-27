@@ -99,4 +99,23 @@ describe('DependencyAvailabilityAnalyzer', () => {
     expect(assessment.isShared).to.equal(true);
     expect(assessment.consumers).to.have.members([firstAgent, secondAgent]);
   });
+
+  it('identifies indirect Agentforce consumers of a Flow as high-impact', () => {
+    const flow = 'Flow:Shared';
+    const functionId = 'GenAiFunction:CreateCase';
+    const plugin = 'GenAiPlugin:SupportPlugin';
+    const analyzer = new DependencyAvailabilityAnalyzer(
+      new Map([
+        [flow, { ...component('Shared', []), type: 'Flow' }],
+        [functionId, { ...component('CreateCase', [flow]), type: 'GenAiFunction' }],
+        [plugin, { ...component('SupportPlugin', [functionId]), type: 'GenAiPlugin' }],
+      ])
+    );
+
+    const assessment = analyzer.assessSharedComponent(flow);
+
+    expect(assessment.isShared).to.equal(true);
+    expect(assessment.isHighImpact).to.equal(true);
+    expect(assessment.consumers).to.have.members([functionId, plugin]);
+  });
 });

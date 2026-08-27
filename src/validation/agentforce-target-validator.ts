@@ -2,6 +2,7 @@ import type { Manifest } from '../types/deployment.js';
 import type { NodeId } from '../types/dependency.js';
 import type { MetadataComponent } from '../types/metadata.js';
 import type { Wave } from '../waves/wave-builder.js';
+import { parseNodeId } from '../utils/node-id.js';
 
 export type AgentforceTargetIssueSeverity = 'warning' | 'error';
 
@@ -26,11 +27,19 @@ const TARGET_TYPES = new Set([
   'GenAiFunction',
   'GenAiPlugin',
   'AiAuthoringBundle',
+  'GenAiPlannerBundle',
 ]);
 
 const SALESFORCE_TYPE_BY_INTERNAL_TYPE: Record<string, string> = {
   GenAiPromptTemplate: 'GenAIPromptTemplate',
 };
+
+const INTERNAL_TYPE_BY_SALESFORCE_TYPE = new Map(
+  Object.entries(SALESFORCE_TYPE_BY_INTERNAL_TYPE).map(([internalType, salesforceType]) => [
+    salesforceType,
+    internalType,
+  ])
+);
 
 /**
  * Validates Agentforce references against the generated waves and manifests.
@@ -45,13 +54,24 @@ export function validateAgentforceTargets(
 ): AgentforceTargetValidationResult {
   const waveByComponent = new Map<NodeId, number>();
   for (const wave of waves) {
-    for (const componentId of wave.components) waveByComponent.set(componentId, wave.number);
+    for (const componentId of wave.components) {
+      // Manifest adjustments can intentionally repeat a component. Its first
+      // deployment is the wave that determines whether a target is available.
+      const existingWave = waveByComponent.get(componentId);
+      if (existingWave === undefined || wave.number < existingWave) {
+        waveByComponent.set(componentId, wave.number);
+      }
+    }
   }
 
   const manifestComponents = new Set<string>();
   for (const manifest of manifests) {
     for (const [type, names] of Object.entries(manifest.components)) {
-      for (const name of names) manifestComponents.add(`${type}:${name}`);
+      const internalType = INTERNAL_TYPE_BY_SALESFORCE_TYPE.get(type) ?? type;
+      for (const name of names) {
+        manifestComponents.add(`${type}:${name}`);
+        manifestComponents.add(`${internalType}:${name}`);
+      }
     }
   }
 
@@ -63,7 +83,9 @@ export function validateAgentforceTargets(
     if (consumerWave === undefined) continue;
 
     for (const targetId of consumer.dependencies) {
-      const [targetType] = targetId.split(':', 1);
+      const parsedTarget = parseNodeId(targetId);
+      if (!parsedTarget) continue;
+      const { type: targetType, name: targetName } = parsedTarget;
       if (!TARGET_TYPES.has(targetType)) continue;
 
       const targetComponent = componentMap.get(targetId);
@@ -89,7 +111,7 @@ export function validateAgentforceTargets(
       }
 
       const manifestType = SALESFORCE_TYPE_BY_INTERNAL_TYPE[targetType] ?? targetType;
-      if (!manifestComponents.has(`${manifestType}:${targetComponent.name}`)) {
+      if (!manifestComponents.has(`${manifestType}:${targetName}`)) {
         issues.push({
           severity: 'error',
           consumer: consumerId,
