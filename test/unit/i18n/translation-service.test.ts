@@ -20,7 +20,7 @@ describe('TranslationService', () => {
   let cacheManager: ReturnType<typeof getCacheManager>;
   let sendRequestStub: SinonStub;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     agentforceService = new AgentforceService({ enabled: true });
     translationService = new TranslationService(agentforceService);
     cacheManager = getCacheManager();
@@ -34,12 +34,12 @@ describe('TranslationService', () => {
     });
 
     // Clear cache
-    cacheManager.clear();
+    await cacheManager.clear();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     sinon.restore();
-    cacheManager.clear();
+    await cacheManager.clear();
   });
 
   describe('translate', () => {

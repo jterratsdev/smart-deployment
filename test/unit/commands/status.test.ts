@@ -1,5 +1,6 @@
 /**
  * Unit tests for status command
+ *
  * @ac US-050-AC-1: Shows current wave number
  * @ac US-050-AC-2: Shows completed waves
  * @ac US-050-AC-3: Shows remaining waves
@@ -11,7 +12,7 @@
 import { expect } from 'chai';
 import { describe, it, beforeEach, afterEach } from 'mocha';
 import sinon, { SinonStub } from 'sinon';
-import Status from '../../../src/commands/status.js';
+import Status from '../../../src/commands/smart-deployment/status.js';
 import { StateManager } from '../../../src/deployment/state-manager.js';
 import { DeploymentTracker } from '../../../src/deployment/deployment-tracker.js';
 
@@ -23,7 +24,7 @@ describe('StatusCommand', () => {
   beforeEach(() => {
     statusCommand = new Status([], {} as any);
     // Mock parse to avoid config.runHook requirement
-    sinon.stub(statusCommand, 'parse').resolves({
+    sinon.stub(statusCommand as any, 'parse').resolves({
       flags: {
         'target-org': 'test-org',
         watch: false,
@@ -46,12 +47,12 @@ describe('StatusCommand', () => {
     });
 
     // Stub DeploymentTracker
-    trackerStub = sinon.stub(DeploymentTracker.prototype, 'getStatus').returns({
-      currentWave: 3,
+    trackerStub = sinon.stub(DeploymentTracker.prototype, 'getProgress').returns({
+      deploymentId: 'test-deployment-123',
+      waveNumber: 3,
       totalWaves: 5,
-      completedWaves: [1, 2],
-      progress: 40,
-      estimatedTimeRemaining: 120,
+      percentage: 40,
+      eta: 120,
       status: 'deploying',
     });
   });
@@ -65,7 +66,7 @@ describe('StatusCommand', () => {
       const logStub = sinon.stub(statusCommand, 'log');
       await statusCommand.run();
 
-      expect(logStub.calledWith(sinon.match(/wave.*3/))).to.be.true;
+      expect(logStub.calledWith(sinon.match(/wave.*3/i))).to.be.true;
     });
   });
 
@@ -99,15 +100,12 @@ describe('StatusCommand', () => {
   describe('US-050-AC-5: Shows test execution status', () => {
     it('should display test execution status when available', async () => {
       trackerStub.returns({
-        currentWave: 3,
+        deploymentId: 'test-deployment-123',
+        waveNumber: 3,
         totalWaves: 5,
-        completedWaves: [1, 2],
-        progress: 40,
-        estimatedTimeRemaining: 120,
+        percentage: 40,
+        eta: 120,
         status: 'deploying',
-        testsRun: 10,
-        testsPassed: 10,
-        testsFailed: 0,
       });
 
       const logStub = sinon.stub(statusCommand, 'log');
@@ -119,7 +117,7 @@ describe('StatusCommand', () => {
 
   describe('US-050-AC-6: Refreshes automatically', () => {
     it('should support --watch flag', async () => {
-      (statusCommand.parse as SinonStub).resolves({
+      (statusCommand as any).parse.resolves({
         flags: {
           'target-org': 'test-org',
           watch: true,
@@ -146,6 +144,7 @@ describe('StatusCommand', () => {
         completedWaves: [],
         currentWave: 0,
       });
+      trackerStub.returns(undefined);
 
       const result = await statusCommand.run();
 
@@ -202,5 +201,3 @@ describe('StatusCommand', () => {
     });
   });
 });
-
-

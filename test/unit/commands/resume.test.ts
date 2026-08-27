@@ -34,7 +34,7 @@ describe('ResumeCommand', () => {
   beforeEach(() => {
     resumeCommand = new Resume([], {} as any);
     // Mock parse to avoid config.runHook requirement
-    sinon.stub(resumeCommand, 'parse').resolves({
+    sinon.stub(resumeCommand as any, 'parse').resolves({
       flags: {
         'target-org': 'test-org',
         'source-path': undefined,
@@ -68,8 +68,11 @@ describe('ResumeCommand', () => {
     scannerStub = sinon.stub(MetadataScannerService.prototype, 'scan').resolves({
       components: [createMockComponent({ name: 'TestClass', type: 'ApexClass' })],
       dependencyResult: {
+        components: new Map(),
         graph: new Map(),
+        reverseGraph: new Map(),
         circularDependencies: [],
+        isolatedComponents: [],
         stats: {
           totalComponents: 1,
           totalDependencies: 0,
@@ -80,6 +83,7 @@ describe('ResumeCommand', () => {
         },
       },
       projectRoot: '/test/project',
+      executionTime: 0,
       errors: [],
       warnings: [],
     });
@@ -126,8 +130,10 @@ describe('ResumeCommand', () => {
       circularDependencies: [],
       stats: {
         totalWaves: 3,
-        averageComponentsPerWave: 1,
-        maxComponentsInWave: 1,
+        avgComponentsPerWave: 1,
+        largestWaveSize: 1,
+        smallestWaveSize: 1,
+        totalEstimatedTime: 15,
       },
     });
 
@@ -226,11 +232,14 @@ describe('ResumeCommand', () => {
           createMockComponent({ name: 'MissingFlow', type: 'Flow' }),
         ],
         dependencyResult: {
+          components: new Map(),
           graph: new Map([
             [agentId, new Set([targetId])],
             [targetId, new Set()],
           ]),
+          reverseGraph: new Map(),
           circularDependencies: [],
+          isolatedComponents: [],
           stats: {
             totalComponents: 2,
             totalDependencies: 1,
@@ -241,6 +250,7 @@ describe('ResumeCommand', () => {
           },
         },
         projectRoot: '/test/project',
+        executionTime: 0,
         errors: [],
         warnings: [],
       });
@@ -261,7 +271,13 @@ describe('ResumeCommand', () => {
         totalComponents: 1,
         unplacedComponents: [],
         circularDependencies: [],
-        stats: { totalWaves: 1, averageComponentsPerWave: 1, maxComponentsInWave: 1 },
+        stats: {
+          totalWaves: 1,
+          avgComponentsPerWave: 1,
+          largestWaveSize: 1,
+          smallestWaveSize: 1,
+          totalEstimatedTime: 5,
+        },
       });
       manifestGeneratorStub.resolves({
         manifests: [
@@ -322,8 +338,10 @@ describe('ResumeCommand', () => {
         circularDependencies: [],
         stats: {
           totalWaves: 1,
-          averageComponentsPerWave: 1,
-          maxComponentsInWave: 1,
+          avgComponentsPerWave: 1,
+          largestWaveSize: 1,
+          smallestWaveSize: 1,
+          totalEstimatedTime: 5,
         },
       });
       manifestGeneratorStub.resolves({
@@ -375,7 +393,7 @@ describe('ResumeCommand', () => {
       resumeCommand.argv = ['--target-org', 'test-org'];
       await resumeCommand.run();
 
-      expect(StateManager.prototype.saveState.called).to.be.true;
+      expect((StateManager.prototype.saveState as unknown as SinonStub).called).to.be.true;
     });
   });
 
@@ -409,7 +427,7 @@ describe('ResumeCommand', () => {
         await resumeCommand.run();
         expect.fail('Should have thrown an error');
       } catch {
-        expect(StateManager.prototype.saveState.called).to.be.true;
+        expect((StateManager.prototype.saveState as unknown as SinonStub).called).to.be.true;
       }
     });
   });

@@ -1,5 +1,6 @@
 /**
  * Unit tests for analyze command
+ *
  * @ac US-047-AC-1: Scans project metadata
  * @ac US-047-AC-2: Generates dependency graph
  * @ac US-047-AC-3: Generates deployment waves
@@ -11,21 +12,19 @@
  * @ac US-047-AC-9: No deployment execution
  */
 
-import { expect } from 'chai';
-import { describe, it, beforeEach, afterEach } from 'mocha';
-import sinon, { SinonStub, createStubInstance } from 'sinon';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
+import { expect } from 'chai';
+import { describe, it, beforeEach, afterEach } from 'mocha';
+import sinon, { SinonStub } from 'sinon';
 import Analyze from '../../../src/commands/smart-deployment/analyze.js';
 import { MetadataScannerService } from '../../../src/services/metadata-scanner-service.js';
 import { WaveBuilder } from '../../../src/waves/wave-builder.js';
 import { DependencyInferenceService } from '../../../src/ai/dependency-inference-service.js';
-import { AgentforcePriorityService } from '../../../src/ai/agentforce-priority-service.js';
 import { AIEnhancedPriorityWaveGenerator } from '../../../src/waves/priority-wave-generator-ai.js';
 import { DeploymentPlanManager } from '../../../src/utils/deployment-plan-manager.js';
 import { createMockComponent } from '../../helpers/test-helpers.js';
-import type { MetadataComponent } from '../../../src/types/metadata.js';
 
 describe('AnalyzeCommand', () => {
   let tempDir: string;
@@ -33,16 +32,13 @@ describe('AnalyzeCommand', () => {
   let scannerStub: SinonStub;
   let waveBuilderStub: SinonStub;
   let inferenceServiceStub: SinonStub;
-  let priorityServiceStub: SinonStub;
   let aiGeneratorStub: SinonStub;
   let planManagerStub: SinonStub;
-  let fsWriteFileStub: SinonStub;
-  let fsMkdirStub: SinonStub;
 
   beforeEach(() => {
     analyzeCommand = new Analyze([], {} as any);
     // Mock parse to avoid config.runHook requirement
-    sinon.stub(analyzeCommand, 'parse').resolves({
+    sinon.stub(analyzeCommand as any, 'parse').resolves({
       flags: {
         'source-path': '.',
         'target-org': undefined,
@@ -70,8 +66,11 @@ describe('AnalyzeCommand', () => {
         createMockComponent({ name: 'TestObject__c', type: 'CustomObject' }),
       ],
       dependencyResult: {
+        components: new Map(),
         graph: new Map(),
+        reverseGraph: new Map(),
         circularDependencies: [],
+        isolatedComponents: [],
         stats: {
           totalComponents: 2,
           totalDependencies: 0,
@@ -82,6 +81,7 @@ describe('AnalyzeCommand', () => {
         },
       },
       projectRoot: tempDir,
+      executionTime: 0,
       errors: [],
       warnings: [],
     });
@@ -106,24 +106,21 @@ describe('AnalyzeCommand', () => {
       circularDependencies: [],
       stats: {
         totalWaves: 1,
-        averageComponentsPerWave: 2,
-        maxComponentsInWave: 2,
+        avgComponentsPerWave: 2,
+        largestWaveSize: 2,
+        smallestWaveSize: 2,
+        totalEstimatedTime: 5,
       },
     });
 
     // Stub DependencyInferenceService
     inferenceServiceStub = sinon.stub(DependencyInferenceService.prototype, 'inferDependencies').resolves({
       dependencies: [],
+      totalInferred: 0,
       highConfidenceCount: 0,
+      executionTime: 0,
+      usedCache: false,
       fallbackToStatic: false,
-    });
-
-    // Stub AgentforcePriorityService
-    priorityServiceStub = sinon.stub(AgentforcePriorityService.prototype, 'analyzePriorities').resolves({
-      priorities: new Map(),
-      aiAdjustments: 0,
-      executionTime: 100,
-      tokensUsed: 0,
     });
 
     // Stub AIEnhancedPriorityWaveGenerator
@@ -142,6 +139,7 @@ describe('AnalyzeCommand', () => {
     ]);
     sinon.stub(AIEnhancedPriorityWaveGenerator.prototype, 'getAIStats').returns({
       aiAdjustments: 0,
+      aiExecutionTime: 0,
       unknownTypesDetected: 0,
       unknownTypes: [],
     });
@@ -149,22 +147,21 @@ describe('AnalyzeCommand', () => {
     // Stub DeploymentPlanManager
     planManagerStub = sinon.stub(DeploymentPlanManager, 'savePlan').resolves();
     sinon.stub(DeploymentPlanManager, 'createPlan').returns({
-      version: '1.0.0',
       waves: [],
-      priorities: {},
+      priorityOverrides: {},
+      componentsByType: {} as any,
       metadata: {
+        version: '1.0.0',
+        generatedAt: new Date().toISOString(),
         aiEnabled: false,
         generatedBy: 'test',
-        timestamp: new Date().toISOString(),
+        totalComponents: 0,
+        totalWaves: 0,
+        estimatedTime: 0,
       },
     });
 
     // Stub fs operations
-    fsWriteFileStub = sinon.stub(fs, 'writeFile').resolves();
-    fsMkdirStub = sinon.stub(fs, 'mkdir').resolves();
-
-    // Stub fs.access for file validation
-    sinon.stub(fs, 'access').resolves();
 
     // Note: ManifestGenerator cannot be stubbed directly due to ES modules
     // Tests will verify behavior through logs and file system operations
@@ -183,7 +180,7 @@ describe('AnalyzeCommand', () => {
     });
 
     it('should use custom source-path when provided', async () => {
-      (analyzeCommand.parse as SinonStub).resolves({
+      ((analyzeCommand as any).parse as SinonStub).resolves({
         flags: {
           'source-path': '/custom/path',
           'target-org': undefined,
@@ -234,7 +231,7 @@ describe('AnalyzeCommand', () => {
 
   describe('US-047-AC-4: Outputs analysis report (JSON/HTML)', () => {
     it('should generate JSON report when --output and --format json are provided', async () => {
-      (analyzeCommand.parse as SinonStub).resolves({
+      ((analyzeCommand as any).parse as SinonStub).resolves({
         flags: {
           'source-path': '.',
           'target-org': undefined,
@@ -255,9 +252,7 @@ describe('AnalyzeCommand', () => {
       });
       await analyzeCommand.run();
 
-      expect(fsMkdirStub.called).to.be.true;
-      expect(fsWriteFileStub.calledOnce).to.be.true;
-      const writtenContent = fsWriteFileStub.firstCall.args[1] as string;
+      const writtenContent = await fs.readFile(path.join(tempDir, 'report.json'), 'utf-8');
       expect(writtenContent).to.include('"timestamp"');
       expect(writtenContent).to.include('"statistics"');
       expect(writtenContent).to.include('"components"');
@@ -265,7 +260,7 @@ describe('AnalyzeCommand', () => {
     });
 
     it('should generate HTML report when --output and --format html are provided', async () => {
-      (analyzeCommand.parse as SinonStub).resolves({
+      ((analyzeCommand as any).parse as SinonStub).resolves({
         flags: {
           'source-path': '.',
           'target-org': undefined,
@@ -286,16 +281,14 @@ describe('AnalyzeCommand', () => {
       });
       await analyzeCommand.run();
 
-      expect(fsMkdirStub.called).to.be.true;
-      expect(fsWriteFileStub.calledOnce).to.be.true;
-      const writtenContent = fsWriteFileStub.firstCall.args[1] as string;
+      const writtenContent = await fs.readFile(path.join(tempDir, 'report.html'), 'utf-8');
       expect(writtenContent).to.include('<!DOCTYPE html>');
       expect(writtenContent).to.include('<html');
       expect(writtenContent).to.include('Smart Deployment Analysis Report');
     });
 
     it('should default to JSON format when format is not specified', async () => {
-      (analyzeCommand.parse as SinonStub).resolves({
+      ((analyzeCommand as any).parse as SinonStub).resolves({
         flags: {
           'source-path': '.',
           'target-org': undefined,
@@ -316,15 +309,14 @@ describe('AnalyzeCommand', () => {
       });
       await analyzeCommand.run();
 
-      expect(fsWriteFileStub.calledOnce).to.be.true;
-      const writtenContent = fsWriteFileStub.firstCall.args[1] as string;
+      const writtenContent = await fs.readFile(path.join(tempDir, 'report.json'), 'utf-8');
       expect(writtenContent).to.include('"timestamp"');
     });
   });
 
   describe('US-047-AC-5: Supports --output flag', () => {
     it('should accept --output flag', async () => {
-      (analyzeCommand.parse as SinonStub).resolves({
+      ((analyzeCommand as any).parse as SinonStub).resolves({
         flags: {
           'source-path': '.',
           'target-org': undefined,
@@ -345,12 +337,12 @@ describe('AnalyzeCommand', () => {
       });
       await analyzeCommand.run();
 
-      expect(fsWriteFileStub.calledOnce).to.be.true;
+      await fs.access(path.join(tempDir, 'report.json'));
     });
 
     it('should create output directory if it does not exist', async () => {
       const outputPath = path.join(tempDir, 'reports', 'report.json');
-      (analyzeCommand.parse as SinonStub).resolves({
+      ((analyzeCommand as any).parse as SinonStub).resolves({
         flags: {
           'source-path': '.',
           'target-org': undefined,
@@ -371,13 +363,13 @@ describe('AnalyzeCommand', () => {
       });
       await analyzeCommand.run();
 
-      expect(fsMkdirStub.called).to.be.true;
+      await fs.access(path.join(tempDir, 'reports', 'report.json'));
     });
   });
 
   describe('US-047-AC-6: Supports --format flag', () => {
     it('should accept json format', async () => {
-      (analyzeCommand.parse as SinonStub).resolves({
+      ((analyzeCommand as any).parse as SinonStub).resolves({
         flags: {
           'source-path': '.',
           'target-org': undefined,
@@ -398,11 +390,11 @@ describe('AnalyzeCommand', () => {
       });
       await analyzeCommand.run();
 
-      expect(fsWriteFileStub.calledOnce).to.be.true;
+      await fs.access(path.join(tempDir, 'report.json'));
     });
 
     it('should accept html format', async () => {
-      (analyzeCommand.parse as SinonStub).resolves({
+      ((analyzeCommand as any).parse as SinonStub).resolves({
         flags: {
           'source-path': '.',
           'target-org': undefined,
@@ -423,7 +415,7 @@ describe('AnalyzeCommand', () => {
       });
       await analyzeCommand.run();
 
-      expect(fsWriteFileStub.calledOnce).to.be.true;
+      await fs.access(path.join(tempDir, 'report.html'));
     });
   });
 
@@ -448,7 +440,9 @@ describe('AnalyzeCommand', () => {
       scannerStub.resolves({
         components: [],
         dependencyResult: {
+          components: new Map(),
           graph: new Map(),
+          reverseGraph: new Map(),
           circularDependencies: [
             {
               cycle: ['ApexClass:A', 'ApexClass:B'],
@@ -456,6 +450,7 @@ describe('AnalyzeCommand', () => {
               message: 'Circular dependency detected',
             },
           ],
+          isolatedComponents: [],
           stats: {
             totalComponents: 0,
             totalDependencies: 0,
@@ -466,6 +461,7 @@ describe('AnalyzeCommand', () => {
           },
         },
         projectRoot: tempDir,
+        executionTime: 0,
         errors: [],
         warnings: [],
       });
@@ -490,7 +486,7 @@ describe('AnalyzeCommand', () => {
 
   describe('AI Integration', () => {
     it('should use AI dependency inference when --use-ai is provided', async () => {
-      (analyzeCommand.parse as SinonStub).resolves({
+      ((analyzeCommand as any).parse as SinonStub).resolves({
         flags: {
           'source-path': '.',
           'target-org': undefined,
@@ -515,7 +511,7 @@ describe('AnalyzeCommand', () => {
     });
 
     it('should use AI priority weighting when --use-ai is provided', async () => {
-      (analyzeCommand.parse as SinonStub).resolves({
+      ((analyzeCommand as any).parse as SinonStub).resolves({
         flags: {
           'source-path': '.',
           'target-org': undefined,
@@ -542,7 +538,7 @@ describe('AnalyzeCommand', () => {
 
   describe('Plan Saving', () => {
     it('should save deployment plan when --save-plan is provided', async () => {
-      (analyzeCommand.parse as SinonStub).resolves({
+      ((analyzeCommand as any).parse as SinonStub).resolves({
         flags: {
           'source-path': '.',
           'target-org': undefined,
@@ -568,7 +564,7 @@ describe('AnalyzeCommand', () => {
 
     it('should use custom plan path when --plan-path is provided', async () => {
       const customPath = path.join(tempDir, 'custom-plan.json');
-      (analyzeCommand.parse as SinonStub).resolves({
+      ((analyzeCommand as any).parse as SinonStub).resolves({
         flags: {
           'source-path': '.',
           'target-org': undefined,
@@ -622,8 +618,7 @@ describe('AnalyzeCommand', () => {
     });
 
     it('should handle report generation errors gracefully', async () => {
-      fsWriteFileStub.rejects(new Error('Write failed'));
-      analyzeCommand.argv = ['--output', path.join(tempDir, 'report.json')];
+      analyzeCommand.argv = ['--output', path.join('/dev/null', 'report.json')];
 
       try {
         await analyzeCommand.run();
@@ -634,5 +629,3 @@ describe('AnalyzeCommand', () => {
     });
   });
 });
-
-
