@@ -20,6 +20,7 @@ import { MetadataScannerService } from '../../services/metadata-scanner-service.
 import { WaveBuilder } from '../../waves/wave-builder.js';
 import { getWavesInExecutionOrder } from '../../waves/wave-executor.js';
 import { SfCliIntegration } from '../../deployment/sf-cli-integration.js';
+import type { DeploymentResult } from '../../deployment/sf-cli-integration.js';
 import { DeploymentTracker } from '../../deployment/deployment-tracker.js';
 import { ManifestGenerator } from '../../deployment/manifest-generator.js';
 import { ManifestValidator } from '../../deployment/manifest-validator.js';
@@ -29,8 +30,12 @@ import type { SupportedLocale } from '../../i18n/locale-detector.js';
 import type { MetadataComponent } from '../../types/metadata.js';
 import { createNodeId } from '../../utils/node-id.js';
 import { validateAgentforceTargets } from '../../validation/agentforce-target-validator.js';
+import { RetryHandler } from '../../deployment/retry-handler.js';
+import fs from 'node:fs/promises';
+import { DeploymentReporter, type DeploymentReport, type WaveReport } from '../../deployment/deployment-reporter.js';
 
 const logger = getLogger('ResumeCommand');
+const DEFAULT_MAX_ATTEMPTS = 3;
 
 export default class Resume extends SfCommand<{ success: boolean; resumedFromWave?: number }> {
   public static readonly summary = 'Resume failed deployment';
@@ -121,11 +126,34 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
 
     if (wavesToResume.length === 0) {
       this.log('ℹ️  No waves to resume (all waves already completed)');
+      const now = new Date().toISOString();
+      await stateManager.clearState();
+      this.log(
+        new DeploymentReporter().generateReport({
+          deploymentId: state.deploymentId,
+          targetOrg: flags['target-org'],
+          startTime: state.timestamp,
+          endTime: now,
+          totalDuration: Math.max(0, (Date.parse(now) - Date.parse(state.timestamp)) / 1000),
+          status: 'SUCCESS',
+          success: true,
+          totalWaves: orderedWaves.length,
+          completedWaves: orderedWaves.length,
+          totalComponents: orderedWaves.reduce((total, wave) => total + wave.components.length, 0),
+          totalComponentFailures: 0,
+          totalTests: 0,
+          totalTestFailures: 0,
+          waves: [],
+          errors: [],
+        })
+      );
       return { success: true, resumedFromWave: failedWaveNumber };
     }
 
     const targetOrg = flags['target-org'];
     const deploymentId = state.deploymentId || `deployment-${Date.now()}`;
+    const retryAttempts = this.getRetryAttempts(state.metadata?.retryAttempts);
+    const maxAttempts = await this.getMaxAttempts();
 
     // Generate manifests for ALL waves (including completed ones)
     // This ensures that any post-processing changes (like Custom Metadata Records moved to earlier waves)
@@ -220,9 +248,35 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
     // Initialize deployment services
     const tracker = new DeploymentTracker();
     const sfCli = new SfCliIntegration();
+    const reportStartTime = state.timestamp;
+    const waveReports: WaveReport[] = [];
+    const reportErrors: string[] = [];
+    let lastDeploymentResult: DeploymentResult | undefined;
+    const finishReport = (success: boolean): DeploymentReport => {
+      const endTime = new Date().toISOString();
+      return {
+        deploymentId,
+        targetOrg,
+        startTime: reportStartTime,
+        endTime,
+        totalDuration: Math.max(0, (Date.parse(endTime) - Date.parse(reportStartTime)) / 1000),
+        status: success ? 'SUCCESS' : 'FAILED',
+        success,
+        totalWaves: orderedWaves.length,
+        completedWaves: state.completedWaves.length + waveReports.filter((wave) => wave.success).length,
+        totalComponents: orderedWaves.reduce((total, item) => total + item.components.length, 0),
+        totalComponentFailures: waveReports.reduce((total, wave) => total + (wave.componentFailures ?? 0), 0),
+        totalTests: waveReports.reduce((total, wave) => total + (wave.testsRun ?? 0), 0),
+        totalTestFailures: waveReports.reduce((total, wave) => total + (wave.testFailures ?? 0), 0),
+        waves: waveReports,
+        errors: reportErrors,
+      };
+    };
 
     // Execute remaining waves sequentially
     for (const wave of wavesToResume) {
+      const waveStartTime = new Date();
+      lastDeploymentResult = undefined;
       this.log(`\n🌊 Deploying Wave ${wave.number}/${orderedWaves.length} (${wave.components.length} components)...`);
 
       try {
@@ -237,21 +291,69 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
         const manifestPath = path.join(manifestDir, manifest.fileName);
         this.log(`📦 Using manifest: ${manifest.fileName}`);
 
-        // Execute deployment
+        // Execute deployment. RetryHandler only retries its existing transient errors.
         const waveDeploymentId = `${deploymentId}-wave-${wave.number}`;
         tracker.startTracking(waveDeploymentId, wave.number, orderedWaves.length);
-
-        // Use default test behavior (SF CLI will handle production requirements)
-        const result = await sfCli.deploy({
-          manifestPath,
-          targetOrg,
-          testLevel: undefined, // Let SF CLI use its standard behavior
-          checkOnly: false,
-        });
-
-        if (!result.success) {
-          throw new Error(`Deployment failed: ${result.status}\n${result.output}`);
+        const previousAttempts = retryAttempts[String(wave.number)] ?? 0;
+        const remainingAttempts = maxAttempts - previousAttempts;
+        if (remainingAttempts <= 0) {
+          throw new Error(`Max attempts (${maxAttempts}) already reached for wave ${wave.number}`);
         }
+        const retryHandler = new RetryHandler({
+          maxRetries: remainingAttempts - 1,
+          initialDelay: 0,
+          maxDelay: 0,
+        });
+        const result = await retryHandler.executeWithRetry(
+          async () => {
+            const deployment = await sfCli.deploy({
+              manifestPath,
+              targetOrg,
+              testLevel: undefined, // Let SF CLI use its standard behavior
+              checkOnly: false,
+            });
+            lastDeploymentResult = deployment;
+            const hasComponentFailures = (deployment.componentFailures ?? 0) > 0;
+            const hasTestFailures = (deployment.testFailures ?? 0) > 0;
+            if (!deployment.success || hasComponentFailures || hasTestFailures) {
+              throw new Error(`Deployment failed: ${deployment.status}\n${deployment.output}`);
+            }
+            return deployment;
+          },
+          `deployment-wave-${wave.number}`,
+          async ({ attempt, error, willRetry }) => {
+            retryAttempts[String(wave.number)] = previousAttempts + attempt;
+            if (!willRetry) return;
+            await stateManager.saveState({
+              status: 'failed',
+              deploymentId,
+              targetOrg,
+              timestamp: new Date().toISOString(),
+              totalWaves: orderedWaves.length,
+              completedWaves: Array.from({ length: wave.number - 1 }, (_, i) => i + 1),
+              currentWave: wave.number,
+              failedWave: {
+                waveNumber: wave.number,
+                error: error.message,
+                timestamp: new Date().toISOString(),
+              },
+              metadata: { ...state.metadata, retryAttempts },
+            });
+          }
+        );
+
+        const waveEndTime = new Date();
+        waveReports.push({
+          waveNumber: wave.number,
+          components: wave.components.length,
+          startTime: waveStartTime.toISOString(),
+          endTime: waveEndTime.toISOString(),
+          duration: (waveEndTime.getTime() - waveStartTime.getTime()) / 1000,
+          success: true,
+          componentFailures: result.componentFailures,
+          testsRun: result.testsRun,
+          testFailures: result.testFailures,
+        });
 
         this.log(`   ✅ Deployed ${result.componentSuccesses} components`);
         if (result.testsRun) {
@@ -267,12 +369,27 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
           totalWaves: orderedWaves.length,
           completedWaves: Array.from({ length: wave.number }, (_, i) => i + 1),
           currentWave: wave.number,
+          metadata: { ...state.metadata, retryAttempts },
         });
 
         this.log(`✅ Wave ${wave.number} deployed successfully`);
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         logger.error('Wave deployment failed', { wave: wave.number, error: errorMessage });
+        reportErrors.push(errorMessage);
+        const waveEndTime = new Date();
+        waveReports.push({
+          waveNumber: wave.number,
+          components: wave.components.length,
+          startTime: waveStartTime.toISOString(),
+          endTime: waveEndTime.toISOString(),
+          duration: (waveEndTime.getTime() - waveStartTime.getTime()) / 1000,
+          success: false,
+          componentFailures: (lastDeploymentResult as DeploymentResult | undefined)?.componentFailures,
+          testsRun: (lastDeploymentResult as DeploymentResult | undefined)?.testsRun,
+          testFailures: (lastDeploymentResult as DeploymentResult | undefined)?.testFailures,
+          error: errorMessage,
+        });
 
         // Save failed state
         await stateManager.saveState({
@@ -288,9 +405,11 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
             error: errorMessage,
             timestamp: new Date().toISOString(),
           },
+          metadata: { ...state.metadata, retryAttempts },
         });
 
         this.error(`\n❌ Deployment failed at wave ${wave.number}`);
+        this.log(new DeploymentReporter().generateReport(finishReport(false)));
         this.log(`   Error: ${errorMessage}`);
         this.log("   Use 'sf smart-deployment resume' to retry from this wave");
         return { success: false, resumedFromWave: failedWaveNumber };
@@ -306,11 +425,38 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
       totalWaves: orderedWaves.length,
       completedWaves: Array.from({ length: orderedWaves.length }, (_, i) => i + 1),
       currentWave: orderedWaves.length,
+      metadata: { ...state.metadata, retryAttempts },
     });
+    await stateManager.clearState();
 
     this.log('\n✅ Deployment resumed and completed successfully!');
     this.log(`   Completed ${wavesToResume.length} waves (from wave ${failedWaveNumber})`);
+    this.log(new DeploymentReporter().generateReport(finishReport(true)));
 
     return { success: true, resumedFromWave: failedWaveNumber };
+  }
+
+  private async getMaxAttempts(): Promise<number> {
+    try {
+      const config = JSON.parse(await fs.readFile(path.resolve(process.cwd(), '.smart-deployment.json'), 'utf8')) as {
+        deployment?: { retry?: { maxAttempts?: unknown } };
+      };
+      const configured = config.deployment?.retry?.maxAttempts;
+      return typeof configured === 'number' && Number.isInteger(configured) && configured > 0
+        ? configured
+        : DEFAULT_MAX_ATTEMPTS;
+    } catch {
+      return DEFAULT_MAX_ATTEMPTS;
+    }
+  }
+
+  private getRetryAttempts(value: unknown): Record<string, number> {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+    return Object.fromEntries(
+      Object.entries(value).filter(
+        (entry): entry is [string, number] =>
+          typeof entry[1] === 'number' && Number.isInteger(entry[1]) && entry[1] >= 0
+      )
+    );
   }
 }

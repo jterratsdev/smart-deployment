@@ -23,11 +23,17 @@ const RETRYABLE_ERRORS = [
   'TIMEOUT',
 ];
 
-export interface RetryConfig {
+export type RetryConfig = {
   maxRetries: number;
   initialDelay: number;
   maxDelay: number;
-}
+};
+
+export type RetryAttempt = {
+  attempt: number;
+  error: Error;
+  willRetry: boolean;
+};
 
 /**
  * @ac US-088-AC-1: Detect retryable errors
@@ -39,12 +45,12 @@ export class RetryHandler {
     this.config = {
       maxRetries: config.maxRetries ?? 3,
       initialDelay: config.initialDelay ?? 1000,
-      maxDelay: config.maxDelay ?? 30000,
+      maxDelay: config.maxDelay ?? 30_000,
     };
   }
 
   public isRetryable(error: string): boolean {
-    return RETRYABLE_ERRORS.some(pattern => error.includes(pattern));
+    return RETRYABLE_ERRORS.some((pattern) => error.includes(pattern));
   }
 
   /**
@@ -55,7 +61,8 @@ export class RetryHandler {
    */
   public async executeWithRetry<T>(
     fn: () => Promise<T>,
-    context: string
+    context: string,
+    onAttempt?: (attempt: RetryAttempt) => Promise<void> | void
   ): Promise<T> {
     let lastError: Error | undefined;
 
@@ -70,8 +77,11 @@ export class RetryHandler {
         return await fn();
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
+        const retryable = this.isRetryable(lastError.message);
+        const willRetry = retryable && attempt < this.config.maxRetries;
+        await onAttempt?.({ attempt: attempt + 1, error: lastError, willRetry });
 
-        if (!this.isRetryable(lastError.message)) {
+        if (!retryable) {
           logger.warn('Non-retryable error encountered', { context, error: lastError.message });
           throw lastError;
         }
@@ -97,7 +107,6 @@ export class RetryHandler {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
-
