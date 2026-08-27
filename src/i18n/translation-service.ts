@@ -52,7 +52,7 @@ export class TranslationService {
 
     // Check cache first
     const cacheKey = this.getCacheKey(message, targetLocale);
-    const cached = await this.cacheManager.get<string>(cacheKey);
+    const cached = this.cacheManager.get<string>(cacheKey);
     if (cached) {
       logger.debug('Translation cache hit', { targetLocale, cacheKey });
       return cached;
@@ -95,7 +95,7 @@ export class TranslationService {
 
     for (const [index, message] of messages.entries()) {
       const cacheKey = this.getCacheKey(message, targetLocale);
-      const cached = await this.cacheManager.get<string>(cacheKey);
+      const cached = this.cacheManager.get<string>(cacheKey);
       if (cached) {
         results[index] = cached;
       } else {
@@ -264,4 +264,3 @@ export class TranslationService {
     return [];
   }
 }
-
