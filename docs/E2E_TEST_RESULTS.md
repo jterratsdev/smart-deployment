@@ -1,9 +1,12 @@
-# E2E Test Results - Deployment to grg-prod
+# E2E Test Results - Deployment Analysis
 
 **Date**: December 15, 2025
-**Project**: `~/dev/grg-ss-agentforce`
-**Target Org**: `grg-prod`
+**Project**: `~/dev/my-salesforce-project` (historical test path; not part of this repository)
+**Target Org**: `sandbox-org` (test environment)
 **Test Type**: Analysis + Dry-Run
+
+This is a historical test record, not a current reproducible result. The project and org values below refer to that run.
+**Note**: Tests are performed against test environments only. See [Testing Environment Policy](./TESTING_ENVIRONMENT_POLICY.md) for details.
 
 ---
 
@@ -12,10 +15,11 @@
 ### 1. Analysis Command
 
 ```bash
-sf analyze --source-path force-app --target-org grg-prod
+sf smart-deployment analyze --source-path force-app --target-org sandbox-org
 ```
 
 **Results**:
+
 - ✅ **Components Scanned**: 280
 - ✅ **Dependencies Detected**: 2806
 - ✅ **Initial Waves**: 2
@@ -23,6 +27,7 @@ sf analyze --source-path force-app --target-org grg-prod
 - ✅ **FlexiPages Moved**: 1
 
 **Post-Processing**:
+
 - ✅ WavePostProcessor executed
 - ✅ FlexiPages synced with dependencies
 - ✅ 1 FlexiPage moved to later wave
@@ -30,10 +35,11 @@ sf analyze --source-path force-app --target-org grg-prod
 ### 2. Start Command (Dry-Run)
 
 ```bash
-sf start --target-org grg-prod --dry-run
+sf smart-deployment start --target-org sandbox-org --dry-run
 ```
 
 **Results**:
+
 - ✅ Command executed successfully
 - ✅ Waves generated: 2
 - ✅ Dry-run mode: Deployment skipped
@@ -46,11 +52,13 @@ sf start --target-org grg-prod --dry-run
 ### ✅ What Worked
 
 1. **Dependency Detection**
+
    - Successfully detected 2806 dependencies
    - Correctly identified FlexiPage → LWC/Flow dependencies
    - Correctly identified Permission Set → Apex/Flow dependencies
 
 2. **Wave Generation**
+
    - Topological sort working correctly
    - Generated 2 initial waves
    - Post-processing moved 1 FlexiPage
@@ -63,11 +71,13 @@ sf start --target-org grg-prod --dry-run
 ### ⚠️ Issues Detected
 
 1. **Circular Dependencies**
+
    - **169 components** couldn't be placed due to circular dependencies
    - These components are added to the final wave
    - May cause deployment issues
 
 2. **Dangling References**
+
    - ~100+ dangling references to standard Salesforce components
    - Examples: Account, Case, Contact, etc.
    - These are expected (standard SF objects not in project)
@@ -118,11 +128,13 @@ Components with circular dependencies that couldn't be placed in waves. These ar
 ### Immediate Actions
 
 1. **Investigate Circular Dependencies**
+
    - Review the 169 unplaced components
    - Identify actual circular dependencies vs. false positives
    - Consider breaking cycles manually
 
 2. **Verify Post-Processing**
+
    - Check if PSG/Flow sync is working correctly
    - Verify component map is complete
    - Add more detailed logging
@@ -135,11 +147,13 @@ Components with circular dependencies that couldn't be placed in waves. These ar
 ### Future Improvements
 
 1. **Better Circular Dependency Handling**
+
    - Implement cycle detection and breaking
    - Provide recommendations for manual resolution
    - Group circular components intelligently
 
 2. **Standard Component Detection**
+
    - Filter out standard Salesforce components from dependencies
    - Reduce false "dangling reference" warnings
    - Improve dependency graph accuracy
@@ -167,10 +181,3 @@ Components with circular dependencies that couldn't be placed in waves. These ar
 ⚠️ **Ready for sandbox testing**: Not ready for production yet
 
 **Next Step**: Test in sandbox with `--validate-only` flag before production deployment.
-
-
-
-
-
-
-

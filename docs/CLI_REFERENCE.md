@@ -19,18 +19,19 @@ sf smart-deployment analyze [FLAGS]
 
 ### Flags
 
-| Flag | Short | Type | Required | Default | Description |
-|------|-------|------|----------|---------|-------------|
-| `--source-path` | `-p` | string | No | `.` | Path to analyze (defaults to current directory) |
-| `--target-org` | `-o` | string | No | None | Target org (optional, used for AI authentication) |
-| `--save-plan` | | boolean | No | `false` | Save deployment plan for CI/CD |
-| `--plan-path` | | string | No | `.smart-deployment/deployment-plan.json` | Custom path for deployment plan |
-| `--use-ai` | | boolean | No | `false` | Use Agentforce AI for intelligent analysis |
-| `--org-type` | | string | No | Auto-detect | Organization type (Production, Sandbox, Developer) |
-| `--industry` | | string | No | None | Industry context for AI analysis |
-| `--locale` | | string | No | Auto-detect | Language locale (en, es, fr, de, pt, ja) |
-| `--output` | `-o` | string | No | Console | Output file path |
-| `--format` | `-f` | string | No | `json` | Output format (json\|html) |
+| Flag                | Short | Type    | Required | Default                                  | Description                                         |
+| ------------------- | ----- | ------- | -------- | ---------------------------------------- | --------------------------------------------------- |
+| `--source-path`     | `-p`  | string  | No       | `.`                                      | Path to analyze (defaults to current directory)     |
+| `--target-org`      | `-o`  | string  | No       | None                                     | Target org (optional, used for AI authentication)   |
+| `--save-plan`       |       | boolean | No       | `false`                                  | Save deployment plan for CI/CD                      |
+| `--plan-path`       |       | string  | No       | `.smart-deployment/deployment-plan.json` | Custom path for deployment plan                     |
+| `--use-ai`          |       | boolean | No       | `false`                                  | Use Agentforce AI for intelligent analysis          |
+| `--org-type`        |       | string  | No       | Auto-detect                              | Organization type (Production, Sandbox, Developer)  |
+| `--industry`        |       | string  | No       | None                                     | Industry context for AI analysis                    |
+| `--locale`          |       | string  | No       | Auto-detect                              | Language locale (en, es, fr, de, pt, ja)            |
+| `--output`          |       | string  | No       | None                                     | Output file path                                    |
+| `--format`          | `-f`  | string  | No       | `json`                                   | Output format (json\|html)                          |
+| `--create-manifest` |       | boolean | No       | `false`                                  | Generate package.xml manifests for deployment waves |
 
 ### Examples
 
@@ -59,7 +60,8 @@ sf smart-deployment analyze --format html --output report.html
 
 ### Output
 
-Returns JSON with:
+The command result contains:
+
 - `components`: Number of components found
 - `dependencies`: Number of dependencies detected
 - `planSaved`: Whether deployment plan was saved (if `--save-plan`)
@@ -78,40 +80,43 @@ sf smart-deployment start --target-org <org> [FLAGS]
 
 ### Flags
 
-| Flag | Short | Type | Required | Default | Description |
-|------|-------|------|----------|---------|-------------|
-| `--target-org` | `-o` | string | **Yes** | None | Target Salesforce org for deployment |
-| `--dry-run` | `-d` | boolean | No | `false` | Preview deployment without executing |
-| `--validate-only` | `-v` | boolean | No | `false` | Validate deployment without committing changes |
-| `--no-test-run` | | boolean | No | `false` | Skip tests (sandbox only, ignored in production) |
-| `--run-wave-test` | | boolean | No | `false` | Run only test classes included in each wave |
-| `--use-ai` | | boolean | No | `false` | Use Agentforce AI for intelligent priority weighting |
-| `--ai-auto` | | boolean | No | `false` | Auto-apply AI recommendations with confidence > threshold |
-| `--ai-confidence-threshold` | | string | No | `0.8` | Minimum AI confidence to auto-apply (0-1) |
-| `--org-type` | | string | No | Auto-detect | Organization type (Production, Sandbox, Developer) |
-| `--industry` | | string | No | None | Industry context for AI analysis |
-| `--use-plan` | | string | No | None | Use saved deployment plan (CI/CD) |
-| `--verify-against-plan` | | string | No | None | Verify deployment against plan |
-| `--max-diff` | | integer | No | `10` | Maximum diff percentage for plan verification |
-| `--strict` | | boolean | No | `false` | Strict mode (requires --use-plan) |
-| `--source-path` | `-p` | string | No | `.` | Source path to deploy |
-| `--ai-timeout` | | integer | No | `30000` | AI request timeout in milliseconds |
-| `--locale` | | string | No | Auto-detect | Language locale (en, es, fr, de, pt, ja) |
+| Flag                        | Short | Type    | Required | Default                       | Description                                               |
+| --------------------------- | ----- | ------- | -------- | ----------------------------- | --------------------------------------------------------- |
+| `--target-org`              | `-o`  | string  | **Yes**  | None                          | Target Salesforce org for deployment                      |
+| `--dry-run`                 | `-d`  | boolean | No       | `false`                       | Preview deployment without executing                      |
+| `--validate-only`           | `-v`  | boolean | No       | `false`                       | Validate deployment without committing changes            |
+| `--no-test-run`             |       | boolean | No       | `false`                       | Skip tests (sandbox only, ignored in production)          |
+| `--run-wave-test`           |       | boolean | No       | `false`                       | Run only test classes included in each wave               |
+| `--use-ai`                  |       | boolean | No       | `false`                       | Use Agentforce AI for intelligent priority weighting      |
+| `--ai-auto`                 |       | boolean | No       | `false`                       | Auto-apply AI recommendations with confidence > threshold |
+| `--ai-confidence-threshold` |       | string  | No       | `0.8`                         | Minimum AI confidence to auto-apply (0-1)                 |
+| `--org-type`                |       | string  | No       | Auto-detect                   | Organization type (Production, Sandbox, Developer)        |
+| `--industry`                |       | string  | No       | None                          | Industry context for AI analysis                          |
+| `--use-plan`                |       | string  | No       | None                          | Use saved deployment plan (CI/CD)                         |
+| `--strict`                  |       | boolean | No       | `false`                       | Strict mode (requires --use-plan)                         |
+| `--source-path`             | `-p`  | string  | No       | `.`                           | Source path to deploy                                     |
+| `--locale`                  |       | string  | No       | Auto-detect                   | Language locale (en, es, fr, de, pt, ja)                  |
+| `--test-level`              |       | string  | No       | SF CLI default                | Explicit Salesforce test level                            |
+| `--resume`                  |       | boolean | No       | Auto-resume when state exists | Resume from a previous failed state                       |
+| `--ignore-conflicts`        |       | boolean | No       | `false`                       | Pass conflict/warning ignore options to Salesforce CLI    |
 
 ### Test Execution Flags
 
 #### `--no-test-run`
+
 - **Sandbox**: Skips all test execution
 - **Production**: **IGNORED** (tests are required by Salesforce)
 - **Use case**: Fast sandbox deployments
 
 #### `--run-wave-test`
+
 - Runs only test classes included in each wave
 - Uses `RunSpecifiedTests` test level
 - **Recommended for production** (faster than RunLocalTests)
 - If no test classes found in wave, SF CLI determines test level
 
 #### Default Behavior
+
 - If no test flags provided, SF CLI uses its standard behavior:
   - **Production**: Requires tests (enforced by SF CLI)
   - **Sandbox**: Allows NoTestRun
@@ -146,7 +151,8 @@ sf smart-deployment start --target-org myorg --use-ai --ai-auto --ai-confidence-
 
 ### Output
 
-Returns JSON with:
+The command result contains:
+
 - `success`: Whether deployment succeeded
 - `waves`: Number of waves deployed
 
@@ -164,11 +170,11 @@ sf smart-deployment validate --target-org <org> [FLAGS]
 
 ### Flags
 
-| Flag | Short | Type | Required | Default | Description |
-|------|-------|------|----------|---------|-------------|
-| `--target-org` | `-o` | string | **Yes** | None | Target Salesforce org |
-| `--source-path` | `-p` | string | No | `.` | Source path to validate |
-| `--locale` | | string | No | Auto-detect | Language locale (en, es, fr, de, pt, ja) |
+| Flag            | Short | Type   | Required | Default     | Description                              |
+| --------------- | ----- | ------ | -------- | ----------- | ---------------------------------------- |
+| `--target-org`  | `-o`  | string | **Yes**  | None        | Target Salesforce org                    |
+| `--source-path` | `-p`  | string | No       | `.`         | Source path to validate                  |
+| `--locale`      |       | string | No       | Auto-detect | Language locale (en, es, fr, de, pt, ja) |
 
 ### Examples
 
@@ -182,7 +188,8 @@ sf smart-deployment validate --target-org myorg --source-path force-app
 
 ### Output
 
-Returns JSON with:
+The command result contains:
+
 - `success`: Whether validation succeeded
 - `errors`: Array of validation errors (if any)
 
@@ -200,10 +207,10 @@ sf smart-deployment status --target-org <org> [FLAGS]
 
 ### Flags
 
-| Flag | Short | Type | Required | Default | Description |
-|------|-------|------|----------|---------|-------------|
-| `--target-org` | `-o` | string | **Yes** | None | Target Salesforce org |
-| `--watch` | `-w` | boolean | No | `false` | Watch for status changes |
+| Flag           | Short | Type    | Required | Default | Description              |
+| -------------- | ----- | ------- | -------- | ------- | ------------------------ |
+| `--target-org` | `-o`  | string  | **Yes**  | None    | Target Salesforce org    |
+| `--watch`      | `-w`  | boolean | No       | `false` | Watch for status changes |
 
 ### Examples
 
@@ -217,7 +224,8 @@ sf smart-deployment status --target-org myorg --watch
 
 ### Output
 
-Returns JSON with:
+The command result contains:
+
 - `currentWave`: Current wave number
 - `totalWaves`: Total number of waves
 - `completedWaves`: Array of completed wave numbers
@@ -236,10 +244,10 @@ sf smart-deployment resume --target-org <org> [FLAGS]
 
 ### Flags
 
-| Flag | Short | Type | Required | Default | Description |
-|------|-------|------|----------|---------|-------------|
-| `--target-org` | `-o` | string | **Yes** | None | Target Salesforce org |
-| `--source-path` | `-p` | string | No | `.` | Source path |
+| Flag            | Short | Type   | Required | Default | Description           |
+| --------------- | ----- | ------ | -------- | ------- | --------------------- |
+| `--target-org`  | `-o`  | string | **Yes**  | None    | Target Salesforce org |
+| `--source-path` | `-p`  | string | No       | `.`     | Source path           |
 
 ### Examples
 
@@ -250,7 +258,8 @@ sf smart-deployment resume --target-org myorg
 
 ### Output
 
-Returns JSON with:
+The command result contains:
+
 - `success`: Whether resume succeeded
 - `resumedFromWave`: Wave number where deployment resumed
 
@@ -268,10 +277,10 @@ sf smart-deployment config [FLAGS]
 
 ### Flags
 
-| Flag | Short | Type | Required | Default | Description |
-|------|-------|------|----------|---------|-------------|
-| `--get` | `-g` | string | No | None | Get configuration value |
-| `--set` | `-s` | string | No | None | Set configuration value (key=value) |
+| Flag    | Short | Type   | Required | Default | Description                         |
+| ------- | ----- | ------ | -------- | ------- | ----------------------------------- |
+| `--get` | `-g`  | string | No       | None    | Get configuration value             |
+| `--set` | `-s`  | string | No       | None    | Set configuration value (key=value) |
 
 ### Examples
 
@@ -286,7 +295,8 @@ sf smart-deployment config --set ai.confidenceThreshold=0.9
 
 ### Output
 
-Returns JSON with:
+The command result contains:
+
 - `success`: Whether operation succeeded
 
 ---
@@ -296,12 +306,14 @@ Returns JSON with:
 ### Common Flags
 
 #### `--target-org` / `-o`
+
 - **Type**: string
 - **Required**: Yes (for `start`, `validate`, `status`, `resume`)
 - **Description**: Target Salesforce org alias or username
 - **Example**: `--target-org myorg` or `-o myorg`
 
 #### `--source-path` / `-p`
+
 - **Type**: string
 - **Required**: No
 - **Default**: `.` (current directory)
@@ -309,6 +321,7 @@ Returns JSON with:
 - **Example**: `--source-path force-app` or `-p force-app`
 
 #### `--locale`
+
 - **Type**: string
 - **Required**: No
 - **Default**: Auto-detect from environment
@@ -319,12 +332,14 @@ Returns JSON with:
 ### AI Flags
 
 #### `--use-ai`
+
 - **Type**: boolean
 - **Default**: `false`
 - **Description**: Enable Agentforce AI for intelligent analysis
 - **Example**: `--use-ai`
 
 #### `--ai-auto`
+
 - **Type**: boolean
 - **Default**: `false`
 - **Requires**: `--use-ai`
@@ -332,6 +347,7 @@ Returns JSON with:
 - **Example**: `--use-ai --ai-auto`
 
 #### `--ai-confidence-threshold`
+
 - **Type**: string (number 0-1)
 - **Default**: `0.8`
 - **Requires**: `--ai-auto`
@@ -339,12 +355,14 @@ Returns JSON with:
 - **Example**: `--ai-confidence-threshold 0.9`
 
 #### `--org-type`
+
 - **Type**: string
 - **Options**: `Production`, `Sandbox`, `Developer`
 - **Description**: Organization type for AI context
 - **Example**: `--org-type Production`
 
 #### `--industry`
+
 - **Type**: string
 - **Description**: Industry context for AI analysis
 - **Example**: `--industry Fintech`
@@ -352,49 +370,44 @@ Returns JSON with:
 ### CI/CD Flags
 
 #### `--save-plan`
+
 - **Type**: boolean
 - **Default**: `false`
 - **Description**: Save deployment plan for CI/CD
 - **Example**: `--save-plan`
 
 #### `--plan-path`
+
 - **Type**: string
 - **Default**: `.smart-deployment/deployment-plan.json`
 - **Description**: Custom path for deployment plan
 - **Example**: `--plan-path custom-plan.json`
 
 #### `--use-plan`
+
 - **Type**: string
 - **Description**: Use saved deployment plan (CI/CD)
 - **Example**: `--use-plan .smart-deployment/deployment-plan.json`
 
 #### `--strict`
+
 - **Type**: boolean
 - **Default**: `false`
 - **Requires**: `--use-plan`
 - **Description**: Strict mode (requires pre-approved plan)
 - **Example**: `--use-plan plan.json --strict`
 
-#### `--verify-against-plan`
-- **Type**: string
-- **Description**: Verify deployment against plan
-- **Example**: `--verify-against-plan plan.json`
-
-#### `--max-diff`
-- **Type**: integer
-- **Default**: `10`
-- **Description**: Maximum diff percentage for plan verification
-- **Example**: `--max-diff 20`
-
 ### Test Flags
 
 #### `--no-test-run`
+
 - **Type**: boolean
 - **Default**: `false`
 - **Description**: Skip tests (sandbox only, ignored in production)
 - **Example**: `--no-test-run`
 
 #### `--run-wave-test`
+
 - **Type**: boolean
 - **Default**: `false`
 - **Description**: Run only test classes included in each wave
@@ -403,11 +416,13 @@ Returns JSON with:
 ### Output Flags
 
 #### `--output` / `-o`
+
 - **Type**: string
 - **Description**: Output file path
 - **Example**: `--output report.json` or `-o report.json`
 
 #### `--format` / `-f`
+
 - **Type**: string
 - **Default**: `json`
 - **Options**: `json`, `html`
@@ -416,31 +431,29 @@ Returns JSON with:
 
 ### Deprecated Flags
 
-#### `--skip-tests` / `-s`
-- **Status**: ⚠️ **Deprecated** (use `--no-test-run` instead)
-- **Deprecated in**: Version 2.0.0
+#### `--skip-tests` / `-s` (on `start`)
+
+- **Status**: Deprecated by the command implementation
 - **Replacement**: `--no-test-run`
 
 ---
 
 ## Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| `0` | Success |
-| `1` | General error |
-| `2` | Command error (invalid flags, missing required flags) |
+| Code | Meaning                                               |
+| ---- | ----------------------------------------------------- |
+| `0`  | Success                                               |
+| `1`  | General error                                         |
+| `2`  | Command error (invalid flags, missing required flags) |
 
 ---
 
 ## JSON Output Format
 
-All commands support `--json` flag for machine-readable output:
+The documented commands do not define a plugin-level `--json` flag. `--json` belongs to other Salesforce CLI commands, such as `sf org display`.
 
 ```bash
-sf smart-deployment analyze --json
-sf smart-deployment start --target-org myorg --json
-sf smart-deployment status --target-org myorg --json
+
 ```
 
 ---
@@ -451,9 +464,8 @@ You can set default values using environment variables:
 
 ```bash
 export SF_TARGET_ORG=myorg
-export SF_AI_ENABLED=true
-export SF_AI_CONFIDENCE_THRESHOLD=0.9
-export SF_STRICT_MODE=true
+# SF_TARGET_ORG is used by authentication helpers; command target-org flags
+# remain required where documented.
 ```
 
 ---
@@ -467,11 +479,3 @@ export SF_STRICT_MODE=true
 ---
 
 **Last Updated**: December 14, 2025
-
-
-
-
-
-
-
-

@@ -16,18 +16,20 @@ smart-deployment/
 │   ├── PROVISIONING_CI_CD.md                    # Data provisioning guide
 │   └── ... (see docs/README.md for full index)
 ├── src/
-│   ├── commands/                                # CLI commands
-│   ├── core/                                    # Business logic
+│   ├── commands/smart-deployment/               # CLI commands
 │   ├── services/                                # Operations
-│   ├── parsers/                                 # Metadata analysis
-│   ├── generators/                              # Output creation
+│   ├── scanner/                                 # Metadata/project scanning
+│   ├── dependencies/                            # Dependency analysis
+│   ├── waves/                                   # Wave generation/execution
+│   ├── deployment/                              # Deployment orchestration
+│   ├── ai/                                      # Agentforce integration
 │   ├── utils/                                   # Helpers
 │   ├── types/                                   # Type definitions
 │   └── constants/                               # Configuration
 ├── test/
 │   ├── unit/                                    # Unit tests (TDD)
 │   ├── integration/                             # Integration tests
-│   └── e2e/                                     # E2E tests (BDD)
+│   └── helpers/                                 # Test helpers
 └── README.md                                     # This file
 ```
 
@@ -38,6 +40,7 @@ smart-deployment/
 The project has progressed significantly beyond Phase 1. Major features implemented:
 
 **✅ Completed Phases:**
+
 - **Phase 1**: Foundation (Constants, Types, Utils) - ✅ Complete
 - **Phase 2**: Metadata Parsers (15+ parsers) - ✅ Complete
 - **Phase 3**: Dependency Analysis - ✅ Complete
@@ -46,12 +49,13 @@ The project has progressed significantly beyond Phase 1. Major features implemen
 - **Phase 6**: Deployment Execution - ✅ In Progress
 
 **📊 Key Metrics:**
+
 - **Commands**: 6 CLI commands implemented (`analyze`, `start`, `validate`, `status`, `resume`, `config`)
 - **Parsers**: 17+ metadata parsers (Apex, Flow, LWC, Custom Objects, etc.)
 - **Waves**: Complete wave generation system with splitting, merging, validation
 - **Deployment**: Manifest generation, SF CLI integration, state management
 - **AI Integration**: Agentforce integration for dependency inference and priority weighting
-- **Tests**: 1,900+ test cases across unit, integration, and E2E tests
+- **Tests**: 95 `.test.ts` files. The latest local `yarn test:only` run reported 1,502 passing and 6 failing cases.
 
 ## 🎯 Current Implementation
 
@@ -87,24 +91,12 @@ src/utils/
 ### 3. ✅ Metadata Parsers (17+ parsers)
 
 ```bash
-src/parsers/
-├── ✅ apex-class-parser.ts
-├── ✅ apex-trigger-parser.ts
-├── ✅ flow-parser.ts
-├── ✅ lwc-parser.ts
-├── ✅ aura-parser.ts
-├── ✅ custom-object-parser.ts
-├── ✅ custom-metadata-parser.ts
-├── ✅ permission-set-parser.ts
-├── ✅ profile-parser.ts
-├── ✅ layout-parser.ts
-├── ✅ flexipage-parser.ts
-├── ✅ email-template-parser.ts
-├── ✅ visualforce-parser.ts
-├── ✅ bot-parser.ts
-├── ✅ genai-prompt-parser.ts
-├── ✅ error-resilient-parser.ts
-└── ... (more parsers)
+src/services/ and src/scanner/
+├── ✅ metadata-scanner-service.ts
+├── ✅ metadata-format-scanner.ts
+├── ✅ custom-structure-scanner.ts
+├── ✅ project-validator.ts
+└── ... (metadata parsing and scanning logic)
 ```
 
 ### 4. ✅ Dependency Analysis
@@ -197,18 +189,19 @@ src/commands/
 
 ### 10. Testing
 
-**Framework**: Mocha + Chai (not Jest + Cucumber as previously mentioned)
+**Framework**: Mocha (run through `nyc mocha`); Jest and Cucumber are not configured.
 
 ```bash
 yarn test                   # Unit tests
-yarn test:coverage          # Coverage report
-# Integration and E2E tests via shell scripts
+yarn test:nuts              # Salesforce integration/NUT tests
+# E2E-style checks are shell scripts, not part of yarn test
 ```
 
 **Test Coverage**:
-- **1,900+ test cases** across unit, integration, and E2E tests
+
+- **1,502 passing and 6 failing cases** in the latest local `yarn test:only` run
 - **Unit Tests**: Comprehensive coverage for all modules
-- **E2E Tests**: Shell script-based E2E tests (`scripts/e2e-test-grg.sh`)
+- **E2E-style checks**: `scripts/e2e-test.sh` (7 numbered tests) and `scripts/e2e-test-grg.sh` (24 numbered tests). No specs currently exist under `test/e2e/`.
 - **Coverage**: High coverage across parsers, services, and commands
 
 ### 8. Publication
@@ -325,9 +318,10 @@ The analyzer must use exact names expected by SF CLI in package.xml:
 **Framework**: OCLIF (Salesforce CLI Plugin Framework)
 **Testing**: Mocha + Chai
 **CI/CD**: ✅ GitHub Actions (Active)
-  - Unit tests on push
-  - Acceptance criteria validation on PRs
-  - Automated testing workflows
+
+- Unit tests on push
+- Acceptance criteria validation on PRs
+- Automated testing workflows
 
 ---
 

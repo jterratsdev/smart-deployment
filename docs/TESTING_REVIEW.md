@@ -8,12 +8,12 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 
 ## 📊 Executive Summary
 
-| Category | Status | Coverage | Priority |
-|----------|--------|----------|----------|
-| **E2E Tests** | 🟡 Partial | 32% (11/34 flags) | High |
-| **Unit Tests** | 🟢 Good | ~85% (81 files) | Medium |
-| **Command Tests** | 🔴 Missing | 17% (1/6 commands) | High |
-| **Documentation** | 🟡 Partial | 70% | Medium |
+| Category          | Status     | Coverage                                                  | Priority |
+| ----------------- | ---------- | --------------------------------------------------------- | -------- |
+| **E2E Tests**     | 🟡 Partial | Shell suites only; no `test/e2e/` specs                   | High     |
+| **Unit Tests**    | 🟡 Mixed   | 95 `.test.ts` files; latest run: 1,502 passing, 6 failing | Medium   |
+| **Command Tests** | 🟢 Present | 6/6 command test files present                            | Medium   |
+| **Documentation** | 🟡 Partial | 70%                                                       | Medium   |
 
 ---
 
@@ -22,11 +22,13 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 ### Current State
 
 **Scripts Available:**
-- ✅ `scripts/e2e-test-grg.sh` - Comprehensive E2E suite (20 tests)
-- ✅ `scripts/e2e-test.sh` - Basic E2E suite (7 tests)
+
+- ✅ `scripts/e2e-test-grg.sh` - Comprehensive E2E-style suite (24 numbered tests)
+- ✅ `scripts/e2e-test.sh` - Basic E2E-style suite (7 numbered tests)
 - ✅ `docs/E2E_COVERAGE_ANALYSIS.md` - Coverage documentation
 
 **Tests Covered:**
+
 1. ✅ Analyze command (basic)
 2. ✅ Analyze with --save-plan
 3. ✅ Validate command
@@ -51,6 +53,7 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 ### Coverage Analysis
 
 #### `analyze` Command
+
 - **Flags Total**: 10
 - **Flags Covered**: 3 (30%)
 - **Missing**:
@@ -62,6 +65,7 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
   - `--format` (JSON/HTML reports)
 
 #### `start` Command
+
 - **Flags Total**: 15
 - **Flags Covered**: 6 (40%)
 - **Missing**:
@@ -69,17 +73,17 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
   - `--org-type`
   - `--industry`
   - `--source-path`
-  - `--verify-against-plan`
-  - `--max-diff`
-  - `--ai-timeout`
+  - No current implementation-backed flags remain in this subsection; the command's implemented flags are documented in `docs/CLI_REFERENCE.md`.
 
 #### `validate` Command
+
 - **Flags Total**: 3
 - **Flags Covered**: 2 (67%)
 - **Missing**:
   - `--locale`
 
 #### `resume` Command
+
 - **Flags Total**: 2
 - **Flags Covered**: 0 (0%) ⚠️ **CRITICAL**
 - **Missing**:
@@ -88,6 +92,7 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
   - **Note**: Test 15 exists but may need enhancement
 
 #### `status` Command
+
 - **Flags Total**: 2
 - **Flags Covered**: 0 (0%) ⚠️ **CRITICAL**
 - **Missing**:
@@ -96,6 +101,7 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
   - **Note**: Test 16 exists but may need enhancement
 
 #### `config` Command
+
 - **Flags Total**: 2
 - **Flags Covered**: 0 (0%) ⚠️ **CRITICAL**
 - **Missing**:
@@ -105,16 +111,19 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 ### Critical Gaps
 
 1. **Report Generation** (`analyze --output --format`)
+
    - JSON report format not tested
    - HTML report format not tested
    - Report content validation missing
 
 2. **Resume Command**
+
    - Requires failed deployment state
    - Needs setup/teardown for state management
    - Error scenarios not fully covered
 
 3. **Status Command**
+
    - Active deployment scenarios
    - Watch mode (difficult to test automatically)
    - Multiple deployment states
@@ -127,20 +136,15 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 ### Recommendations
 
 **High Priority:**
+
 1. Add E2E tests for `analyze --output --format json/html`
 2. Enhance `resume` command tests with proper state setup
 3. Add `config` command tests
 4. Add `status` command tests for various states
 
-**Medium Priority:**
-5. Add tests for flag combinations
-6. Add tests for error scenarios
-7. Add tests for edge cases
+**Medium Priority:** 5. Add tests for flag combinations 6. Add tests for error scenarios 7. Add tests for edge cases
 
-**Low Priority:**
-8. Add tests for `--watch` mode (may require manual testing)
-9. Add performance tests
-10. Add stress tests
+**Low Priority:** 8. Add tests for `--watch` mode (may require manual testing) 9. Add performance tests 10. Add stress tests
 
 ---
 
@@ -148,8 +152,9 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 
 ### Current State
 
-**Test Files**: 81 unit test files
+**Test Files**: 95 `.test.ts` files in `test/` (94 are executed by `test:only`, which excludes the hello command test)
 **Coverage Areas**:
+
 - ✅ Parsers (17 files)
 - ✅ Dependencies (11 files)
 - ✅ Waves (7 files)
@@ -162,19 +167,21 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 
 ### Command Tests Status
 
-| Command | Unit Tests | Status | Priority |
-|---------|------------|--------|----------|
-| `start` | ✅ `start.test.ts` | Complete | - |
-| `analyze` | ❌ Missing | **CRITICAL** | High |
-| `resume` | ❌ Missing | **CRITICAL** | High |
-| `status` | ❌ Missing | **CRITICAL** | High |
-| `validate` | ❌ Missing | **CRITICAL** | High |
-| `config` | ❌ Missing | **CRITICAL** | High |
+| Command    | Unit Tests            | Status   | Priority |
+| ---------- | --------------------- | -------- | -------- |
+| `start`    | ✅ `start.test.ts`    | Complete | -        |
+| `analyze`  | ✅ `analyze.test.ts`  | Present  | -        |
+| `resume`   | ✅ `resume.test.ts`   | Present  | -        |
+| `status`   | ✅ `status.test.ts`   | Present  | -        |
+| `validate` | ✅ `validate.test.ts` | Present  | -        |
+| `config`   | ✅ `config.test.ts`   | Present  | -        |
 
-### Missing Unit Tests
+### Unit Test Coverage Gaps
 
-#### `analyze.test.ts` - **CRITICAL**
+#### `analyze.test.ts`
+
 **Should Test:**
+
 - Metadata scanning integration
 - Dependency graph generation
 - Wave generation
@@ -185,8 +192,10 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 - Error handling
 - Flag combinations
 
-#### `resume.test.ts` - **CRITICAL**
+#### `resume.test.ts`
+
 **Should Test:**
+
 - Failed deployment detection
 - State loading
 - Wave filtering (resume from failed wave)
@@ -195,24 +204,30 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 - Error handling
 - State persistence
 
-#### `status.test.ts` - **CRITICAL**
+#### `status.test.ts`
+
 **Should Test:**
+
 - State loading
 - Status display (idle, deploying, failed, completed)
 - Wave progress calculation
 - Watch mode (if testable)
 - Error handling
 
-#### `validate.test.ts` - **CRITICAL**
+#### `validate.test.ts`
+
 **Should Test:**
+
 - Metadata scanning
 - Dependency validation
 - Wave validation
 - Error reporting
 - Flag combinations
 
-#### `config.test.ts` - **CRITICAL**
+#### `config.test.ts`
+
 **Should Test:**
+
 - Set operations
 - Get operations
 - Configuration persistence
@@ -222,6 +237,7 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 ### New Functionality Tests Needed
 
 #### `start.ts` Updates
+
 - ✅ AI priority weighting integration (partially tested)
 - ⚠️ Test execution flags (`--no-test-run`, `--run-wave-test`)
 - ⚠️ Org type detection
@@ -229,12 +245,14 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 - ⚠️ Manifest validation integration
 
 #### `resume.ts` Updates
+
 - ⚠️ Real deployment execution
 - ⚠️ Manifest generation for remaining waves
 - ⚠️ State management
 - ⚠️ Error recovery
 
 #### `analyze.ts` Updates
+
 - ⚠️ Report generation (JSON/HTML)
 - ⚠️ Report file writing
 - ⚠️ Report content validation
@@ -242,20 +260,14 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 ### Recommendations
 
 **High Priority:**
-1. Create `analyze.test.ts` with comprehensive coverage
-2. Create `resume.test.ts` with state management tests
-3. Create `status.test.ts` with various state scenarios
-4. Create `validate.test.ts` with validation scenarios
-5. Create `config.test.ts` with config operations
 
-**Medium Priority:**
-6. Enhance `start.test.ts` with new functionality
-7. Add integration tests for command workflows
-8. Add error scenario tests
+1. Expand the existing command tests with comprehensive scenario coverage
+2. Add state-management cases for `resume` and `status`
+3. Add configuration persistence and validation cases
 
-**Low Priority:**
-9. Add performance tests
-10. Add edge case tests
+**Medium Priority:** 6. Enhance `start.test.ts` with new functionality 7. Add integration tests for command workflows 8. Add error scenario tests
+
+**Low Priority:** 9. Add performance tests 10. Add edge case tests
 
 ---
 
@@ -264,17 +276,19 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 ### Current State
 
 **Available Documentation:**
+
 - ✅ `docs/E2E_COVERAGE_ANALYSIS.md` - E2E coverage analysis
 - ✅ `docs/TESTING_SUMMARY.md` - Testing summary
 - ✅ `docs/guides/ACCEPTANCE_CRITERIA_TESTING.md` - AC testing guide
 - ✅ `docs/methodology/TESTING_STRATEGY.md` - Testing strategy
-- ⚠️ Missing: E2E testing guide
-- ⚠️ Missing: Unit testing guide
-- ⚠️ Missing: Test writing guidelines
+- ✅ E2E testing guide exists at `docs/guides/E2E_TESTING.md`
+- ⚠️ A dedicated unit testing guide is not present in the current tree
+- ⚠️ Dedicated test writing guidelines are not present in the current tree
 
 ### Documentation Gaps
 
 1. **E2E Testing Guide**
+
    - How to write E2E tests
    - How to run E2E tests
    - E2E test structure
@@ -282,6 +296,7 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
    - Troubleshooting
 
 2. **Unit Testing Guide**
+
    - How to write unit tests
    - Test structure and patterns
    - Mocking strategies
@@ -298,17 +313,13 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 ### Recommendations
 
 **High Priority:**
-1. Create `docs/guides/E2E_TESTING.md`
-2. Create `docs/guides/UNIT_TESTING.md`
-3. Update `docs/TESTING_SUMMARY.md` with current status
 
-**Medium Priority:**
-4. Create `docs/guides/TEST_WRITING_GUIDELINES.md`
-5. Add examples to existing testing docs
+1. Create `docs/guides/UNIT_TESTING.md`
+2. Update `docs/TESTING_SUMMARY.md` with current status
 
-**Low Priority:**
-6. Create video tutorials
-7. Add troubleshooting guides
+**Medium Priority:** 4. Create `docs/guides/TEST_WRITING_GUIDELINES.md` 5. Add examples to existing testing docs
+
+**Low Priority:** 6. Create video tutorials 7. Add troubleshooting guides
 
 ---
 
@@ -318,11 +329,7 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 
 1. ✅ Review E2E test coverage
 2. ⏳ Create unit tests for missing commands:
-   - `analyze.test.ts`
-   - `resume.test.ts`
-   - `status.test.ts`
-   - `validate.test.ts`
-   - `config.test.ts`
+   - Review and stabilize the existing command tests
 3. ⏳ Add E2E tests for report generation
 4. ⏳ Create E2E testing guide
 
@@ -346,9 +353,9 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 
 ### Current Metrics
 
-- **E2E Coverage**: 32% (11/34 flags)
-- **Unit Test Files**: 81
-- **Command Unit Tests**: 17% (1/6 commands)
+- **E2E Coverage**: Not measured against a verified current flag matrix; shell scripts cover 7 and 24 numbered scenarios
+- **Unit Test Files**: 95 `.test.ts` files
+- **Command Unit Tests**: 100% (6/6 commands have test files)
 - **Documentation**: 70% complete
 
 ### Target Metrics
@@ -363,22 +370,16 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 ## 6. Conclusion
 
 The project has good foundation for testing with:
-- ✅ Comprehensive E2E test suite (20 tests)
-- ✅ Extensive unit test coverage (81 files)
+
+- ✅ Shell-based E2E-style suites (7 and 24 numbered tests)
+- 🟡 Unit test suite (95 files; latest run had 6 failures)
 - ✅ Good testing documentation structure
 
 However, critical gaps exist:
-- 🔴 Missing unit tests for 5/6 commands
+
+- 🟡 Existing command tests require stabilization; the six command test files are present
 - 🔴 Missing E2E tests for report generation
 - 🔴 Missing E2E tests for `config` command
 - 🟡 Incomplete E2E coverage for `resume` and `status`
 
 **Priority**: Focus on creating unit tests for commands first, then enhance E2E coverage.
-
-
-
-
-
-
-
-
