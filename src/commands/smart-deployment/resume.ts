@@ -28,6 +28,7 @@ import { initializeI18n } from '../../i18n/i18n-service.js';
 import type { SupportedLocale } from '../../i18n/locale-detector.js';
 import type { MetadataComponent } from '../../types/metadata.js';
 import { createNodeId } from '../../utils/node-id.js';
+import { validateAgentforceTargets } from '../../validation/agentforce-target-validator.js';
 
 const logger = getLogger('ResumeCommand');
 
@@ -202,6 +203,19 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
     }
 
     this.log('✅ All manifests validated');
+
+    // Re-scanning can change the dependency plan, so validate Agentforce
+    // targets again before deploying any resumed wave.
+    const agentforceValidation = validateAgentforceTargets(orderedWaves, manifestResult.manifests, componentMap);
+    for (const issue of agentforceValidation.issues) {
+      const prefix = issue.severity === 'error' ? '❌' : '⚠️';
+      this.warn(`${prefix} Agentforce target ${issue.consumer} -> ${issue.target}: ${issue.message}`);
+    }
+    if (!agentforceValidation.valid) {
+      this.error('Agentforce target validation failed. Cannot resume deployment with an invalid dependency plan.');
+      return { success: false };
+    }
+    this.log('✅ Agentforce targets are ordered and included in manifests');
 
     // Initialize deployment services
     const tracker = new DeploymentTracker();

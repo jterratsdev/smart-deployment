@@ -1,5 +1,6 @@
 /**
  * Unit tests for resume command
+ *
  * @ac US-049-AC-1: Detects previous failed deployment
  * @ac US-049-AC-2: Loads deployment state
  * @ac US-049-AC-3: Resumes from failed wave
@@ -11,7 +12,7 @@
 import { expect } from 'chai';
 import { describe, it, beforeEach, afterEach } from 'mocha';
 import sinon, { SinonStub } from 'sinon';
-import Resume from '../../../src/commands/resume.js';
+import Resume from '../../../src/commands/smart-deployment/resume.js';
 import { StateManager } from '../../../src/deployment/state-manager.js';
 import { MetadataScannerService } from '../../../src/services/metadata-scanner-service.js';
 import { WaveBuilder } from '../../../src/waves/wave-builder.js';
@@ -23,6 +24,7 @@ import { createMockComponent } from '../../helpers/test-helpers.js';
 describe('ResumeCommand', () => {
   let resumeCommand: Resume;
   let stateManagerStub: SinonStub;
+  let loadStateStub: SinonStub;
   let scannerStub: SinonStub;
   let waveBuilderStub: SinonStub;
   let manifestGeneratorStub: SinonStub;
@@ -46,7 +48,7 @@ describe('ResumeCommand', () => {
 
     // Stub StateManager
     stateManagerStub = sinon.stub(StateManager.prototype, 'hasFailedDeployment').resolves(true);
-    sinon.stub(StateManager.prototype, 'loadState').resolves({
+    loadStateStub = sinon.stub(StateManager.prototype, 'loadState').resolves({
       status: 'failed',
       deploymentId: 'test-deployment-123',
       targetOrg: 'test-org',
@@ -64,9 +66,7 @@ describe('ResumeCommand', () => {
 
     // Stub MetadataScannerService
     scannerStub = sinon.stub(MetadataScannerService.prototype, 'scan').resolves({
-      components: [
-        createMockComponent({ name: 'TestClass', type: 'ApexClass' }),
-      ],
+      components: [createMockComponent({ name: 'TestClass', type: 'ApexClass' })],
       dependencyResult: {
         graph: new Map(),
         circularDependencies: [],
@@ -200,7 +200,7 @@ describe('ResumeCommand', () => {
     });
 
     it('should return false when state is missing', async () => {
-      sinon.stub(StateManager.prototype, 'loadState').resolves(null);
+      loadStateStub.resolves(null);
       resumeCommand.argv = ['--target-org', 'test-org'];
       const result = await resumeCommand.run();
 
@@ -215,6 +215,91 @@ describe('ResumeCommand', () => {
 
       expect(waveBuilderStub.calledOnce).to.be.true;
       expect(manifestGeneratorStub.calledOnce).to.be.true;
+    });
+
+    it('should validate Agentforce targets before resuming', async () => {
+      const agentId = 'AiAuthoringBundle:TestAgent';
+      const targetId = 'Flow:MissingFlow';
+      scannerStub.resolves({
+        components: [
+          createMockComponent({ name: 'TestAgent', type: 'AiAuthoringBundle', dependencies: new Set([targetId]) }),
+          createMockComponent({ name: 'MissingFlow', type: 'Flow' }),
+        ],
+        dependencyResult: {
+          graph: new Map([
+            [agentId, new Set([targetId])],
+            [targetId, new Set()],
+          ]),
+          circularDependencies: [],
+          stats: {
+            totalComponents: 2,
+            totalDependencies: 1,
+            componentsByType: { AiAuthoringBundle: 1, Flow: 1 },
+            maxDepth: 1,
+            mostDepended: { nodeId: targetId, count: 1 },
+            mostDependencies: { nodeId: agentId, count: 1 },
+          },
+        },
+        projectRoot: '/test/project',
+        errors: [],
+        warnings: [],
+      });
+      waveBuilderStub.returns({
+        waves: [
+          {
+            number: 1,
+            components: [agentId],
+            metadata: {
+              componentCount: 1,
+              types: ['AiAuthoringBundle'],
+              maxDepth: 0,
+              hasCircularDeps: false,
+              estimatedTime: 5,
+            },
+          },
+        ],
+        totalComponents: 1,
+        unplacedComponents: [],
+        circularDependencies: [],
+        stats: { totalWaves: 1, averageComponentsPerWave: 1, maxComponentsInWave: 1 },
+      });
+      manifestGeneratorStub.resolves({
+        manifests: [
+          {
+            fileName: 'wave-001-package.xml',
+            content: '<?xml version="1.0"?><Package/>',
+            components: { AiAuthoringBundle: ['TestAgent'] },
+            apiVersion: '65.0',
+          },
+        ],
+        errors: [],
+        warnings: [],
+      });
+      loadStateStub.resolves({
+        status: 'failed',
+        deploymentId: 'test-deployment-123',
+        targetOrg: 'test-org',
+        timestamp: new Date().toISOString(),
+        totalWaves: 1,
+        completedWaves: [],
+        currentWave: 1,
+        failedWave: {
+          waveNumber: 1,
+          error: 'Deployment failed',
+          timestamp: new Date().toISOString(),
+        },
+      });
+      resumeCommand.argv = ['--target-org', 'test-org'];
+
+      let result: { success: boolean; resumedFromWave?: number } | undefined;
+      try {
+        result = await resumeCommand.run();
+      } catch (error) {
+        expect(error).to.be.instanceOf(Error);
+      }
+
+      expect(result?.success ?? false).to.equal(false);
+      expect(sfCliStub.called).to.be.false;
     });
 
     it('should return success when no waves to resume', async () => {
@@ -241,7 +326,19 @@ describe('ResumeCommand', () => {
           maxComponentsInWave: 1,
         },
       });
-      sinon.stub(StateManager.prototype, 'loadState').resolves({
+      manifestGeneratorStub.resolves({
+        manifests: [
+          {
+            fileName: 'wave-001-package.xml',
+            content: '<?xml version="1.0"?><Package/>',
+            components: { ApexClass: ['TestClass'] },
+            apiVersion: '65.0',
+          },
+        ],
+        errors: [],
+        warnings: [],
+      });
+      loadStateStub.resolves({
         status: 'failed',
         deploymentId: 'test-deployment-123',
         targetOrg: 'test-org',
@@ -275,11 +372,10 @@ describe('ResumeCommand', () => {
 
   describe('US-049-AC-5: Updates deployment report', () => {
     it('should save state after successful wave deployment', async () => {
-      const saveStateStub = sinon.stub(StateManager.prototype, 'saveState');
       resumeCommand.argv = ['--target-org', 'test-org'];
       await resumeCommand.run();
 
-      expect(saveStateStub.called).to.be.true;
+      expect(StateManager.prototype.saveState.called).to.be.true;
     });
   });
 
@@ -306,7 +402,6 @@ describe('ResumeCommand', () => {
 
     it('should save failed state on error', async () => {
       sfCliStub.rejects(new Error('Deployment failed'));
-      const saveStateStub = sinon.stub(StateManager.prototype, 'saveState');
 
       resumeCommand.argv = ['--target-org', 'test-org'];
 
@@ -314,7 +409,7 @@ describe('ResumeCommand', () => {
         await resumeCommand.run();
         expect.fail('Should have thrown an error');
       } catch {
-        expect(saveStateStub.called).to.be.true;
+        expect(StateManager.prototype.saveState.called).to.be.true;
       }
     });
   });
@@ -344,5 +439,3 @@ describe('ResumeCommand', () => {
     });
   });
 });
-
-
