@@ -45,10 +45,8 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 14. ✅ Start with --ai-auto
 15. ✅ Resume command
 16. ✅ Status command
-17. ✅ Analyze with --locale
-18. ✅ Start with --locale
-19. ✅ Analyze with --plan-path
-20. ✅ Start with conflicting test flags
+17. ✅ Analyze with --plan-path
+18. ✅ Start with conflicting test flags
 
 ### Coverage Analysis
 
@@ -60,7 +58,6 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
   - `--plan-path` (custom plan paths)
   - `--org-type` (AI context)
   - `--industry` (AI context)
-  - `--locale` (i18n) - ⚠️ Actually covered in Test 17
   - `--output` (report generation)
   - `--format` (JSON/HTML reports)
 
@@ -80,7 +77,6 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 - **Flags Total**: 3
 - **Flags Covered**: 2 (67%)
 - **Missing**:
-  - `--locale`
 
 #### `resume` Command
 

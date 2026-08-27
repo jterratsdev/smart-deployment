@@ -38,7 +38,6 @@ describe('ResumeCommand', () => {
       flags: {
         'target-org': 'test-org',
         'source-path': undefined,
-        locale: undefined,
       },
       args: {},
       argv: [],

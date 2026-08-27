@@ -25,8 +25,6 @@ import { Org } from '@salesforce/core';
 import { getLogger } from '../../utils/logger.js';
 import { DeploymentPlanManager } from '../../utils/deployment-plan-manager.js';
 import { MetadataScannerService } from '../../services/metadata-scanner-service.js';
-import { initializeI18n } from '../../i18n/i18n-service.js';
-import type { SupportedLocale } from '../../i18n/locale-detector.js';
 import { WaveBuilder } from '../../waves/wave-builder.js';
 import { getWavesInExecutionOrder } from '../../waves/wave-executor.js';
 import { SfCliIntegration } from '../../deployment/sf-cli-integration.js';
@@ -146,11 +144,6 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       summary: 'Strict mode for CI/CD',
       default: false,
     }),
-    locale: Flags.string({
-      summary: 'Language locale (en, es, fr, de, pt, ja)',
-      description: 'Override locale detection. Default: auto-detect from environment',
-      options: ['en', 'es', 'fr', 'de', 'pt', 'ja'],
-    }),
     resume: Flags.boolean({
       summary: 'Resume from last failed wave (default: true if previous state exists)',
       description:
@@ -172,12 +165,6 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
   public async run(): Promise<{ success: boolean; waves: number }> {
     const { flags } = await this.parse(Start);
     const output = new OutputFormatter(this);
-
-    // Initialize i18n with locale from flag or auto-detect
-    initializeI18n({
-      locale: flags.locale as SupportedLocale | undefined,
-      autoTranslate: true,
-    });
 
     try {
       logger.info('Starting smart deployment', { flags });

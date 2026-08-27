@@ -25,8 +25,6 @@ import { DeploymentTracker } from '../../deployment/deployment-tracker.js';
 import { ManifestGenerator } from '../../deployment/manifest-generator.js';
 import { ManifestValidator } from '../../deployment/manifest-validator.js';
 import { AgentforceService } from '../../ai/agentforce-service.js';
-import { initializeI18n } from '../../i18n/i18n-service.js';
-import type { SupportedLocale } from '../../i18n/locale-detector.js';
 import type { MetadataComponent } from '../../types/metadata.js';
 import { createNodeId } from '../../utils/node-id.js';
 import { validateAgentforceTargets } from '../../validation/agentforce-target-validator.js';
@@ -42,21 +40,10 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
   public static readonly flags = {
     'target-org': Flags.string({ summary: 'Target org', char: 'o', required: true }),
     'source-path': Flags.string({ summary: 'Source path', char: 'p' }),
-    locale: Flags.string({
-      summary: 'Language locale (en, es, fr, de, pt, ja)',
-      description: 'Override locale detection. Default: auto-detect from environment',
-      options: ['en', 'es', 'fr', 'de', 'pt', 'ja'],
-    }),
   };
 
   public async run(): Promise<{ success: boolean; resumedFromWave?: number }> {
     const { flags } = await this.parse(Resume);
-
-    // Initialize i18n
-    initializeI18n({
-      locale: flags.locale as SupportedLocale | undefined,
-      autoTranslate: true,
-    });
 
     logger.info('Resuming deployment', { flags });
 

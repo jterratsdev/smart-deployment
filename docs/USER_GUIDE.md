@@ -38,14 +38,14 @@ sf smart-deployment start --target-org myorg
 
 The Smart Deployment Plugin provides the following commands:
 
-| Command | Description | Use Case |
-|---------|-------------|----------|
-| `analyze` | Analyze metadata without deploying | Preview deployment waves |
-| `start` | Execute deployment | Deploy metadata to org |
-| `validate` | Validate deployment | Check deployment validity |
-| `status` | Check deployment status | Monitor active deployment |
-| `resume` | Resume failed deployment | Continue after failure |
-| `config` | Manage configuration | Configure plugin settings |
+| Command    | Description                        | Use Case                  |
+| ---------- | ---------------------------------- | ------------------------- |
+| `analyze`  | Analyze metadata without deploying | Preview deployment waves  |
+| `start`    | Execute deployment                 | Deploy metadata to org    |
+| `validate` | Validate deployment                | Check deployment validity |
+| `status`   | Check deployment status            | Monitor active deployment |
+| `resume`   | Resume failed deployment           | Continue after failure    |
+| `config`   | Manage configuration               | Configure plugin settings |
 
 ---
 
@@ -68,18 +68,17 @@ sf smart-deployment analyze --save-plan
 
 ### Flags
 
-| Flag | Short | Description | Default |
-|------|-------|-------------|---------|
-| `--source-path` | `-p` | Path to analyze | `.` (current directory) |
-| `--target-org` | `-o` | Target org (for AI auth) | None |
-| `--save-plan` | | Save deployment plan | `false` |
-| `--plan-path` | | Custom plan path | `.smart-deployment/deployment-plan.json` |
-| `--use-ai` | | Enable AI analysis | `false` |
-| `--org-type` | | Org type (Production/Sandbox/Developer) | Auto-detect |
-| `--industry` | | Industry context for AI | None |
-| `--locale` | | Language locale | Auto-detect |
-| `--output` | `-o` | Output file path | Console |
-| `--format` | `-f` | Output format (json\|html) | `json` |
+| Flag            | Short | Description                             | Default                                  |
+| --------------- | ----- | --------------------------------------- | ---------------------------------------- |
+| `--source-path` | `-p`  | Path to analyze                         | `.` (current directory)                  |
+| `--target-org`  | `-o`  | Target org (for AI auth)                | None                                     |
+| `--save-plan`   |       | Save deployment plan                    | `false`                                  |
+| `--plan-path`   |       | Custom plan path                        | `.smart-deployment/deployment-plan.json` |
+| `--use-ai`      |       | Enable AI analysis                      | `false`                                  |
+| `--org-type`    |       | Org type (Production/Sandbox/Developer) | Auto-detect                              |
+| `--industry`    |       | Industry context for AI                 | None                                     |
+| `--output`      | `-o`  | Output file path                        | Console                                  |
+| `--format`      | `-f`  | Output format (json\|html)              | `json`                                   |
 
 ### Examples
 
@@ -128,26 +127,26 @@ sf smart-deployment start --target-org myorg --validate-only
 
 ### Flags
 
-| Flag | Short | Description | Default |
-|------|-------|-------------|---------|
-| `--target-org` | `-o` | Target org (required) | Required |
-| `--dry-run` | `-d` | Preview without deploying | `false` |
-| `--validate-only` | `-v` | Validate without committing | `false` |
-| `--no-test-run` | | Skip tests (sandbox only) | `false` |
-| `--run-wave-test` | | Run only wave test classes | `false` |
-| `--use-ai` | | Enable AI prioritization | `false` |
-| `--ai-auto` | | Auto-apply AI recommendations | `false` |
-| `--ai-confidence-threshold` | | AI confidence threshold (0-1) | `0.8` |
-| `--use-plan` | | Use saved deployment plan | None |
-| `--strict` | | Strict mode (requires plan) | `false` |
-| `--source-path` | `-p` | Source path | `.` |
-| `--locale` | | Language locale | Auto-detect |
+| Flag                        | Short | Description                   | Default  |
+| --------------------------- | ----- | ----------------------------- | -------- |
+| `--target-org`              | `-o`  | Target org (required)         | Required |
+| `--dry-run`                 | `-d`  | Preview without deploying     | `false`  |
+| `--validate-only`           | `-v`  | Validate without committing   | `false`  |
+| `--no-test-run`             |       | Skip tests (sandbox only)     | `false`  |
+| `--run-wave-test`           |       | Run only wave test classes    | `false`  |
+| `--use-ai`                  |       | Enable AI prioritization      | `false`  |
+| `--ai-auto`                 |       | Auto-apply AI recommendations | `false`  |
+| `--ai-confidence-threshold` |       | AI confidence threshold (0-1) | `0.8`    |
+| `--use-plan`                |       | Use saved deployment plan     | None     |
+| `--strict`                  |       | Strict mode (requires plan)   | `false`  |
+| `--source-path`             | `-p`  | Source path                   | `.`      |
 
 ### Test Execution Flags
 
 The plugin provides granular control over test execution:
 
 #### `--no-test-run`
+
 - **Sandbox**: Skips all tests
 - **Production**: **IGNORED** (tests are required by Salesforce)
 - **Use case**: Fast sandbox deployments
@@ -158,6 +157,7 @@ sf smart-deployment start --target-org mysandbox --no-test-run
 ```
 
 #### `--run-wave-test`
+
 - Runs only test classes included in each wave
 - Uses `RunSpecifiedTests` test level
 - **Recommended for production** (faster than RunLocalTests)
@@ -168,6 +168,7 @@ sf smart-deployment start --target-org myorg --run-wave-test
 ```
 
 #### Default Behavior
+
 - If no test flags provided, SF CLI uses its standard behavior:
   - **Production**: Requires tests (enforced by SF CLI)
   - **Sandbox**: Allows NoTestRun
@@ -219,11 +220,10 @@ sf smart-deployment validate --target-org myorg --source-path force-app
 
 ### Flags
 
-| Flag | Short | Description | Default |
-|------|-------|-------------|---------|
-| `--target-org` | `-o` | Target org (required) | Required |
-| `--source-path` | `-p` | Source path | `.` |
-| `--locale` | | Language locale | Auto-detect |
+| Flag            | Short | Description           | Default  |
+| --------------- | ----- | --------------------- | -------- |
+| `--target-org`  | `-o`  | Target org (required) | Required |
+| `--source-path` | `-p`  | Source path           | `.`      |
 
 ### Examples
 
@@ -253,10 +253,10 @@ sf smart-deployment status --target-org myorg --watch
 
 ### Flags
 
-| Flag | Short | Description | Default |
-|------|-------|-------------|---------|
-| `--target-org` | `-o` | Target org (required) | Required |
-| `--watch` | `-w` | Watch for changes | `false` |
+| Flag           | Short | Description           | Default  |
+| -------------- | ----- | --------------------- | -------- |
+| `--target-org` | `-o`  | Target org (required) | Required |
+| `--watch`      | `-w`  | Watch for changes     | `false`  |
 
 ### Output
 
@@ -292,10 +292,10 @@ sf smart-deployment resume --target-org myorg
 
 ### Flags
 
-| Flag | Short | Description | Default |
-|------|-------|-------------|---------|
-| `--target-org` | `-o` | Target org (required) | Required |
-| `--source-path` | `-p` | Source path | `.` |
+| Flag            | Short | Description           | Default  |
+| --------------- | ----- | --------------------- | -------- |
+| `--target-org`  | `-o`  | Target org (required) | Required |
+| `--source-path` | `-p`  | Source path           | `.`      |
 
 ### Examples
 
@@ -324,10 +324,10 @@ sf smart-deployment config --set ai.enabled=true
 
 ### Flags
 
-| Flag | Short | Description | Default |
-|------|-------|-------------|---------|
-| `--get` | `-g` | Get config key | None |
-| `--set` | `-s` | Set config key=value | None |
+| Flag    | Short | Description          | Default |
+| ------- | ----- | -------------------- | ------- |
+| `--get` | `-g`  | Get config key       | None    |
+| `--set` | `-s`  | Set config key=value | None    |
 
 ### Examples
 
@@ -578,11 +578,3 @@ sf smart-deployment analyze --use-ai --target-org myorg
 ---
 
 **Need Help?** Check the [Troubleshooting Guide](./TROUBLESHOOTING_GUIDE.md) or open an issue on GitHub.
-
-
-
-
-
-
-
-

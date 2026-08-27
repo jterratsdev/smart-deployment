@@ -33,9 +33,7 @@ describe('ConfigCommand', () => {
       })
     );
     configCommand = new Config([], {} as any);
-    parseStub = sinon
-      .stub(configCommand as any, 'parse')
-      .resolves(parsedFlags({ set: undefined, get: undefined, locale: undefined }));
+    parseStub = sinon.stub(configCommand as any, 'parse').resolves(parsedFlags({ set: undefined, get: undefined }));
   });
 
   afterEach(async () => {
@@ -45,7 +43,7 @@ describe('ConfigCommand', () => {
   });
 
   it('persists a typed value with --set', async () => {
-    parseStub.resolves(parsedFlags({ set: 'ai.enabled=true', get: undefined, locale: undefined }));
+    parseStub.resolves(parsedFlags({ set: 'ai.enabled=true', get: undefined }));
 
     const result = await configCommand.run();
     const saved = JSON.parse(await fs.readFile(path.join(directory, '.smart-deployment.json'), 'utf8')) as any;
@@ -55,7 +53,7 @@ describe('ConfigCommand', () => {
   });
 
   it('supports compatible keys that are not in older config files', async () => {
-    parseStub.resolves(parsedFlags({ set: 'ai.apiKey=test-key', get: undefined, locale: undefined }));
+    parseStub.resolves(parsedFlags({ set: 'ai.apiKey=test-key', get: undefined }));
 
     await configCommand.run();
     const saved = JSON.parse(await fs.readFile(path.join(directory, '.smart-deployment.json'), 'utf8')) as any;
@@ -64,7 +62,7 @@ describe('ConfigCommand', () => {
   });
 
   it('prints a value with --get', async () => {
-    parseStub.resolves(parsedFlags({ set: undefined, get: 'ai.confidenceThreshold', locale: undefined }));
+    parseStub.resolves(parsedFlags({ set: undefined, get: 'ai.confidenceThreshold' }));
     const logStub = sinon.stub(configCommand, 'log');
 
     const result = await configCommand.run();
@@ -74,7 +72,7 @@ describe('ConfigCommand', () => {
   });
 
   it('rejects invalid values', async () => {
-    parseStub.resolves(parsedFlags({ set: 'ai.enabled=invalid', get: undefined, locale: undefined }));
+    parseStub.resolves(parsedFlags({ set: 'ai.enabled=invalid', get: undefined }));
 
     try {
       await configCommand.run();
@@ -86,16 +84,16 @@ describe('ConfigCommand', () => {
   });
 
   it('rejects unknown keys and missing keys', async () => {
-    parseStub.resolves(parsedFlags({ set: 'deployment.notConfigured=true', get: undefined, locale: undefined }));
+    parseStub.resolves(parsedFlags({ set: 'deployment.notConfigured=true', get: undefined }));
     await expectRejected(() => configCommand.run(), 'Unknown configuration key');
 
-    parseStub.resolves(parsedFlags({ set: undefined, get: 'deployment.notConfigured', locale: undefined }));
+    parseStub.resolves(parsedFlags({ set: undefined, get: 'deployment.notConfigured' }));
     await expectRejected(() => configCommand.run(), 'Configuration key not found');
   });
 
   it('reports malformed or unreadable configuration files', async () => {
     await fs.writeFile(path.join(directory, '.smart-deployment.json'), '{invalid');
-    parseStub.resolves(parsedFlags({ set: undefined, get: 'ai.enabled', locale: undefined }));
+    parseStub.resolves(parsedFlags({ set: undefined, get: 'ai.enabled' }));
     await expectRejected(() => configCommand.run(), 'Invalid JSON');
 
     await fs.rm(path.join(directory, '.smart-deployment.json'));

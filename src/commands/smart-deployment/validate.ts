@@ -16,7 +16,6 @@ import { MetadataScannerService } from '../../services/metadata-scanner-service.
 import { WaveBuilder } from '../../waves/wave-builder.js';
 import { WaveValidator } from '../../waves/wave-validator.js';
 import { getWavesInExecutionOrder } from '../../waves/wave-executor.js';
-import { initializeI18n } from '../../i18n/i18n-service.js';
 import { ManifestGenerator } from '../../deployment/manifest-generator.js';
 import { ManifestValidator } from '../../deployment/manifest-validator.js';
 import { SfCliIntegration } from '../../deployment/sf-cli-integration.js';
@@ -24,7 +23,6 @@ import { createNodeId } from '../../utils/node-id.js';
 import { validateAgentforceTargets } from '../../validation/agentforce-target-validator.js';
 import type { MetadataComponent } from '../../types/metadata.js';
 import * as path from 'node:path';
-import type { SupportedLocale } from '../../i18n/locale-detector.js';
 
 const logger = getLogger('ValidateCommand');
 
@@ -33,23 +31,12 @@ export default class Validate extends SfCommand<{ success: boolean; errors: stri
   public static readonly flags = {
     'target-org': Flags.string({ summary: 'Target org', char: 'o', required: true }),
     'source-path': Flags.string({ summary: 'Source path to validate', char: 'p' }),
-    locale: Flags.string({
-      summary: 'Language locale (en, es, fr, de, pt, ja)',
-      description: 'Override locale detection. Default: auto-detect from environment',
-      options: ['en', 'es', 'fr', 'de', 'pt', 'ja'],
-    }),
   };
 
   public async run(): Promise<{ success: boolean; errors: string[] }> {
     const { flags } = await this.parse(Validate);
     const sourcePath = flags['source-path'];
     const targetOrg = flags['target-org'];
-
-    // Initialize i18n
-    initializeI18n({
-      locale: flags.locale as SupportedLocale | undefined,
-      autoTranslate: true,
-    });
 
     logger.info('Validating deployment', { flags });
     this.log('🔍 Scanning metadata...');

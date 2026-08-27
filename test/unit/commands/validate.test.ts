@@ -33,7 +33,6 @@ describe('ValidateCommand', () => {
       flags: {
         'target-org': 'test-org',
         'source-path': undefined,
-        locale: undefined,
       },
       args: {},
       argv: [],

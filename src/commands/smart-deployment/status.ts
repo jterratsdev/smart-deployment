@@ -18,8 +18,6 @@ import type { DeploymentProgress } from '../../deployment/deployment-tracker.js'
 import { SfCliIntegration } from '../../deployment/sf-cli-integration.js';
 import type { DeploymentResult } from '../../deployment/sf-cli-integration.js';
 import type { DeploymentState } from '../../deployment/state-manager.js';
-import { initializeI18n } from '../../i18n/i18n-service.js';
-import type { SupportedLocale } from '../../i18n/locale-detector.js';
 
 const logger = getLogger('StatusCommand');
 const WATCH_INTERVAL_MS = 5_000;
@@ -104,21 +102,10 @@ export default class Status extends SfCommand<{ currentWave: number; totalWaves:
   public static readonly flags = {
     'target-org': Flags.string({ summary: 'Target org', char: 'o', required: true }),
     watch: Flags.boolean({ summary: 'Watch for changes', char: 'w', default: false }),
-    locale: Flags.string({
-      summary: 'Language locale (en, es, fr, de, pt, ja)',
-      description: 'Override locale detection. Default: auto-detect from environment',
-      options: ['en', 'es', 'fr', 'de', 'pt', 'ja'],
-    }),
   };
 
   public async run(): Promise<{ currentWave: number; totalWaves: number; completedWaves: number[] }> {
     const { flags } = await this.parse(Status);
-
-    // Initialize i18n
-    initializeI18n({
-      locale: flags.locale as SupportedLocale | undefined,
-      autoTranslate: true,
-    });
 
     logger.info('Getting status', { flags });
 

@@ -27,8 +27,6 @@ import { AgentforcePriorityService } from '../../ai/agentforce-priority-service.
 import { AIEnhancedPriorityWaveGenerator } from '../../waves/priority-wave-generator-ai.js';
 import { DependencyMerger } from '../../dependencies/dependency-merger.js';
 import type { PriorityOverride } from '../../types/deployment-plan.js';
-import { initializeI18n } from '../../i18n/i18n-service.js';
-import type { SupportedLocale } from '../../i18n/locale-detector.js';
 import type { DependencyGraph, NodeId } from '../../types/dependency.js';
 import type { MetadataComponent } from '../../types/metadata.js';
 import type { Wave } from '../../waves/wave-builder.js';
@@ -74,11 +72,6 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
     industry: Flags.string({
       summary: 'Industry context for AI analysis',
     }),
-    locale: Flags.string({
-      summary: 'Language locale (en, es, fr, de, pt, ja)',
-      description: 'Override locale detection. Default: auto-detect from environment',
-      options: ['en', 'es', 'fr', 'de', 'pt', 'ja'],
-    }),
     output: Flags.string({
       summary: 'Output file path',
       required: false,
@@ -100,12 +93,6 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
 
   public async run(): Promise<{ components: number; dependencies: number; planSaved?: boolean }> {
     const { flags } = await this.parse(Analyze);
-
-    // Initialize i18n
-    initializeI18n({
-      locale: flags.locale as SupportedLocale | undefined,
-      autoTranslate: true,
-    });
 
     try {
       logger.info('Analyzing metadata', {

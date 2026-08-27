@@ -14,8 +14,6 @@ import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { getLogger } from '../../utils/logger.js';
-import { initializeI18n } from '../../i18n/i18n-service.js';
-import type { SupportedLocale } from '../../i18n/locale-detector.js';
 
 const logger = getLogger('ConfigCommand');
 
@@ -124,21 +122,10 @@ export default class Config extends SfCommand<{ success: boolean }> {
   public static readonly flags = {
     set: Flags.string({ summary: 'Set config key=value', char: 's' }),
     get: Flags.string({ summary: 'Get config key', char: 'g' }),
-    locale: Flags.string({
-      summary: 'Language locale (en, es, fr, de, pt, ja)',
-      description: 'Override locale detection. Default: auto-detect from environment',
-      options: ['en', 'es', 'fr', 'de', 'pt', 'ja'],
-    }),
   };
 
   public async run(): Promise<{ success: boolean }> {
     const { flags } = await this.parse(Config);
-
-    // Initialize i18n
-    initializeI18n({
-      locale: flags.locale as SupportedLocale | undefined,
-      autoTranslate: true,
-    });
 
     if (flags.set && flags.get) throw new Error('Use either --set or --get, not both');
     if (!flags.set && !flags.get) throw new Error('One of --set or --get is required');

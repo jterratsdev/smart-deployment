@@ -28,7 +28,6 @@ sf smart-deployment analyze [FLAGS]
 | `--use-ai`          |       | boolean | No       | `false`                                  | Use Agentforce AI for intelligent analysis          |
 | `--org-type`        |       | string  | No       | Auto-detect                              | Organization type (Production, Sandbox, Developer)  |
 | `--industry`        |       | string  | No       | None                                     | Industry context for AI analysis                    |
-| `--locale`          |       | string  | No       | Auto-detect                              | Language locale (en, es, fr, de, pt, ja)            |
 | `--output`          |       | string  | No       | None                                     | Output file path                                    |
 | `--format`          | `-f`  | string  | No       | `json`                                   | Output format (json\|html)                          |
 | `--create-manifest` |       | boolean | No       | `false`                                  | Generate package.xml manifests for deployment waves |
@@ -95,7 +94,6 @@ sf smart-deployment start --target-org <org> [FLAGS]
 | `--use-plan`                |       | string  | No       | None                          | Use saved deployment plan (CI/CD)                         |
 | `--strict`                  |       | boolean | No       | `false`                       | Strict mode (requires --use-plan)                         |
 | `--source-path`             | `-p`  | string  | No       | `.`                           | Source path to deploy                                     |
-| `--locale`                  |       | string  | No       | Auto-detect                   | Language locale (en, es, fr, de, pt, ja)                  |
 | `--test-level`              |       | string  | No       | SF CLI default                | Explicit Salesforce test level                            |
 | `--resume`                  |       | boolean | No       | Auto-resume when state exists | Resume from a previous failed state                       |
 | `--ignore-conflicts`        |       | boolean | No       | `false`                       | Pass conflict/warning ignore options to Salesforce CLI    |
@@ -172,11 +170,10 @@ sf smart-deployment validate --target-org <org> [FLAGS]
 
 ### Flags
 
-| Flag            | Short | Type   | Required | Default     | Description                              |
-| --------------- | ----- | ------ | -------- | ----------- | ---------------------------------------- |
-| `--target-org`  | `-o`  | string | **Yes**  | None        | Target Salesforce org                    |
-| `--source-path` | `-p`  | string | No       | `.`         | Source path to validate                  |
-| `--locale`      |       | string | No       | Auto-detect | Language locale (en, es, fr, de, pt, ja) |
+| Flag            | Short | Type   | Required | Default | Description             |
+| --------------- | ----- | ------ | -------- | ------- | ----------------------- |
+| `--target-org`  | `-o`  | string | **Yes**  | None    | Target Salesforce org   |
+| `--source-path` | `-p`  | string | No       | `.`     | Source path to validate |
 
 ### Examples
 
@@ -321,15 +318,6 @@ The command result contains:
 - **Default**: `.` (current directory)
 - **Description**: Path to source code directory
 - **Example**: `--source-path force-app` or `-p force-app`
-
-#### `--locale`
-
-- **Type**: string
-- **Required**: No
-- **Default**: Auto-detect from environment
-- **Options**: `en`, `es`, `fr`, `de`, `pt`, `ja`
-- **Description**: Language locale for output messages
-- **Example**: `--locale es`
 
 ### AI Flags
 
