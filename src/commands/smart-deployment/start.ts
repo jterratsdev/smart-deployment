@@ -74,6 +74,11 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       char: 'o',
       required: true,
     }),
+    'source-path': Flags.string({
+      summary: 'Path to analyze and deploy (defaults to current directory)',
+      char: 'p',
+      default: '.',
+    }),
     'dry-run': Flags.boolean({
       summary: messages.getMessage('flags.dry-run.summary'),
       char: 'd',
@@ -103,7 +108,11 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       summary: 'Run only test classes included in each wave',
       description:
         'Executes only the test classes that are part of the wave being deployed. Uses RunSpecifiedTests. In production, this is the recommended approach for faster deployments.',
-      default: true,
+      default: false,
+    }),
+    'test-level': Flags.string({
+      summary: 'Test level to use for deployment',
+      options: ['NoTestRun', 'RunSpecifiedTests', 'RunLocalTests', 'RunAllTestsInOrg'],
     }),
     'use-ai': Flags.boolean({
       summary: 'Use Agentforce AI for intelligent priority weighting',
@@ -192,12 +201,13 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
 
       // AC-1: Analyze metadata
       output.section('Analyzing Metadata', '📊');
-      const metadataCount = await this.analyzeMetadata();
+      const sourcePath = flags['source-path'] as string;
+      const metadataCount = await this.analyzeMetadata(sourcePath);
       output.success(`Found ${metadataCount} metadata components`);
 
       // AC-2: Generate waves
       output.section('Generating Deployment Waves', '🌊');
-      const waves = await this.generateWaves(flags, output);
+      const waves = await this.generateWaves(flags, output, sourcePath);
       output.success(`Generated ${waves} waves`);
 
       // AC US-057-AC-6: Report AI decisions
@@ -215,7 +225,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       // AC-3: Execute deployment
       if (!flags['dry-run']) {
         output.section('Executing Deployment', '🚀');
-        await this.executeDeployment(flags, output);
+        await this.executeDeployment(flags, output, sourcePath);
       } else {
         output.section('Dry-Run Mode', '🔍');
         output.info('Skipping actual deployment');
@@ -268,7 +278,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
         // Try to get access token from org if target-org is provided
         let accessToken: string | undefined;
         const targetOrg = flags['target-org'] as string | undefined;
-        if (targetOrg) {
+        if (targetOrg && !flags['dry-run']) {
           try {
             const org = await Org.create({ aliasOrUsername: targetOrg });
             const connection = org.getConnection();
@@ -376,8 +386,8 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     const validateOnly = flags['validate-only'] as boolean;
     const deploymentId = `deployment-${Date.now()}`;
 
-    if (dryRun || validateOnly) {
-      output.section('Dry-Run/Validate Mode', '🔍');
+    if (dryRun) {
+      output.section('Dry-Run Mode', '🔍');
       output.info('Skipping actual deployment');
       return;
     }
@@ -503,7 +513,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     if (flags['use-ai']) {
       try {
         let accessToken: string | undefined;
-        if (targetOrg) {
+        if (targetOrg && !flags['dry-run']) {
           try {
             const org = await Org.create({ aliasOrUsername: targetOrg });
             const connection = org.getConnection();
@@ -695,7 +705,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       try {
         // Try to get access token from org if target-org is provided
         let accessToken: string | undefined;
-        if (targetOrg) {
+        if (targetOrg && !flags['dry-run']) {
           try {
             const org = await Org.create({ aliasOrUsername: targetOrg });
             const connection = org.getConnection();
@@ -930,6 +940,12 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
         const isProduction = await this.isProductionOrg(targetOrg);
         const noTestRun = (flags['no-test-run'] as boolean) || (flags['skip-tests'] as boolean);
         const runWaveTest = flags['run-wave-test'] as boolean;
+        const requestedTestLevel = flags['test-level'] as
+          | 'NoTestRun'
+          | 'RunLocalTests'
+          | 'RunSpecifiedTests'
+          | 'RunAllTestsInOrg'
+          | undefined;
 
         // Production orgs REQUIRE tests - ignore --no-test-run flag
         if (isProduction && noTestRun) {
@@ -939,7 +955,15 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
         let testLevel: 'NoTestRun' | 'RunLocalTests' | 'RunSpecifiedTests' | 'RunAllTestsInOrg' | undefined;
         let testClasses: string[] = [];
 
-        if (runWaveTest) {
+        if (requestedTestLevel) {
+          // An explicit test level takes precedence over wave-specific test selection.
+          testLevel = requestedTestLevel;
+          if (testLevel === 'RunSpecifiedTests') {
+            testClasses = this.extractTestClassesFromWave(wave, componentMap);
+          }
+          output.subsection('Test Execution', '🧪');
+          output.info(`Using ${testLevel} (explicit --test-level)`);
+        } else if (runWaveTest) {
           // User explicitly wants to run only tests from this wave
           testClasses = this.extractTestClassesFromWave(wave, componentMap);
           if (testClasses.length > 0) {
@@ -978,14 +1002,14 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
 
         try {
           // Use temp project root if simplification was applied
-          const sourceDir = preventiveSimplification?.tempProjectRoot;
+          const sourceDir = preventiveSimplification?.tempProjectRoot || sourcePath;
 
           const result = await sfCli.deploy({
             manifestPath,
             targetOrg,
             testLevel,
             tests: testLevel === 'RunSpecifiedTests' ? testClasses : undefined,
-            checkOnly: false,
+            checkOnly: validateOnly,
             sourceDir,
             ignoreConflicts: Boolean(flags['ignore-conflicts']),
             ignoreWarnings: Boolean(flags['ignore-conflicts']), // Also ignore warnings when ignoring conflicts
@@ -1296,7 +1320,8 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
                       targetOrg,
                       testLevel,
                       tests: testLevel === 'RunSpecifiedTests' ? testClasses : undefined,
-                      checkOnly: false,
+                      checkOnly: validateOnly,
+                      sourceDir: simplificationResult.tempProjectRoot || sourcePath,
                       ignoreConflicts: Boolean(flags['ignore-conflicts']),
                       ignoreWarnings: Boolean(flags['ignore-conflicts']), // Also ignore warnings when ignoring conflicts
                     });
