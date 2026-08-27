@@ -12,7 +12,9 @@
 import { expect } from 'chai';
 import { describe, it, beforeEach, afterEach } from 'mocha';
 import sinon, { SinonStub } from 'sinon';
-import Status from '../../../src/commands/smart-deployment/status.js';
+import Status, { watchDeployment } from '../../../src/commands/smart-deployment/status.js';
+import type { DeploymentState } from '../../../src/deployment/state-manager.js';
+import type { DeploymentResult } from '../../../src/deployment/sf-cli-integration.js';
 import { StateManager } from '../../../src/deployment/state-manager.js';
 import { DeploymentTracker } from '../../../src/deployment/deployment-tracker.js';
 
@@ -127,9 +129,109 @@ describe('StatusCommand', () => {
         raw: [],
         metadata: {} as any,
       });
-      // Watch mode is difficult to test automatically, but we can verify the flag is accepted
+      trackerStub.returns(undefined);
+      stateManagerStub.onFirstCall().resolves({
+        status: 'deploying',
+        deploymentId: 'test-deployment-123',
+        targetOrg: 'test-org',
+        timestamp: new Date().toISOString(),
+        totalWaves: 5,
+        completedWaves: [1, 2],
+        currentWave: 3,
+      });
+      stateManagerStub.onSecondCall().resolves({
+        status: 'completed',
+        deploymentId: 'test-deployment-123',
+        targetOrg: 'test-org',
+        timestamp: new Date().toISOString(),
+        totalWaves: 5,
+        completedWaves: [1, 2, 3, 4, 5],
+        currentWave: 5,
+      });
       const result = await statusCommand.run();
       expect(result).to.have.property('currentWave');
+    });
+
+    it('polls until Salesforce reports a terminal result', async () => {
+      const states: DeploymentState[] = [
+        {
+          status: 'deploying',
+          deploymentId: 'deployment-1',
+          targetOrg: 'test-org',
+          timestamp: new Date().toISOString(),
+          totalWaves: 1,
+          completedWaves: [],
+          currentWave: 1,
+        },
+        {
+          status: 'completed',
+          deploymentId: 'deployment-1',
+          targetOrg: 'test-org',
+          timestamp: new Date().toISOString(),
+          totalWaves: 1,
+          completedWaves: [1],
+          currentWave: 1,
+        },
+      ];
+      const result: DeploymentResult = {
+        success: true,
+        deploymentId: 'deployment-1-wave-1',
+        status: 'Succeeded',
+        componentSuccesses: 2,
+        componentFailures: 0,
+        testsRun: 7,
+        testFailures: 1,
+        output: '',
+      };
+      const updates: Array<DeploymentResult | undefined> = [];
+      const check = sinon.stub().resolves(result);
+      const wait = sinon.stub().callsFake(async () => {
+        states.shift();
+      });
+
+      const finalState = await watchDeployment({
+        loadState: async () => states[0] ?? null,
+        getProgress: () => undefined,
+        checkDeploymentStatus: check,
+        onUpdate: (_state, _progress, updateResult) => updates.push(updateResult),
+        intervalMs: 1,
+        sleep: wait,
+      });
+
+      expect(finalState?.status).to.equal('completed');
+      expect(check.calledOnceWith('deployment-1-wave-1', 'test-org')).to.be.true;
+      expect(updates[0]?.testsRun).to.equal(7);
+    });
+
+    it('stops cleanly when interrupted', async () => {
+      const controller = new AbortController();
+      const wait = sinon.stub().callsFake(async () => controller.abort());
+      const state: DeploymentState = {
+        status: 'deploying',
+        deploymentId: 'deployment-1',
+        targetOrg: 'test-org',
+        timestamp: new Date().toISOString(),
+        totalWaves: 1,
+        completedWaves: [],
+        currentWave: 1,
+      };
+
+      const finalState = await watchDeployment({
+        loadState: async () => state,
+        getProgress: () => undefined,
+        checkDeploymentStatus: sinon.stub().resolves({
+          success: true,
+          status: 'InProgress',
+          componentSuccesses: 0,
+          componentFailures: 0,
+          output: '',
+        }),
+        onUpdate: () => undefined,
+        signal: controller.signal,
+        sleep: wait,
+      });
+
+      expect(finalState).to.equal(state);
     });
   });
 

@@ -61,7 +61,7 @@ function parseValue(key: string, value: string, current: unknown): unknown {
 }
 
 function getValue(config: Record<string, unknown>, key: string): unknown {
-  return key.split('.').reduce<unknown>((value, segment) => {
+  return key.split('.').reduce<unknown>((value: unknown, segment: string): unknown => {
     if (!value || typeof value !== 'object' || !Object.prototype.hasOwnProperty.call(value, segment)) return undefined;
     return (value as Record<string, unknown>)[segment];
   }, config);
