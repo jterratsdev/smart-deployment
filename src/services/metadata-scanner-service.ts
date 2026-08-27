@@ -9,10 +9,15 @@
  * - DependencyGraphBuilder
  */
 
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+import { XMLParser } from 'fast-xml-parser';
+import { glob as globAsync } from 'glob';
 import { getLogger } from '../utils/logger.js';
 import { SfdxProjectDetector } from '../scanner/sfdx-project-detector.js';
 import { ForceIgnoreParser } from '../scanner/forceignore-parser.js';
 import { DependencyGraphBuilder } from '../dependencies/dependency-graph-builder.js';
+import { createNodeId } from '../utils/node-id.js';
 import { parseApexClass } from '../parsers/apex-class-parser.js';
 import { parseApexTrigger } from '../parsers/apex-trigger-parser.js';
 import { parseLWC } from '../parsers/lwc-parser.js';
@@ -28,29 +33,28 @@ import { parsePermissionSet } from '../parsers/permission-set-parser.js';
 import { parseBot } from '../parsers/bot-parser.js';
 import { parseGenAiPrompt } from '../parsers/genai-prompt-parser.js';
 import { parseVisualforce } from '../parsers/visualforce-parser.js';
-import { XMLParser } from 'fast-xml-parser';
-import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
-import { glob as globAsync } from 'glob';
+import { parseDigitalExperienceBundle } from '../parsers/digital-experience-parser.js';
+import { parseAiAuthoringBundle } from '../parsers/ai-authoring-bundle-parser.js';
+import { parseLegacyAgentforce, type LegacyAgentforceType } from '../parsers/legacy-agentforce-parser.js';
 import type { MetadataComponent } from '../types/metadata.js';
 import type { DependencyAnalysisResult } from '../types/dependency.js';
 
 const logger = getLogger('MetadataScannerService');
 
-export interface ScanOptions {
+export type ScanOptions = {
   sourcePath?: string;
   includeIgnored?: boolean;
   maxDepth?: number;
-}
+};
 
-export interface ScanResult {
+export type ScanResult = {
   components: MetadataComponent[];
   dependencyResult: DependencyAnalysisResult;
   projectRoot: string;
   executionTime: number;
   errors: string[];
   warnings: string[];
-}
+};
 
 /**
  * Metadata file pattern matcher
@@ -105,7 +109,7 @@ export class MetadataScannerService {
     // If includeIgnored is true, temporarily disable forceignore checking
     const originalShouldIgnore = this.shouldIgnore.bind(this);
     if (options.includeIgnored) {
-      this.shouldIgnore = () => false; // Don't ignore anything
+      this.shouldIgnore = (): boolean => false; // Don't ignore anything
     }
 
     const components = await this.scanMetadata(
@@ -174,7 +178,15 @@ export class MetadataScannerService {
       components.push(...scanned);
     }
 
-    return components;
+    // A Custom Metadata Type is matched by both the generic objects pattern and
+    // the dedicated __mdt pattern. Keep one canonical node per type/name so a
+    // scan is stable regardless of glob ordering.
+    const uniqueComponents = new Map<string, MetadataComponent>();
+    for (const component of components) {
+      uniqueComponents.set(createNodeId(component.type, component.name), component);
+    }
+
+    return Array.from(uniqueComponents.values());
   }
 
   /**
@@ -210,12 +222,12 @@ export class MetadataScannerService {
             // Custom Label reference: Label.LabelName -> CustomLabels:LabelName
             // Note: Custom Labels are stored in a single file, but we track individual label dependencies
             deps.add(`CustomLabels:${dep.className}`);
-          } else {
+          } else if (dep.type === 'prompt_template') {
+            deps.add(`GenAiPromptTemplate:${dep.className}`);
+          } else if (dep.className !== parsed.className) {
             // Apex Class reference: ClassName -> ApexClass:ClassName
             // Skip if it's a self-reference (same class name)
-            if (dep.className !== parsed.className) {
-              deps.add(`ApexClass:${dep.className}`);
-            }
+            deps.add(`ApexClass:${dep.className}`);
           }
         }
 
@@ -477,7 +489,7 @@ export class MetadataScannerService {
       const dotIndex = fileName.indexOf('.');
       if (dotIndex === -1) continue; // Skip if not in expected format
 
-      let typeName = fileName.substring(0, dotIndex);
+      const typeName = fileName.substring(0, dotIndex);
       const recordName = fileName.substring(dotIndex + 1);
 
       // Check if type name needs __mdt suffix (records may use type name without __mdt)
@@ -639,7 +651,7 @@ export class MetadataScannerService {
             for (const override of overrides) {
               if (override.type === 'Flexipage' && override.content) {
                 const flexiPageName = typeof override.content === 'string' ? override.content : override.content;
-                if (flexiPageName && flexiPageName.trim()) {
+                if (flexiPageName?.trim()) {
                   deps.add(`FlexiPage:${flexiPageName}`);
                 }
               }
@@ -653,7 +665,7 @@ export class MetadataScannerService {
             for (const override of overrides) {
               if (override.type === 'Flexipage' && override.content) {
                 const flexiPageName = typeof override.content === 'string' ? override.content : override.content;
-                if (flexiPageName && flexiPageName.trim()) {
+                if (flexiPageName?.trim()) {
                   deps.add(`FlexiPage:${flexiPageName}`);
                 }
               }
@@ -665,7 +677,7 @@ export class MetadataScannerService {
         } catch (parseError) {
           logger.debug('Could not parse Custom Application dependencies', {
             appName,
-            error: parseError instanceof Error ? parseError.message : String(parseError)
+            error: parseError instanceof Error ? parseError.message : String(parseError),
           });
         }
 
@@ -939,6 +951,79 @@ export class MetadataScannerService {
       }
     }
 
+    // Scan Agentforce Agent Script authoring bundles. The .agent file is the
+    // source of action targets; bundle-meta.xml is only the metadata wrapper.
+    const agentFiles = await this.findFiles(packagePath, '**/aiAuthoringBundles/**/*.agent');
+    for (const filePath of agentFiles) {
+      if (this.shouldIgnore(filePath)) continue;
+
+      try {
+        const content = await fs.readFile(filePath, 'utf-8');
+        const parsed = parseAiAuthoringBundle(filePath, content);
+        const deps = new Set<string>();
+        parsed.flowTargets.forEach((name) => deps.add(`Flow:${name}`));
+        parsed.apexTargets.forEach((name) => deps.add(`ApexClass:${name}`));
+        parsed.promptTemplates.forEach((name) => deps.add(`GenAiPromptTemplate:${name}`));
+        parsed.agentTargets.forEach((name) => deps.add(`AiAuthoringBundle:${name}`));
+
+        components.push({
+          name: parsed.bundleName,
+          type: 'AiAuthoringBundle',
+          filePath,
+          dependencies: deps,
+          dependents: new Set<string>(),
+          priorityBoost: 0,
+        });
+      } catch (error) {
+        const errorMsg = `Failed to parse AiAuthoringBundle ${filePath}: ${
+          error instanceof Error ? error.message : String(error)
+        }`;
+        logger.warn(errorMsg);
+        errors.push(errorMsg);
+      }
+    }
+
+    // Scan legacy Agentforce metadata and preserve its cross-component edges.
+    const legacyAgentforceFiles: Array<{ pattern: string; type: LegacyAgentforceType }> = [
+      { pattern: '**/genAiFunctions/**/*.genAiFunction-meta.xml', type: 'GenAiFunction' },
+      { pattern: '**/genAiPlugins/**/*.genAiPlugin-meta.xml', type: 'GenAiPlugin' },
+      { pattern: '**/genAiPlannerBundles/**/*.genAiPlannerBundle', type: 'GenAiPlannerBundle' },
+    ];
+    for (const { pattern, type } of legacyAgentforceFiles) {
+      const files = await this.findFiles(packagePath, pattern);
+      for (const filePath of files) {
+        if (this.shouldIgnore(filePath)) continue;
+
+        try {
+          const content = await fs.readFile(filePath, 'utf-8');
+          const parsed = parseLegacyAgentforce(filePath, content, type);
+          const deps = new Set<string>();
+          for (const dependency of parsed.dependencies) {
+            if (dependency.type === 'flow') deps.add(`Flow:${dependency.name}`);
+            if (dependency.type === 'apex') deps.add(`ApexClass:${dependency.name}`);
+            if (dependency.type === 'prompt') deps.add(`GenAiPromptTemplate:${dependency.name}`);
+            if (dependency.type === 'function') deps.add(`GenAiFunction:${dependency.name}`);
+            if (dependency.type === 'plugin') deps.add(`GenAiPlugin:${dependency.name}`);
+          }
+
+          components.push({
+            name: parsed.name,
+            type,
+            filePath,
+            dependencies: deps,
+            dependents: new Set<string>(),
+            priorityBoost: 0,
+          });
+        } catch (error) {
+          const errorMsg = `Failed to parse ${type} ${filePath}: ${
+            error instanceof Error ? error.message : String(error)
+          }`;
+          logger.warn(errorMsg);
+          errors.push(errorMsg);
+        }
+      }
+    }
+
     // Scan Custom Labels
     const labelFiles = await this.findFiles(packagePath, '**/labels/**/*.labels-meta.xml');
     for (const filePath of labelFiles) {
@@ -1040,6 +1125,316 @@ export class MetadataScannerService {
         });
       } catch (error) {
         const errorMsg = `Failed to parse Visualforce ${filePath}: ${
+          error instanceof Error ? error.message : String(error)
+        }`;
+        logger.warn(errorMsg);
+        errors.push(errorMsg);
+      }
+    }
+
+    // Scan Networks (.network-meta.xml files)
+    const networkFiles = await this.findFiles(packagePath, '**/networks/**/*.network-meta.xml');
+    for (const filePath of networkFiles) {
+      if (this.shouldIgnore(filePath)) continue;
+
+      try {
+        const networkName = path.basename(filePath, '.network-meta.xml');
+        components.push({
+          name: networkName,
+          type: 'Network',
+          filePath,
+          dependencies: new Set<string>(),
+          dependents: new Set<string>(),
+          priorityBoost: 0,
+        });
+      } catch (error) {
+        const errorMsg = `Failed to parse Network ${filePath}: ${
+          error instanceof Error ? error.message : String(error)
+        }`;
+        logger.warn(errorMsg);
+        errors.push(errorMsg);
+      }
+    }
+
+    // Scan Sites (.site-meta.xml files)
+    const siteFiles = await this.findFiles(packagePath, '**/sites/**/*.site-meta.xml');
+    for (const filePath of siteFiles) {
+      if (this.shouldIgnore(filePath)) continue;
+
+      try {
+        const siteName = path.basename(filePath, '.site-meta.xml');
+        components.push({
+          name: siteName,
+          type: 'Site',
+          filePath,
+          dependencies: new Set<string>(),
+          dependents: new Set<string>(),
+          priorityBoost: 0,
+        });
+      } catch (error) {
+        const errorMsg = `Failed to parse Site ${filePath}: ${error instanceof Error ? error.message : String(error)}`;
+        logger.warn(errorMsg);
+        errors.push(errorMsg);
+      }
+    }
+
+    // Scan Report Folders first (required for Report deployment)
+    // Report Folders: reports/FolderName/FolderName.reportFolder-meta.xml
+    // Reports: reports/FolderName/SubFolderName/ReportName.report-meta.xml
+    const reportFolderFiles = await this.findFiles(packagePath, '**/reports/**/*.reportFolder-meta.xml');
+    const reportFolders = new Set<string>();
+
+    // Process folders with metadata files
+    for (const filePath of reportFolderFiles) {
+      if (this.shouldIgnore(filePath)) continue;
+
+      try {
+        // Extract folder path from file path
+        // Path format: .../reports/ParentFolder/SubFolder.reportFolder-meta.xml
+        const reportsDir = path.dirname(filePath);
+        const folderFileName = path.basename(filePath, '.reportFolder-meta.xml');
+        const parentDir = path.basename(path.dirname(reportsDir));
+
+        // Determine folder name: if parent is "reports", use filename; otherwise use ParentFolder/SubFolder
+        const folderNameToUse = parentDir === 'reports' ? folderFileName : `${parentDir}/${folderFileName}`;
+        reportFolders.add(folderNameToUse);
+
+        components.push({
+          name: folderNameToUse,
+          type: 'ReportFolder',
+          filePath,
+          dependencies: new Set<string>(),
+          dependents: new Set<string>(),
+          priorityBoost: -10, // Deploy folders before reports
+        });
+      } catch (error) {
+        const errorMsg = `Failed to parse Report Folder ${filePath}: ${
+          error instanceof Error ? error.message : String(error)
+        }`;
+        logger.warn(errorMsg);
+        errors.push(errorMsg);
+      }
+    }
+
+    // Also scan for folder directories to detect parent folders without metadata files
+    const reportsBasePath = path.join(packagePath, 'reports');
+    if (await this.fileExists(reportsBasePath)) {
+      try {
+        const reportsDirs = await fs.readdir(reportsBasePath, { withFileTypes: true });
+        for (const dir of reportsDirs) {
+          if (dir.isDirectory()) {
+            const folderName = dir.name;
+            // Skip if already processed
+            if (reportFolders.has(folderName)) continue;
+
+            // Check if folder has reports or subfolders (if so, it needs to be included)
+            const folderPath = path.join(reportsBasePath, folderName);
+            const reportFiles = await this.findFiles(folderPath, '*.report-meta.xml');
+            const subFolders = await this.findFiles(folderPath, '*.reportFolder-meta.xml');
+
+            // Also check for subdirectories that might contain reports
+            const subDirs = await fs.readdir(folderPath, { withFileTypes: true });
+            const hasSubDirsWithReportsResult = await Promise.all(
+              subDirs.map(async (subDir) => {
+                if (subDir.isDirectory()) {
+                  const subDirPath = path.join(folderPath, subDir.name);
+                  const files = await this.findFiles(subDirPath, '*.report-meta.xml');
+                  return files.length > 0;
+                }
+                return false;
+              })
+            );
+
+            if (reportFiles.length > 0 || subFolders.length > 0 || hasSubDirsWithReportsResult.some(Boolean)) {
+              // Folder exists and has reports/subfolders, but no .reportFolder-meta.xml
+              // Create a virtual component for it
+              reportFolders.add(folderName);
+
+              const virtualFilePath = path.join(reportsBasePath, `${folderName}.reportFolder-meta.xml`);
+
+              components.push({
+                name: folderName,
+                type: 'ReportFolder',
+                filePath: virtualFilePath, // Virtual path for folders without metadata files
+                dependencies: new Set<string>(),
+                dependents: new Set<string>(),
+                priorityBoost: -10, // Deploy folders before reports
+              });
+            }
+          }
+        }
+      } catch (error) {
+        logger.debug('Could not scan reports directories', { error });
+      }
+    }
+
+    // After processing all reports, ensure parent folders exist for nested folder structures
+    // Example: If we have "SfdcServiceCloudReports/SfdcRepWorkReports", ensure "SfdcServiceCloudReports" exists
+    const allReportFolders = Array.from(reportFolders);
+    for (const folderName of allReportFolders) {
+      // Check if folder name contains a slash (nested structure)
+      if (folderName.includes('/')) {
+        const parts = folderName.split('/');
+        // Create parent folders recursively
+        for (let i = 0; i < parts.length - 1; i++) {
+          const parentFolderName = parts.slice(0, i + 1).join('/');
+          if (!reportFolders.has(parentFolderName)) {
+            reportFolders.add(parentFolderName);
+            const parentFolderPath = path.join(reportsBasePath, ...parts.slice(0, i + 1));
+            const virtualFilePath = path.join(parentFolderPath, `${parts[i]}.reportFolder-meta.xml`);
+
+            components.push({
+              name: parentFolderName,
+              type: 'ReportFolder',
+              filePath: virtualFilePath,
+              dependencies: new Set<string>(),
+              dependents: new Set<string>(),
+              priorityBoost: -10, // Deploy folders before reports
+            });
+          }
+        }
+      }
+    }
+
+    // Scan Reports
+    // Reports are stored in folders: reports/FolderName/ReportName.report-meta.xml
+    // Or in subfolders: reports/ParentFolder/SubFolder/ReportName.report-meta.xml
+    const reportFiles = await this.findFiles(packagePath, '**/reports/**/*.report-meta.xml');
+    for (const filePath of reportFiles) {
+      if (this.shouldIgnore(filePath)) continue;
+      // Skip folder metadata files (already processed)
+      if (filePath.endsWith('.reportFolder-meta.xml')) continue;
+
+      try {
+        // Extract folder path and report name
+        // Path format: .../reports/FolderName/ReportName.report-meta.xml
+        // Or: .../reports/ParentFolder/SubFolder/ReportName.report-meta.xml
+        const reportsDir = path.dirname(filePath);
+        const reportName = path.basename(filePath, '.report-meta.xml');
+        const parentDir = path.basename(path.dirname(reportsDir));
+        const currentDir = path.basename(reportsDir);
+
+        // Determine folder name: if parent is "reports", use currentDir; otherwise use ParentFolder/SubFolder
+        const folderName = parentDir === 'reports' ? currentDir : `${parentDir}/${currentDir}`;
+
+        // Report name format: FolderName/ReportName
+        const fullReportName = `${folderName}/${reportName}`;
+
+        // Track folder for dependency (and ensure parent folders exist)
+        reportFolders.add(folderName);
+
+        // Ensure parent folders exist for nested structures
+        if (folderName.includes('/')) {
+          const parts = folderName.split('/');
+          for (let i = 0; i < parts.length; i++) {
+            const parentFolderName = parts.slice(0, i + 1).join('/');
+            if (!reportFolders.has(parentFolderName)) {
+              reportFolders.add(parentFolderName);
+              const parentFolderPath = path.join(reportsBasePath, ...parts.slice(0, i + 1));
+              const virtualFilePath = path.join(parentFolderPath, `${parts[i]}.reportFolder-meta.xml`);
+
+              components.push({
+                name: parentFolderName,
+                type: 'ReportFolder',
+                filePath: virtualFilePath,
+                dependencies: new Set<string>(),
+                dependents: new Set<string>(),
+                priorityBoost: -10, // Deploy folders before reports
+              });
+            }
+          }
+        }
+
+        const deps = new Set<string>();
+        // Add folder as dependency
+        deps.add(`ReportFolder:${folderName}`);
+
+        // If folder has parent (contains /), add all parent folders as dependencies
+        if (folderName.includes('/')) {
+          const parts = folderName.split('/');
+          for (let i = 0; i < parts.length; i++) {
+            const parentFolderName = parts.slice(0, i + 1).join('/');
+            deps.add(`ReportFolder:${parentFolderName}`);
+          }
+        }
+
+        components.push({
+          name: fullReportName, // Use FolderName/ReportName format
+          type: 'Report',
+          filePath,
+          dependencies: deps,
+          dependents: new Set<string>(),
+          priorityBoost: 0,
+        });
+      } catch (error) {
+        const errorMsg = `Failed to parse Report ${filePath}: ${
+          error instanceof Error ? error.message : String(error)
+        }`;
+        logger.warn(errorMsg);
+        errors.push(errorMsg);
+      }
+    }
+
+    // Scan Digital Experiences (bundle directories)
+    // Digital Experiences are stored as: digitalExperiences/site/SiteName/...
+    const digitalExperienceDirs = await this.findDirectories(packagePath, '**/digitalExperiences/site/*');
+    for (const expDir of digitalExperienceDirs) {
+      if (this.shouldIgnore(expDir)) continue;
+
+      try {
+        // Extract site name from directory path: .../digitalExperiences/site/SiteName
+        const siteName = path.basename(expDir);
+
+        // For DigitalExperienceBundle, always use the directory as the file path
+        // Salesforce CLI needs the directory to deploy the bundle, not individual files
+        const filePath = expDir;
+
+        // Parse JSON files within the bundle to extract dependencies
+        const deps = new Set<string>();
+        try {
+          const parseResult = await parseDigitalExperienceBundle(expDir, siteName);
+
+          // Convert parsed dependencies to NodeId format
+          for (const dep of parseResult.dependencies) {
+            if (dep.type === 'lwc_component') {
+              deps.add(`LightningComponentBundle:${dep.name}`);
+            } else if (dep.type === 'aura_component') {
+              deps.add(`AuraDefinitionBundle:${dep.name}`);
+            } else if (dep.type === 'static_resource') {
+              deps.add(`StaticResource:${dep.name}`);
+            } else if (dep.type === 'apex_class') {
+              deps.add(`ApexClass:${dep.name}`);
+            } else if (dep.type === 'visualforce_page') {
+              deps.add(`VisualforcePage:${dep.name}`);
+            } else if (dep.type === 'flow') {
+              deps.add(`Flow:${dep.name}`);
+            }
+          }
+
+          logger.debug('Parsed DigitalExperienceBundle dependencies', {
+            bundleName: siteName,
+            jsonFiles: parseResult.jsonFiles.length,
+            dependencies: parseResult.dependencies.length,
+            nodeIds: Array.from(deps),
+          });
+        } catch (parseError) {
+          logger.warn('Failed to parse DigitalExperienceBundle JSON files', {
+            expDir,
+            siteName,
+            error: parseError instanceof Error ? parseError.message : String(parseError),
+          });
+        }
+
+        components.push({
+          name: siteName,
+          type: 'DigitalExperience',
+          filePath,
+          dependencies: deps,
+          dependents: new Set<string>(),
+          priorityBoost: 0,
+        });
+      } catch (error) {
+        const errorMsg = `Failed to parse Digital Experience ${expDir}: ${
           error instanceof Error ? error.message : String(error)
         }`;
         logger.warn(errorMsg);

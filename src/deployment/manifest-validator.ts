@@ -5,9 +5,9 @@
  * @ac US-085-AC-2: Validate manifest matches source
  */
 
-import { getLogger } from '../utils/logger.js';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import { getLogger } from '../utils/logger.js';
 import { parseXml } from '../utils/xml.js';
 import type { Manifest } from '../types/deployment.js';
 import type { MetadataComponent } from '../types/metadata.js';
@@ -15,24 +15,24 @@ import type { NodeId } from '../types/dependency.js';
 
 const logger = getLogger('ManifestValidator');
 
-export interface ManifestValidationResult {
+export type ManifestValidationResult = {
   isValid: boolean;
   errors: ManifestValidationError[];
   warnings: ManifestValidationWarning[];
-}
+};
 
-export interface ManifestValidationError {
+export type ManifestValidationError = {
   component: string;
   type: string;
   message: string;
   filePath?: string;
-}
+};
 
-export interface ManifestValidationWarning {
+export type ManifestValidationWarning = {
   component: string;
   type: string;
   message: string;
-}
+};
 
 /**
  * Validates that manifest contents match source project
@@ -86,14 +86,18 @@ export class ManifestValidator {
     }
 
     // Check for components in source that are missing from manifest
-    const missingComponents = this.findMissingComponents(manifestComponents, componentMap);
-    for (const missing of missingComponents) {
-      result.warnings.push({
-        component: missing.name,
-        type: missing.type,
-        message: `Component "${missing.name}" (${missing.type}) exists in source but is not included in manifest. This may cause deployment issues.`,
-      });
-    }
+    // NOTE: This check is disabled for multi-wave deployments because components
+    // are distributed across multiple manifests. Each manifest only contains a subset
+    // of components, so it's expected that many components won't be in a specific manifest.
+    // Only validate that components IN the manifest exist in source (done above).
+    // const missingComponents = this.findMissingComponents(manifestComponents, componentMap);
+    // for (const missing of missingComponents) {
+    //   result.warnings.push({
+    //     component: missing.name,
+    //     type: missing.type,
+    //     message: `Component "${missing.name}" (${missing.type}) exists in source but is not included in manifest. This may cause deployment issues.`,
+    //   });
+    // }
 
     logger.info('Manifest validation completed', {
       isValid: result.isValid,
@@ -109,9 +113,9 @@ export class ManifestValidator {
    */
   private async parseManifestXml(xmlContent: string): Promise<Record<string, string[]> | null> {
     try {
-      const parsed = await parseXml(xmlContent) as { Package?: { types?: unknown } };
+      const parsed = parseXml<Record<string, any>>(xmlContent);
       const packageElement = parsed.Package;
-      if (!packageElement || !packageElement.types) {
+      if (!packageElement?.types) {
         return null;
       }
 
@@ -121,7 +125,9 @@ export class ManifestValidator {
       for (const typeElement of types) {
         const typeName = typeElement.name;
         const members = Array.isArray(typeElement.members) ? typeElement.members : [typeElement.members];
-        const memberNames = members.map((m: string | { _?: string }) => (typeof m === 'string' ? m : m._ || '')).filter(Boolean);
+        const memberNames = members
+          .map((m: string | { _?: string }) => (typeof m === 'string' ? m : m._ || ''))
+          .filter(Boolean);
 
         if (typeName && memberNames.length > 0) {
           components[typeName] = memberNames;
@@ -165,20 +171,73 @@ export class ManifestValidator {
     }
 
     // Validate file exists
+    // Exception: EmailTemplateFolder and ReportFolder may have virtual paths for folders without metadata files
     const filePath = foundComponent.filePath;
     const fullPath = path.isAbsolute(filePath) ? filePath : path.join(projectRoot, filePath);
 
-    try {
-      await fs.access(fullPath);
-    } catch {
-      return {
-        error: {
-          component: componentName,
-          type,
-          message: `Component file does not exist: ${filePath}`,
-          filePath,
-        },
-      };
+    const isVirtualEmailFolder =
+      foundComponent.type === 'EmailTemplateFolder' &&
+      filePath.includes('.emailFolder-meta.xml') &&
+      !filePath.includes('/email/');
+
+    const isVirtualReportFolder = foundComponent.type === 'ReportFolder' && filePath.includes('.reportFolder-meta.xml');
+
+    if (isVirtualReportFolder) {
+      // For virtual ReportFolders, check if the directory exists instead of the file
+      // The filePath might be relative to packagePath (e.g., force-app/main/default/reports/FolderName/FolderName.reportFolder-meta.xml)
+      // or it might be a virtual path. Check the directory that contains the folder.
+      const folderDir = path.dirname(fullPath);
+
+      // Also try checking if the directory name exists in reports/ (for nested folders)
+      // Example: SfdcServiceCloudReports/SfdcRepWorkReports -> check force-app/main/default/reports/SfdcServiceCloudReports
+      const reportsDir = path.join(projectRoot, 'force-app', 'main', 'default', 'reports');
+      const folderNameParts = componentName.split('/');
+      const firstFolderName = folderNameParts[0];
+      const firstFolderPath = path.join(reportsDir, firstFolderName);
+
+      try {
+        // Try the full path first
+        const stat = await fs.stat(folderDir);
+        if (stat.isDirectory()) {
+          return {}; // Directory exists, virtual folder is valid
+        }
+      } catch {
+        // If full path doesn't work, try the first folder in reports/
+        try {
+          const stat = await fs.stat(firstFolderPath);
+          if (stat.isDirectory()) {
+            return {}; // Directory exists, virtual folder is valid
+          }
+        } catch {
+          // Directory doesn't exist
+          return {
+            error: {
+              component: componentName,
+              type,
+              message: `ReportFolder directory does not exist: ${folderDir} or ${firstFolderPath}`,
+              filePath: folderDir,
+            },
+          };
+        }
+      }
+
+      // Directory exists, virtual folder is valid
+      return {};
+    }
+
+    if (!isVirtualEmailFolder) {
+      try {
+        await fs.access(fullPath);
+      } catch {
+        return {
+          error: {
+            component: componentName,
+            type,
+            message: `Component file does not exist: ${filePath}`,
+            filePath,
+          },
+        };
+      }
     }
 
     // Validate type matches
@@ -198,45 +257,43 @@ export class ManifestValidator {
 
   /**
    * Find components in source that are missing from manifest
+   * NOTE: Disabled for multi-wave deployments - components are distributed across multiple manifests
    */
-  private findMissingComponents(
-    manifestComponents: Record<string, string[]>,
-    componentMap: Map<NodeId, MetadataComponent>
-  ): Array<{ name: string; type: string }> {
-    const manifestSet = new Set<string>();
-    for (const componentNames of Object.values(manifestComponents)) {
-      for (const name of componentNames) {
-        manifestSet.add(name);
-      }
-    }
+  // private findMissingComponents(
+  //   manifestComponents: Record<string, string[]>,
+  //   componentMap: Map<NodeId, MetadataComponent>
+  // ): Array<{ name: string; type: string }> {
+  //   const manifestSet = new Set<string>();
+  //   for (const componentNames of Object.values(manifestComponents)) {
+  //     for (const name of componentNames) {
+  //       manifestSet.add(name);
+  //     }
+  //   }
 
-    const missing: Array<{ name: string; type: string }> = [];
-    for (const component of componentMap.values()) {
-      if (!manifestSet.has(component.name)) {
-        missing.push({ name: component.name, type: component.type });
-      }
-    }
+  //   const missing: Array<{ name: string; type: string }> = [];
+  //   for (const component of componentMap.values()) {
+  //     if (!manifestSet.has(component.name)) {
+  //       missing.push({ name: component.name, type: component.type });
+  //     }
+  //   }
 
-    return missing;
-  }
+  //   return missing;
+  // }
 
   /**
    * Enhance error message with actionable information
    */
-  private enhanceErrorMessage(
-    error: ManifestValidationError,
-    componentName: string,
-    salesforceType: string
-  ): string {
+  private enhanceErrorMessage(error: ManifestValidationError, componentName: string, salesforceType: string): string {
     let message = error.message;
 
     // Add suggestions based on error type
     if (error.message.includes('not found in scanned metadata')) {
-      message += `\n   💡 Suggestion: Run "sf smart-deployment analyze" to scan your project and ensure all components are detected.`;
+      message +=
+        '\n   💡 Suggestion: Run "sf smart-deployment analyze" to scan your project and ensure all components are detected.';
       message += `\n   💡 Check if "${componentName}" is excluded in .forceignore or if the file path is correct.`;
     } else if (error.message.includes('does not exist')) {
       message += `\n   💡 Suggestion: Verify the file exists at: ${error.filePath || 'unknown path'}`;
-      message += `\n   💡 The component may have been deleted or moved. Update your source or regenerate manifests.`;
+      message += '\n   💡 The component may have been deleted or moved. Update your source or regenerate manifests.';
     } else if (error.message.includes('Type mismatch')) {
       message += `\n   💡 Suggestion: The metadata type mapping may be incorrect. Check if "${salesforceType}" is the correct Salesforce type.`;
     }
@@ -284,4 +341,3 @@ export class ManifestValidator {
     return reverseMap[salesforceType] || null;
   }
 }
-

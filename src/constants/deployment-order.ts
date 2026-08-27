@@ -76,35 +76,38 @@ export const DEPLOYMENT_ORDER: Readonly<Record<MetadataType, number>> = Object.f
   ContentAsset: 29, // Content assets
   EmailTemplateFolder: 29, // Email template folders (before templates)
   EmailTemplate: 30, // Email templates
-  ApexClass: 31, // Apex classes - deploy before triggers
-  VisualforceComponent: 32, // VF components
-  VisualforcePage: 33, // VF pages
-  LightningComponentBundle: 34, // LWC
-  AuraDefinitionBundle: 35, // Aura components
-  ApexTrigger: 36, // Triggers after classes
+  ReportFolder: 30, // Report folders (before reports)
+  Report: 31, // Reports (after folders)
+  ApexClass: 32, // Apex classes - deploy before triggers
+  VisualforceComponent: 33, // VF components
+  VisualforcePage: 34, // VF pages
+  LightningComponentBundle: 35, // LWC
+  AuraDefinitionBundle: 36, // Aura components
+  ApexTrigger: 37, // Triggers after classes
 
   // ========== Tier 4: Service Cloud (37-42) ==========
-  ServicePresenceStatus: 37, // Service presence
-  PresenceUserConfig: 38, // Presence config
-  Queue: 39, // Queues
-  ServiceChannel: 40, // Service channels
-  QueueRoutingConfig: 41, // Queue routing
-  ChannelLayout: 42, // Channel layouts
+  ServicePresenceStatus: 38, // Service presence
+  PresenceUserConfig: 39, // Presence config
+  Queue: 40, // Queues
+  ServiceChannel: 41, // Service channels
+  QueueRoutingConfig: 42, // Queue routing
+  ChannelLayout: 43, // Channel layouts
 
-  // ========== Tier 5: Business Logic & AI (43-49) ==========
-  MilestoneType: 43, // Milestone types
-  EntitlementProcess: 44, // Entitlement processes
-  GenAiFunction: 45, // Einstein AI functions
-  GenAiPromptTemplate: 46, // Einstein prompts
-  GenAiPlannerBundle: 47, // Einstein planners
-  Flow: 48, // Flows (after Apex classes)
-  PathAssistant: 49, // Path assistant
+  // ========== Tier 5: Business Logic & AI (44-50) ==========
+  MilestoneType: 44, // Milestone types
+  EntitlementProcess: 45, // Entitlement processes
+  GenAiFunction: 46, // Einstein AI functions
+  GenAiPromptTemplate: 47, // Einstein prompts
+  GenAiPlannerBundle: 48, // Einstein planners
+  Flow: 49, // Flows (after Apex classes)
+  PathAssistant: 50, // Path assistant
 
-  // ========== Tier 6: UI Components (50-59) ==========
-  Layout: 50, // Page layouts
+  // ========== Tier 6: UI Components (51-60) ==========
+  Layout: 51, // Page layouts
   Bot: 51, // Einstein Bots
   BotVersion: 52, // Bot versions
   GenAiPlugin: 53, // Einstein plugins
+  AiAuthoringBundle: 53, // Agentforce Agent Script bundles
   FlexiPage: 54, // Lightning pages
   QuickAction: 55, // Quick actions
   CompactLayout: 56, // Compact layouts

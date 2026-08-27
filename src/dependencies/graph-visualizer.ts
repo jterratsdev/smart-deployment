@@ -1,20 +1,21 @@
 /**
  * Graph Visualizer
  * Generates visual representations of the dependency graph
- * 
+ *
  * @ac US-035-AC-1: Generate Mermaid diagram
  * @ac US-035-AC-2: Generate DOT format
  * @ac US-035-AC-3: Support filtering by type
  * @ac US-035-AC-4: Support filtering by depth
  * @ac US-035-AC-5: Highlight critical path
  * @ac US-035-AC-6: Export as SVG/PNG (requires external tools)
- * 
+ *
  * @issue #35
  */
 
 import { getLogger } from '../utils/logger.js';
 import type { NodeId, DependencyGraph } from '../types/dependency.js';
 import type { MetadataType } from '../types/metadata.js';
+import { parseNodeId } from '../utils/node-id.js';
 
 const logger = getLogger('GraphVisualizer');
 
@@ -64,14 +65,14 @@ const TYPE_COLORS: Record<string, string> = {
 
 /**
  * Graph Visualizer
- * 
+ *
  * Generates visual representations of dependency graphs in multiple formats:
  * - Mermaid: For GitHub, documentation
  * - DOT: For Graphviz rendering
  * - ASCII: For terminal output
- * 
+ *
  * Performance: O(V + E)
- * 
+ *
  * @example
  * const visualizer = new GraphVisualizer(graph);
  * const mermaid = visualizer.toMermaid({ criticalPath });
@@ -160,9 +161,7 @@ export class GraphVisualizer {
     // Add edges
     for (const [nodeId, deps] of filtered.entries()) {
       for (const dep of deps) {
-        const edgeStyle = criticalSet.has(nodeId) && criticalSet.has(dep) 
-          ? ', color=red, penwidth=2.0' 
-          : '';
+        const edgeStyle = criticalSet.has(nodeId) && criticalSet.has(dep) ? ', color=red, penwidth=2.0' : '';
         lines.push(`    "${nodeId}" -> "${dep}"${edgeStyle};`);
       }
     }
@@ -252,7 +251,7 @@ export class GraphVisualizer {
    * Check if node matches any of the given types
    */
   private matchesType(nodeId: NodeId, types: MetadataType[]): boolean {
-    const nodeType = nodeId.split(':')[0];
+    const nodeType = parseNodeId(nodeId)?.type;
     return types.includes(nodeType as MetadataType);
   }
 
@@ -274,16 +273,15 @@ export class GraphVisualizer {
       return '#ff6b6b';
     }
 
-    const type = nodeId.split(':')[0];
-    return TYPE_COLORS[type] ?? '#e0e0e0';
+    const type = parseNodeId(nodeId)?.type;
+    return type ? TYPE_COLORS[type] ?? '#e0e0e0' : '#e0e0e0';
   }
 
   /**
    * Get node label (short name)
    */
   private getNodeLabel(nodeId: NodeId): string {
-    const parts = nodeId.split(':');
-    return parts.length === 2 ? parts[1] : nodeId;
+    return parseNodeId(nodeId)?.name ?? nodeId;
   }
 
   /**
@@ -335,4 +333,3 @@ export class GraphVisualizer {
     return { nodes: this.graph.size, edges };
   }
 }
-

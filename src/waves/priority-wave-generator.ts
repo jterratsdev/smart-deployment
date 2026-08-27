@@ -13,6 +13,7 @@
  */
 
 import type { NodeId } from '../types/dependency.js';
+import { parseNodeId } from '../utils/node-id.js';
 import type { MetadataType, MetadataComponent } from '../types/metadata.js';
 import type { Wave } from './wave-builder.js';
 
@@ -79,7 +80,8 @@ export class PriorityWaveGenerator {
 
   private calculatePriority(nodeId: NodeId, componentMap: Map<NodeId, MetadataComponent>): number {
     const component = componentMap.get(nodeId);
-    const type = nodeId.split(':')[0] as MetadataType;
+    const type = parseNodeId(nodeId)?.type as MetadataType | undefined;
+    if (!type) return 0;
 
     // Type priority (higher = deploy earlier)
     const typeIndex = DEPLOYMENT_PRIORITY_ORDER.indexOf(type);

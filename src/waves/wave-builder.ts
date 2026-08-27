@@ -16,25 +16,26 @@ import { getLogger } from '../utils/logger.js';
 import type { NodeId, DependencyGraph, CircularDependency } from '../types/dependency.js';
 import type { MetadataType } from '../types/metadata.js';
 import { CircularDependencyDetector } from '../dependencies/circular-dependency-detector.js';
+import { parseNodeId } from '../utils/node-id.js';
 
 const logger = getLogger('WaveBuilder');
 
 /**
  * Wave of independent components
  */
-export interface Wave {
+export type Wave = {
   /** Wave number (1-based) */
   number: number;
   /** Components in this wave */
   components: NodeId[];
   /** Metadata about the wave */
   metadata: WaveMetadata;
-}
+};
 
 /**
  * Wave metadata
  */
-export interface WaveMetadata {
+export type WaveMetadata = {
   /** Number of components */
   componentCount: number;
   /** Component types in this wave */
@@ -45,12 +46,12 @@ export interface WaveMetadata {
   hasCircularDeps: boolean;
   /** Estimated deployment time (seconds) */
   estimatedTime: number;
-}
+};
 
 /**
  * Wave generation result
  */
-export interface WaveResult {
+export type WaveResult = {
   /** Generated waves */
   waves: Wave[];
   /** Total number of components */
@@ -61,12 +62,12 @@ export interface WaveResult {
   circularDependencies: CircularDependency[];
   /** Statistics */
   stats: WaveStats;
-}
+};
 
 /**
  * Wave statistics
  */
-export interface WaveStats {
+export type WaveStats = {
   /** Total number of waves */
   totalWaves: number;
   /** Average components per wave */
@@ -77,19 +78,19 @@ export interface WaveStats {
   smallestWaveSize: number;
   /** Total estimated time (seconds) */
   totalEstimatedTime: number;
-}
+};
 
 /**
  * Wave builder options
  */
-export interface WaveBuilderOptions {
+export type WaveBuilderOptions = {
   /** Maximum components per wave (0 = unlimited) */
   maxComponentsPerWave?: number;
   /** Respect metadata type deployment order */
   respectTypeOrder?: boolean;
   /** Handle circular dependencies */
   handleCircularDeps?: boolean;
-}
+};
 
 /**
  * Metadata type deployment order (Salesforce recommended)
@@ -105,7 +106,9 @@ const TYPE_DEPLOYMENT_ORDER: MetadataType[] = [
   'PermissionSet',
   'ApexClass',
   'ApexTrigger',
+  'GenAiPromptTemplate',
   'Flow',
+  'AiAuthoringBundle',
   'ValidationRule',
   'WorkflowRule',
   'EmailTemplate',
@@ -363,7 +366,7 @@ export class WaveBuilder {
 
     logger.debug('Detected cycles to resolve', {
       cycleCount: cycles.length,
-      totalNodesInCycles: new Set(cycles.flatMap(c => c.cycle)).size,
+      totalNodesInCycles: new Set(cycles.flatMap((c) => c.cycle)).size,
     });
 
     // Collect all break suggestions, prioritizing by priority
@@ -544,9 +547,10 @@ export class WaveBuilder {
   private calculateInDegree(graph: DependencyGraph): Map<NodeId, number> {
     const inDegree = new Map<NodeId, number>();
 
-    // Initialize all nodes with their dependency count
+    // Dangling references can point to standard or managed-package metadata;
+    // only dependencies represented by deployable graph nodes block a wave.
     for (const [nodeId, deps] of graph.entries()) {
-      inDegree.set(nodeId, deps.size);
+      inDegree.set(nodeId, Array.from(deps).filter((dep) => graph.has(dep)).length);
     }
 
     return inDegree;
@@ -557,11 +561,11 @@ export class WaveBuilder {
    */
   private generateWaveMetadata(components: NodeId[], hasCircularDeps: boolean): WaveMetadata {
     const types = new Set<MetadataType>();
-    let maxDepth = 0;
+    const maxDepth = 0;
 
     for (const component of components) {
-      const [type] = component.split(':');
-      types.add(type as MetadataType);
+      const type = parseNodeId(component)?.type;
+      if (type) types.add(type as MetadataType);
     }
 
     // Estimate deployment time (rough estimate: 0.1s per component)
@@ -580,11 +584,11 @@ export class WaveBuilder {
    * Compare nodes by type deployment order
    */
   private compareByTypeOrder(a: NodeId, b: NodeId): number {
-    const typeA = a.split(':')[0] as MetadataType;
-    const typeB = b.split(':')[0] as MetadataType;
+    const typeA = parseNodeId(a)?.type as MetadataType | undefined;
+    const typeB = parseNodeId(b)?.type as MetadataType | undefined;
 
-    const orderA = TYPE_DEPLOYMENT_ORDER.indexOf(typeA);
-    const orderB = TYPE_DEPLOYMENT_ORDER.indexOf(typeB);
+    const orderA = typeA ? TYPE_DEPLOYMENT_ORDER.indexOf(typeA) : -1;
+    const orderB = typeB ? TYPE_DEPLOYMENT_ORDER.indexOf(typeB) : -1;
 
     // If not in order list, put at end
     const finalOrderA = orderA === -1 ? 9999 : orderA;
@@ -650,4 +654,3 @@ export class WaveBuilder {
     return undefined;
   }
 }
-

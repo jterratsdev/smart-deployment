@@ -5,7 +5,6 @@
 
 import { readFile, writeFile, access, mkdir } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
-import { getLogger } from './logger.js';
 import type {
   DeploymentPlan,
   PlanValidationResult,
@@ -13,6 +12,8 @@ import type {
   PriorityOverride,
 } from '../types/deployment-plan.js';
 import type { Wave } from '../waves/wave-builder.js';
+import { getLogger } from './logger.js';
+import { parseNodeId } from './node-id.js';
 
 const logger = getLogger('DeploymentPlanManager');
 
@@ -110,7 +111,7 @@ export class DeploymentPlanManager {
     const componentsByType: Record<string, string[]> = {};
     for (const wave of waves) {
       for (const component of wave.components) {
-        const type = component.split(':')[0];
+        const type = parseNodeId(component)?.type ?? component;
         if (!componentsByType[type]) {
           componentsByType[type] = [];
         }
@@ -133,7 +134,7 @@ export class DeploymentPlanManager {
       },
       priorityOverrides,
       waves,
-      componentsByType: componentsByType as Record<string, string[]>,
+      componentsByType,
     };
   }
 
@@ -154,7 +155,7 @@ export class DeploymentPlanManager {
     const diffPercentage = totalUnique > 0 ? (diffCount / totalUnique) * 100 : 0;
 
     // Priority differences
-    let priorityChanges = 0;
+    const priorityChanges = 0;
     return {
       identical: added.length === 0 && removed.length === 0,
       diffPercentage,

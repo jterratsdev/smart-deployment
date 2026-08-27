@@ -14,27 +14,28 @@
 import { getLogger } from '../utils/logger.js';
 import type { MetadataComponent } from '../types/metadata.js';
 import type { DependencyGraph } from '../types/dependency.js';
+import { createNodeId } from '../utils/node-id.js';
 import { AgentforceService } from './agentforce-service.js';
 
 const logger = getLogger('DependencyInferenceService');
 
-export interface InferredDependency {
+export type InferredDependency = {
   from: string;
   to: string;
   type: 'implicit' | 'dynamic' | 'runtime' | 'business-logic';
   confidence: number;
   reason: string;
   lineNumber?: number;
-}
+};
 
-export interface InferenceResult {
+export type InferenceResult = {
   dependencies: InferredDependency[];
   totalInferred: number;
   highConfidenceCount: number;
   executionTime: number;
   usedCache: boolean;
   fallbackToStatic: boolean;
-}
+};
 
 /**
  * @ac US-055-AC-1: Send component context to Agentforce
@@ -234,7 +235,7 @@ Only include dependencies with confidence > 0.5. Be conservative - it's better t
   private getCacheKey(components: MetadataComponent[]): string {
     // Create deterministic key from component names and types
     const sortedComponents = components
-      .map((c) => `${c.type}:${c.name}`)
+      .map((c) => createNodeId(c.type, c.name))
       .sort()
       .join('|');
 

@@ -14,10 +14,7 @@
 
 import { getLogger } from '../utils/logger.js';
 import { isStandardComponentReference } from '../constants/standard-components.js';
-import type {
-  MetadataComponent,
-  MetadataType,
-} from '../types/metadata.js';
+import type { MetadataComponent, MetadataType } from '../types/metadata.js';
 import type {
   NodeId,
   DependencyGraph,
@@ -26,6 +23,7 @@ import type {
   DependencyStats,
   CircularDependency,
 } from '../types/dependency.js';
+import { createNodeId } from '../utils/node-id.js';
 
 const logger = getLogger('DependencyGraphBuilder');
 
@@ -37,24 +35,24 @@ export type DependencyType = 'hard' | 'soft' | 'inferred';
 /**
  * Extended edge information
  */
-export interface DependencyEdge {
+export type DependencyEdge = {
   from: NodeId;
   to: NodeId;
   type: DependencyType;
   reason?: string; // Why this dependency exists
-}
+};
 
 /**
  * Options for building the dependency graph
  */
-export interface GraphBuilderOptions {
+export type GraphBuilderOptions = {
   /** Track dependency types (hard/soft/inferred) */
   trackDependencyTypes?: boolean;
   /** Validate graph structure during build */
   validateStructure?: boolean;
   /** Max nodes before warning (performance) */
   maxNodes?: number;
-}
+};
 
 /**
  * Dependency Graph Builder
@@ -112,7 +110,7 @@ export class DependencyGraphBuilder {
    * Create a node ID from type and name
    */
   private static createNodeId(type: MetadataType, name: string): NodeId {
-    return `${type}:${name}`;
+    return createNodeId(type, name);
   }
 
   // Public methods
@@ -182,12 +180,7 @@ export class DependencyGraphBuilder {
    * @ac US-028-AC-3: Handle bidirectional dependencies
    * @ac US-028-AC-4: Track dependency types
    */
-  public addEdge(
-    from: NodeId,
-    to: NodeId,
-    type: DependencyType = 'hard',
-    reason?: string
-  ): void {
+  public addEdge(from: NodeId, to: NodeId, type: DependencyType = 'hard', reason?: string): void {
     // Add forward edge (A depends on B)
     if (!this.graph.has(from)) {
       this.graph.set(from, new Set());
@@ -344,12 +337,12 @@ export class DependencyGraphBuilder {
         // It's OK if dependency doesn't exist (could be managed package, etc.)
         // Just log a warning
         if (!this.components.has(depId) && !this.graph.has(depId)) {
-            // Only log dangling references at debug level to reduce verbosity
-            // Most dangling references are to standard Salesforce objects/components
-            logger.debug('Dangling reference detected', {
-              from: nodeId,
-              to: depId,
-            });
+          // Only log dangling references at debug level to reduce verbosity
+          // Most dangling references are to standard Salesforce objects/components
+          logger.debug('Dangling reference detected', {
+            from: nodeId,
+            to: depId,
+          });
         }
       }
     }
@@ -532,4 +525,3 @@ export class DependencyGraphBuilder {
     return count;
   }
 }
-

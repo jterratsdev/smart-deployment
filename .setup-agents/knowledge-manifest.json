@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "pluginVersion": "3.18.9",
+  "setupLevel": "full",
+  "scope": {
+    "kind": "repository-full",
+    "include": ["force-app", "repository documentation"],
+    "exclude": [".setup-agents/generated", ".setup-agents/references", "node_modules"]
+  },
+  "sourceRoots": ["force-app"],
+  "sourceDigest": "b0efc774e2538e3c05636e4befb387f38ec2e675222a81146aea9d811a5dd335",
+  "artifactDigests": {
+    ".setup-agents/project-knowledge.md": "c44370cb48f2701d9ddb3afa9702352d6e1dabf9e5803ed0446416b50ff88d72",
+    ".setup-agents/class-catalog.md": "cb80c58153cf3a31632fe01f262be595ac95b72e2438074615d0d0329a4ccb44",
+    ".setup-agents/doc-index.md": "dbe212f8d302687def84d071cd3d059a5d50de203f9979bd8f01bf5a1c2ae182",
+    ".setup-agents/sf-metadata-index.json": "4c74408fd148416f251ac024483eaa24e42f4be24c59dbc5c16a2f6e3aef92fb"
+  },
+  "degradedReasons": []
+}

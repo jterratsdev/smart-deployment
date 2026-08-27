@@ -16,13 +16,13 @@
  */
 
 import { getLogger } from '../utils/logger.js';
-import type { Wave } from './wave-builder.js';
 import type { MetadataComponent, MetadataType } from '../types/metadata.js';
 import type { NodeId } from '../types/dependency.js';
+import type { Wave } from './wave-builder.js';
 
 const logger = getLogger('WavePostProcessor');
 
-export interface PostProcessingOptions {
+export type PostProcessingOptions = {
   /** Maximum components per wave before splitting */
   maxComponentsPerWave?: number;
   /** Whether to sync PSG with Permission Sets */
@@ -35,7 +35,7 @@ export interface PostProcessingOptions {
   splitLargeWaves?: boolean;
   /** Whether to sync test classes with classes they cover indirectly */
   syncTestClasses?: boolean;
-}
+};
 
 /**
  * Wave Post Processor
@@ -46,10 +46,7 @@ export class WavePostProcessor {
   private readonly options: Required<PostProcessingOptions>;
   private readonly componentMap: Map<NodeId, MetadataComponent>;
 
-  public constructor(
-    componentMap: Map<NodeId, MetadataComponent>,
-    options: PostProcessingOptions = {}
-  ) {
+  public constructor(componentMap: Map<NodeId, MetadataComponent>, options: PostProcessingOptions = {}) {
     this.componentMap = componentMap;
     this.options = {
       maxComponentsPerWave: options.maxComponentsPerWave ?? 300,
@@ -90,7 +87,10 @@ export class WavePostProcessor {
     // 3. Sync LightningApps with FlexiPages they depend on (utilityBar)
     processedWaves = this.syncLightningAppsWithFlexiPages(processedWaves);
 
-    // 4. Sync Custom Metadata Records with their Types
+    // 4. Sync Experience Cloud components together (Digital Experiences, Sites, Networks, Controllers, Pages, Static Resources)
+    processedWaves = this.syncExperienceCloudComponents(processedWaves);
+
+    // 5. Sync Custom Metadata Records with their Types
     processedWaves = this.syncCustomMetadataRecordsWithTypes(processedWaves);
 
     // 5. Sync test classes with classes they cover indirectly (before split)
@@ -837,9 +837,7 @@ export class WavePostProcessor {
 
             if (!resolved) {
               // Could not resolve - mark for preventive simplification
-              const unavailableDeps = dependencyDetails
-                .filter((d) => d.wave > waveIdx)
-                .map((d) => d.nodeId);
+              const unavailableDeps = dependencyDetails.filter((d) => d.wave > waveIdx).map((d) => d.nodeId);
 
               unresolvedConflicts.push({
                 component: component.name,
@@ -968,7 +966,7 @@ export class WavePostProcessor {
   public syncLightningAppsWithFlexiPages(waves: Wave[]): Wave[] {
     logger.debug('Syncing LightningApps with FlexiPages');
     const componentWaveMap = this.buildComponentWaveMap(waves);
-    const newWaves = waves.map(w => ({ ...w, components: [...w.components] }));
+    const newWaves = waves.map((w) => ({ ...w, components: [...w.components] }));
     let movedApps = 0;
 
     for (let waveIdx = 0; waveIdx < newWaves.length; waveIdx++) {
@@ -1030,7 +1028,7 @@ export class WavePostProcessor {
       logger.info('LightningApps synced with FlexiPages', { movedApps });
     }
 
-    return newWaves.filter(w => w.components.length > 0);
+    return newWaves.filter((w) => w.components.length > 0);
   }
 
   /**
@@ -1039,6 +1037,183 @@ export class WavePostProcessor {
    * Ensures that Custom Metadata Records are deployed in the same wave as their Custom Metadata Type.
    * This is critical because Apex classes may read these records immediately after the type is deployed.
    */
+  /**
+   * Sync Experience Cloud components together
+   * Groups Digital Experiences, Sites, Networks, Controllers, Visualforce Pages, and Static Resources
+   * that are related to Experience Cloud into the same wave
+   */
+  public syncExperienceCloudComponents(waves: Wave[]): Wave[] {
+    logger.debug('Syncing Experience Cloud components together');
+
+    // Create map of component -> wave index
+    const componentWaveMap = this.buildComponentWaveMap(waves);
+
+    // Identify Experience Cloud related components
+    const experienceCloudComponents = new Set<NodeId>();
+    const experienceCloudPaths = [
+      'digitalExperiences',
+      'digitalExperienceConfigs',
+      'brandingSets',
+      'sites',
+      'networkBranding',
+      'networks',
+    ];
+
+    // 1. Find Digital Experience components by directory path
+    for (const [nodeId, component] of this.componentMap.entries()) {
+      const filePath = component.filePath.toLowerCase();
+
+      // Check if component is in Experience Cloud directories
+      const isInExperienceCloudDir = experienceCloudPaths.some((path) => filePath.includes(path));
+
+      // Check if component is DigitalExperience or related type
+      const isDigitalExperienceType =
+        component.type === 'DigitalExperience' ||
+        component.type === 'DigitalExperienceConfig' ||
+        component.type === 'Network' ||
+        component.type === 'Site';
+
+      // Check if component is Experience Cloud related by name patterns
+      const name = component.name.toLowerCase();
+      const isExperienceCloudName =
+        name.includes('communities') ||
+        name.includes('site') ||
+        name.includes('network') ||
+        name.startsWith('communities') ||
+        name.includes('forgotpassword') ||
+        name.includes('changepassword');
+
+      if (isInExperienceCloudDir || isDigitalExperienceType || isExperienceCloudName) {
+        experienceCloudComponents.add(nodeId);
+      }
+    }
+
+    // 2. Find related Controllers, Visualforce Pages, Test Classes, and Static Resources
+    const relatedControllers = new Set<NodeId>();
+    const relatedPages = new Set<NodeId>();
+    const relatedStaticResources = new Set<NodeId>();
+    const relatedTestClasses = new Set<NodeId>();
+
+    for (const [nodeId, component] of this.componentMap.entries()) {
+      const name = component.name.toLowerCase();
+      const filePath = component.filePath.toLowerCase();
+
+      // Controllers for Experience Cloud
+      if (
+        component.type === 'ApexClass' &&
+        (name.includes('communities') ||
+          name.includes('forgotpassword') ||
+          name.includes('changepassword') ||
+          name.includes('siteregister') ||
+          name.includes('sitelogin'))
+      ) {
+        relatedControllers.add(nodeId);
+        experienceCloudComponents.add(nodeId);
+      }
+
+      // Test Classes for Experience Cloud Controllers
+      if (
+        component.type === 'ApexClass' &&
+        ((name.includes('communities') && name.includes('test')) ||
+          (name.includes('forgotpassword') && name.includes('test')) ||
+          (name.includes('changepassword') && name.includes('test')) ||
+          (name.includes('siteregister') && name.includes('test')) ||
+          (name.includes('sitelogin') && name.includes('test')))
+      ) {
+        relatedTestClasses.add(nodeId);
+        experienceCloudComponents.add(nodeId);
+      }
+
+      // Visualforce Pages for Experience Cloud
+      if (
+        component.type === 'VisualforcePage' &&
+        (name.includes('communities') ||
+          name.includes('forgotpassword') ||
+          name.includes('changepassword') ||
+          name.includes('site') ||
+          (filePath.includes('pages/') && (name.includes('site') || name.includes('communities'))))
+      ) {
+        relatedPages.add(nodeId);
+        experienceCloudComponents.add(nodeId);
+      }
+
+      // Static Resources related to Experience Cloud (SiteSamples, etc.)
+      if (component.type === 'StaticResource' && (name.includes('site') || name.includes('communities'))) {
+        relatedStaticResources.add(nodeId);
+        experienceCloudComponents.add(nodeId);
+      }
+    }
+
+    // 3. Find dependencies of Experience Cloud components and add them
+    const componentsToAdd = new Set<NodeId>(experienceCloudComponents);
+    for (const nodeId of experienceCloudComponents) {
+      const component = this.componentMap.get(nodeId);
+      if (component) {
+        // Add all dependencies
+        for (const dep of component.dependencies) {
+          componentsToAdd.add(dep);
+        }
+      }
+    }
+
+    // 4. Find the earliest wave containing any Experience Cloud component
+    let earliestWave = Infinity;
+    for (const nodeId of componentsToAdd) {
+      const wave = componentWaveMap.get(nodeId);
+      if (wave !== undefined && wave < earliestWave) {
+        earliestWave = wave;
+      }
+    }
+
+    if (earliestWave === Infinity || componentsToAdd.size === 0) {
+      logger.debug('No Experience Cloud components found to sync');
+      return waves;
+    }
+
+    // 5. Move all Experience Cloud components to the earliest wave
+    const newWaves = waves.map((w) => ({ ...w, components: [...w.components] }));
+    let movedComponents = 0;
+
+    for (const nodeId of componentsToAdd) {
+      const currentWave = componentWaveMap.get(nodeId);
+      if (currentWave !== undefined && currentWave !== earliestWave) {
+        // Remove from current wave
+        newWaves[currentWave].components = newWaves[currentWave].components.filter((id) => id !== nodeId);
+
+        // Add to earliest wave
+        newWaves[earliestWave].components.push(nodeId);
+        componentWaveMap.set(nodeId, earliestWave);
+        movedComponents++;
+
+        const component = this.componentMap.get(nodeId);
+        logger.debug('Moving Experience Cloud component', {
+          component: component?.name || nodeId,
+          type: component?.type,
+          fromWave: currentWave + 1,
+          toWave: earliestWave + 1,
+        });
+      }
+    }
+
+    // Remove empty waves
+    const filteredWaves = newWaves.filter((wave) => wave.components.length > 0);
+
+    if (movedComponents > 0) {
+      logger.info('Experience Cloud components synced together', {
+        movedComponents,
+        targetWave: earliestWave + 1,
+        components: Array.from(componentsToAdd)
+          .slice(0, 10)
+          .map((id) => {
+            const comp = this.componentMap.get(id);
+            return comp?.name || id;
+          }),
+      });
+    }
+
+    return filteredWaves;
+  }
+
   public syncCustomMetadataRecordsWithTypes(waves: Wave[]): Wave[] {
     logger.debug('Syncing Custom Metadata Records with Types');
 
@@ -1068,7 +1243,7 @@ export class WavePostProcessor {
 
       let typeName = component.name.substring(0, dotIndex);
       // Custom Metadata Types (__mdt) are CustomObject, not CustomMetadata
-      let typeNodeId = `CustomObject:${typeName}` as NodeId;
+      let typeNodeId = `CustomObject:${typeName}`;
 
       // Find the wave where the type is located
       let typeWave = componentWaveMap.get(typeNodeId);
@@ -1076,7 +1251,7 @@ export class WavePostProcessor {
       // If type not found, try with __mdt suffix (records may use type name without __mdt)
       if (typeWave === undefined) {
         const typeNameWithMdt = `${typeName}__mdt`;
-        typeNodeId = `CustomObject:${typeNameWithMdt}` as NodeId;
+        typeNodeId = `CustomObject:${typeNameWithMdt}`;
         typeWave = componentWaveMap.get(typeNodeId);
 
         if (typeWave !== undefined) {
@@ -1085,7 +1260,9 @@ export class WavePostProcessor {
       }
 
       if (typeWave === undefined) {
-        logger.warn(`Custom Metadata Type ${typeName} (or ${typeName}__mdt) not found in waves for record ${component.name}`);
+        logger.warn(
+          `Custom Metadata Type ${typeName} (or ${typeName}__mdt) not found in waves for record ${component.name}`
+        );
         continue;
       }
 
@@ -1109,7 +1286,7 @@ export class WavePostProcessor {
     }
 
     // Apply movements
-    const newWaves = waves.map(w => ({ ...w, components: [...w.components] }));
+    const newWaves = waves.map((w) => ({ ...w, components: [...w.components] }));
 
     for (const { nodeId, targetWave } of recordsToMove) {
       // Remove from current wave
@@ -1174,7 +1351,7 @@ export class WavePostProcessor {
       }
     }
 
-    const newWaves = waves.map(w => ({ ...w, components: [...w.components] }));
+    const newWaves = waves.map((w) => ({ ...w, components: [...w.components] }));
     let movedTests = 0;
 
     // Process each wave to find test classes
@@ -1340,9 +1517,9 @@ export class WavePostProcessor {
         // If test covers classes in different waves, move it to the earliest wave
         if (directlyCoveredClasses.length > 0) {
           // Find the earliest wave where a covered class exists
-          const earliestWave = Math.min(...directlyCoveredClasses.map(c => c.wave));
+          const earliestWave = Math.min(...directlyCoveredClasses.map((c) => c.wave));
           const coveredClassNames = directlyCoveredClasses
-            .map(c => this.componentMap.get(c.nodeId)?.name || 'Unknown')
+            .map((c) => this.componentMap.get(c.nodeId)?.name || 'Unknown')
             .join(', ');
 
           logger.debug('Found covered classes for test', {
@@ -1417,7 +1594,7 @@ export class WavePostProcessor {
 
             if (canMove) {
               const coveredClassNamesForMove = directlyCoveredClasses
-                .map(c => this.componentMap.get(c.nodeId)?.name || 'Unknown')
+                .map((c) => this.componentMap.get(c.nodeId)?.name || 'Unknown')
                 .join(', ');
 
               testsToMove.push({
@@ -1439,7 +1616,7 @@ export class WavePostProcessor {
                 fromWave: waveIdx + 1,
                 targetWave: earliestWave + 1,
                 coveredClasses: directlyCoveredClasses
-                  .map(c => this.componentMap.get(c.nodeId)?.name || 'Unknown')
+                  .map((c) => this.componentMap.get(c.nodeId)?.name || 'Unknown')
                   .join(', '),
               });
             }
@@ -1473,7 +1650,7 @@ export class WavePostProcessor {
     }
 
     // Filter empty waves and renumber to ensure wave.number matches array index + 1
-    const filteredWaves = newWaves.filter(w => w.components.length > 0);
+    const filteredWaves = newWaves.filter((w) => w.components.length > 0);
     return filteredWaves.map((wave, idx) => ({
       ...wave,
       number: idx + 1,
@@ -1498,7 +1675,7 @@ export class WavePostProcessor {
     logger.debug('Syncing test classes with indirect coverage');
 
     const componentWaveMap = this.buildComponentWaveMap(waves);
-    const newWaves = waves.map(w => ({ ...w, components: [...w.components] }));
+    const newWaves = waves.map((w) => ({ ...w, components: [...w.components] }));
     let movedTests = 0;
 
     // Build reverse dependency map: for each class, find all classes that depend on it
@@ -1671,16 +1848,19 @@ export class WavePostProcessor {
           // Only move if all non-critical dependencies are available
           if (canMove) {
             // Move to the latest required dependency wave (or earliest indirect wave if no deps need moving)
-            const targetWave = depsToMove.length > 0
-              ? Math.max(...depsToMove.map(d => d.currentWave), earliestIndirectWave)
-              : latestRequiredDepWave;
+            const targetWave =
+              depsToMove.length > 0
+                ? Math.max(...depsToMove.map((d) => d.currentWave), earliestIndirectWave)
+                : latestRequiredDepWave;
 
             const indirectClassName = earliestIndirectClass?.split(':')[1] || 'Unknown';
             testsToMove.push({
               nodeId,
               targetWave,
-              reason: `Covers ${indirectClassName} indirectly${depsToMove.length > 0 ? ` (moving ${depsToMove.length} dependencies)` : ''}`,
-              depsToMove: depsToMove.map(d => d.nodeId),
+              reason: `Covers ${indirectClassName} indirectly${
+                depsToMove.length > 0 ? ` (moving ${depsToMove.length} dependencies)` : ''
+              }`,
+              depsToMove: depsToMove.map((d) => d.nodeId),
             });
 
             movedTests++;
@@ -1741,7 +1921,7 @@ export class WavePostProcessor {
     }
 
     // Filter empty waves and renumber to ensure wave.number matches array index + 1
-    const filteredWaves = newWaves.filter(w => w.components.length > 0);
+    const filteredWaves = newWaves.filter((w) => w.components.length > 0);
     return filteredWaves.map((wave, idx) => ({
       ...wave,
       number: idx + 1,
@@ -1814,13 +1994,17 @@ export class WavePostProcessor {
     }
 
     // Debug: Log specific test classes we're looking for
-    const targetTestClasses = ['SC_SS_EntitlementsForCases_Test', 'SC_ContentVersion_Service_Test', 'SC_ContentDocument_Service_Test'];
-    const foundTestClasses = testClassesInMap.filter(t => targetTestClasses.includes(t.testClass));
+    const targetTestClasses = [
+      'SC_SS_EntitlementsForCases_Test',
+      'SC_ContentVersion_Service_Test',
+      'SC_ContentDocument_Service_Test',
+    ];
+    const foundTestClasses = testClassesInMap.filter((t) => targetTestClasses.includes(t.testClass));
 
     // Also verify by checking waves directly
     const foundInWaves: Array<{ wave: number; testClass: string; nodeId: string }> = [];
     waves.forEach((wave, idx) => {
-      wave.components.forEach(nodeId => {
+      wave.components.forEach((nodeId) => {
         const component = this.componentMap.get(nodeId);
         if (component?.type === 'ApexClass' && targetTestClasses.includes(component.name)) {
           foundInWaves.push({ wave: wave.number, testClass: component.name, nodeId });
@@ -1829,9 +2013,9 @@ export class WavePostProcessor {
     });
 
     // Also check componentWaveMap entries for these test classes
-    const testClassNodeIds = targetTestClasses.map(name => `ApexClass:${name}`);
+    const testClassNodeIds = targetTestClasses.map((name) => `ApexClass:${name}`);
     const foundInMap: Array<{ testClass: string; wave: number; nodeId: string }> = [];
-    testClassNodeIds.forEach(nodeId => {
+    testClassNodeIds.forEach((nodeId) => {
       const waveIdx = componentWaveMap.get(nodeId);
       if (waveIdx !== undefined) {
         const component = this.componentMap.get(nodeId);
@@ -1859,7 +2043,7 @@ export class WavePostProcessor {
         allTestClassEntries.push({
           nodeId,
           componentName: component.name || 'unknown',
-          wave: waveIdx + 1
+          wave: waveIdx + 1,
         });
       }
     }
@@ -1886,7 +2070,7 @@ export class WavePostProcessor {
       componentWaveMapSize,
       sampleEntries,
       wavesReceived: waves.length,
-      waveNumbers: waves.map(w => w.number),
+      waveNumbers: waves.map((w) => w.number),
       waveIndexes: waves.map((w, idx) => ({ waveNumber: w.number, arrayIndex: idx })),
       testClassNodeIds,
     });
@@ -1896,19 +2080,22 @@ export class WavePostProcessor {
       total: testClassesInMap.length,
     });
 
-    const newWaves = waves.map(w => ({ ...w, components: [...w.components] }));
+    const newWaves = waves.map((w) => ({ ...w, components: [...w.components] }));
     const manifestAdjustments: Array<{ componentId: NodeId; firstWave: number; lastWave: number }> = [];
     let movedDeps = 0;
 
     // First pass: Collect all critical dependencies using Map: "nombrePadre-nombreDependencia" -> nombreDependencia
     // This allows tracking multiple occurrences of the same dependency from different test classes
-    const criticalDepsMap = new Map<string, {
-      dependencyId: NodeId;
-      dependencyName: string;
-      lastWave: number;
-      firstWave: number;
-      testClasses: Map<number, string[]>;
-    }>();
+    const criticalDepsMap = new Map<
+      string,
+      {
+        dependencyId: NodeId;
+        dependencyName: string;
+        lastWave: number;
+        firstWave: number;
+        testClasses: Map<number, string[]>;
+      }
+    >();
 
     // Process each wave that has test classes
     // Only move critical dependencies to waves that actually have test classes
@@ -1973,11 +2160,11 @@ export class WavePostProcessor {
           // Move if dependency is in a different wave than where the test class is
           // We want to move critical dependencies to the wave where the test class that needs them is located
           if (depWave !== undefined && depWave !== waveIdx && isCriticalDep) {
-
             // Don't move the class being tested directly (it's a dependency of the test)
             const depNameUpper = depComponent.name;
             const testNameBase = className.replace(/Test$/, '').replace(/_Test$/, '');
-            const isClassBeingTested = depNameUpper === testNameBase ||
+            const isClassBeingTested =
+              depNameUpper === testNameBase ||
               depNameUpper.includes(testNameBase) ||
               testNameBase.includes(depNameUpper);
 
@@ -2026,11 +2213,14 @@ export class WavePostProcessor {
 
     // Second pass: Consolidate dependencies and move to their last required wave
     // Group by dependencyId to handle multiple test classes referencing the same dependency
-    const dependencyConsolidation = new Map<NodeId, {
-      lastWave: number;
-      firstWave: number;
-      testClasses: Map<number, string[]>;
-    }>();
+    const dependencyConsolidation = new Map<
+      NodeId,
+      {
+        lastWave: number;
+        firstWave: number;
+        testClasses: Map<number, string[]>;
+      }
+    >();
 
     for (const [, depInfo] of criticalDepsMap.entries()) {
       const { dependencyId, lastWave, firstWave, testClasses } = depInfo;
@@ -2204,7 +2394,9 @@ export class WavePostProcessor {
     // Debug: Log critical deps map contents AFTER recalculation
     // Use finalComponentWaveMap and recalculated adjustments for accurate logging
     // Use iterator to avoid creating full array in memory
-    let dataFactoryEntry: [NodeId, { lastWave: number; firstWave: number; testClasses: Map<number, string[]> }] | undefined;
+    let dataFactoryEntry:
+      | [NodeId, { lastWave: number; firstWave: number; testClasses: Map<number, string[]> }]
+      | undefined;
     for (const entry of dependencyConsolidation.entries()) {
       if (entry[0].includes('DataFactory')) {
         dataFactoryEntry = entry;
@@ -2213,7 +2405,7 @@ export class WavePostProcessor {
     }
     if (dataFactoryEntry) {
       const [depNodeId] = dataFactoryEntry;
-      const adjustment = manifestAdjustments.find(a => a.componentId === depNodeId);
+      const adjustment = manifestAdjustments.find((a) => a.componentId === depNodeId);
       const finalWave = finalComponentWaveMap.get(depNodeId);
 
       // Find test classes that depend on DataFactory
@@ -2225,7 +2417,7 @@ export class WavePostProcessor {
         if (component.dependencies.has(depNodeId)) {
           const testWave = finalComponentWaveMap.get(nodeId);
           if (testWave !== undefined) {
-            const existing = testClassWaves.find(t => t.wave === testWave);
+            const existing = testClassWaves.find((t) => t.wave === testWave);
             if (existing) {
               existing.classes.push(component.name);
             } else {
@@ -2250,7 +2442,7 @@ export class WavePostProcessor {
     }
 
     // Filter empty waves and renumber to ensure wave.number matches array index + 1
-    const filteredWaves = newWaves.filter(w => w.components.length > 0);
+    const filteredWaves = newWaves.filter((w) => w.components.length > 0);
     const renumberedWaves = filteredWaves.map((wave, idx) => ({
       ...wave,
       number: idx + 1,
@@ -2271,7 +2463,7 @@ export class WavePostProcessor {
   public syncApexClassesWithDependents(waves: Wave[]): Wave[] {
     logger.info('Syncing Apex classes with their dependents', { waveCount: waves.length });
 
-    const newWaves = waves.map(w => ({ ...w, components: [...w.components] }));
+    const newWaves = waves.map((w) => ({ ...w, components: [...w.components] }));
     let movedClasses = 0;
 
     // Build component wave map from current waves state
@@ -2385,7 +2577,7 @@ export class WavePostProcessor {
         } else if (earliestDependentWave === -1 && component.name === 'SC_AccountWrapper') {
           // Debug: Log why SC_AccountWrapper is not being moved
           logger.warn('SC_AccountWrapper not moved - no dependents found', {
-            dependents: Array.from(dependents).map(d => {
+            dependents: Array.from(dependents).map((d) => {
               const depComp = this.componentMap.get(d);
               return depComp?.name || d;
             }),
@@ -2419,7 +2611,7 @@ export class WavePostProcessor {
       logger.info('Apex classes synced with their dependents', { movedClasses });
     }
 
-    return newWaves.filter(w => w.components.length > 0);
+    return newWaves.filter((w) => w.components.length > 0);
   }
 
   /**
@@ -2575,7 +2767,7 @@ export class WavePostProcessor {
       return _manifestAdjustments;
     }
 
-    const adjusted = _manifestAdjustments.map(adjustment => {
+    const adjusted = _manifestAdjustments.map((adjustment) => {
       // Convert to 1-based for mapping lookup
       const oldFirstWave1Based = adjustment.firstWave + 1;
       const oldLastWave1Based = adjustment.lastWave + 1;
@@ -2715,7 +2907,7 @@ export class WavePostProcessor {
     }
 
     // Apply movements
-    const newWaves = waves.map(w => ({ ...w, components: [...w.components] }));
+    const newWaves = waves.map((w) => ({ ...w, components: [...w.components] }));
 
     for (const { nodeId, targetWave } of pagesToMove) {
       // Remove from current wave
@@ -2746,4 +2938,3 @@ export class WavePostProcessor {
     return filteredWaves;
   }
 }
-

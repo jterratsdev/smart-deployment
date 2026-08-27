@@ -29,6 +29,36 @@ describe('Apex Class Parser', () => {
     });
   });
 
+  describe('Prompt Template References', () => {
+    it('extracts statically known prompt template invocations', () => {
+      const result = parseApexClass(
+        'Renewal.cls',
+        `public class Renewal {
+          public void run() {
+            String templateName = 'PT_Renewal';
+            Templates.generatePromptTemplate(templateName, new Map<String, Object>());
+            Templates.generatePromptTemplate('PT_Summary', new Map<String, Object>());
+          }
+        }`
+      );
+
+      expect(
+        result.dependencies
+          .filter((dependency) => dependency.type === 'prompt_template')
+          .map((dependency) => dependency.className)
+      ).to.deep.equal(['PT_Renewal', 'PT_Summary']);
+    });
+
+    it('does not infer dynamic prompt template names', () => {
+      const result = parseApexClass(
+        'Renewal.cls',
+        'public class Renewal { void run(String name) { Templates.generatePromptTemplate(name, data); } }'
+      );
+
+      expect(result.dependencies.filter((dependency) => dependency.type === 'prompt_template')).to.have.lengthOf(0);
+    });
+  });
+
   describe('Extends Relationships', () => {
     /**
      * @ac US-013-AC-1: Extract extends relationships

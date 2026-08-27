@@ -48,3 +48,20 @@ node_modules
 # os specific files
 .DS_Store
 .idea
+
+# >>> setup-agents (managed) >>>
+# Regenerable / heavy / per-user setup-agents artifacts — safe to delete and re-generate.
+# Authored state (state/, config.json, rules/, skills/, sf-skills/, playbooks/,
+# project-knowledge.md, insights/) is intentionally NOT ignored.
+.setup-agents/references/
+.setup-agents/sf-metadata-index.json
+.setup-agents/chat-history/
+.setup-agents/chat-debug.jsonl
+.setup-agents/tmp/
+
+# Proprietary setup-agents generated files (customer repository policy).
+/.opencode/agents/developer.md
+/.setup-agents/playbooks/**
+/.setup-agents/rules/**
+/.setup-agents/skills/**
+# <<< setup-agents (managed) <<<

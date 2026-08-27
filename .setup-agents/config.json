@@ -1,0 +1,18 @@
+{
+  "version": "3.18.9",
+  "mode": "project",
+  "profiles": ["developer"],
+  "tools": ["opencode"],
+  "orchestration": {
+    "enabled": true,
+    "engine": "native",
+    "mode": "project",
+    "profiles": ["developer"]
+  },
+  "artifactProtection": {
+    "enabled": true,
+    "policyVersion": 1,
+    "repositoryMode": "customer-repository",
+    "classificationSource": "default"
+  }
+}

@@ -1,20 +1,21 @@
 /**
  * Dependency Validator
  * Validates the dependency graph for correctness and consistency
- * 
+ *
  * @ac US-034-AC-1: Validate no dangling references
  * @ac US-034-AC-2: Validate all nodes have types
  * @ac US-034-AC-3: Validate no self-loops (except cycles)
  * @ac US-034-AC-4: Validate edge consistency
  * @ac US-034-AC-5: Generate validation report
  * @ac US-034-AC-6: Fail on critical issues
- * 
+ *
  * @issue #34
  */
 
 import { getLogger } from '../utils/logger.js';
 import type { NodeId, DependencyGraph, CircularDependency } from '../types/dependency.js';
 import type { MetadataComponent } from '../types/metadata.js';
+import { parseNodeId } from '../utils/node-id.js';
 
 const logger = getLogger('DependencyValidator');
 
@@ -73,15 +74,15 @@ export type ValidatorOptions = {
 
 /**
  * Dependency Validator
- * 
+ *
  * Validates dependency graph integrity:
  * - No dangling references (edges to non-existent nodes)
  * - All nodes have valid types
  * - No self-loops (unless in known cycles)
  * - Edge consistency (graph ↔ components)
- * 
+ *
  * Performance: O(V + E)
- * 
+ *
  * @example
  * const validator = new DependencyValidator(graph, components);
  * const result = validator.validate();
@@ -117,7 +118,7 @@ export class DependencyValidator {
 
   /**
    * Validate the dependency graph
-   * 
+   *
    * @ac US-034-AC-5: Generate validation report
    * @ac US-034-AC-6: Fail on critical issues
    */
@@ -196,7 +197,8 @@ export class DependencyValidator {
 
     for (const nodeId of this.graph.keys()) {
       // Check if node ID has valid format: "Type:Name"
-      if (!nodeId.includes(':')) {
+      const parts = parseNodeId(nodeId);
+      if (!parts) {
         issues.push({
           severity: 'critical',
           code: 'INVALID_NODE_FORMAT',
@@ -207,7 +209,7 @@ export class DependencyValidator {
         continue;
       }
 
-      const [type, name] = nodeId.split(':');
+      const { type, name } = parts;
 
       if (!type || type.trim().length === 0) {
         issues.push({
@@ -324,8 +326,12 @@ export class DependencyValidator {
   private calculateStats(issues: ValidationIssue[]): ValidationStats {
     const danglingReferences = issues.filter((i) => i.code === 'DANGLING_REFERENCE').length;
     const selfLoops = issues.filter((i) => i.code === 'SELF_LOOP' || i.code === 'KNOWN_SELF_LOOP').length;
-    const invalidNodes = issues.filter((i) => i.code === 'INVALID_NODE_FORMAT' || i.code === 'MISSING_TYPE' || i.code === 'MISSING_NAME').length;
-    const edgeInconsistencies = issues.filter((i) => i.code === 'GRAPH_COMPONENT_MISMATCH' || i.code === 'COMPONENT_GRAPH_MISMATCH').length;
+    const invalidNodes = issues.filter(
+      (i) => i.code === 'INVALID_NODE_FORMAT' || i.code === 'MISSING_TYPE' || i.code === 'MISSING_NAME'
+    ).length;
+    const edgeInconsistencies = issues.filter(
+      (i) => i.code === 'GRAPH_COMPONENT_MISMATCH' || i.code === 'COMPONENT_GRAPH_MISMATCH'
+    ).length;
 
     let totalEdges = 0;
     for (const deps of this.graph.values()) {
@@ -384,4 +390,3 @@ export class DependencyValidator {
     return result.isValid;
   }
 }
-

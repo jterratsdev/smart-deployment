@@ -17,7 +17,8 @@ export type ApexDependencyType =
   | 'inner_class'
   | 'dynamic_instantiation'
   | 'visualforce_page'
-  | 'custom_label';
+  | 'custom_label'
+  | 'prompt_template';
 
 /**
  * Represents a dependency found in an Apex class
@@ -270,7 +271,8 @@ function extractStaticMethodCalls(code: string): ApexDependency[] {
   const seen = new Set<string>();
 
   // Pattern 1: ClassName.methodName() - static method calls
-  const staticCallPattern = /(?:^|[^a-zA-Z0-9_])([A-Z][a-zA-Z0-9_]*(?:\.[A-Z][a-zA-Z0-9_]*)*)\s*\.\s*[a-zA-Z][a-zA-Z0-9_]*\s*\(/g;
+  const staticCallPattern =
+    /(?:^|[^a-zA-Z0-9_])([A-Z][a-zA-Z0-9_]*(?:\.[A-Z][a-zA-Z0-9_]*)*)\s*\.\s*[a-zA-Z][a-zA-Z0-9_]*\s*\(/g;
   const methodMatches = code.matchAll(staticCallPattern);
 
   for (const match of methodMatches) {
@@ -302,7 +304,8 @@ function extractStaticMethodCalls(code: string): ApexDependency[] {
   // Pattern 2: ClassName.propertyName (without parentheses) - static property references
   // This handles cases like SC_DataFactory.customerFirstName (property access)
   // Exclude if followed by ( to avoid duplicate detection with method calls
-  const staticPropertyPattern = /(?:^|[^a-zA-Z0-9_])([A-Z][a-zA-Z0-9_]*(?:\.[A-Z][a-zA-Z0-9_]*)*)\s*\.\s*[a-zA-Z][a-zA-Z0-9_]*(?!\s*\()/g;
+  const staticPropertyPattern =
+    /(?:^|[^a-zA-Z0-9_])([A-Z][a-zA-Z0-9_]*(?:\.[A-Z][a-zA-Z0-9_]*)*)\s*\.\s*[a-zA-Z][a-zA-Z0-9_]*(?!\s*\()/g;
   const propertyMatches = code.matchAll(staticPropertyPattern);
 
   for (const match of propertyMatches) {
@@ -386,7 +389,8 @@ function extractVariableDeclarations(code: string): ApexDependency[] {
   // Pattern: ClassName variableName = ... or ClassName<Generic> variableName = ...
   // More precise: looks for type declarations followed by variable names (camelCase)
   // Excludes: Map<String, Type> (handled separately), List<Type>, Set<Type>
-  const varPattern = /(?:^|[;\s{(])\s*([A-Z][a-zA-Z0-9_]*(?:\.[A-Z][a-zA-Z0-9_]*)*)\s*(?:<[^>]+>)?\s+[a-z][a-zA-Z0-9_]*\s*[=;]/gm;
+  const varPattern =
+    /(?:^|[;\s{(])\s*([A-Z][a-zA-Z0-9_]*(?:\.[A-Z][a-zA-Z0-9_]*)*)\s*(?:<[^>]+>)?\s+[a-z][a-zA-Z0-9_]*\s*[=;]/gm;
   const matches = code.matchAll(varPattern);
   const dependencies: ApexDependency[] = [];
   const seen = new Set<string>();
@@ -405,7 +409,7 @@ function extractVariableDeclarations(code: string): ApexDependency[] {
       // Try to extract the generic type from the full match
       const fullMatch = match[0];
       const genericMatch = fullMatch.match(/<(?:[^,<]+,\s*)?([A-Z][a-zA-Z0-9_]*)>/);
-      if (genericMatch && genericMatch[1]) {
+      if (genericMatch?.[1]) {
         className = genericMatch[1];
         // Skip if the generic type is standard
         if (isStandardClass(className) || seen.has(className)) {
@@ -573,7 +577,8 @@ function extractVisualforcePageReferences(code: string, currentClassName: string
 
   // Pattern 2: PageReference('/apex/PageName') or PageReference('/PageName')
   // Examples: new PageReference('/apex/MyPage'), new PageReference('/CommunitiesSelfRegConfirm')
-  const pageRefPattern = /(?:new\s+)?PageReference\s*\(\s*['"]\/apex\/([a-zA-Z][a-zA-Z0-9_]*)['"]|(?:new\s+)?PageReference\s*\(\s*['"]\/([a-zA-Z][a-zA-Z0-9_]*)['"]/gi;
+  const pageRefPattern =
+    /(?:new\s+)?PageReference\s*\(\s*['"]\/apex\/([a-zA-Z][a-zA-Z0-9_]*)['"]|(?:new\s+)?PageReference\s*\(\s*['"]\/([a-zA-Z][a-zA-Z0-9_]*)['"]/gi;
   const pageRefMatches = code.matchAll(pageRefPattern);
 
   for (const match of pageRefMatches) {
@@ -588,6 +593,36 @@ function extractVisualforcePageReferences(code: string, currentClassName: string
       type: 'visualforce_page',
       className: pageName,
       namespace: undefined,
+      isStandard: false,
+      isManagedPackage: false,
+    });
+  }
+
+  return dependencies;
+}
+
+/** Extract prompt template names only from the static Apex invocation form. */
+function extractPromptTemplateReferences(code: string): ApexDependency[] {
+  const dependencies: ApexDependency[] = [];
+  const seen = new Set<string>();
+  const staticStrings = new Map<string, string>();
+
+  // Resolve the common constant/variable form without attempting general data-flow analysis.
+  for (const match of code.matchAll(
+    /\b(?:static\s+final\s+)?String\s+([a-zA-Z][a-zA-Z0-9_]*)\s*=\s*(['"])([a-zA-Z][a-zA-Z0-9_]*)\2\s*;/g
+  )) {
+    staticStrings.set(match[1], match[3]);
+  }
+
+  const callPattern =
+    /\b(?:Templates|ConnectApi\.(?:EinsteinPromptTemplateGenerations|PromptTemplate))\s*\.\s*generatePromptTemplate\s*\(\s*((['"])([a-zA-Z][a-zA-Z0-9_]*)\2|([a-zA-Z][a-zA-Z0-9_]*))/g;
+  for (const match of code.matchAll(callPattern)) {
+    const name = match[3] ?? staticStrings.get(match[4]);
+    if (!name || seen.has(name)) continue;
+    seen.add(name);
+    dependencies.push({
+      type: 'prompt_template',
+      className: name,
       isStandard: false,
       isManagedPackage: false,
     });
@@ -676,6 +711,7 @@ export function parseApexClass(filePath: string, content: string): ApexParseResu
     dependencies.push(...extractDynamicInstantiations(cleanCode));
     dependencies.push(...extractVisualforcePageReferences(cleanCode, className));
     dependencies.push(...extractCustomLabelReferences(cleanCode));
+    dependencies.push(...extractPromptTemplateReferences(cleanCode));
 
     // Extract inner classes
     const innerClasses = extractInnerClasses(cleanCode, className);

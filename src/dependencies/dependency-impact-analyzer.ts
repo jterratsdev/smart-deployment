@@ -1,18 +1,19 @@
 /**
  * Dependency Impact Analyzer
  * Analyzes the impact of changes to components in the dependency graph
- * 
+ *
  * @ac US-032-AC-1: Given a component, find all dependents
  * @ac US-032-AC-2: Calculate impact radius
  * @ac US-032-AC-3: Identify critical components
  * @ac US-032-AC-4: Generate impact report
  * @ac US-032-AC-5: Suggest test scope based on impact
- * 
+ *
  * @issue #32
  */
 
 import { getLogger } from '../utils/logger.js';
 import type { NodeId, DependencyGraph } from '../types/dependency.js';
+import { createNodeId, parseNodeId } from '../utils/node-id.js';
 
 const logger = getLogger('DependencyImpactAnalyzer');
 
@@ -71,15 +72,15 @@ export type ImpactAnalysisOptions = {
 
 /**
  * Dependency Impact Analyzer
- * 
+ *
  * Analyzes the impact of changes to determine:
  * - Which components are affected
  * - Impact radius and severity
  * - Critical components
  * - Test scope recommendations
- * 
+ *
  * Performance: O(V + E) using BFS
- * 
+ *
  * @example
  * const analyzer = new DependencyImpactAnalyzer(graph, reverseGraph);
  * const result = analyzer.analyze(['ApexClass:AccountService']);
@@ -92,11 +93,7 @@ export class DependencyImpactAnalyzer {
   private reverseGraph: DependencyGraph;
   private options: Required<ImpactAnalysisOptions>;
 
-  public constructor(
-    graph: DependencyGraph,
-    reverseGraph: DependencyGraph,
-    options: ImpactAnalysisOptions = {}
-  ) {
+  public constructor(graph: DependencyGraph, reverseGraph: DependencyGraph, options: ImpactAnalysisOptions = {}) {
     this.graph = graph;
     this.reverseGraph = reverseGraph;
     this.options = {
@@ -113,7 +110,7 @@ export class DependencyImpactAnalyzer {
 
   /**
    * Analyze impact of changes to one or more components
-   * 
+   *
    * @ac US-032-AC-1: Given a component, find all dependents
    * @ac US-032-AC-2: Calculate impact radius
    * @ac US-032-AC-4: Generate impact report
@@ -210,7 +207,7 @@ export class DependencyImpactAnalyzer {
         if (!this.options.includeTests && this.isTestClass(dependent)) {
           continue;
         }
-        
+
         if (!visited.has(dependent)) {
           queue.push({ nodeId: dependent, depth: depth + 1 });
         }
@@ -259,7 +256,7 @@ export class DependencyImpactAnalyzer {
     // Risk factors:
     // - Direct dependents (40% weight)
     // - Total affected (60% weight)
-    
+
     const directScore = Math.min((directDependents / this.options.criticalThreshold) * 40, 40);
     const totalScore = Math.min((totalAffected / (this.options.criticalThreshold * 3)) * 60, 60);
 
@@ -279,7 +276,7 @@ export class DependencyImpactAnalyzer {
 
   /**
    * @ac US-032-AC-3: Identify critical components
-   * 
+   *
    * Find components with many dependents
    */
   private identifyCriticalComponents(): NodeId[] {
@@ -321,7 +318,7 @@ export class DependencyImpactAnalyzer {
 
   /**
    * @ac US-032-AC-5: Suggest test scope based on impact
-   * 
+   *
    * Generate test scope recommendations
    */
   private generateTestScope(affectedComponents: NodeId[], impacts: Map<NodeId, ComponentImpact>): TestScope {
@@ -364,7 +361,7 @@ export class DependencyImpactAnalyzer {
     // Determine priority
     let priority: 'low' | 'medium' | 'high' = 'low';
     const totalTests = requiredTests.length + recommendedTests.length;
-    
+
     if (requiredTests.length >= 1 && affectedComponents.length > 15) {
       priority = 'high';
     } else if (requiredTests.length > 10 || impacts.size > 5) {
@@ -394,17 +391,17 @@ export class DependencyImpactAnalyzer {
    */
   private findTestClass(nodeId: NodeId): NodeId | undefined {
     // Extract component name
-    const parts = nodeId.split(':');
-    if (parts.length !== 2) return undefined;
+    const parts = parseNodeId(nodeId);
+    if (!parts) return undefined;
 
-    const [type, name] = parts;
+    const { type, name } = parts;
 
     // Common test naming patterns
     const testPatterns = [
-      `${type}:${name}Test`,
-      `${type}:Test${name}`,
-      `${type}:${name}_Test`,
-      `${type}:${name}Tests`,
+      createNodeId(type, `${name}Test`),
+      createNodeId(type, `Test${name}`),
+      createNodeId(type, `${name}_Test`),
+      createNodeId(type, `${name}Tests`),
     ];
 
     for (const pattern of testPatterns) {
@@ -430,4 +427,3 @@ export class DependencyImpactAnalyzer {
     return this.identifyCriticalComponents();
   }
 }
-

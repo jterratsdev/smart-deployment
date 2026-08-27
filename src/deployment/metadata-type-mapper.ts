@@ -50,11 +50,14 @@ const BASE_METADATA_TYPE_MAP: Partial<Record<MetadataType, string>> = {
   Document: 'Document',
   EmailTemplate: 'EmailTemplate',
   EmailTemplateFolder: 'EmailTemplateFolder',
+  Report: 'Report',
+  ReportFolder: 'ReportFolder',
   LightningComponentBundle: 'LightningComponentBundle',
   AuraDefinitionBundle: 'AuraDefinitionBundle',
   FlexiPage: 'FlexiPage',
   Bot: 'Bot',
   GenAiPromptTemplate: 'GenAIPromptTemplate',
+  AiAuthoringBundle: 'AiAuthoringBundle',
   LightningApp: 'CustomApplication',
   DigitalExperience: 'DigitalExperienceBundle',
   DigitalExperienceConfig: 'DigitalExperienceConfig',
@@ -341,23 +344,23 @@ Return ONLY the JSON object, no other text.`;
     // Direct matches (case-insensitive)
     const directMatches: Record<string, string> = {
       // Common mappings
-      'ApexClass': 'ApexClass',
-      'ApexTrigger': 'ApexTrigger',
-      'CustomObject': 'CustomObject',
-      'CustomField': 'CustomField',
-      'Flow': 'Flow',
-      'Profile': 'Profile',
-      'PermissionSet': 'PermissionSet',
-      'Layout': 'Layout',
-      'FlexiPage': 'FlexiPage',
-      'LightningComponentBundle': 'LightningComponentBundle',
-      'AuraDefinitionBundle': 'AuraDefinitionBundle',
-      'EmailTemplate': 'EmailTemplate',
-      'StaticResource': 'StaticResource',
-      'CustomMetadata': 'CustomMetadata',
-      'CustomMetadataRecord': 'CustomMetadata',
-      'Bot': 'Bot',
-      'GenAiPromptTemplate': 'GenAIPromptTemplate',
+      ApexClass: 'ApexClass',
+      ApexTrigger: 'ApexTrigger',
+      CustomObject: 'CustomObject',
+      CustomField: 'CustomField',
+      Flow: 'Flow',
+      Profile: 'Profile',
+      PermissionSet: 'PermissionSet',
+      Layout: 'Layout',
+      FlexiPage: 'FlexiPage',
+      LightningComponentBundle: 'LightningComponentBundle',
+      AuraDefinitionBundle: 'AuraDefinitionBundle',
+      EmailTemplate: 'EmailTemplate',
+      StaticResource: 'StaticResource',
+      CustomMetadata: 'CustomMetadata',
+      CustomMetadataRecord: 'CustomMetadata',
+      Bot: 'Bot',
+      GenAiPromptTemplate: 'GenAIPromptTemplate',
     };
 
     if (directMatches[typeName]) {
@@ -425,4 +428,3 @@ Return ONLY the JSON object, no other text.`;
     return new Map(this.cache);
   }
 }
-

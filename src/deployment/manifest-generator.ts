@@ -6,15 +6,15 @@
  * @issue #85
  */
 
-import { getLogger } from '../utils/logger.js';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import { getLogger } from '../utils/logger.js';
 import type { Wave } from '../waves/wave-builder.js';
 import type { MetadataComponent, MetadataType } from '../types/metadata.js';
 import type { NodeId } from '../types/dependency.js';
 import type { Manifest } from '../types/deployment.js';
-import { MetadataTypeMapper } from './metadata-type-mapper.js';
 import type { AgentforceService } from '../ai/agentforce-service.js';
+import { MetadataTypeMapper } from './metadata-type-mapper.js';
 
 const logger = getLogger('ManifestGenerator');
 
@@ -35,6 +35,8 @@ const FILE_EXTENSION_TO_TYPE: Partial<Record<string, MetadataType>> = {
   '.flexipage-meta.xml': 'FlexiPage',
   '.bot-meta.xml': 'Bot',
   '.genaiPromptTemplate-meta.xml': 'GenAiPromptTemplate',
+  '.bundle-meta.xml': 'AiAuthoringBundle',
+  '.agent': 'AiAuthoringBundle',
   '.app-meta.xml': 'LightningApp',
   '.labels-meta.xml': 'CustomLabels',
   '.resource-meta.xml': 'StaticResource',
@@ -80,14 +82,14 @@ function inferTypeFromFile(filePath: string): MetadataType | null {
   return null;
 }
 
-export interface ManifestAdjustment {
+export type ManifestAdjustment = {
   componentId: NodeId;
   firstWave: number;
   lastWave: number;
   wavesNeeded?: number[]; // All waves where this component is needed
-}
+};
 
-export interface ManifestGenerationOptions {
+export type ManifestGenerationOptions = {
   /** API version for package.xml */
   apiVersion?: string;
   /** Output directory for manifests */
@@ -102,13 +104,13 @@ export interface ManifestGenerationOptions {
   agentforceService?: AgentforceService;
   /** Manifest adjustments: components to add to first wave and remove from last wave */
   manifestAdjustments?: ManifestAdjustment[];
-}
+};
 
-export interface ManifestGenerationResult {
+export type ManifestGenerationResult = {
   manifests: Manifest[];
   errors: string[];
   warnings: string[];
-}
+};
 
 /**
  * Generate package.xml manifests for waves
@@ -122,10 +124,7 @@ export class ManifestGenerator {
   /**
    * Generate manifests for all waves
    */
-  public async generateManifests(
-    waves: Wave[],
-    options: ManifestGenerationOptions
-  ): Promise<ManifestGenerationResult> {
+  public async generateManifests(waves: Wave[], options: ManifestGenerationOptions): Promise<ManifestGenerationResult> {
     logger.info('Generating manifests', { waves: waves.length, outputDir: options.outputDir });
 
     // Update type mapper with provided agentforce service if available
@@ -146,7 +145,9 @@ export class ManifestGenerator {
     try {
       await fs.mkdir(outputDir, { recursive: true });
     } catch (error) {
-      result.errors.push(`Failed to create output directory: ${error instanceof Error ? error.message : String(error)}`);
+      result.errors.push(
+        `Failed to create output directory: ${error instanceof Error ? error.message : String(error)}`
+      );
       return result;
     }
 
@@ -158,7 +159,9 @@ export class ManifestGenerator {
           result.manifests.push(manifest);
         }
       } catch (error) {
-        const errorMsg = `Failed to generate manifest for wave ${wave.number}: ${error instanceof Error ? error.message : String(error)}`;
+        const errorMsg = `Failed to generate manifest for wave ${wave.number}: ${
+          error instanceof Error ? error.message : String(error)
+        }`;
         logger.error(errorMsg, { error, wave: wave.number });
         result.errors.push(errorMsg);
       }
@@ -228,18 +231,30 @@ export class ManifestGenerator {
       }
 
       // Always validate file exists (required for deployment)
-      // Exception: EmailTemplateFolder may have virtual paths for folders without metadata files (e.g., unfiled$public)
-      const isVirtualEmailFolder = component.type === 'EmailTemplateFolder' &&
+      // Exception: EmailTemplateFolder and ReportFolder may have virtual paths for folders without metadata files
+      const isVirtualEmailFolder =
+        component.type === 'EmailTemplateFolder' &&
         component.filePath.includes('.emailFolder-meta.xml') &&
         !component.filePath.includes('/email/') &&
         !(await this.validateFileExists(component.filePath, options.projectRoot));
 
-      if (!isVirtualEmailFolder) {
+      const isVirtualReportFolder =
+        component.type === 'ReportFolder' &&
+        component.filePath.includes('.reportFolder-meta.xml') &&
+        !(await this.validateFileExists(component.filePath, options.projectRoot));
+
+      if (!isVirtualEmailFolder && !isVirtualReportFolder) {
         const fileExists = await this.validateFileExists(component.filePath, options.projectRoot);
         if (!fileExists) {
-          logger.warn('Component file not found, skipping from manifest', { nodeId, filePath: component.filePath, componentName: component.name });
+          logger.warn('Component file not found, skipping from manifest', {
+            nodeId,
+            filePath: component.filePath,
+            componentName: component.name,
+          });
           if (resultRef) {
-            resultRef.warnings.push(`Component "${component.name}" (${component.type}) file not found: ${component.filePath}`);
+            resultRef.warnings.push(
+              `Component "${component.name}" (${component.type}) file not found: ${component.filePath}`
+            );
           }
           continue;
         }
@@ -350,7 +365,10 @@ export class ManifestGenerator {
   /**
    * Generate package.xml XML content
    */
-  private async generatePackageXml(componentsByType: Map<MetadataType, Set<string>>, apiVersion: string): Promise<string> {
+  private async generatePackageXml(
+    componentsByType: Map<MetadataType, Set<string>>,
+    apiVersion: string
+  ): Promise<string> {
     const lines: string[] = [
       '<?xml version="1.0" encoding="UTF-8"?>',
       '<Package xmlns="http://soap.sforce.com/2006/04/metadata">',
@@ -361,10 +379,16 @@ export class ManifestGenerator {
 
     // Map all types to Salesforce types (using type mapper)
     // Use iterator directly to avoid creating intermediate array
-    const typeMappingPromises: Array<Promise<{ metadataType: MetadataType; salesforceType: string | null; componentNames: Set<string> }>> = [];
+    const typeMappingPromises: Array<
+      Promise<{ metadataType: MetadataType; salesforceType: string | null; componentNames: Set<string> }>
+    > = [];
     for (const [metadataType, componentNames] of componentsByType.entries()) {
       typeMappingPromises.push(
-        (async () => {
+        (async (): Promise<{
+          metadataType: MetadataType;
+          salesforceType: string | null;
+          componentNames: Set<string>;
+        }> => {
           const salesforceType = await this.typeMapper.mapToSalesforceType(metadataType);
           return { metadataType, salesforceType, componentNames };
         })()
@@ -384,7 +408,11 @@ export class ManifestGenerator {
         // Components ending in __mdt should have been filtered out earlier if they were CustomMetadata
         // This is a safety check in case something slipped through
         if (name.endsWith('__mdt') && salesforceType === 'CustomMetadata') {
-          logger.warn('Skipping __mdt component from CustomMetadata section (should be CustomObject)', { name, metadataType, salesforceType });
+          logger.warn('Skipping __mdt component from CustomMetadata section (should be CustomObject)', {
+            name,
+            metadataType,
+            salesforceType,
+          });
           continue;
         }
 
@@ -404,7 +432,7 @@ export class ManifestGenerator {
         lines.push(`    <members>${this.escapeXml(name)}</members>`);
         addedComponents.add(name);
       }
-      lines.push(`    <name>CustomObject</name>`);
+      lines.push('    <name>CustomObject</name>');
       lines.push('  </types>');
     }
 
@@ -413,7 +441,7 @@ export class ManifestGenerator {
       if (salesforceType === 'CustomObject') continue; // Already processed
 
       // Filter out duplicates: if a component ending in __mdt is already in CustomObject, skip it
-      const filteredNames = Array.from(componentNames).filter(name => {
+      const filteredNames = Array.from(componentNames).filter((name) => {
         if (name.endsWith('__mdt') && salesforceType === 'CustomMetadata') {
           // Check if this component is already in CustomObject section
           if (customObjectSet && customObjectSet.has(name)) {
@@ -514,8 +542,8 @@ export class ManifestGenerator {
       const manifestsToUpdate: Array<{ manifest: Manifest; waveNum: number }> = [];
 
       for (const waveIdx of wavesToAdd) {
-        const manifest = result.manifests.find(m => {
-          const waveNum = parseInt(m.fileName.match(/wave-(\d+)-package\.xml/)?.[1] || '0');
+        const manifest = result.manifests.find((m) => {
+          const waveNum = parseInt(m.fileName.match(/wave-(\d+)-package\.xml/)?.[1] || '0', 10);
           return waveNum === waveIdx + 1; // Wave numbers are 1-based in filenames
         });
 
@@ -530,15 +558,15 @@ export class ManifestGenerator {
       }
 
       // Find manifest for last wave (to remove from there)
-      const lastWaveManifest = result.manifests.find(m => {
-        const waveNum = parseInt(m.fileName.match(/wave-(\d+)-package\.xml/)?.[1] || '0');
+      const lastWaveManifest = result.manifests.find((m) => {
+        const waveNum = parseInt(m.fileName.match(/wave-(\d+)-package\.xml/)?.[1] || '0', 10);
         return waveNum === adjustment.lastWave + 1;
       });
 
       if (manifestsToUpdate.length === 0) {
         logger.warn('No wave manifests found for adjustment', {
           componentId: adjustment.componentId,
-          wavesNeeded: wavesToAdd.map(w => w + 1),
+          wavesNeeded: wavesToAdd.map((w) => w + 1),
         });
         continue;
       }
@@ -562,11 +590,7 @@ export class ManifestGenerator {
 
       // Add to all waves where it's needed
       for (const { manifest, waveNum: _unused } of manifestsToUpdate) {
-        const updatedXml = await this.addComponentToManifestXml(
-          manifest.content,
-          salesforceType,
-          componentName
-        );
+        const updatedXml = await this.addComponentToManifestXml(manifest.content, salesforceType, componentName);
 
         // Update manifest object
         manifest.content = updatedXml;
@@ -579,11 +603,7 @@ export class ManifestGenerator {
         }
 
         // Rewrite manifest file
-        await fs.writeFile(
-          path.join(outputDir, manifest.fileName),
-          updatedXml,
-          'utf-8'
-        );
+        await fs.writeFile(path.join(outputDir, manifest.fileName), updatedXml, 'utf-8');
       }
 
       // Remove from last wave XML (if it exists and is different from waves where it's needed)
@@ -603,16 +623,12 @@ export class ManifestGenerator {
         }
 
         // Rewrite last wave manifest file
-        await fs.writeFile(
-          path.join(outputDir, lastWaveManifest.fileName),
-          lastWaveXml,
-          'utf-8'
-        );
+        await fs.writeFile(path.join(outputDir, lastWaveManifest.fileName), lastWaveXml, 'utf-8');
       }
 
       logger.debug('Applied manifest adjustment', {
         component: componentName,
-        wavesAdded: manifestsToUpdate.map(m => m.waveNum),
+        wavesAdded: manifestsToUpdate.map((m) => m.waveNum),
         lastWave: adjustment.lastWave + 1,
       });
     }
@@ -631,7 +647,10 @@ export class ManifestGenerator {
     // If component name ends with __mdt, it must be in CustomObject section, not CustomMetadata
     // This handles cases where the component might have been incorrectly typed as CustomMetadata
     if (componentName.endsWith('__mdt') && salesforceType === 'CustomMetadata') {
-      logger.warn('Redirecting __mdt component from CustomMetadata to CustomObject section', { componentName, salesforceType });
+      logger.warn('Redirecting __mdt component from CustomMetadata to CustomObject section', {
+        componentName,
+        salesforceType,
+      });
       salesforceType = 'CustomObject';
     }
 
@@ -642,11 +661,11 @@ export class ManifestGenerator {
       `(<types>\\s*(?:<members>[^<]+</members>\\s*)*)(</types>\\s*<name>${this.escapeRegex(salesforceType)}</name>)`,
       's'
     );
-    const match = typesBlockRegex.exec(xmlContent);
-    if (match) {
+    const existingTypesMatch = typesBlockRegex.exec(xmlContent);
+    if (existingTypesMatch) {
       // Check if component already exists in this specific types block
       const memberRegex = new RegExp(`<members>${this.escapeRegex(escapedName)}</members>`);
-      if (memberRegex.test(match[1])) {
+      if (memberRegex.test(existingTypesMatch[1])) {
         return xmlContent; // Already present in correct section
       }
     } else {
@@ -662,9 +681,7 @@ export class ManifestGenerator {
       // Component type already exists, add member before </types>
       return xmlContent.replace(
         typesBlockRegex,
-        (match, beforeTypes, afterTypes) => {
-          return `${beforeTypes}    <members>${escapedName}</members>\n${afterTypes}`;
-        }
+        (_match, beforeTypes, afterTypes) => `${beforeTypes}    <members>${escapedName}</members>\n${afterTypes}`
       );
     } else {
       // Component type doesn't exist, add new types block before </Package>
@@ -690,24 +707,21 @@ export class ManifestGenerator {
     );
 
     if (typesBlockRegex.test(xmlContent)) {
-      return xmlContent.replace(
-        typesBlockRegex,
-        (match, beforeTypes, afterTypes) => {
-          // Remove the specific member line
-          const memberLineRegex = new RegExp(`\\s*<members>${this.escapeRegex(escapedName)}</members>\\n?`, 'g');
-          const cleanedBeforeTypes = beforeTypes.replace(memberLineRegex, '');
+      return xmlContent.replace(typesBlockRegex, (match, beforeTypes, afterTypes) => {
+        // Remove the specific member line
+        const memberLineRegex = new RegExp(`\\s*<members>${this.escapeRegex(escapedName)}</members>\\n?`, 'g');
+        const cleanedBeforeTypes = beforeTypes.replace(memberLineRegex, '');
 
-          // Check if there are any members left
-          const hasMembers = /<members>/.test(cleanedBeforeTypes);
+        // Check if there are any members left
+        const hasMembers = /<members>/.test(cleanedBeforeTypes);
 
-          if (!hasMembers) {
-            // No members left, remove entire types block
-            return '';
-          }
-
-          return `${cleanedBeforeTypes}${afterTypes}`;
+        if (!hasMembers) {
+          // No members left, remove entire types block
+          return '';
         }
-      );
+
+        return `${cleanedBeforeTypes}${afterTypes}`;
+      });
     }
 
     return xmlContent; // Type not found, return as-is
@@ -720,4 +734,3 @@ export class ManifestGenerator {
     return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 }
-

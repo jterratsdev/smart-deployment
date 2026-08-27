@@ -1,5 +1,6 @@
 /**
  * smart-deployment:resume command - US-049
+ *
  * @ac US-049-AC-1: Detects previous failed deployment
  * @ac US-049-AC-2: Loads deployment state
  * @ac US-049-AC-3: Resumes from failed wave
@@ -9,8 +10,9 @@
  * @issue #49
  */
 
-import { Flags } from '@oclif/core';
-import { SfCommand } from '@salesforce/sf-plugins-core';
+import * as path from 'node:path';
+
+import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { Org } from '@salesforce/core';
 import { getLogger } from '../../utils/logger.js';
 import { StateManager } from '../../deployment/state-manager.js';
@@ -24,8 +26,8 @@ import { ManifestValidator } from '../../deployment/manifest-validator.js';
 import { AgentforceService } from '../../ai/agentforce-service.js';
 import { initializeI18n } from '../../i18n/i18n-service.js';
 import type { SupportedLocale } from '../../i18n/locale-detector.js';
-import * as path from 'node:path';
 import type { MetadataComponent } from '../../types/metadata.js';
+import { createNodeId } from '../../utils/node-id.js';
 
 const logger = getLogger('ResumeCommand');
 
@@ -73,7 +75,7 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
     this.log(`   Failed at: ${state.failedWave.timestamp}`);
 
     // Re-scan metadata to regenerate waves
-    const sourcePath = flags['source-path'] as string | undefined;
+    const sourcePath = flags['source-path'];
     const scanner = new MetadataScannerService();
     const scanResult = await scanner.scan({ sourcePath });
 
@@ -83,7 +85,7 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
     // Build component map (NodeId -> MetadataComponent)
     const componentMap = new Map<string, MetadataComponent>();
     for (const component of scanResult.components) {
-      const nodeId = `${component.type}:${component.name}`;
+      const nodeId = createNodeId(component.type, component.name);
       componentMap.set(nodeId, component);
     }
 
@@ -121,7 +123,7 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
       return { success: true, resumedFromWave: failedWaveNumber };
     }
 
-    const targetOrg = flags['target-org'] as string;
+    const targetOrg = flags['target-org'];
     const deploymentId = state.deploymentId || `deployment-${Date.now()}`;
 
     // Generate manifests for ALL waves (including completed ones)
@@ -135,7 +137,7 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
       let accessToken: string | undefined;
       try {
         const org = await Org.create({ aliasOrUsername: targetOrg });
-        const connection = await org.getConnection();
+        const connection = org.getConnection();
         const authFields = connection.getAuthInfoFields();
         accessToken = authFields.accessToken;
       } catch (error) {
@@ -211,7 +213,9 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
 
       try {
         // Find manifest for this wave
-        const manifest = manifestResult.manifests.find((m) => m.fileName.includes(`wave-${String(wave.number).padStart(3, '0')}`));
+        const manifest = manifestResult.manifests.find((m) =>
+          m.fileName.includes(`wave-${String(wave.number).padStart(3, '0')}`)
+        );
         if (!manifest) {
           throw new Error(`Manifest not found for wave ${wave.number}`);
         }
@@ -274,7 +278,7 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
 
         this.error(`\n❌ Deployment failed at wave ${wave.number}`);
         this.log(`   Error: ${errorMessage}`);
-        this.log(`   Use 'sf smart-deployment resume' to retry from this wave`);
+        this.log("   Use 'sf smart-deployment resume' to retry from this wave");
         return { success: false, resumedFromWave: failedWaveNumber };
       }
     }
@@ -290,7 +294,7 @@ export default class Resume extends SfCommand<{ success: boolean; resumedFromWav
       currentWave: orderedWaves.length,
     });
 
-    this.log(`\n✅ Deployment resumed and completed successfully!`);
+    this.log('\n✅ Deployment resumed and completed successfully!');
     this.log(`   Completed ${wavesToResume.length} waves (from wave ${failedWaveNumber})`);
 
     return { success: true, resumedFromWave: failedWaveNumber };

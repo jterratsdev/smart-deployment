@@ -1,5 +1,6 @@
 /**
  * smart-deployment:analyze command - US-047
+ *
  * @ac US-047-AC-1: Scans project metadata
  * @ac US-047-AC-2: Generates dependency graph
  * @ac US-047-AC-3: Generates deployment waves
@@ -12,11 +13,11 @@
  * @issue #47
  */
 
-import { Flags } from '@oclif/core';
-import { SfCommand } from '@salesforce/sf-plugins-core';
-import { Org } from '@salesforce/core';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+
+import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
+import { Org } from '@salesforce/core';
 import { getLogger } from '../../utils/logger.js';
 import { DeploymentPlanManager } from '../../utils/deployment-plan-manager.js';
 import { MetadataScannerService } from '../../services/metadata-scanner-service.js';
@@ -34,6 +35,9 @@ import type { Wave } from '../../waves/wave-builder.js';
 import type { InferredDependency } from '../../types/dependency.js';
 import { ManifestGenerator } from '../../deployment/manifest-generator.js';
 import { AgentforceService } from '../../ai/agentforce-service.js';
+import { validateManifestCompleteness } from '../../utils/manifest-completeness-validator.js';
+import { validateAgentforceTargets } from '../../validation/agentforce-target-validator.js';
+import { createNodeId } from '../../utils/node-id.js';
 
 const logger = getLogger('AnalyzeCommand');
 
@@ -77,7 +81,6 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
     }),
     output: Flags.string({
       summary: 'Output file path',
-      char: 'o',
       required: false,
       // OCLIF will automatically validate that if --output is provided, it must have a value
     }),
@@ -89,7 +92,8 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
     }),
     'create-manifest': Flags.boolean({
       summary: 'Generate package.xml manifests for deployment waves',
-      description: 'Creates manifest files (.smart-deployment/manifests/wave-*-package.xml) that will be used during deployment',
+      description:
+        'Creates manifest files (.smart-deployment/manifests/wave-*-package.xml) that will be used during deployment',
       default: false,
     }),
   };
@@ -118,10 +122,12 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
         sourcePath: flags['source-path'],
       });
 
-      let components = scanResult.components.length;
+      const components = scanResult.components.length;
       let dependencies = scanResult.dependencyResult.stats.totalDependencies;
       let dependencyGraph = scanResult.dependencyResult.graph;
-      let inferenceResult: { dependencies: InferredDependency[]; highConfidenceCount: number; fallbackToStatic?: boolean } | undefined;
+      let inferenceResult:
+        | { dependencies: InferredDependency[]; highConfidenceCount: number; fallbackToStatic?: boolean }
+        | undefined;
 
       // AI Dependency Inference (US-055)
       if (flags['use-ai']) {
@@ -132,13 +138,13 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
         let accessToken: string | undefined;
         if (flags['target-org']) {
           try {
-            const org = await Org.create({ aliasOrUsername: flags['target-org'] as string });
-            const connection = await org.getConnection();
+            const org = await Org.create({ aliasOrUsername: flags['target-org'] });
+            const connection = org.getConnection();
             const authFields = connection.getAuthInfoFields();
             accessToken = authFields.accessToken;
             logger.info('Using access token from authenticated org', {
               hasToken: !!accessToken,
-              tokenPrefix: accessToken ? accessToken.substring(0, 10) + '...' : 'none'
+              tokenPrefix: accessToken ? accessToken.substring(0, 10) + '...' : 'none',
             });
           } catch (error) {
             logger.warn('Could not get access token from org, will use API key or mock', { error });
@@ -151,19 +157,14 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
           inferenceService.agentforceService.setApiKeyFromOrg(accessToken);
         }
 
-        inferenceResult = await inferenceService.inferDependencies(
-          scanResult.components,
-          dependencyGraph
-        );
+        inferenceResult = await inferenceService.inferDependencies(scanResult.components, dependencyGraph);
 
         if (inferenceResult.dependencies.length > 0) {
           this.log(`   ✅ Inferred ${inferenceResult.dependencies.length} additional dependencies`);
           this.log(`   📊 High confidence: ${inferenceResult.highConfidenceCount}`);
 
           // Convert components to Map for DependencyMerger
-          const componentsMap = new Map(
-            scanResult.components.map((c) => [`${c.type}:${c.name}`, c])
-          );
+          const componentsMap = new Map(scanResult.components.map((c) => [createNodeId(c.type, c.name), c]));
 
           // Merge inferred dependencies with static graph
           const merger = new DependencyMerger();
@@ -187,7 +188,7 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
       this.log('');
       this.log('🌊 Generating deployment waves...');
       const waveBuilder = new WaveBuilder({
-        maxComponentsPerWave: 10000,
+        maxComponentsPerWave: 10_000,
         respectTypeOrder: true,
         handleCircularDeps: true,
       });
@@ -197,7 +198,7 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
       // Build component map for post-processing
       const componentMapForPostProcessing = new Map<string, MetadataComponent>();
       for (const component of scanResult.components) {
-        const nodeId = `${component.type}:${component.name}`;
+        const nodeId = createNodeId(component.type, component.name);
         componentMapForPostProcessing.set(nodeId, component);
       }
 
@@ -234,8 +235,8 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
         let accessToken: string | undefined;
         if (flags['target-org']) {
           try {
-            const org = await Org.create({ aliasOrUsername: flags['target-org'] as string });
-            const connection = await org.getConnection();
+            const org = await Org.create({ aliasOrUsername: flags['target-org'] });
+            const connection = org.getConnection();
             const authFields = connection.getAuthInfoFields();
             accessToken = authFields.accessToken;
             logger.debug('Using access token from authenticated org for priority service');
@@ -257,15 +258,10 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
         });
 
         // Convert components to Map for AI generator
-        const componentsMap = new Map(
-          scanResult.components.map((c) => [`${c.type}:${c.name}`, c])
-        );
+        const componentsMap = new Map(scanResult.components.map((c) => [createNodeId(c.type, c.name), c]));
 
         // Apply AI priorities
-        const prioritizedWaves = await aiGenerator.applyPriorityWavesAsync(
-          waveResult.waves,
-          componentsMap
-        );
+        const prioritizedWaves = await aiGenerator.applyPriorityWavesAsync(waveResult.waves, componentsMap);
 
         waveResult = {
           ...waveResult,
@@ -300,8 +296,8 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
             let accessToken: string | undefined;
             if (flags['target-org']) {
               try {
-                const org = await Org.create({ aliasOrUsername: flags['target-org'] as string });
-                const connection = await org.getConnection();
+                const org = await Org.create({ aliasOrUsername: flags['target-org'] });
+                const connection = org.getConnection();
                 const authFields = connection.getAuthInfoFields();
                 accessToken = authFields.accessToken;
                 logger.debug('Using access token from authenticated org for manifest generation');
@@ -332,7 +328,7 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
         // Build component map for manifest generation
         const componentMap = new Map<string, MetadataComponent>();
         for (const component of scanResult.components) {
-          const nodeId = `${component.type}:${component.name}`;
+          const nodeId = createNodeId(component.type, component.name);
           componentMap.set(nodeId, component);
         }
 
@@ -358,6 +354,53 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
 
         if (manifestResult.manifests.length > 0) {
           this.log(`✅ Generated ${manifestResult.manifests.length} manifest(s) in ${manifestDir}`);
+
+          const agentforceValidation = validateAgentforceTargets(
+            waveResult.waves,
+            manifestResult.manifests,
+            componentMap
+          );
+          for (const issue of agentforceValidation.issues) {
+            this.warn(`⚠️  Agentforce target ${issue.consumer} -> ${issue.target}: ${issue.message}`);
+          }
+          if (agentforceValidation.valid) {
+            this.log('✅ Agentforce targets are ordered and included in manifests');
+          }
+
+          // Validate that all scanned components are included in manifests
+          this.log('');
+          this.log('🔍 Validating manifest completeness...');
+          const validationResult = await validateManifestCompleteness(
+            scanResult.components,
+            manifestResult.manifests,
+            componentMap
+          );
+
+          if (validationResult.missingComponents.length > 0) {
+            this.warn(
+              `⚠️  ${validationResult.missingComponents.length} component(s) from project are NOT in any manifest:`
+            );
+            const missingByType = new Map<string, number>();
+            for (const comp of validationResult.missingComponents) {
+              const count = missingByType.get(comp.type) || 0;
+              missingByType.set(comp.type, count + 1);
+            }
+            for (const [type, count] of Array.from(missingByType.entries()).sort()) {
+              this.warn(`   ${type}: ${count} component(s)`);
+            }
+            this.warn('');
+            this.warn('   💡 These components may have circular dependencies or were filtered out.');
+            this.warn('   💡 Check wave generation output for "couldn\'t be placed" messages.');
+          } else {
+            this.log(`✅ All ${scanResult.components.length} scanned component(s) are included in manifests`);
+          }
+
+          if (validationResult.totalInManifests !== scanResult.components.length) {
+            const diff = validationResult.totalInManifests - scanResult.components.length;
+            if (diff > 0) {
+              this.warn(`⚠️  Warning: ${diff} more component(s) in manifests than scanned (possible duplicates)`);
+            }
+          }
         } else {
           this.warn('⚠️  No manifests were generated');
         }
@@ -385,7 +428,7 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
         const priorities: Record<string, PriorityOverride> = {};
         for (const component of scanResult.components) {
           if (component.priorityBoost > 0) {
-            const nodeId = `${component.type}:${component.name}`;
+            const nodeId = createNodeId(component.type, component.name);
             priorities[nodeId] = {
               priority: component.priorityBoost,
               source: 'manual',
@@ -402,7 +445,7 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
 
         await DeploymentPlanManager.savePlan(plan, flags['plan-path']);
 
-        const planPath = flags['plan-path'] || '.smart-deployment/deployment-plan.json';
+        const planPath = (flags['plan-path'] as string | undefined) || '.smart-deployment/deployment-plan.json';
         this.log(`✅ Deployment plan saved to: ${planPath}`);
         this.log('');
         this.log('💡 Next steps:');
@@ -436,7 +479,7 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
             aiPriorityUsed: flags['use-ai'] && (aiStats?.aiAdjustments ?? 0) > 0,
           },
         });
-        this.log(`📄 Report saved to: ${flags.output} (format: ${reportFormat})`);
+        this.log(`📄 Report saved to: ${flags.output as string} (format: ${reportFormat})`);
       }
 
       return { components, dependencies };
@@ -473,40 +516,51 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
     let content: string;
 
     if (format === 'json') {
-      content = JSON.stringify({
-        timestamp: new Date().toISOString(),
-        statistics: stats,
-        components: components.map((c: MetadataComponent) => ({
-          name: c.name,
-          type: c.type,
-          filePath: c.filePath,
-          dependencies: Array.from(c.dependencies),
-          dependents: Array.from(c.dependents),
-        })),
-        waves: waveResult.waves.map((wave: Wave) => ({
-          number: wave.number,
-          componentCount: wave.components.length,
-          components: wave.components,
-          metadata: wave.metadata,
-        })),
-        circularDependencies: circularDependencies.map((cycle) => ({
-          components: cycle.cycle,
-        })),
-        unplacedComponents: waveResult.unplacedComponents,
-      }, null, 2);
+      content = JSON.stringify(
+        {
+          timestamp: new Date().toISOString(),
+          statistics: stats,
+          components: components.map((c: MetadataComponent) => ({
+            name: c.name,
+            type: c.type,
+            filePath: c.filePath,
+            dependencies: Array.from(c.dependencies),
+            dependents: Array.from(c.dependents),
+          })),
+          waves: waveResult.waves.map((wave: Wave) => ({
+            number: wave.number,
+            componentCount: wave.components.length,
+            components: wave.components,
+            metadata: wave.metadata,
+          })),
+          circularDependencies: circularDependencies.map((cycle) => ({
+            components: cycle.cycle,
+          })),
+          unplacedComponents: waveResult.unplacedComponents,
+        },
+        null,
+        2
+      );
     } else {
       // HTML format
-      const wavesHtml = waveResult.waves.map((wave: Wave) => `
+      const wavesHtml = waveResult.waves
+        .map(
+          (wave: Wave) => `
         <div class="wave">
           <h3>Wave ${wave.number}</h3>
           <p><strong>Components:</strong> ${wave.components.length}</p>
           <p><strong>Types:</strong> ${Array.from(wave.metadata.types).join(', ')}</p>
           <ul>
-            ${wave.components.slice(0, 10).map((c: string) => `<li>${c}</li>`).join('')}
+            ${wave.components
+              .slice(0, 10)
+              .map((c: string) => `<li>${c}</li>`)
+              .join('')}
             ${wave.components.length > 10 ? `<li><em>... and ${wave.components.length - 10} more</em></li>` : ''}
           </ul>
         </div>
-      `).join('');
+      `
+        )
+        .join('');
 
       content = `<!DOCTYPE html>
 <html lang="en">
@@ -553,20 +607,28 @@ export default class Analyze extends SfCommand<{ components: number; dependencie
       </div>
     </div>
 
-    ${stats.circularDependencies > 0 ? `
+    ${
+      stats.circularDependencies > 0
+        ? `
     <div class="warning">
       <strong>⚠️ Warning:</strong> ${stats.circularDependencies} circular dependency cycle(s) detected.
       These may cause deployment issues.
     </div>
-    ` : ''}
+    `
+        : ''
+    }
 
-    ${stats.aiInferenceUsed || stats.aiPriorityUsed ? `
+    ${
+      stats.aiInferenceUsed || stats.aiPriorityUsed
+        ? `
     <div class="stat-card">
       <strong>🤖 AI Enhanced</strong>
       <p>Dependency Inference: ${stats.aiInferenceUsed ? '✅' : '❌'}</p>
       <p>Priority Weighting: ${stats.aiPriorityUsed ? '✅' : '❌'}</p>
     </div>
-    ` : ''}
+    `
+        : ''
+    }
 
     <h2>Deployment Waves</h2>
     ${wavesHtml}

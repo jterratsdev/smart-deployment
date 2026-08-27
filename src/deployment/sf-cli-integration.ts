@@ -33,16 +33,19 @@ async function execWithOutput(command: string): Promise<{ stdout: string; stderr
 
 export type TestLevel = 'NoTestRun' | 'RunSpecifiedTests' | 'RunLocalTests' | 'RunAllTestsInOrg';
 
-export interface DeploymentOptions {
+export type DeploymentOptions = {
   manifestPath: string;
   targetOrg: string;
   testLevel?: TestLevel; // undefined = use SF CLI default behavior
   tests?: string[];
   testClasses?: string[]; // Alias for tests (for clarity)
   checkOnly?: boolean;
-}
+  sourceDir?: string; // Optional source directory (for simplified deployments)
+  ignoreConflicts?: boolean; // Pass --ignore-conflicts to SF CLI
+  ignoreWarnings?: boolean; // Pass --ignore-warnings to SF CLI
+};
 
-export interface DeploymentResult {
+export type DeploymentResult = {
   success: boolean;
   deploymentId?: string;
   status: string;
@@ -51,7 +54,7 @@ export interface DeploymentResult {
   testsRun?: number;
   testFailures?: number;
   output: string;
-}
+};
 
 /**
  * @ac US-085-AC-1: Execute sf project deploy start
@@ -91,6 +94,11 @@ export class SfCliIntegration {
       '--wait 60',
     ];
 
+    // If sourceDir is provided, use it as the source directory
+    if (options.sourceDir) {
+      parts.push(`--source-dir ${options.sourceDir}`);
+    }
+
     // Only specify test-level if explicitly provided
     // If undefined, SF CLI uses its default behavior (requires tests in prod)
     if (options.testLevel) {
@@ -104,6 +112,14 @@ export class SfCliIntegration {
 
     if (options.checkOnly) {
       parts.push('--dry-run');
+    }
+
+    if (options.ignoreConflicts) {
+      parts.push('--ignore-conflicts');
+    }
+
+    if (options.ignoreWarnings) {
+      parts.push('--ignore-warnings');
     }
 
     return parts.join(' ');
@@ -136,13 +152,22 @@ export class SfCliIntegration {
         let detailedOutput = output;
         if (parsed.result?.details?.componentFailures && parsed.result.details.componentFailures.length > 0) {
           const failures = parsed.result.details.componentFailures
-            .map(f => `${f.componentType}:${f.fullName} - ${f.problem}`)
+            .map((f) => `${f.componentType}:${f.fullName} - ${f.problem}`)
             .join('\n');
           detailedOutput = `${output}\n\nComponent Failures:\n${failures}`;
         }
 
+        // A deployment is only successful if:
+        // 1. Status is Succeeded/Success
+        // 2. No component errors
+        // 3. No test errors (if tests were run)
+        const hasComponentErrors = (parsed.result?.numberComponentErrors ?? 0) > 0;
+        const hasTestErrors = parsed.result?.numberTestErrors && parsed.result.numberTestErrors > 0;
+        const statusOk = parsed.result?.status === 'Succeeded' || parsed.result?.status === 'Success';
+        const isSuccess = !failed && statusOk && !hasComponentErrors && !hasTestErrors;
+
         return {
-          success: !failed && (parsed.result?.status === 'Succeeded' || parsed.result?.status === 'Success'),
+          success: isSuccess,
           deploymentId: parsed.result?.id,
           status: parsed.result?.status ?? 'Unknown',
           componentSuccesses: parsed.result?.numberComponentsDeployed ?? 0,
@@ -179,4 +204,3 @@ export class SfCliIntegration {
     }
   }
 }
-

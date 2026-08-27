@@ -16,9 +16,12 @@
  * @issue #46
  */
 
-import { Flags } from '@oclif/core';
-import { SfCommand } from '@salesforce/sf-plugins-core';
+import * as path from 'node:path';
+import * as fs from 'node:fs/promises';
+
+import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
+import { Org } from '@salesforce/core';
 import { getLogger } from '../../utils/logger.js';
 import { DeploymentPlanManager } from '../../utils/deployment-plan-manager.js';
 import { MetadataScannerService } from '../../services/metadata-scanner-service.js';
@@ -34,12 +37,15 @@ import { ManifestValidator } from '../../deployment/manifest-validator.js';
 import { WaveValidationService } from '../../ai/wave-validation-service.js';
 import { AgentforceService } from '../../ai/agentforce-service.js';
 import { MetadataSimplifier } from '../../deployment/metadata-simplifier.js';
-import { Org } from '@salesforce/core';
-import * as path from 'node:path';
-import * as fs from 'node:fs/promises';
+import { DependencyAvailabilityAnalyzer } from '../../dependencies/dependency-availability-analyzer.js';
 import type { MetadataComponent } from '../../types/metadata.js';
+import type { NodeId } from '../../types/dependency.js';
+import { createNodeId, parseNodeId } from '../../utils/node-id.js';
 import type { Wave } from '../../waves/wave-builder.js';
 import type { ScanResult } from '../../services/metadata-scanner-service.js';
+import { OutputFormatter } from '../../utils/output-formatter.js';
+import { validateManifestCompleteness } from '../../utils/manifest-completeness-validator.js';
+import { validateAgentforceTargets } from '../../validation/agentforce-target-validator.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('smart-deployment', 'start');
@@ -89,12 +95,14 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     }),
     'no-test-run': Flags.boolean({
       summary: 'Do not run any tests during deployment (sandbox only)',
-      description: 'Skips all test execution. IGNORED in production orgs (tests are required). Only works in sandboxes.',
+      description:
+        'Skips all test execution. IGNORED in production orgs (tests are required). Only works in sandboxes.',
       default: false,
     }),
     'run-wave-test': Flags.boolean({
       summary: 'Run only test classes included in each wave',
-      description: 'Executes only the test classes that are part of the wave being deployed. Uses RunSpecifiedTests. In production, this is the recommended approach for faster deployments.',
+      description:
+        'Executes only the test classes that are part of the wave being deployed. Uses RunSpecifiedTests. In production, this is the recommended approach for faster deployments.',
       default: true,
     }),
     'use-ai': Flags.boolean({
@@ -135,9 +143,14 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     }),
     resume: Flags.boolean({
       summary: 'Resume from last failed wave (default: true if previous state exists)',
-      description: 'If a previous deployment failed, automatically resume from the last completed wave. Set to false to start fresh.',
-      default: true,
-      allowNo: true,
+      description:
+        'If a previous deployment failed, automatically resume from the last completed wave. Set to false to start fresh.',
+    }),
+    'ignore-conflicts': Flags.boolean({
+      summary: 'Ignore conflicts and warnings during deployment',
+      description:
+        'Passes --ignore-conflicts and --ignore-warnings to Salesforce CLI. Useful when deploying to orgs with existing metadata differences.',
+      default: false,
     }),
   };
 
@@ -148,6 +161,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
    */
   public async run(): Promise<{ success: boolean; waves: number }> {
     const { flags } = await this.parse(Start);
+    const output = new OutputFormatter(this);
 
     // Initialize i18n with locale from flag or auto-detect
     initializeI18n({
@@ -165,50 +179,50 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
 
       // Load deployment plan if specified
       if (flags['use-plan']) {
-        this.log('📋 Loading deployment plan...');
+        output.section('Loading Deployment Plan', '📋');
         const plan = await DeploymentPlanManager.loadPlan(flags['use-plan']);
-        this.log(`✅ Using approved plan (version ${plan.metadata.version})`);
-        this.log(`   Generated: ${new Date(plan.metadata.generatedAt).toLocaleString()}`);
-        this.log(`   Components: ${plan.metadata.totalComponents}`);
-        this.log(`   Waves: ${plan.metadata.totalWaves}`);
-        if (plan.metadata.aiEnabled) {
-          this.log(`   AI-enhanced: Yes`);
-        }
-        this.log('');
+        output.success(`Using approved plan (version ${plan.metadata.version})`);
+        output.table([
+          { label: 'Generated', value: new Date(plan.metadata.generatedAt).toLocaleString() },
+          { label: 'Components', value: plan.metadata.totalComponents },
+          { label: 'Waves', value: plan.metadata.totalWaves },
+          ...(plan.metadata.aiEnabled ? [{ label: 'AI-enhanced', value: 'Yes' }] : []),
+        ]);
       }
 
       // AC-1: Analyze metadata
-      this.log('📊 Analyzing metadata...');
+      output.section('Analyzing Metadata', '📊');
       const metadataCount = await this.analyzeMetadata();
-      this.log(`✅ Found ${metadataCount} metadata components`);
-
+      output.success(`Found ${metadataCount} metadata components`);
 
       // AC-2: Generate waves
-      this.log('🌊 Generating deployment waves...');
-      const waves = await this.generateWaves(flags);
-      this.log(`✅ Generated ${waves} waves`);
+      output.section('Generating Deployment Waves', '🌊');
+      const waves = await this.generateWaves(flags, output);
+      output.success(`Generated ${waves} waves`);
 
       // AC US-057-AC-6: Report AI decisions
       if (flags['use-ai']) {
         const threshold = parseFloat(flags['ai-confidence-threshold'] || '0.8');
         const mode = flags['ai-auto'] ? 'auto' : 'manual-review';
-        this.log(`🤖 AI-enhanced prioritization enabled (mode: ${mode}, threshold: ${(threshold * 100).toFixed(0)}%)`);
-
+        output.subsection('AI-Enhanced Prioritization', '🤖');
+        output.keyValue('Mode', mode);
+        output.keyValue('Confidence Threshold', `${(threshold * 100).toFixed(0)}%`);
         if (!flags['ai-auto']) {
-          this.log('💡 Tip: Use --ai-auto to automatically apply high-confidence recommendations');
+          output.tip('Use --ai-auto to automatically apply high-confidence recommendations');
         }
       }
 
       // AC-3: Execute deployment
       if (!flags['dry-run']) {
-        this.log('🚀 Executing deployment...');
-        await this.executeDeployment(flags);
+        output.section('Executing Deployment', '🚀');
+        await this.executeDeployment(flags, output);
       } else {
-        this.log('🔍 Dry-run mode: skipping actual deployment');
+        output.section('Dry-Run Mode', '🔍');
+        output.info('Skipping actual deployment');
       }
 
       // AC-9: Generate report
-      this.log('📄 Generating deployment report...');
+      output.section('Generating Deployment Report', '📄');
       this.generateReport(waves);
 
       return { success: true, waves };
@@ -235,7 +249,11 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     return result.components.length;
   }
 
-  private async generateWaves(flags: Record<string, unknown>, sourcePath?: string): Promise<number> {
+  private async generateWaves(
+    flags: Record<string, unknown>,
+    output: OutputFormatter,
+    sourcePath?: string
+  ): Promise<number> {
     const scanner = new MetadataScannerService();
     const scanResult = await scanner.scan({ sourcePath });
 
@@ -244,7 +262,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
 
     // AI Priority Weighting (US-057) - if --use-ai is enabled
     if (flags['use-ai']) {
-      this.log('  🤖 Using Agentforce for intelligent prioritization...');
+      output.subsection('Using Agentforce for Intelligent Prioritization', '🤖');
 
       try {
         // Try to get access token from org if target-org is provided
@@ -253,7 +271,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
         if (targetOrg) {
           try {
             const org = await Org.create({ aliasOrUsername: targetOrg });
-            const connection = await org.getConnection();
+            const connection = org.getConnection();
             const authFields = connection.getAuthInfoFields();
             accessToken = authFields.accessToken;
             logger.debug('Using access token from authenticated org for priority service');
@@ -280,15 +298,12 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
         // Convert components to Map for AI generator
         const componentsMap = new Map<string, MetadataComponent>();
         for (const component of scanResult.components) {
-          const nodeId = `${component.type}:${component.name}`;
+          const nodeId = createNodeId(component.type, component.name);
           componentsMap.set(nodeId, component);
         }
 
         // Apply AI priorities
-        const prioritizedWaves = await aiGenerator.applyPriorityWavesAsync(
-          waveResult.waves,
-          componentsMap
-        );
+        const prioritizedWaves = await aiGenerator.applyPriorityWavesAsync(waveResult.waves, componentsMap);
 
         waveResult = {
           ...waveResult,
@@ -316,7 +331,11 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     return orderedWaves.length;
   }
 
-  private async executeDeployment(flags: Record<string, unknown>, sourcePath?: string): Promise<void> {
+  private async executeDeployment(
+    flags: Record<string, unknown>,
+    output: OutputFormatter,
+    sourcePath?: string
+  ): Promise<void> {
     const targetOrg = flags['target-org'] as string;
     const dryRun = flags['dry-run'] as boolean;
 
@@ -330,26 +349,26 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       const lastCompletedWave = Math.max(...existingState.completedWaves);
       const failedWaveNumber = existingState.failedWave?.waveNumber || lastCompletedWave + 1;
 
-      this.log('');
-      this.log(`⚠️  Found previous deployment state:`);
-      this.log(`   Status: ${existingState.status}`);
-      this.log(`   Completed waves: ${existingState.completedWaves.length}/${existingState.totalWaves}`);
-      this.log(`   Last completed: Wave ${lastCompletedWave}`);
-      this.log(`   Failed at: Wave ${failedWaveNumber}`);
+      output.section('Previous Deployment State', '⚠️');
+      output.table([
+        { label: 'Status', value: existingState.status },
+        { label: 'Completed waves', value: `${existingState.completedWaves.length}/${existingState.totalWaves}` },
+        { label: 'Last completed', value: `Wave ${lastCompletedWave}` },
+        { label: 'Failed at', value: `Wave ${failedWaveNumber}` },
+      ]);
       if (existingState.failedWave?.error) {
-        this.log(`   Error: ${existingState.failedWave.error.substring(0, 100)}...`);
+        output.warning('Previous error', [existingState.failedWave.error.substring(0, 150) + '...']);
       }
-      this.log('');
 
       // Auto-resume if --resume flag is true (default) or not set
       const shouldResume = flags.resume !== false; // Default to true for auto-resume
 
       if (shouldResume) {
-        this.log(`🔄 Resuming deployment from Wave ${failedWaveNumber}...`);
+        output.info(`Resuming deployment from Wave ${failedWaveNumber}...`);
         startFromWave = failedWaveNumber;
         completedWaveNumbers = existingState.completedWaves;
       } else {
-        this.log('🆕 Starting fresh deployment (ignoring previous state)...');
+        output.info('Starting fresh deployment (ignoring previous state)...');
         await stateManager.clearState();
       }
     }
@@ -358,7 +377,8 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     const deploymentId = `deployment-${Date.now()}`;
 
     if (dryRun || validateOnly) {
-      this.log('🔍 Dry-run/Validate mode: skipping actual deployment');
+      output.section('Dry-Run/Validate Mode', '🔍');
+      output.info('Skipping actual deployment');
       return;
     }
 
@@ -381,7 +401,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     // Build component map (NodeId -> MetadataComponent)
     const componentMap = new Map<string, MetadataComponent>();
     for (const component of scanResult.components) {
-      const nodeId = `${component.type}:${component.name}`;
+      const nodeId = createNodeId(component.type, component.name);
       componentMap.set(nodeId, component);
     }
 
@@ -405,17 +425,18 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       },
     };
     const manifestAdjustments = postProcessResult.manifestAdjustments;
+    const componentsToSimplify = postProcessResult.componentsToSimplify;
 
     // AI Priority Weighting (US-057) - if --use-ai is enabled
     if (flags['use-ai']) {
-      this.log('\n🤖 Applying AI priority weighting...');
+      output.subsection('Applying AI Priority Weighting', '🤖');
 
       try {
         // Try to get access token from org
         let accessToken: string | undefined;
         try {
           const org = await Org.create({ aliasOrUsername: targetOrg });
-          const connection = await org.getConnection();
+          const connection = org.getConnection();
           const authFields = connection.getAuthInfoFields();
           accessToken = authFields.accessToken;
           logger.debug('Using access token from authenticated org for priority service');
@@ -439,10 +460,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
         });
 
         // Apply AI priorities
-        const prioritizedWaves = await aiGenerator.applyPriorityWavesAsync(
-          waveResult.waves,
-          componentMap
-        );
+        const prioritizedWaves = await aiGenerator.applyPriorityWavesAsync(waveResult.waves, componentMap);
 
         waveResult = {
           ...waveResult,
@@ -464,16 +482,17 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     // Filter waves to deploy based on previous state (if resuming)
     let wavesToDeploy = orderedWaves;
     if (startFromWave > 1 && completedWaveNumbers.length > 0) {
-      wavesToDeploy = orderedWaves.filter(wave => !completedWaveNumbers.includes(wave.number));
-      this.log(`\n📊 Deployment plan:`);
-      this.log(`   Total waves: ${orderedWaves.length}`);
-      this.log(`   Already completed: ${completedWaveNumbers.length} (${completedWaveNumbers.join(', ')})`);
-      this.log(`   Remaining to deploy: ${wavesToDeploy.length} (starting from Wave ${startFromWave})`);
-      this.log('');
+      wavesToDeploy = orderedWaves.filter((wave) => !completedWaveNumbers.includes(wave.number));
+      output.section('Deployment Plan', '📊');
+      output.table([
+        { label: 'Total waves', value: orderedWaves.length },
+        { label: 'Already completed', value: `${completedWaveNumbers.length} (${completedWaveNumbers.join(', ')})` },
+        { label: 'Remaining to deploy', value: `${wavesToDeploy.length} (starting from Wave ${startFromWave})` },
+      ]);
     }
 
     // Generate manifests for all waves (needed for state tracking)
-    this.log('\n📄 Generating manifests...');
+    output.section('Generating Manifests', '📄');
 
     // Initialize AgentforceService if --use-ai is enabled
     // Uses flexible model support - model can be configured via:
@@ -487,7 +506,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
         if (targetOrg) {
           try {
             const org = await Org.create({ aliasOrUsername: targetOrg });
-            const connection = await org.getConnection();
+            const connection = org.getConnection();
             const authFields = connection.getAuthInfoFields();
             accessToken = authFields.accessToken;
           } catch (error) {
@@ -509,7 +528,8 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
         }
 
         const model = agentforceService.getConfig().model;
-        this.log(`   🤖 Using Agentforce (model: ${model}) for metadata type mapping...`);
+        output.subsection('Using Agentforce for Metadata Type Mapping', '🤖');
+        output.keyValue('Model', model);
       } catch (error) {
         logger.warn('Could not initialize Agentforce for manifest generation', { error });
       }
@@ -540,31 +560,31 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       return;
     }
 
-    this.log(`✅ Generated ${manifestResult.manifests.length} manifests`);
+    output.success(`Generated ${manifestResult.manifests.length} manifests`);
 
     // Validate wave integrity before deployment
-    this.log('\n🔍 Validating wave integrity...');
+    output.section('Validating Wave Integrity', '🔍');
     const { WaveIntegrityValidator } = await import('../../waves/wave-integrity-validator.js');
     const integrityValidator = new WaveIntegrityValidator(componentMap, orderedWaves);
     const integrityResult = integrityValidator.validateWaves();
 
     if (!integrityResult.isValid) {
       const report = integrityValidator.generateReport(integrityResult);
-      this.log(report);
+      output.info(report);
 
       if (integrityResult.summary.errors > 0) {
-        this.warn(`\n⚠️  Found ${integrityResult.summary.errors} integrity error(s) that may cause deployment failures`);
-        this.warn('   Consider reviewing wave structure or using --dry-run to preview deployment');
+        output.warning(`Found ${integrityResult.summary.errors} integrity error(s) that may cause deployment failures`);
+        output.tip('Consider reviewing wave structure or using --dry-run to preview deployment');
       }
       if (integrityResult.summary.warnings > 0) {
-        this.log(`\nℹ️  Found ${integrityResult.summary.warnings} warning(s) - deployment may still succeed`);
+        output.info(`Found ${integrityResult.summary.warnings} warning(s) - deployment may still succeed`);
       }
     } else {
-      this.log('✅ Wave integrity validation passed - all dependencies are satisfied');
+      output.success('Wave integrity validation passed - all dependencies are satisfied');
     }
 
     // Validate manifests against source
-    this.log('\n🔍 Validating manifests against source...');
+    output.section('Validating Manifests Against Source', '🔍');
     const manifestValidator = new ManifestValidator();
     let allManifestsValid = true;
 
@@ -573,10 +593,10 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       if (!validation.isValid) {
         allManifestsValid = false;
         logger.error('Manifest validation failed', { fileName: manifest.fileName, errors: validation.errors });
-        validation.errors.forEach((err) => this.warn(`❌ ${manifest.fileName}: ${err.message}`));
+        validation.errors.forEach((err) => output.error(`${manifest.fileName}: ${err.message}`));
       }
       if (validation.warnings.length > 0) {
-        validation.warnings.forEach((warn) => this.warn(`⚠️  ${manifest.fileName}: ${warn.message}`));
+        validation.warnings.forEach((warn) => output.warning(`${manifest.fileName}: ${warn.message}`));
       }
     }
 
@@ -585,12 +605,86 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       return;
     }
 
-    this.log('✅ All manifests validated');
+    output.success('All manifests validated');
+
+    const agentforceValidation = validateAgentforceTargets(orderedWaves, manifestResult.manifests, componentMap);
+    for (const issue of agentforceValidation.issues) {
+      output.warning(`Agentforce target ${issue.consumer} -> ${issue.target}: ${issue.message}`);
+    }
+    if (agentforceValidation.valid) {
+      output.success('Agentforce targets are ordered and included in manifests');
+    }
+
+    // Validate manifest completeness - ensure all project components are included
+    output.subsection('Validating Manifest Completeness', '🔍');
+    const completenessResult = await validateManifestCompleteness(
+      scanResult.components,
+      manifestResult.manifests,
+      componentMap
+    );
+
+    if (completenessResult.missingComponents.length > 0) {
+      output.warning(
+        `${completenessResult.missingComponents.length} component(s) from project are NOT in any manifest:`
+      );
+
+      // Group missing components by type
+      const missingByType = new Map<string, Array<{ name: string; type: string }>>();
+      for (const comp of completenessResult.missingComponents) {
+        if (!missingByType.has(comp.type)) {
+          missingByType.set(comp.type, []);
+        }
+        missingByType.get(comp.type)!.push({ name: comp.name, type: comp.type });
+      }
+
+      // Display missing components grouped by type
+      for (const [type, components] of Array.from(missingByType.entries()).sort()) {
+        output.warning(`${type}: ${components.length} component(s)`);
+        if (components.length <= 10) {
+          // Show individual components if 10 or fewer
+          components.forEach((comp) => {
+            output.info(`   • ${comp.name}`, []);
+          });
+        } else {
+          // Show first 5 and count if more
+          components.slice(0, 5).forEach((comp) => {
+            output.info(`   • ${comp.name}`, []);
+          });
+          output.info(`   ... and ${components.length - 5} more`, []);
+        }
+      }
+
+      output.blank();
+      output.tip('These components may have circular dependencies or were filtered out during wave generation.');
+      output.tip('Check wave generation output for "couldn\'t be placed" messages.');
+      output.blank();
+    } else {
+      const deployableCount = completenessResult.totalDeployableScanned;
+      output.success(`All ${deployableCount} deployable component(s) are included in manifests`);
+    }
+
+    // Check for duplicates or missing components
+    // Use deployableScannedCount instead of scanResult.components.length to exclude child components
+    const deployableScannedCount = completenessResult.totalDeployableScanned;
+    if (completenessResult.totalInManifests !== deployableScannedCount) {
+      const diff = completenessResult.totalInManifests - deployableScannedCount;
+      if (diff > 0) {
+        output.warning(`Warning: ${diff} more component(s) in manifests than deployable scanned (possible duplicates)`);
+      } else if (diff < 0) {
+        const missingCount = Math.abs(diff);
+        output.warning(`Warning: ${missingCount} fewer component(s) in manifests than deployable scanned`);
+        output.tip(
+          "This may indicate components with circular dependencies or components that couldn't be placed in any wave."
+        );
+      }
+    } else {
+      output.success(`All ${deployableScannedCount} deployable component(s) are accounted for in manifests`);
+    }
 
     // AI Wave Validation (if --use-ai is enabled)
     if (flags['use-ai']) {
-      this.log('');
-      this.log('🤖 Using Agentforce for wave validation...');
+      output.blank();
+      output.subsection('Using Agentforce for Wave Validation', '🤖');
 
       try {
         // Try to get access token from org if target-org is provided
@@ -598,7 +692,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
         if (targetOrg) {
           try {
             const org = await Org.create({ aliasOrUsername: targetOrg });
-            const connection = await org.getConnection();
+            const connection = org.getConnection();
             const authFields = connection.getAuthInfoFields();
             accessToken = authFields.accessToken;
             logger.info('Using access token from authenticated org for wave validation');
@@ -607,21 +701,21 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
           }
         }
 
-        const agentforceService = new AgentforceService({
+        const waveValidationAgentforceService = new AgentforceService({
           enabled: true,
           apiKey: accessToken,
         });
 
         if (accessToken) {
-          agentforceService.setApiKeyFromOrg(accessToken);
+          waveValidationAgentforceService.setApiKeyFromOrg(accessToken);
         }
 
-        const waveValidationService = new WaveValidationService(agentforceService);
+        const waveValidationService = new WaveValidationService(waveValidationAgentforceService);
         const validationResult = await waveValidationService.validateWaves(orderedWaves);
 
         if (validationResult.aiAnalyzed) {
-          this.log(`   ✅ Analyzed ${orderedWaves.length} waves`);
-          this.log(`   📊 Overall risk: ${validationResult.overallRisk.toUpperCase()}`);
+          output.success(`Analyzed ${orderedWaves.length} waves`);
+          output.keyValue('Overall risk', validationResult.overallRisk.toUpperCase(), '📊');
 
           if (validationResult.issues.length > 0) {
             this.log(`   ⚠️  Found ${validationResult.issues.length} potential issues:`);
@@ -641,7 +735,10 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
             });
           }
 
-          if (validationResult.overallRisk === 'high' || validationResult.issues.some((i) => i.severity === 'critical')) {
+          if (
+            validationResult.overallRisk === 'high' ||
+            validationResult.issues.some((i) => i.severity === 'critical')
+          ) {
             this.warn('\n⚠️  High-risk deployment detected. Consider reviewing waves before proceeding.');
           }
         } else {
@@ -657,21 +754,159 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
 
     // Initialize deployment services (reuse stateManager from above)
     const tracker = new DeploymentTracker();
+    const availabilityAnalyzer = new DependencyAvailabilityAnalyzer(componentMap);
 
     // Execute waves sequentially
     // Deploy only waves that haven't been completed yet
     for (const wave of wavesToDeploy) {
-      this.log(`\n🌊 Deploying Wave ${wave.number}/${orderedWaves.length} (${wave.components.length} components)...`);
+      output.waveHeader(wave.number, orderedWaves.length, wave.components.length);
 
       try {
-        // Find manifest for this wave
-        const manifest = manifestResult.manifests.find((m) => m.fileName.includes(`wave-${String(wave.number).padStart(3, '0')}`));
-        if (!manifest) {
-          throw new Error(`Manifest not found for wave ${wave.number}`);
+        // Apply preventive simplification if needed
+        let manifestPath: string;
+        const simplifier = new MetadataSimplifier();
+        let preventiveSimplification: Awaited<ReturnType<typeof simplifier.simplifyWaveMetadata>> | undefined;
+        const componentsToSimplifyInWave = new Map<NodeId, { unavailableDeps: NodeId[]; targetWave: number }>();
+
+        // Only simplify references classified as genuinely unavailable. A
+        // same-wave dependency is not automatically a missing dependency.
+        for (const nodeId of wave.components) {
+          const simplifyInfo = componentsToSimplify.get(nodeId);
+          if (simplifyInfo && simplifyInfo.targetWave > wave.number) {
+            if (availabilityAnalyzer.assessSharedComponent(nodeId).isShared) {
+              logger.warn('Skipping preventive simplification for shared component', {
+                nodeId,
+                consumers: availabilityAnalyzer.assessSharedComponent(nodeId).consumers,
+                wave: wave.number,
+              });
+              continue;
+            }
+            const unavailableDeps = availabilityAnalyzer.unavailableDependencies(nodeId, wave, orderedWaves);
+            if (unavailableDeps.length > 0) {
+              componentsToSimplifyInWave.set(nodeId, {
+                ...simplifyInfo,
+                unavailableDeps,
+              });
+            }
+          }
         }
 
-        const manifestPath = path.join(manifestDir, manifest.fileName);
-        this.log(`📦 Using manifest: ${manifest.fileName}`);
+        const availableComponents = new Set<NodeId>();
+        for (let i = 0; i < wave.number - 1; i++) {
+          orderedWaves[i]?.components.forEach((nodeId) => availableComponents.add(nodeId));
+        }
+        // The simplifier also receives this set. Include same-wave components
+        // so it cannot remove references merely because they share a wave.
+        wave.components.forEach((nodeId) => availableComponents.add(nodeId));
+
+        for (const nodeId of wave.components) {
+          const component = componentMap.get(nodeId);
+          if (!component) continue;
+
+          const unavailableDeps = availabilityAnalyzer.unavailableDependencies(nodeId, wave, orderedWaves);
+          if (unavailableDeps.length > 0) {
+            if (availabilityAnalyzer.assessSharedComponent(nodeId).isShared) {
+              logger.warn('Skipping preventive simplification for shared component', {
+                nodeId,
+                consumers: availabilityAnalyzer.assessSharedComponent(nodeId).consumers,
+                wave: wave.number,
+              });
+              continue;
+            }
+            logger.debug('Detected component with unavailable dependencies', {
+              component: component.name,
+              componentType: component.type,
+              nodeId,
+              unavailableDeps,
+              wave: wave.number,
+            });
+            componentsToSimplifyInWave.set(nodeId, {
+              unavailableDeps,
+              targetWave: wave.number + 1, // Will be deployed fully in next wave
+            });
+          }
+        }
+
+        if (componentsToSimplifyInWave.size > 0) {
+          this.log(`   🔧 Applying preventive simplification to ${componentsToSimplifyInWave.size} component(s)...`);
+
+          preventiveSimplification = await simplifier.simplifyWaveMetadata(wave, {
+            availableComponents,
+            allWaves: orderedWaves,
+            currentWaveNumber: wave.number,
+            componentMap,
+          });
+
+          if (preventiveSimplification.simplified && preventiveSimplification.tempFiles.size > 0) {
+            this.log(
+              `   ✅ Simplified ${preventiveSimplification.simplifiedComponents.length} component(s) preventively`
+            );
+
+            // Regenerate manifest with simplified files
+            const tempManifestDir = path.join(manifestDir, `simplified-wave-${wave.number}`);
+            await fs.mkdir(tempManifestDir, { recursive: true });
+
+            // Update component map with temp paths for simplified components
+            const updatedComponentMap = new Map(componentMap);
+            for (const [nodeId, tempPath] of preventiveSimplification.tempFiles.entries()) {
+              const component = updatedComponentMap.get(nodeId);
+              if (component) {
+                updatedComponentMap.set(nodeId, {
+                  ...component,
+                  filePath: tempPath,
+                });
+              }
+            }
+
+            // Use temp project root if available
+            const projectRootForManifest = preventiveSimplification.tempProjectRoot || scanResult.projectRoot;
+
+            const manifestGen = new ManifestGenerator();
+            const simplifiedManifestResult = await manifestGen.generateManifests([wave], {
+              projectRoot: projectRootForManifest,
+              componentMap: updatedComponentMap,
+              outputDir: tempManifestDir,
+              validateFiles: true,
+            });
+
+            if (simplifiedManifestResult.manifests.length > 0) {
+              const simplifiedManifest = simplifiedManifestResult.manifests[0];
+              manifestPath = path.join(tempManifestDir, simplifiedManifest.fileName);
+              this.log(`   📦 Using simplified manifest: ${simplifiedManifest.fileName}`);
+            } else {
+              // Fallback to original manifest if simplified generation failed
+              const manifest = manifestResult.manifests.find((m) =>
+                m.fileName.includes(`wave-${String(wave.number).padStart(3, '0')}`)
+              );
+              if (!manifest) {
+                throw new Error(`Manifest not found for wave ${wave.number}`);
+              }
+              manifestPath = path.join(manifestDir, manifest.fileName);
+              this.log(`📦 Using manifest: ${manifest.fileName}`);
+            }
+          } else {
+            // No simplification needed, use original manifest
+            const manifest = manifestResult.manifests.find((m) =>
+              m.fileName.includes(`wave-${String(wave.number).padStart(3, '0')}`)
+            );
+            if (!manifest) {
+              throw new Error(`Manifest not found for wave ${wave.number}`);
+            }
+            manifestPath = path.join(manifestDir, manifest.fileName);
+            this.log(`📦 Using manifest: ${manifest.fileName}`);
+          }
+        } else {
+          // No preventive simplification needed, use original manifest
+          const manifest = manifestResult.manifests.find((m) =>
+            m.fileName.includes(`wave-${String(wave.number).padStart(3, '0')}`)
+          );
+          if (!manifest) {
+            throw new Error(`Manifest not found for wave ${wave.number}`);
+          }
+          manifestPath = path.join(manifestDir, manifest.fileName);
+          this.log(`📦 Using manifest: ${manifest.fileName}`);
+        }
+
         logger.debug('Manifest path prepared', { manifestPath, wave: wave.number });
 
         // Execute deployment
@@ -683,12 +918,12 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
 
         // Detect org type to enforce production test requirements
         const isProduction = await this.isProductionOrg(targetOrg);
-        const noTestRun = flags['no-test-run'] as boolean || flags['skip-tests'] as boolean;
+        const noTestRun = (flags['no-test-run'] as boolean) || (flags['skip-tests'] as boolean);
         const runWaveTest = flags['run-wave-test'] as boolean;
 
         // Production orgs REQUIRE tests - ignore --no-test-run flag
         if (isProduction && noTestRun) {
-          this.warn('⚠️  Production org detected: --no-test-run is ignored (tests are required in production)');
+          output.warning('Production org detected: --no-test-run is ignored (tests are required in production)');
         }
 
         let testLevel: 'NoTestRun' | 'RunLocalTests' | 'RunSpecifiedTests' | 'RunAllTestsInOrg' | undefined;
@@ -700,39 +935,67 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
           if (testClasses.length > 0) {
             // Use RunSpecifiedTests with only tests from this wave
             testLevel = 'RunSpecifiedTests';
-            this.log(`   🧪 Running ${testClasses.length} specified test class(es) from wave: ${testClasses.join(', ')}`);
+            output.subsection('Test Execution', '🧪');
+            output.keyValue('Test classes', `${testClasses.length} specified`);
+            output.list(testClasses.slice(0, 5), '   •');
+            if (testClasses.length > 5) {
+              output.info(`... and ${testClasses.length - 5} more`);
+            }
             if (isProduction) {
-              this.log(`   ℹ️  Using RunSpecifiedTests in production - will test only components in this wave`);
+              output.info('Using RunSpecifiedTests in production - will test only components in this wave');
             }
           } else {
             // No test classes in wave - skip tests (user explicitly requested wave-specific tests only)
-            this.log('   ⏭️  No test classes found in wave - skipping tests (--run-wave-test with no tests in wave)');
+            output.subsection('Test Execution', '⏭️');
+            output.info('No test classes found in wave - skipping tests (--run-wave-test with no tests in wave)');
             // Don't set testLevel - let SF CLI handle it (may fail in production, but that's expected)
           }
         } else if (noTestRun && !isProduction) {
           // User wants to skip tests (sandbox only)
           testLevel = 'NoTestRun';
-          this.log('   ⏭️  Skipping tests (--no-test-run, sandbox only)');
+          output.subsection('Test Execution', '⏭️');
+          output.info('Skipping tests (--no-test-run, sandbox only)');
         } else {
           // Default behavior: Don't specify test level, let SF CLI decide
           // This allows SF CLI to use its default behavior which may be more lenient
+          output.subsection('Test Execution', '📋');
           if (isProduction) {
-            this.log('   📋 Using SF CLI default test behavior (may avoid strict 75% enforcement)');
+            output.info('Using SF CLI default test behavior (may avoid strict 75% enforcement)');
           } else {
-            this.log('   📋 Using SF CLI standard test behavior');
+            output.info('Using SF CLI standard test behavior');
           }
         }
 
         try {
+          // Use temp project root if simplification was applied
+          const sourceDir = preventiveSimplification?.tempProjectRoot;
+
           const result = await sfCli.deploy({
             manifestPath,
             targetOrg,
             testLevel,
             tests: testLevel === 'RunSpecifiedTests' ? testClasses : undefined,
             checkOnly: false,
+            sourceDir,
+            ignoreConflicts: Boolean(flags['ignore-conflicts']),
+            ignoreWarnings: Boolean(flags['ignore-conflicts']), // Also ignore warnings when ignoring conflicts
           });
 
-          if (!result.success) {
+          // NO PARTIAL FAILURES: Verify that deployment was truly successful
+          // Check both success flag AND component failures count
+          const hasComponentFailures = (result.componentFailures ?? 0) > 0;
+          const hasTestFailures = result.testFailures && result.testFailures > 0;
+          const isTrulySuccessful = result.success && !hasComponentFailures && !hasTestFailures;
+
+          if (!isTrulySuccessful) {
+            // If result.success is true but there are failures, override it
+            if (result.success && (hasComponentFailures || hasTestFailures)) {
+              logger.warn('Deployment marked as success but has component/test failures', {
+                wave: wave.number,
+                componentFailures: result.componentFailures,
+                testFailures: result.testFailures,
+              });
+            }
             const errorMessage = `Deployment failed: ${result.status}\n${result.output}`;
 
             // Check if errors are from Experience Bundle auto-generated components
@@ -741,8 +1004,8 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
             const { isSafeToIgnoreExperienceBundleErrors } = await import('../../constants/standard-components.js');
 
             // Parse component failures to check if Experience Bundle errors can be ignored
-            let experienceBundleErrors: string[] = [];
-            let otherErrors: string[] = [];
+            const experienceBundleErrors: string[] = [];
+            const otherErrors: string[] = [];
 
             try {
               // Try to parse JSON output to get component failures
@@ -768,12 +1031,15 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
                 // and if ALL classes with that error actually reference those components
 
                 // Group failures by error message to detect propagated errors
-                const errorsByMessage = new Map<string, Array<{ componentId: string; failure: typeof failures[0] }>>();
+                const errorsByMessage = new Map<
+                  string,
+                  Array<{ componentId: string; failure: (typeof failures)[0] }>
+                >();
 
                 for (const failure of failures) {
                   if (!failure.fullName || !failure.problem) continue;
 
-                  const componentId = `${failure.componentType}:${failure.fullName}`;
+                  const componentId = createNodeId(failure.componentType ?? 'Unknown', failure.fullName);
                   const errorKey = failure.problem.trim();
 
                   if (!errorsByMessage.has(errorKey)) {
@@ -783,9 +1049,12 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
                 }
 
                 // Process each unique error message
-                for (const [errorMessage, componentsWithError] of errorsByMessage.entries()) {
+                for (const [msg, componentsWithError] of errorsByMessage.entries()) {
                   // Check if this error is about auto-generated Visualforce Pages
-                  const isAutoGeneratedPageError = /Page\s+(ForgotPasswordConfirm|ForgotPassword|ChangePassword|SiteLogin|SiteRegister|CommunitiesLogin|CommunitiesLanding|CommunitiesSelfReg|MyProfilePage|MicrobatchSelfReg|BandwidthExceeded|Exception|FileNotFound|InMaintenance|StdExceptionTemplate|Unauthorized|UnderConstruction|AnswersHome|IdeasHome|SiteTemplate|CommunitiesTemplate)\s+does not exist/i.test(errorMessage);
+                  const isAutoGeneratedPageError =
+                    /Page\s+(ForgotPasswordConfirm|ForgotPassword|ChangePassword|SiteLogin|SiteRegister|CommunitiesLogin|CommunitiesLanding|CommunitiesSelfReg|MyProfilePage|MicrobatchSelfReg|BandwidthExceeded|Exception|FileNotFound|InMaintenance|StdExceptionTemplate|Unauthorized|UnderConstruction|AnswersHome|IdeasHome|SiteTemplate|CommunitiesTemplate)\s+does not exist/i.test(
+                      msg
+                    );
 
                   if (isAutoGeneratedPageError) {
                     // Check if ALL components with this error are Experience Bundle components
@@ -794,20 +1063,20 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
                     let allReferenceThePage = true;
 
                     for (const { componentId } of componentsWithError) {
-                      const isExperienceBundle = isSafeToIgnoreExperienceBundleErrors(componentId, errorMessage);
+                      const isExperienceBundle = isSafeToIgnoreExperienceBundleErrors(componentId, msg);
                       if (!isExperienceBundle) {
                         allAreExperienceBundle = false;
 
                         // Check if this component actually references the page
                         // Extract page name from error message
-                        const pageMatch = errorMessage.match(/Page\s+([A-Za-z0-9_]+)\s+does not exist/i);
+                        const pageMatch = msg.match(/Page\s+([A-Za-z0-9_]+)\s+does not exist/i);
                         if (pageMatch) {
                           const pageName = pageMatch[1];
                           // Check if component is in the wave and references this page
                           const component = componentMap.get(componentId);
                           if (component) {
-                            const referencesPage = Array.from(component.dependencies).some(dep =>
-                              dep === `VisualforcePage:${pageName}` || dep.includes(pageName)
+                            const referencesPage = Array.from(component.dependencies).some(
+                              (dep) => dep === `VisualforcePage:${pageName}` || dep.includes(pageName)
                             );
                             if (!referencesPage) {
                               allReferenceThePage = false;
@@ -823,42 +1092,45 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
                     // If all are Experience Bundle OR all actually reference the page, it's safe to ignore
                     if (allAreExperienceBundle || allReferenceThePage) {
                       componentsWithError.forEach(({ componentId }) => {
-                        experienceBundleErrors.push(`${componentId} - ${errorMessage}`);
+                        experienceBundleErrors.push(`${componentId} - ${msg}`);
                       });
                     } else {
                       // Some components have this error but shouldn't - it's a propagated error
                       // Find the first Experience Bundle component as the real source
                       const realSource = componentsWithError.find(({ componentId }) =>
-                        isSafeToIgnoreExperienceBundleErrors(componentId, errorMessage)
+                        isSafeToIgnoreExperienceBundleErrors(componentId, msg)
                       );
 
                       if (realSource) {
                         // Mark the real source as Experience Bundle error
-                        experienceBundleErrors.push(`${realSource.componentId} - ${errorMessage}`);
+                        experienceBundleErrors.push(`${realSource.componentId} - ${msg}`);
                         // Mark others as propagated (but still safe to ignore if they're in the same wave)
                         componentsWithError.forEach(({ componentId }) => {
                           if (componentId !== realSource.componentId) {
                             // Check if component is in current wave
-                            const isInWave = wave.components.some(nodeId => nodeId === componentId);
+                            const isInWave = wave.components.some((nodeId) => nodeId === componentId);
                             if (isInWave) {
                               // It's a propagated error - safe to ignore
-                              experienceBundleErrors.push(`${componentId} - ${errorMessage} (propagated)`);
+                              experienceBundleErrors.push(`${componentId} - ${msg} (propagated)`);
                             } else {
-                              otherErrors.push(`${componentId} - ${errorMessage}`);
+                              otherErrors.push(`${componentId} - ${msg}`);
                             }
                           }
                         });
                       } else {
                         // No Experience Bundle component found - all are real errors
                         componentsWithError.forEach(({ componentId }) => {
-                          otherErrors.push(`${componentId} - ${errorMessage}`);
+                          otherErrors.push(`${componentId} - ${msg}`);
                         });
                       }
                     }
                   } else {
                     // Not an auto-generated page error - check normally
                     for (const { componentId, failure } of componentsWithError) {
-                      const isExperienceBundleError = isSafeToIgnoreExperienceBundleErrors(componentId, failure.problem || errorMessage);
+                      const isExperienceBundleError = isSafeToIgnoreExperienceBundleErrors(
+                        componentId,
+                        failure.problem || msg
+                      );
 
                       if (isExperienceBundleError) {
                         experienceBundleErrors.push(`${componentId} - ${failure.problem}`);
@@ -874,75 +1146,90 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
               logger.debug('Could not parse deployment errors', { error: parseError });
             }
 
-            // If there are Experience Bundle errors but no other errors, continue deployment
-            if (experienceBundleErrors.length > 0 && otherErrors.length === 0) {
-              this.warn(`   ⚠️  ${experienceBundleErrors.length} Experience Bundle component(s) failed due to missing standard components:`);
-              experienceBundleErrors.forEach(comp => this.warn(`      - ${comp}`));
-              this.warn(`   These components reference standard Experience Cloud components (SiteSamples, c:sitelogin, etc.)`);
-              this.warn(`   that should exist in the org. The components themselves are auto-generated by Experience Bundle.`);
-              this.warn(`   Continuing deployment - these errors are expected if standard components don't exist yet.`);
-              this.log(`   ✅ Wave ${wave.number} completed (with ${experienceBundleErrors.length} expected errors from Experience Bundle components)`);
-              // Continue to next wave instead of throwing error
-              continue;
-            }
-
-            // If there are other errors (non-Experience Bundle), report them
-            if (otherErrors.length > 0) {
+            // NO PARTIAL FAILURES ALLOWED: Any component failure marks the wave as failed
+            // Even Experience Bundle errors must be resolved before continuing
+            if (experienceBundleErrors.length > 0 || otherErrors.length > 0) {
+              output.blank();
               if (experienceBundleErrors.length > 0) {
-                this.warn(`   ⚠️  ${experienceBundleErrors.length} Experience Bundle component(s) failed (safe to ignore):`);
-                experienceBundleErrors.forEach(comp => this.warn(`      - ${comp}`));
-                this.warn(`   However, there are ${otherErrors.length} other error(s) that must be fixed:`);
-                otherErrors.forEach(comp => this.error(`      ❌ ${comp}`));
-              } else {
-                // No Experience Bundle errors, just report other errors
-                this.error(`   ❌ ${otherErrors.length} component(s) failed:`);
-                otherErrors.forEach(comp => this.error(`      - ${comp}`));
+                output.warning(`${experienceBundleErrors.length} Experience Bundle component(s) failed`);
+                output.componentFailures(
+                  experienceBundleErrors.map((err) => {
+                    const [componentId, ...errorParts] = err.split(' - ');
+                    return { componentId, error: errorParts.join(' - ') };
+                  }),
+                  'warning'
+                );
+              }
+              if (otherErrors.length > 0) {
+                output.error(`${otherErrors.length} component(s) failed`);
+                output.componentFailures(
+                  otherErrors.map((err) => {
+                    const [componentId, ...errorParts] = err.split(' - ');
+                    return { componentId, error: errorParts.join(' - ') };
+                  }),
+                  'error'
+                );
               }
 
-              // Check for missing metadata suggestions
-              const missingMetadataSuggestions = this.detectMissingMetadata(otherErrors, componentMap, scanResult);
+              // Check for missing metadata suggestions before throwing
+              const missingMetadataSuggestions = this.detectMissingMetadata(
+                [...experienceBundleErrors, ...otherErrors],
+                componentMap,
+                scanResult
+              );
               if (missingMetadataSuggestions.length > 0) {
-                this.log('');
-                this.warn('   💡 Missing metadata detected in project:');
-                this.warn('   The following components are referenced but may not exist in the project:');
-                missingMetadataSuggestions.forEach(suggestion => {
-                  this.warn(`      - ${suggestion.componentId} (referenced by: ${suggestion.referencedBy.join(', ')})`);
+                output.blank();
+                output.subsection('Missing Metadata Detected', '💡');
+                output.info('The following components are referenced but may not exist in the project:');
+                missingMetadataSuggestions.forEach((suggestion) => {
+                  output.list([`${suggestion.componentId} (referenced by: ${suggestion.referencedBy.join(', ')})`]);
                   if (suggestion.suggestion) {
-                    this.warn(`        → ${suggestion.suggestion}`);
+                    output.tip(suggestion.suggestion);
                   }
                 });
-                this.log('');
               }
 
-              throw new Error(errorMessage);
+              // Throw error to mark wave as failed
+              throw new Error(`${experienceBundleErrors.length + otherErrors.length} component(s) failed`);
             }
 
             // Fallback: Check if error is about standard Experience Cloud components (string matching)
-            if (result.output.includes('SiteSamples') || result.output.includes('sitelogin') ||
-                result.output.includes('SiteLogin') || result.output.includes('SiteHeader') ||
-                result.output.includes('SiteFooter') || result.output.includes('SitePoweredBy')) {
-              this.warn(`   ⚠️  Deployment failed due to standard Experience Cloud components.`);
-              this.warn(`   These components should exist in the org (auto-generated with Experience Cloud sites).`);
-              this.warn(`   Please verify these components exist in the target org: SiteSamples (StaticResource), c:sitelogin (LWC)`);
-              this.warn(`   If they don't exist, create an Experience Cloud site first or retrieve them from another org.`);
+            if (
+              result.output.includes('SiteSamples') ||
+              result.output.includes('sitelogin') ||
+              result.output.includes('SiteLogin') ||
+              result.output.includes('SiteHeader') ||
+              result.output.includes('SiteFooter') ||
+              result.output.includes('SitePoweredBy')
+            ) {
+              this.warn('   ⚠️  Deployment failed due to standard Experience Cloud components.');
+              this.warn('   These components should exist in the org (auto-generated with Experience Cloud sites).');
+              this.warn(
+                '   Please verify these components exist in the target org: SiteSamples (StaticResource), c:sitelogin (LWC)'
+              );
+              this.warn(
+                "   If they don't exist, create an Experience Cloud site first or retrieve them from another org."
+              );
               throw new Error(errorMessage);
             }
 
             // Check if this is a missing reference error and try simplification fallback
-            const simplifier = new MetadataSimplifier();
-            if (simplifier.isMissingReferenceError(result.output)) {
-              this.log(`   ⚠️  Deployment failed due to missing references. Attempting simplification fallback...`);
+            const simplifierFallback = new MetadataSimplifier();
+            if (simplifierFallback.isMissingReferenceError(result.output)) {
+              output.blank();
+              output.subsection('Simplification Fallback', '🔄');
+              output.warning('Deployment failed due to missing references. Attempting simplification fallback...');
 
               try {
                 // Get available components from previous waves
-                const availableComponents = new Set<string>();
+                const availableComponentsFallback = new Set<string>();
                 for (let i = 0; i < wave.number - 1; i++) {
-                  orderedWaves[i]?.components.forEach(nodeId => availableComponents.add(nodeId));
+                  orderedWaves[i]?.components.forEach((nodeId) => availableComponentsFallback.add(nodeId));
                 }
 
                 // Simplify metadata files
-                const simplificationResult = await simplifier.simplifyWaveMetadata(wave, {
-                  availableComponents,
+                const simplificationResult = await simplifierFallback.simplifyWaveMetadata(wave, {
+                  availableComponents: availableComponentsFallback,
                   allWaves: orderedWaves,
                   currentWaveNumber: wave.number,
                   componentMap,
@@ -958,7 +1245,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
                   // Create simplified wave with temp file paths
                   const simplifiedWave: Wave = {
                     ...wave,
-                    components: wave.components.map(nodeId => {
+                    components: wave.components.map((nodeId) => {
                       const tempPath = simplificationResult.tempFiles.get(nodeId);
                       return tempPath ? nodeId : nodeId; // Keep same nodeId, manifest generator will use tempPath
                     }),
@@ -988,7 +1275,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
                     const simplifiedManifest = simplifiedManifestResult.manifests[0];
                     const simplifiedManifestPath = path.join(tempManifestDir, simplifiedManifest.fileName);
 
-                    this.log(`   🔄 Retrying deployment with simplified metadata...`);
+                    this.log('   🔄 Retrying deployment with simplified metadata...');
 
                     // Retry deployment with simplified manifest
                     const retryResult = await sfCli.deploy({
@@ -997,6 +1284,8 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
                       testLevel,
                       tests: testLevel === 'RunSpecifiedTests' ? testClasses : undefined,
                       checkOnly: false,
+                      ignoreConflicts: Boolean(flags['ignore-conflicts']),
+                      ignoreWarnings: Boolean(flags['ignore-conflicts']), // Also ignore warnings when ignoring conflicts
                     });
 
                     if (retryResult.success) {
@@ -1009,18 +1298,22 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
                       // Continue to next wave
                       continue;
                     } else {
-                      this.warn(`   ⚠️  Retry with simplified metadata also failed`);
+                      this.warn('   ⚠️  Retry with simplified metadata also failed');
                       // Fall through to throw error
                     }
                   } else {
-                    this.warn(`   ⚠️  Could not generate simplified manifest`);
+                    this.warn('   ⚠️  Could not generate simplified manifest');
                   }
                 } else {
-                  this.warn(`   ⚠️  Simplification did not produce any changes`);
+                  this.warn('   ⚠️  Simplification did not produce any changes');
                 }
               } catch (simplifyError) {
                 logger.warn('Simplification fallback failed', { wave: wave.number, error: simplifyError });
-                this.warn(`   ⚠️  Simplification fallback failed: ${simplifyError instanceof Error ? simplifyError.message : String(simplifyError)}`);
+                this.warn(
+                  `   ⚠️  Simplification fallback failed: ${
+                    simplifyError instanceof Error ? simplifyError.message : String(simplifyError)
+                  }`
+                );
                 // Fall through to throw original error
               }
             }
@@ -1028,37 +1321,53 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
             throw new Error(errorMessage);
           }
 
-          this.log(`   ✅ Deployed ${result.componentSuccesses} components`);
-          if (result.testsRun) {
-            this.log(`   ✅ Ran ${result.testsRun} tests`);
+          // NO PARTIAL FAILURES: Double-check that deployment was truly successful
+          // Verify no component or test failures before marking wave as completed
+          if (result.componentFailures > 0) {
+            throw new Error(
+              `Wave ${wave.number} has ${result.componentFailures} component failure(s) - cannot mark as completed`
+            );
+          }
+          if (result.testFailures && result.testFailures > 0) {
+            throw new Error(
+              `Wave ${wave.number} has ${result.testFailures} test failure(s) - cannot mark as completed`
+            );
           }
 
-          // Check if this wave contains Experience Bundle components
-          const hasExperienceBundle = wave.components.some(nodeId => {
-            return nodeId.startsWith('DigitalExperience:') ||
-                   nodeId.includes('site/') ||
-                   wave.metadata.types.includes('DigitalExperience');
+          output.deploymentResult({
+            success: true,
+            componentSuccesses: result.componentSuccesses,
+            componentFailures: 0,
+            testsRun: result.testsRun,
+            testFailures: result.testFailures,
           });
 
+          // Check if this wave contains Experience Bundle components
+          const hasExperienceBundle = wave.components.some(
+            (nodeId) =>
+              nodeId.startsWith('DigitalExperience:') ||
+              nodeId.includes('site/') ||
+              wave.metadata.types.includes('DigitalExperience')
+          );
+
           if (hasExperienceBundle) {
-            this.log('');
-            this.log('   📦 Experience Bundle detected in this wave');
-            this.log('   ⚠️  Experience Bundles require activation after deployment:');
-            this.log('');
-            this.log('   Option A - Salesforce Setup:');
-            this.log('      1. Go to Setup → Digital Experiences → All Sites');
-            this.log('      2. Find your site and click "Activate"');
-            this.log('');
-            this.log('   Option B - Salesforce CLI:');
-            this.log(`      sf community publish --name <SiteName> --target-org ${targetOrg}`);
-            this.log('');
+            output.blank();
+            output.subsection('Experience Bundle Detected', '📦');
+            output.warning('Experience Bundles require activation after deployment');
+            output.blank();
+            output.subsection('Option A - Salesforce Setup', '');
+            output.list(['Go to Setup → Digital Experiences → All Sites', 'Find your site and click "Activate"']);
+            output.blank();
+            output.subsection('Option B - Salesforce CLI', '');
+            output.info(`sf community publish --name <SiteName> --target-org ${targetOrg}`);
+            output.blank();
           }
         } catch (deployError) {
           logger.error('Deployment failed', { wave: wave.number, error: deployError });
           throw deployError;
         }
 
-        // Save state after each wave
+        // Save state after each wave - only mark as completed if truly successful
         await stateManager.saveState({
           status: 'deploying',
           deploymentId,
@@ -1069,7 +1378,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
           currentWave: wave.number,
         });
 
-        this.log(`✅ Wave ${wave.number} deployed successfully`);
+        output.success(`Wave ${wave.number} deployed successfully`);
       } catch (error) {
         logger.error('Wave deployment failed', { wave: wave.number, error });
 
@@ -1110,10 +1419,10 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     this.log('\n✅ All waves deployed successfully!');
 
     // Check if any wave contained Experience Bundle components
-    const hasExperienceBundle = orderedWaves.some(wave =>
-      wave.components.some(nodeId =>
-        nodeId.startsWith('DigitalExperience:') || nodeId.includes('site/')
-      ) || wave.metadata.types.includes('DigitalExperience')
+    const hasExperienceBundle = orderedWaves.some(
+      (wave) =>
+        wave.components.some((nodeId) => nodeId.startsWith('DigitalExperience:') || nodeId.includes('site/')) ||
+        wave.metadata.types.includes('DigitalExperience')
     );
 
     if (hasExperienceBundle) {
@@ -1135,10 +1444,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
   /**
    * Extract test classes from a wave
    */
-  private extractTestClassesFromWave(
-    wave: Wave,
-    componentMap: Map<string, MetadataComponent>
-  ): string[] {
+  private extractTestClassesFromWave(wave: Wave, componentMap: Map<string, MetadataComponent>): string[] {
     const testClasses: string[] = [];
 
     for (const nodeId of wave.components) {
@@ -1183,7 +1489,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
   private async isProductionOrg(targetOrg: string): Promise<boolean> {
     try {
       const org = await Org.create({ aliasOrUsername: targetOrg });
-      const connection = await org.getConnection();
+      const connection = org.getConnection();
 
       // Query org metadata to determine if it's production
       const query = 'SELECT Id, IsSandbox FROM Organization LIMIT 1';
@@ -1200,9 +1506,9 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
         // Production orgs typically don't have .sandbox. in the username
         // Sandbox orgs have patterns like: username.sandbox@example.com or username--sandbox@example.com
         const lowerUsername = orgUsername.toLowerCase();
-        return !lowerUsername.includes('.sandbox.') &&
-               !lowerUsername.includes('sandbox') &&
-               !lowerUsername.includes('--');
+        return (
+          !lowerUsername.includes('.sandbox.') && !lowerUsername.includes('sandbox') && !lowerUsername.includes('--')
+        );
       }
 
       return false; // Default to false (assume sandbox if uncertain)
@@ -1256,7 +1562,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
           }
 
           if (componentType) {
-            const componentId = `${componentType}:${componentName}`;
+            const componentId = createNodeId(componentType, componentName);
 
             // Check if this component exists in the project
             if (!componentMap.has(componentId)) {
@@ -1274,7 +1580,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
                 if (!missingComponents.has(componentId)) {
                   missingComponents.set(componentId, new Set());
                 }
-                referencedBy.forEach(ref => missingComponents.get(componentId)!.add(ref));
+                referencedBy.forEach((ref) => missingComponents.get(componentId)!.add(ref));
               }
             }
           }
@@ -1288,13 +1594,24 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       let suggestion: string | undefined;
 
       // Generate specific suggestions based on component type
-      const [type, name] = componentId.split(':');
-      if (type === 'VisualforcePage' && (name.includes('Site') || name.includes('Communities') || name.includes('ForgotPassword') || name.includes('ChangePassword'))) {
-        suggestion = 'This appears to be an auto-generated Experience Cloud page. Ensure Experience Cloud site metadata is included in the project.';
+      const parts = parseNodeId(componentId);
+      if (!parts) continue;
+      const { type, name } = parts;
+      if (
+        type === 'VisualforcePage' &&
+        (name.includes('Site') ||
+          name.includes('Communities') ||
+          name.includes('ForgotPassword') ||
+          name.includes('ChangePassword'))
+      ) {
+        suggestion =
+          'This appears to be an auto-generated Experience Cloud page. Ensure Experience Cloud site metadata is included in the project.';
       } else if (type === 'CustomLabels') {
-        suggestion = 'Custom Label may need to be retrieved from the org or created. Check if the label exists in the target org.';
+        suggestion =
+          'Custom Label may need to be retrieved from the org or created. Check if the label exists in the target org.';
       } else if (type === 'ApexClass' && (name.includes('Controller') || name.includes('Test'))) {
-        suggestion = 'This may be an auto-generated Experience Cloud controller. Ensure Experience Bundle metadata is included.';
+        suggestion =
+          'This may be an auto-generated Experience Cloud controller. Ensure Experience Bundle metadata is included.';
       }
 
       suggestions.push({
@@ -1308,8 +1625,8 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
   }
 
   private generateReport(waves: number): void {
-    this.log(`\n📊 Deployment Report:`);
+    this.log('\n📊 Deployment Report:');
     this.log(`   - Waves: ${waves}`);
-    this.log(`   - Status: Success`);
+    this.log('   - Status: Success');
   }
 }
