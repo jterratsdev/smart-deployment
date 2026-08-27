@@ -15,12 +15,16 @@ import sinon, { SinonStub } from 'sinon';
 import Validate from '../../../src/commands/smart-deployment/validate.js';
 import { MetadataScannerService } from '../../../src/services/metadata-scanner-service.js';
 import { WaveBuilder } from '../../../src/waves/wave-builder.js';
+import { ManifestGenerator } from '../../../src/deployment/manifest-generator.js';
+import { ManifestValidator } from '../../../src/deployment/manifest-validator.js';
+import { SfCliIntegration } from '../../../src/deployment/sf-cli-integration.js';
 import { createMockComponent } from '../../helpers/test-helpers.js';
 
 describe('ValidateCommand', () => {
   let validateCommand: Validate;
   let scannerStub: SinonStub;
   let waveBuilderStub: SinonStub;
+  let deployStub: SinonStub;
 
   beforeEach(() => {
     validateCommand = new Validate([], {} as any);
@@ -87,6 +91,31 @@ describe('ValidateCommand', () => {
         totalEstimatedTime: 5,
       },
     });
+
+    sinon.stub(ManifestGenerator.prototype, 'generateManifests').resolves({
+      manifests: [
+        {
+          fileName: 'wave-001-package.xml',
+          content: '<Package />',
+          components: { ApexClass: ['TestClass'] },
+          apiVersion: '65.0',
+        },
+      ],
+      errors: [],
+      warnings: [],
+    });
+    sinon.stub(ManifestValidator.prototype, 'validateManifest').resolves({
+      isValid: true,
+      errors: [],
+      warnings: [],
+    });
+    deployStub = sinon.stub(SfCliIntegration.prototype, 'deploy').resolves({
+      success: true,
+      status: 'Succeeded',
+      componentSuccesses: 1,
+      componentFailures: 0,
+      output: '{}',
+    });
   });
 
   afterEach(() => {
@@ -97,6 +126,8 @@ describe('ValidateCommand', () => {
     it('should perform check-only deployment', async () => {
       const result = await validateCommand.run();
       expect(result.success).to.be.true;
+      expect(deployStub.calledOnce).to.be.true;
+      expect(deployStub.firstCall.args[0]).to.include({ targetOrg: 'test-org', checkOnly: true });
     });
   });
 
@@ -146,10 +177,18 @@ describe('ValidateCommand', () => {
   describe('US-048-AC-3: Reports validation errors', () => {
     it('should report validation errors when deployment fails', async () => {
       validateCommand.argv = ['--target-org', 'test-org'];
+      deployStub.resolves({
+        success: false,
+        status: 'Failed',
+        componentSuccesses: 0,
+        componentFailures: 1,
+        output: 'Remote validation error',
+      });
       const result = await validateCommand.run();
 
-      expect(result.success).to.be.true;
-      expect(result.errors).to.have.length(0);
+      expect(result.success).to.be.false;
+      expect(result.errors).to.have.length(1);
+      expect(result.errors[0]).to.contain('Remote validation error');
     });
 
     it('should show error details', async () => {
@@ -181,7 +220,8 @@ describe('ValidateCommand', () => {
     it('should not perform actual deployment', async () => {
       await validateCommand.run();
 
-      expect((await validateCommand.run()).success).to.be.true;
+      expect(deployStub.neverCalledWith(sinon.match({ checkOnly: false }))).to.be.true;
+      expect(deployStub.neverCalledWith(sinon.match({ checkOnly: undefined }))).to.be.true;
     });
   });
 

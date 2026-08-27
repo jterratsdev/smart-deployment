@@ -1,5 +1,6 @@
 /**
  * smart-deployment:validate command - US-048
+ *
  * @ac US-048-AC-1: Performs check-only deployment
  * @ac US-048-AC-2: Validates each wave
  * @ac US-048-AC-3: Reports validation errors
@@ -9,14 +10,19 @@
  * @issue #48
  */
 
-import { Flags } from '@oclif/core';
-import { SfCommand } from '@salesforce/sf-plugins-core';
+import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { getLogger } from '../../utils/logger.js';
 import { MetadataScannerService } from '../../services/metadata-scanner-service.js';
 import { WaveBuilder } from '../../waves/wave-builder.js';
 import { WaveValidator } from '../../waves/wave-validator.js';
 import { getWavesInExecutionOrder } from '../../waves/wave-executor.js';
 import { initializeI18n } from '../../i18n/i18n-service.js';
+import { ManifestGenerator } from '../../deployment/manifest-generator.js';
+import { ManifestValidator } from '../../deployment/manifest-validator.js';
+import { SfCliIntegration } from '../../deployment/sf-cli-integration.js';
+import { createNodeId } from '../../utils/node-id.js';
+import type { MetadataComponent } from '../../types/metadata.js';
+import * as path from 'node:path';
 import type { SupportedLocale } from '../../i18n/locale-detector.js';
 
 const logger = getLogger('ValidateCommand');
@@ -35,7 +41,8 @@ export default class Validate extends SfCommand<{ success: boolean; errors: stri
 
   public async run(): Promise<{ success: boolean; errors: string[] }> {
     const { flags } = await this.parse(Validate);
-    const sourcePath = flags['source-path'] as string | undefined;
+    const sourcePath = flags['source-path'];
+    const targetOrg = flags['target-org'];
 
     // Initialize i18n
     initializeI18n({
@@ -81,6 +88,71 @@ export default class Validate extends SfCommand<{ success: boolean; errors: stri
       return { success: false, errors: validationResult.errors };
     }
 
+    // Generate and validate the manifests locally before contacting the target org.
+    const componentMap = new Map<string, MetadataComponent>();
+    for (const component of scanResult.components) {
+      componentMap.set(createNodeId(component.type, component.name), component);
+    }
+
+    const manifestDir = path.join(scanResult.projectRoot, '.smart-deployment', 'manifests');
+    const manifestResult = await new ManifestGenerator().generateManifests(orderedWaves, {
+      projectRoot: scanResult.projectRoot,
+      componentMap,
+      outputDir: manifestDir,
+      validateFiles: true,
+    });
+
+    const localErrors = [...manifestResult.errors];
+    for (const warning of manifestResult.warnings) {
+      this.warn(`⚠️  ${warning}`);
+    }
+
+    const manifestValidator = new ManifestValidator();
+    for (const manifest of manifestResult.manifests) {
+      const localValidation = await manifestValidator.validateManifest(manifest, componentMap, scanResult.projectRoot);
+      if (!localValidation.isValid) {
+        localErrors.push(...localValidation.errors.map((error) => `${manifest.fileName}: ${error.message}`));
+      }
+    }
+
+    if (localErrors.length > 0) {
+      logger.error('Local manifest validation failed', { errors: localErrors });
+      localErrors.forEach((error) => this.error(`❌ ${error}`));
+      this.log('\n❌ Validation failed');
+      return { success: false, errors: localErrors };
+    }
+
+    if (manifestResult.manifests.length === 0) {
+      const error = 'No manifests generated';
+      this.error(`❌ ${error}`);
+      return { success: false, errors: [error] };
+    }
+
+    this.log(`📦 Generated ${manifestResult.manifests.length} manifest(s)`);
+
+    // Salesforce check-only validation never mutates the target org.
+    const sfCli = new SfCliIntegration();
+    const remoteErrors: string[] = [];
+    for (const manifest of manifestResult.manifests) {
+      const remoteResult = await sfCli.deploy({
+        manifestPath: path.join(manifestDir, manifest.fileName),
+        targetOrg,
+        checkOnly: true,
+      });
+
+      if (!remoteResult.success) {
+        const error = `${manifest.fileName}: ${remoteResult.status}\n${remoteResult.output}`;
+        remoteErrors.push(error);
+        logger.error('Remote validation failed', { manifest: manifest.fileName, output: remoteResult.output });
+        this.warn(`❌ ${error}`);
+      }
+    }
+
+    if (remoteErrors.length > 0) {
+      this.log('\n❌ Remote validation failed');
+      return { success: false, errors: remoteErrors };
+    }
+
     // Calculate estimated deployment time (rough estimate: 1 second per component)
     const totalComponents = orderedWaves.reduce((sum, wave) => sum + wave.components.length, 0);
     const estimatedSeconds = Math.ceil(totalComponents / 10); // Rough estimate
@@ -88,7 +160,7 @@ export default class Validate extends SfCommand<{ success: boolean; errors: stri
     const estimatedSecondsRemainder = estimatedSeconds % 60;
 
     this.log('\n✅ Validation complete');
-    this.log(`📊 Summary:`);
+    this.log('📊 Summary:');
     this.log(`   - Components: ${totalComponents}`);
     this.log(`   - Waves: ${orderedWaves.length}`);
     this.log(`   - Estimated time: ${estimatedMinutes}m ${estimatedSecondsRemainder}s`);
