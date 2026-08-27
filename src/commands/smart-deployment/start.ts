@@ -46,6 +46,7 @@ import type { ScanResult } from '../../services/metadata-scanner-service.js';
 import { OutputFormatter } from '../../utils/output-formatter.js';
 import { validateManifestCompleteness } from '../../utils/manifest-completeness-validator.js';
 import { validateAgentforceTargets } from '../../validation/agentforce-target-validator.js';
+import { DeploymentReporter, type DeploymentReport, type WaveReport } from '../../deployment/deployment-reporter.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('smart-deployment', 'start');
@@ -223,19 +224,39 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       }
 
       // AC-3: Execute deployment
-      if (!flags['dry-run']) {
-        output.section('Executing Deployment', '🚀');
-        await this.executeDeployment(flags, output, sourcePath);
-      } else {
+      const deploymentId = `deployment-${Date.now()}`;
+      let report: DeploymentReport;
+      if (flags['dry-run']) {
         output.section('Dry-Run Mode', '🔍');
-        output.info('Skipping actual deployment');
+        const now = new Date().toISOString();
+        report = {
+          deploymentId,
+          targetOrg: flags['target-org'] as string,
+          startTime: now,
+          endTime: now,
+          totalDuration: 0,
+          status: 'VALIDATED',
+          mode: 'DRY_RUN',
+          success: true,
+          totalWaves: waves,
+          completedWaves: 0,
+          totalComponents: metadataCount,
+          totalComponentFailures: 0,
+          totalTests: 0,
+          totalTestFailures: 0,
+          waves: [],
+          errors: [],
+        };
+      } else {
+        output.section('Executing Deployment', '🚀');
+        report = await this.executeDeployment(flags, output, sourcePath, deploymentId);
       }
 
       // AC-9: Generate report
       output.section('Generating Deployment Report', '📄');
-      this.generateReport(waves);
+      this.generateReport(report);
 
-      return { success: true, waves };
+      return { success: report.success, waves };
     } catch (error) {
       // AC-10: Handle failures gracefully
       logger.error('Deployment failed', { error });
@@ -344,10 +365,12 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
   private async executeDeployment(
     flags: Record<string, unknown>,
     output: OutputFormatter,
-    sourcePath?: string
-  ): Promise<void> {
+    sourcePath?: string,
+    deploymentId = `deployment-${Date.now()}`
+  ): Promise<DeploymentReport> {
     const targetOrg = flags['target-org'] as string;
     const dryRun = flags['dry-run'] as boolean;
+    const validateOnly = flags['validate-only'] as boolean;
 
     // Check for existing deployment state (resume capability)
     const stateManager = new StateManager();
@@ -379,18 +402,35 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
         completedWaveNumbers = existingState.completedWaves;
       } else {
         output.info('Starting fresh deployment (ignoring previous state)...');
-        await stateManager.clearState();
+        if (!validateOnly) await stateManager.clearState();
       }
     }
 
-    const validateOnly = flags['validate-only'] as boolean;
-    const deploymentId = `deployment-${Date.now()}`;
-
-    if (dryRun) {
-      output.section('Dry-Run Mode', '🔍');
-      output.info('Skipping actual deployment');
-      return;
-    }
+    const reportStartTime = new Date().toISOString();
+    const waveReports: WaveReport[] = [];
+    const reportErrors: string[] = [];
+    const mode: DeploymentReport['mode'] = dryRun ? 'DRY_RUN' : validateOnly ? 'VALIDATION' : 'DEPLOYMENT';
+    const finishReport = (success: boolean): DeploymentReport => {
+      const endTime = new Date().toISOString();
+      return {
+        deploymentId,
+        targetOrg,
+        startTime: reportStartTime,
+        endTime,
+        totalDuration: Math.max(0, (Date.parse(endTime) - Date.parse(reportStartTime)) / 1000),
+        status: success ? (mode === 'VALIDATION' ? 'VALIDATED' : 'SUCCESS') : 'FAILED',
+        mode,
+        success,
+        totalWaves: orderedWaves.length,
+        completedWaves: mode === 'DEPLOYMENT' ? waveReports.filter((wave) => wave.success).length : 0,
+        totalComponents: orderedWaves.reduce((total, wave) => total + wave.components.length, 0),
+        totalComponentFailures: waveReports.reduce((total, wave) => total + (wave.componentFailures ?? 0), 0),
+        totalTests: waveReports.reduce((total, wave) => total + (wave.testsRun ?? 0), 0),
+        totalTestFailures: waveReports.reduce((total, wave) => total + (wave.testFailures ?? 0), 0),
+        waves: waveReports,
+        errors: reportErrors,
+      };
+    };
 
     // Scan and generate waves
     const scanner = new MetadataScannerService();
@@ -489,6 +529,23 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
 
     const orderedWaves = getWavesInExecutionOrder(waveResult);
 
+    if (dryRun) {
+      output.info('Skipping actual deployment; analyzing waves and components only');
+      const now = new Date();
+      for (const wave of orderedWaves) {
+        waveReports.push({
+          waveNumber: wave.number,
+          components: wave.components.length,
+          startTime: now.toISOString(),
+          endTime: now.toISOString(),
+          duration: 0,
+          success: true,
+        });
+        output.info(`Wave ${wave.number}: analyzed ${wave.components.length} component(s)`);
+      }
+      return finishReport(true);
+    }
+
     // Filter waves to deploy based on previous state (if resuming)
     let wavesToDeploy = orderedWaves;
     if (startFromWave > 1 && completedWaveNumbers.length > 0) {
@@ -567,7 +624,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
 
     if (manifestResult.manifests.length === 0) {
       this.error('No manifests generated. Cannot proceed with deployment.');
-      return;
+      return finishReport(false);
     }
 
     output.success(`Generated ${manifestResult.manifests.length} manifests`);
@@ -612,7 +669,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
 
     if (!allManifestsValid) {
       this.error('Manifest validation failed. Please fix errors before deploying.');
-      return;
+      return finishReport(false);
     }
 
     output.success('All manifests validated');
@@ -625,7 +682,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       this.error(
         'Agentforce target validation failed. Targets must be present in manifests and deployed before consumers.'
       );
-      return;
+      return finishReport(false);
     }
     if (agentforceValidation.valid) {
       output.success('Agentforce targets are ordered and included in manifests');
@@ -775,6 +832,12 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     // Execute waves sequentially
     // Deploy only waves that haven't been completed yet
     for (const wave of wavesToDeploy) {
+      const waveStartTime = new Date();
+      let waveComponentFailures = 0;
+      let waveTestFailures = 0;
+      let deploymentResultForReport:
+        | { componentFailures?: number; testsRun?: number; testFailures?: number }
+        | undefined;
       output.waveHeader(wave.number, orderedWaves.length, wave.components.length);
 
       try {
@@ -1014,6 +1077,9 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
             ignoreConflicts: Boolean(flags['ignore-conflicts']),
             ignoreWarnings: Boolean(flags['ignore-conflicts']), // Also ignore warnings when ignoring conflicts
           });
+          waveComponentFailures = result.componentFailures ?? 0;
+          waveTestFailures = result.testFailures ?? 0;
+          deploymentResultForReport = result;
 
           // NO PARTIAL FAILURES: Verify that deployment was truly successful
           // Check both success flag AND component failures count
@@ -1326,17 +1392,50 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
                       ignoreWarnings: Boolean(flags['ignore-conflicts']), // Also ignore warnings when ignoring conflicts
                     });
 
-                    if (retryResult.success) {
+                    const retryHasFailures =
+                      (retryResult.componentFailures ?? 0) > 0 || (retryResult.testFailures ?? 0) > 0;
+                    if (retryResult.success && !retryHasFailures) {
                       this.log(`   ✅ Deployed ${retryResult.componentSuccesses} components (with simplification)`);
                       if (retryResult.testsRun) {
                         this.log(`   ✅ Ran ${retryResult.testsRun} tests`);
                       }
 
-                      // Note: Temp files will be cleaned up automatically or can be cleaned manually
-                      // Continue to next wave
+                      const waveEndTime = new Date();
+                      waveReports.push({
+                        waveNumber: wave.number,
+                        components: wave.components.length,
+                        startTime: waveStartTime.toISOString(),
+                        endTime: waveEndTime.toISOString(),
+                        duration: (waveEndTime.getTime() - waveStartTime.getTime()) / 1000,
+                        success: true,
+                        testsRun: retryResult.testsRun,
+                        testFailures: retryResult.testFailures,
+                        componentFailures: retryResult.componentFailures,
+                      });
+                      if (!validateOnly) {
+                        await stateManager.saveState({
+                          status: 'deploying',
+                          deploymentId,
+                          targetOrg,
+                          timestamp: new Date().toISOString(),
+                          totalWaves: orderedWaves.length,
+                          completedWaves: Array.from({ length: wave.number }, (_, i) => i + 1),
+                          currentWave: wave.number,
+                        });
+                      }
+                      output.success(
+                        `Wave ${wave.number} ${
+                          validateOnly ? 'validated' : 'deployed'
+                        } successfully with simplification`
+                      );
                       continue;
                     } else {
                       this.warn('   ⚠️  Retry with simplified metadata also failed');
+                      reportErrors.push(
+                        `Simplification fallback failed: ${retryResult.status} (${
+                          retryResult.componentFailures ?? 0
+                        } component failure(s), ${retryResult.testFailures ?? 0} test failure(s))`
+                      );
                       // Fall through to throw error
                     }
                   } else {
@@ -1380,6 +1479,19 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
             testFailures: result.testFailures,
           });
 
+          const waveEndTime = new Date();
+          waveReports.push({
+            waveNumber: wave.number,
+            components: wave.components.length,
+            startTime: waveStartTime.toISOString(),
+            endTime: waveEndTime.toISOString(),
+            duration: (waveEndTime.getTime() - waveStartTime.getTime()) / 1000,
+            success: true,
+            componentFailures: waveComponentFailures,
+            testsRun: result.testsRun,
+            testFailures: waveTestFailures,
+          });
+
           // Check if this wave contains Experience Bundle components
           const hasExperienceBundle = wave.components.some(
             (nodeId) =>
@@ -1405,56 +1517,79 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
           throw deployError;
         }
 
-        // Save state after each wave - only mark as completed if truly successful
-        await stateManager.saveState({
-          status: 'deploying',
-          deploymentId,
-          targetOrg,
-          timestamp: new Date().toISOString(),
-          totalWaves: orderedWaves.length,
-          completedWaves: Array.from({ length: wave.number }, (_, i) => i + 1),
-          currentWave: wave.number,
-        });
+        // Validation is not deployment: do not advance or clear resumable state.
+        if (!validateOnly) {
+          await stateManager.saveState({
+            status: 'deploying',
+            deploymentId,
+            targetOrg,
+            timestamp: new Date().toISOString(),
+            totalWaves: orderedWaves.length,
+            completedWaves: Array.from({ length: wave.number }, (_, i) => i + 1),
+            currentWave: wave.number,
+          });
+        }
 
-        output.success(`Wave ${wave.number} deployed successfully`);
+        output.success(`Wave ${wave.number} ${validateOnly ? 'validated successfully' : 'deployed successfully'}`);
       } catch (error) {
         logger.error('Wave deployment failed', { wave: wave.number, error });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        reportErrors.push(errorMessage);
+        if (!waveReports.some((report) => report.waveNumber === wave.number)) {
+          const waveEndTime = new Date();
+          waveReports.push({
+            waveNumber: wave.number,
+            components: wave.components.length,
+            startTime: waveStartTime.toISOString(),
+            endTime: waveEndTime.toISOString(),
+            duration: (waveEndTime.getTime() - waveStartTime.getTime()) / 1000,
+            success: false,
+            componentFailures: deploymentResultForReport?.componentFailures,
+            testsRun: deploymentResultForReport?.testsRun,
+            testFailures: deploymentResultForReport?.testFailures,
+            error: errorMessage,
+          });
+        }
 
         // Save failed state
-        await stateManager.saveState({
-          status: 'failed',
-          deploymentId,
-          targetOrg,
-          timestamp: new Date().toISOString(),
-          totalWaves: orderedWaves.length,
-          completedWaves: Array.from({ length: wave.number - 1 }, (_, i) => i + 1),
-          currentWave: wave.number,
-          failedWave: {
-            waveNumber: wave.number,
-            error: error instanceof Error ? error.message : String(error),
+        if (!validateOnly) {
+          await stateManager.saveState({
+            status: 'failed',
+            deploymentId,
+            targetOrg,
             timestamp: new Date().toISOString(),
-          },
-        });
+            totalWaves: orderedWaves.length,
+            completedWaves: Array.from({ length: wave.number - 1 }, (_, i) => i + 1),
+            currentWave: wave.number,
+            failedWave: {
+              waveNumber: wave.number,
+              error: error instanceof Error ? error.message : String(error),
+              timestamp: new Date().toISOString(),
+            },
+          });
+        }
 
+        this.generateReport(finishReport(false));
         this.error(`Wave ${wave.number} failed: ${error instanceof Error ? error.message : String(error)}`);
-        return; // Exit on failure
+        return finishReport(false); // Exit on failure
       }
     }
 
-    // Save completed state
-    await stateManager.saveState({
-      status: 'completed',
-      deploymentId,
-      targetOrg,
-      timestamp: new Date().toISOString(),
-      totalWaves: orderedWaves.length,
-      completedWaves: Array.from({ length: orderedWaves.length }, (_, i) => i + 1),
-      currentWave: orderedWaves.length,
-    });
-
-    // Clear state on success (transitions to IDLE)
-    await stateManager.clearState();
-    this.log('\n✅ All waves deployed successfully!');
+    if (!validateOnly) {
+      await stateManager.saveState({
+        status: 'completed',
+        deploymentId,
+        targetOrg,
+        timestamp: new Date().toISOString(),
+        totalWaves: orderedWaves.length,
+        completedWaves: Array.from({ length: orderedWaves.length }, (_, i) => i + 1),
+        currentWave: orderedWaves.length,
+      });
+      await stateManager.clearState();
+      this.log('\n✅ All waves deployed successfully!');
+    } else {
+      this.log('\n✅ All waves validated successfully (no deployment state changed).');
+    }
 
     // Check if any wave contained Experience Bundle components
     const hasExperienceBundle = orderedWaves.some(
@@ -1477,6 +1612,8 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
       this.log('  (Replace <SiteName> with your actual site name)');
       this.log('');
     }
+
+    return finishReport(true);
   }
 
   /**
@@ -1662,9 +1799,7 @@ export default class Start extends SfCommand<{ success: boolean; waves: number }
     return suggestions;
   }
 
-  private generateReport(waves: number): void {
-    this.log('\n📊 Deployment Report:');
-    this.log(`   - Waves: ${waves}`);
-    this.log('   - Status: Success');
+  private generateReport(report: DeploymentReport): void {
+    this.log(`\n${new DeploymentReporter().generateReport(report)}`);
   }
 }

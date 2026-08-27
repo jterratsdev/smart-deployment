@@ -18,7 +18,7 @@ import { getLogger } from '../utils/logger.js';
 
 const logger = getLogger('DeploymentReporter');
 
-export interface WaveReport {
+export type WaveReport = {
   waveNumber: number;
   components: number;
   startTime: string;
@@ -27,29 +27,39 @@ export interface WaveReport {
   success: boolean;
   testsRun?: number;
   testFailures?: number;
+  componentFailures?: number;
   error?: string;
-}
+};
 
-export interface DeploymentReport {
+export type DeploymentReport = {
   deploymentId: string;
   targetOrg: string;
   startTime: string;
   endTime: string;
   totalDuration: number;
+  status: 'SUCCESS' | 'FAILED' | 'VALIDATED';
+  mode?: 'DEPLOYMENT' | 'VALIDATION' | 'DRY_RUN';
   success: boolean;
   totalWaves: number;
   completedWaves: number;
   totalComponents: number;
+  totalComponentFailures: number;
   totalTests: number;
+  totalTestFailures: number;
   waves: WaveReport[];
   errors: string[];
-}
+};
 
 /**
  * @ac US-090-AC-1: Generate deployment summary
  * @ac US-090-AC-2: Include wave-by-wave breakdown
  */
 export class DeploymentReporter {
+  private effectiveStatus(report: DeploymentReport): DeploymentReport['status'] {
+    if (!report.success) return 'FAILED';
+    if (report.mode === 'VALIDATION' || report.mode === 'DRY_RUN') return 'VALIDATED';
+    return 'SUCCESS';
+  }
   /**
    * @ac US-090-AC-3: Include test results
    * @ac US-090-AC-4: Include timing information
@@ -63,7 +73,14 @@ export class DeploymentReporter {
       '',
       `Deployment ID: ${report.deploymentId}`,
       `Target Org: ${report.targetOrg}`,
-      `Status: ${report.success ? '✅ SUCCESS' : '❌ FAILED'}`,
+      `Mode: ${report.mode}`,
+      `Status: ${
+        this.effectiveStatus(report) === 'SUCCESS'
+          ? '✅ SUCCESS'
+          : this.effectiveStatus(report) === 'VALIDATED'
+          ? '✅ VALIDATED'
+          : '❌ FAILED'
+      }`,
       `Duration: ${report.totalDuration}s`,
       '',
       `Waves: ${report.completedWaves}/${report.totalWaves}`,
@@ -111,7 +128,7 @@ export class DeploymentReporter {
    * @ac US-090-AC-6: Export as JSON
    */
   public toJSON(report: DeploymentReport): string {
-    return JSON.stringify(report, null, 2);
+    return JSON.stringify({ ...report, status: this.effectiveStatus(report) }, null, 2);
   }
 
   /**
@@ -134,7 +151,9 @@ export class DeploymentReporter {
 </head>
 <body>
   <h1>Deployment Report</h1>
-  <p><strong>Status:</strong> <span class="${report.success ? 'success' : 'failure'}">${report.success ? 'SUCCESS' : 'FAILED'}</span></p>
+   <p><strong>Status:</strong> <span class="${
+     this.effectiveStatus(report) === 'FAILED' ? 'failure' : 'success'
+   }">${this.effectiveStatus(report)}</span></p>
   <p><strong>Target:</strong> ${report.targetOrg}</p>
   <p><strong>Duration:</strong> ${report.totalDuration}s</p>
 
@@ -147,7 +166,9 @@ export class DeploymentReporter {
       <th>Tests</th>
       <th>Status</th>
     </tr>
-    ${report.waves.map(w => `
+    ${report.waves
+      .map(
+        (w) => `
     <tr>
       <td>${w.waveNumber}</td>
       <td>${w.components}</td>
@@ -155,7 +176,9 @@ export class DeploymentReporter {
       <td>${w.testsRun ?? 0}</td>
       <td class="${w.success ? 'success' : 'failure'}">${w.success ? '✅' : '❌'}</td>
     </tr>
-    `).join('')}
+    `
+      )
+      .join('')}
   </table>
 </body>
 </html>
@@ -187,4 +210,3 @@ export class DeploymentReporter {
     return filename;
   }
 }
-
