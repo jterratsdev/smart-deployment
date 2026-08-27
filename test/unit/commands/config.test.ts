@@ -1,239 +1,113 @@
-/**
- * Unit tests for config command
- *
- * @ac US-051-AC-1: Set Agentforce configuration
- * @ac US-051-AC-2: Set default test level
- * @ac US-051-AC-3: Set timeout values
- * @ac US-051-AC-4: Set retry strategies
- * @ac US-051-AC-5: Save configuration to file
- * @ac US-051-AC-6: Validate configuration
- */
-
 import { expect } from 'chai';
-import { describe, it, beforeEach, afterEach } from 'mocha';
+import { afterEach, beforeEach, describe, it } from 'mocha';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import sinon, { SinonStub } from 'sinon';
 import Config from '../../../src/commands/smart-deployment/config.js';
 
 describe('ConfigCommand', () => {
   let configCommand: Config;
+  let directory: string;
+  let parseStub: SinonStub;
+  const originalCwd = process.cwd();
 
-  beforeEach(() => {
+  const parsedFlags = (flags: Record<string, string | undefined>) => ({
+    flags,
+    args: {},
+    argv: [],
+    raw: [],
+    metadata: {} as any,
+  });
+
+  beforeEach(async () => {
+    directory = await fs.mkdtemp(path.join(os.tmpdir(), 'smart-deployment-config-'));
+    process.chdir(directory);
+    await fs.writeFile(
+      path.join(directory, '.smart-deployment.json'),
+      JSON.stringify({
+        $schema: './schemas/config.schema.json',
+        version: '1.0',
+        ai: { enabled: false, confidenceThreshold: 0.9 },
+        deployment: { testLevel: 'RunLocalTests', dryRun: false },
+      })
+    );
     configCommand = new Config([], {} as any);
-    // Mock parse to avoid config.runHook requirement
-    sinon.stub(configCommand as any, 'parse').resolves({
-      flags: {
-        set: undefined,
-        get: undefined,
-        'config-path': undefined,
-      },
-      args: {},
-      argv: [],
-      raw: [],
-      metadata: {} as any,
-    });
+    parseStub = sinon
+      .stub(configCommand as any, 'parse')
+      .resolves(parsedFlags({ set: undefined, get: undefined, locale: undefined }));
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     sinon.restore();
+    process.chdir(originalCwd);
+    await fs.rm(directory, { recursive: true, force: true });
   });
 
-  describe('US-051-AC-1: Set Agentforce configuration', () => {
-    it('should set Agentforce configuration via --set flag', async () => {
-      ((configCommand as any).parse as SinonStub).resolves({
-        flags: {
-          set: 'ai.enabled=true',
-          get: undefined,
-          'config-path': undefined,
-        },
-        args: {},
-        argv: [],
-        raw: [],
-        metadata: {} as any,
-      });
-      const result = await configCommand.run();
+  it('persists a typed value with --set', async () => {
+    parseStub.resolves(parsedFlags({ set: 'ai.enabled=true', get: undefined, locale: undefined }));
 
-      expect(result.success).to.be.true;
-    });
+    const result = await configCommand.run();
+    const saved = JSON.parse(await fs.readFile(path.join(directory, '.smart-deployment.json'), 'utf8')) as any;
 
-    it('should set Agentforce API key', async () => {
-      ((configCommand as any).parse as SinonStub).resolves({
-        flags: {
-          set: 'ai.apiKey=test-key',
-          get: undefined,
-          'config-path': undefined,
-        },
-        args: {},
-        argv: [],
-        raw: [],
-        metadata: {} as any,
-      });
-      const result = await configCommand.run();
-
-      expect(result.success).to.be.true;
-    });
+    expect(result.success).to.equal(true);
+    expect(saved.ai.enabled).to.equal(true);
   });
 
-  describe('US-051-AC-2: Set default test level', () => {
-    it('should set default test level', async () => {
-      ((configCommand as any).parse as SinonStub).resolves({
-        flags: {
-          set: 'deployment.testLevel=RunLocalTests',
-          get: undefined,
-          'config-path': undefined,
-        },
-        args: {},
-        argv: [],
-        raw: [],
-        metadata: {} as any,
-      });
-      const result = await configCommand.run();
+  it('supports compatible keys that are not in older config files', async () => {
+    parseStub.resolves(parsedFlags({ set: 'ai.apiKey=test-key', get: undefined, locale: undefined }));
 
-      expect(result.success).to.be.true;
-    });
+    await configCommand.run();
+    const saved = JSON.parse(await fs.readFile(path.join(directory, '.smart-deployment.json'), 'utf8')) as any;
+
+    expect(saved.ai.apiKey).to.equal('test-key');
   });
 
-  describe('US-051-AC-3: Set timeout values', () => {
-    it('should set timeout values', async () => {
-      ((configCommand as any).parse as SinonStub).resolves({
-        flags: {
-          set: 'deployment.timeout=300000',
-          get: undefined,
-          'config-path': undefined,
-        },
-        args: {},
-        argv: [],
-        raw: [],
-        metadata: {} as any,
-      });
-      const result = await configCommand.run();
+  it('prints a value with --get', async () => {
+    parseStub.resolves(parsedFlags({ set: undefined, get: 'ai.confidenceThreshold', locale: undefined }));
+    const logStub = sinon.stub(configCommand, 'log');
 
-      expect(result.success).to.be.true;
-    });
+    const result = await configCommand.run();
+
+    expect(result.success).to.equal(true);
+    expect(logStub.calledWith('0.9')).to.equal(true);
   });
 
-  describe('US-051-AC-4: Set retry strategies', () => {
-    it('should set retry strategies', async () => {
-      ((configCommand as any).parse as SinonStub).resolves({
-        flags: {
-          set: 'deployment.retry.maxAttempts=3',
-          get: undefined,
-          'config-path': undefined,
-        },
-        args: {},
-        argv: [],
-        raw: [],
-        metadata: {} as any,
-      });
-      const result = await configCommand.run();
+  it('rejects invalid values', async () => {
+    parseStub.resolves(parsedFlags({ set: 'ai.enabled=invalid', get: undefined, locale: undefined }));
 
-      expect(result.success).to.be.true;
-    });
+    try {
+      await configCommand.run();
+      expect.fail('expected invalid value error');
+    } catch (error) {
+      expect(error).to.be.instanceOf(Error);
+      expect((error as Error).message).to.contain("Invalid value for 'ai.enabled'");
+    }
   });
 
-  describe('US-051-AC-5: Save configuration to file', () => {
-    it('should save configuration to file', async () => {
-      configCommand.argv = ['--set', 'ai.enabled=true'];
-      const result = await configCommand.run();
+  it('rejects unknown keys and missing keys', async () => {
+    parseStub.resolves(parsedFlags({ set: 'deployment.notConfigured=true', get: undefined, locale: undefined }));
+    await expectRejected(() => configCommand.run(), 'Unknown configuration key');
 
-      expect(result.success).to.be.true;
-    });
-
-    it('should create config directory if it does not exist', async () => {
-      configCommand.argv = ['--set', 'ai.enabled=true'];
-      const result = await configCommand.run();
-
-      expect(result.success).to.be.true;
-    });
+    parseStub.resolves(parsedFlags({ set: undefined, get: 'deployment.notConfigured', locale: undefined }));
+    await expectRejected(() => configCommand.run(), 'Configuration key not found');
   });
 
-  describe('US-051-AC-6: Validate configuration', () => {
-    it('should validate configuration values', async () => {
-      ((configCommand as any).parse as SinonStub).resolves({
-        flags: {
-          set: 'ai.enabled=invalid',
-          get: undefined,
-          'config-path': undefined,
-        },
-        args: {},
-        argv: [],
-        raw: [],
-        metadata: {} as any,
-      });
-      const result = await configCommand.run();
+  it('reports malformed or unreadable configuration files', async () => {
+    await fs.writeFile(path.join(directory, '.smart-deployment.json'), '{invalid');
+    parseStub.resolves(parsedFlags({ set: undefined, get: 'ai.enabled', locale: undefined }));
+    await expectRejected(() => configCommand.run(), 'Invalid JSON');
 
-      // Should handle invalid values gracefully
-      expect(result.success).to.be.true;
-    });
-  });
-
-  describe('Get Configuration', () => {
-    it('should get configuration value via --get flag', async () => {
-      ((configCommand as any).parse as SinonStub).resolves({
-        flags: {
-          set: undefined,
-          get: 'ai.enabled',
-          'config-path': undefined,
-        },
-        args: {},
-        argv: [],
-        raw: [],
-        metadata: {} as any,
-      });
-      const result = await configCommand.run();
-
-      expect(result.success).to.be.true;
-    });
-
-    it('should return undefined for non-existent keys', async () => {
-      ((configCommand as any).parse as SinonStub).resolves({
-        flags: {
-          set: undefined,
-          get: 'non.existent.key',
-          'config-path': undefined,
-        },
-        args: {},
-        argv: [],
-        raw: [],
-        metadata: {} as any,
-      });
-      const result = await configCommand.run();
-
-      expect(result.success).to.be.true;
-    });
-  });
-
-  describe('Error Handling', () => {
-    it('should handle file read errors gracefully', async () => {
-      ((configCommand as any).parse as SinonStub).resolves({
-        flags: {
-          set: undefined,
-          get: 'ai.enabled',
-          'config-path': undefined,
-        },
-        args: {},
-        argv: [],
-        raw: [],
-        metadata: {} as any,
-      });
-
-      const result = await configCommand.run();
-      expect(result.success).to.be.true;
-    });
-
-    it('should handle file write errors gracefully', async () => {
-      ((configCommand as any).parse as SinonStub).resolves({
-        flags: {
-          set: 'ai.enabled=true',
-          get: undefined,
-          'config-path': undefined,
-        },
-        args: {},
-        argv: [],
-        raw: [],
-        metadata: {} as any,
-      });
-
-      expect((await configCommand.run()).success).to.be.true;
-    });
+    await fs.rm(path.join(directory, '.smart-deployment.json'));
+    await expectRejected(() => configCommand.run(), 'Configuration file not found');
   });
 });
+
+async function expectRejected(action: () => Promise<unknown>, message: string): Promise<void> {
+  try {
+    await action();
+    expect.fail(`expected error containing ${message}`);
+  } catch (error) {
+    expect((error as Error).message).to.contain(message);
+  }
+}
