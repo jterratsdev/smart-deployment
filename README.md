@@ -55,7 +55,7 @@ The project has progressed significantly beyond Phase 1. Major features implemen
 - **Waves**: Complete wave generation system with splitting, merging, validation
 - **Deployment**: Manifest generation, SF CLI integration, state management
 - **AI Integration**: Agentforce integration for dependency inference and priority weighting
-- **Tests**: 95 `.test.ts` files. The latest local `yarn test:only` run reported 1,502 passing and 6 failing cases.
+- **Tests**: 95 `.test.ts` files. The latest local full run reported 1,503 passing and 7 failing cases.
 
 ## 🎯 Current Implementation
 
@@ -199,7 +199,7 @@ yarn test:nuts              # Salesforce integration/NUT tests
 
 **Test Coverage**:
 
-- **1,502 passing and 6 failing cases** in the latest local `yarn test:only` run
+- **1,503 passing and 7 failing cases** in the latest local full test run
 - **Unit Tests**: Comprehensive coverage for all modules
 - **E2E-style checks**: `scripts/e2e-test.sh` (7 numbered tests) and `scripts/e2e-test-grg.sh` (24 numbered tests). No specs currently exist under `test/e2e/`.
 - **Coverage**: High coverage across parsers, services, and commands

@@ -11,7 +11,7 @@ Comprehensive review of E2E tests, unit tests, and testing documentation.
 | Category          | Status     | Coverage                                                  | Priority |
 | ----------------- | ---------- | --------------------------------------------------------- | -------- |
 | **E2E Tests**     | 🟡 Partial | Shell suites only; no `test/e2e/` specs                   | High     |
-| **Unit Tests**    | 🟡 Mixed   | 95 `.test.ts` files; latest run: 1,502 passing, 6 failing | Medium   |
+| **Unit Tests**    | 🟡 Mixed   | 95 `.test.ts` files; latest run: 1,503 passing, 7 failing | Medium   |
 | **Command Tests** | 🟢 Present | 6/6 command test files present                            | Medium   |
 | **Documentation** | 🟡 Partial | 70%                                                       | Medium   |
 
