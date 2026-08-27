@@ -160,7 +160,9 @@ The command result contains:
 
 ## Command: `sf smart-deployment validate`
 
-Validates deployment without executing it.
+Validates deployment without executing it. This command performs local wave
+and manifest validation and, with a target org, sends each manifest to
+Salesforce using `checkOnly: true`. It does not commit metadata.
 
 ### Synopsis
 

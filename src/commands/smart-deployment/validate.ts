@@ -21,6 +21,7 @@ import { ManifestGenerator } from '../../deployment/manifest-generator.js';
 import { ManifestValidator } from '../../deployment/manifest-validator.js';
 import { SfCliIntegration } from '../../deployment/sf-cli-integration.js';
 import { createNodeId } from '../../utils/node-id.js';
+import { validateAgentforceTargets } from '../../validation/agentforce-target-validator.js';
 import type { MetadataComponent } from '../../types/metadata.js';
 import * as path from 'node:path';
 import type { SupportedLocale } from '../../i18n/locale-detector.js';
@@ -129,6 +130,18 @@ export default class Validate extends SfCommand<{ success: boolean; errors: stri
     }
 
     this.log(`📦 Generated ${manifestResult.manifests.length} manifest(s)`);
+
+    const agentforceValidation = validateAgentforceTargets(orderedWaves, manifestResult.manifests, componentMap);
+    const agentforceErrors = agentforceValidation.issues
+      .filter((issue) => issue.severity === 'error')
+      .map((issue) => `${issue.consumer} -> ${issue.target}: ${issue.message}`);
+    agentforceValidation.issues
+      .filter((issue) => issue.severity === 'warning')
+      .forEach((issue) => this.warn(`⚠️  ${issue.consumer} -> ${issue.target}: ${issue.message}`));
+    if (agentforceErrors.length > 0) {
+      agentforceErrors.forEach((error) => this.error(`❌ ${error}`));
+      return { success: false, errors: agentforceErrors };
+    }
 
     // Salesforce check-only validation never mutates the target org.
     const sfCli = new SfCliIntegration();

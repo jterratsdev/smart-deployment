@@ -2,11 +2,11 @@
  * Unit tests for ManifestValidator
  */
 
-import { expect } from 'chai';
-import { describe, it, beforeEach } from 'mocha';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
+import { describe, it, beforeEach } from 'mocha';
+import { expect } from 'chai';
 import { ManifestValidator } from '../../../src/deployment/manifest-validator.js';
 import type { Manifest } from '../../../src/types/deployment.js';
 import type { MetadataComponent } from '../../../src/types/metadata.js';
@@ -132,7 +132,7 @@ describe('ManifestValidator', () => {
       expect(result.errors[0].message).to.include('does not exist');
     });
 
-    it('should warn about components in source missing from manifest', async () => {
+    it('does not warn when a component belongs to another wave manifest', async () => {
       const manifest: Manifest = {
         fileName: 'wave-001-package.xml',
         content: `<?xml version="1.0" encoding="UTF-8"?>
@@ -164,9 +164,8 @@ describe('ManifestValidator', () => {
 
       const result = await validator.validateManifest(manifest, componentMap, projectRoot);
 
-      expect(result.isValid).to.be.true; // Still valid, just warnings
-      expect(result.warnings).to.have.length.greaterThan(0);
-      expect(result.warnings[0].message).to.include('exists in source but is not included in manifest');
+      expect(result.isValid).to.be.true;
+      expect(result.warnings).to.have.length(0);
     });
 
     it('should handle invalid XML gracefully', async () => {
@@ -189,7 +188,15 @@ describe('ManifestValidator', () => {
       const customObject: MetadataComponent = {
         name: 'TestObject__c',
         type: 'CustomObject',
-        filePath: path.join(projectRoot, 'force-app', 'main', 'default', 'objects', 'TestObject__c', 'TestObject__c.object-meta.xml'),
+        filePath: path.join(
+          projectRoot,
+          'force-app',
+          'main',
+          'default',
+          'objects',
+          'TestObject__c',
+          'TestObject__c.object-meta.xml'
+        ),
         dependencies: new Set(),
         dependents: new Set(),
         priorityBoost: 0,
@@ -226,4 +233,3 @@ describe('ManifestValidator', () => {
     });
   });
 });
-
