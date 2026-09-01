@@ -719,9 +719,10 @@
     "workflow": {
       "requiredRoles": ["developer"]
     },
-    "status": "pending",
+    "status": "blocked",
     "createdAt": "2026-09-01T22:34:00.751Z",
-    "updatedAt": "2026-09-01T22:34:00.751Z"
+    "updatedAt": "2026-09-01T22:55:32.010Z",
+    "blockedReason": "release_manager requested block: The RC cannot be published safely as 1.5.0: package.json/npm-shrinkwrap are unchanged at 1.5.0, v1.5.0 points to a predecessor, npm 1.5.0 is already published, and the workflow's duplicate-version guard will fail or skip publication depending on entry path."
   },
   {
     "id": "SD-RC-RECONCILE-developer-c60a10",

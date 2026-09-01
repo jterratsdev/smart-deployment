@@ -31,8 +31,10 @@ export function parseLegacyAgentforce(
         : ['prompt', 'prompttemplate', 'genaiprompttemplate'].includes(targetType ?? '')
         ? 'GenAiPromptTemplate'
         : undefined;
-    if (target && metadataType)
-      dependencies.add(`${metadataType}:${metadataType === 'ApexClass' ? target.split('.')[0] : target}`);
+    if (target && metadataType) {
+      const targetName = metadataType === 'ApexClass' ? target.replace(/\.[^.]+$/u, '') : target;
+      dependencies.add(`${metadataType}:${targetName}`);
+    }
   } else {
     for (const functionName of values(parsed, new Set(['functionName', 'genAiFunctionName']))) {
       dependencies.add(`GenAiFunction:${functionName}`);

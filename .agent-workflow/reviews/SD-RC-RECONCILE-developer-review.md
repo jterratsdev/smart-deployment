@@ -2,5 +2,5 @@
 
 - Result: approve
 - Severity: info
-- Findings: Scoped reconciliation preserves current architecture and adds only missing deterministic Agentforce parser/graph behavior. Focused tests, typecheck, lint, and build pass. No generated .setup-agents references were touched.
-- Recommendation: Proceed as release candidate with documented parser grammar limits; do not import old runtime translation or remove current provider integration.
+- Findings: Reconciled only missing deterministic Agentforce metadata dependencies onto current main; current provider, resume, release, and package architecture preserved.
+- Recommendation: Proceed to QA and licensed-org smoke testing before GA.

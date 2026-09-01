@@ -63,4 +63,30 @@ describe('Agentforce scanner graph and waves', () => {
       builder.getComponentWave(first, 'AiAuthoringBundle:SupportAgent')!
     );
   });
+
+  it('places a bundle whose target is already available in the destination org', async () => {
+    const project = await fs.mkdtemp(path.join(os.tmpdir(), 'smart-deployment-agentforce-external-'));
+    projects.push(project);
+    const files: Record<string, string> = {
+      'sfdx-project.json': JSON.stringify({
+        packageDirectories: [{ path: 'force-app', default: true }],
+        sourceApiVersion: '67.0',
+      }),
+      'force-app/main/default/aiAuthoringBundles/SupportAgent/SupportAgent.agent': 'target: flow://ManagedFlow',
+    };
+
+    await Promise.all(
+      Object.entries(files).map(async ([relativePath, content]) => {
+        const filePath = path.join(project, relativePath);
+        await fs.mkdir(path.dirname(filePath), { recursive: true });
+        await fs.writeFile(filePath, content, 'utf8');
+      })
+    );
+
+    const scan = await new MetadataScannerService().scan({ sourcePath: project });
+    const result = new WaveBuilder().generateWaves(scan.dependencyResult.graph);
+
+    expect(result.unplacedComponents).to.deep.equal([]);
+    expect(result.waves.flatMap((wave) => wave.components)).to.include('AiAuthoringBundle:SupportAgent');
+  });
 });
