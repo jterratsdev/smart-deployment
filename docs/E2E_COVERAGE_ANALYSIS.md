@@ -7,12 +7,8 @@
 **Flags:**
 
 - `--source-path` (char: `-p`, default: `.`) ✅ Cubierto
-- `--target-org` (char: `-o`) ✅ Cubierto (con)
 - `--save-plan` ✅ Cubierto
 - `--plan-path` ❌ NO cubierto
-- `` ✅ Cubierto
-- `--org-type` ❌ NO cubierto
-- `--industry` ❌ NO cubierto
 - `--output` (char: `-o`) ❌ NO cubierto
 - `--format` (default: `json`) ❌ NO cubierto
 
@@ -25,11 +21,8 @@
 **Falta cubrir:**
 
 - `analyze --plan-path custom/path.json`
-- `analyze --org-type Production`
-- `analyze --industry Healthcare`
 - `analyze --output report.json`
 - `analyze --format html`
-- Combinaciones: `analyze --org-type Production --industry Healthcare`
 
 ### 2. `start`
 
@@ -41,11 +34,6 @@
 - `--skip-tests` (deprecated) ⚠️ Mencionado pero no probado explícitamente
 - `--no-test-run` ✅ Cubierto (Test 8)
 - `--run-wave-test` ✅ Cubierto (Test 9)
-- `` ✅ Cubierto (Test 7)
-- `` ❌ NO cubierto
-- `--ai-confidence-threshold` ❌ NO cubierto
-- `--org-type` ❌ NO cubierto
-- `--industry` ❌ NO cubierto
 - `--use-plan` ❌ NO cubierto
 - `--strict` ❌ NO cubierto
 - `--source-path` (char: `-p`) ❌ NO cubierto
@@ -63,12 +51,8 @@
 
 - `start --target-org X --use-plan plan.json`
 - `start --target-org X --strict --use-plan plan.json`
-- `start --target-org X --dry-run
-- `start --target-org X --dry-run --org-type Production`
-- `start --target-org X --dry-run --industry Healthcare`
 - `start --target-org X --dry-run --source-path custom/path`
 - Combinaciones conflictivas: `--no-test-run` + `--run-wave-test` (debería fallar o priorizar)
-- Combinaciones: `+` + `--org-type Production`
 
 ### 3. `validate`
 
@@ -87,17 +71,18 @@
 
 **Flags:**
 
-- `--target-org` (char: `-o`, required) ❌ NO cubierto
-- `--source-path` (char: `-p`) ❌ NO cubierto
+- `--target-org` (char: `-o`, required) ✅ Cubierto
+- `--source-path` (char: `-p`) ✅ Cubierto
 
 **Tests actuales:**
 
-- ❌ NINGUNO
+- ✅ Test 13: `resume --target-org X` sin deployment fallido
+- ✅ Test 21: `resume --target-org X --source-path .`
+- ✅ Integración local: estado fallido real, regeneración de manifests y retry transitorio
 
 **Falta cubrir:**
 
-- `resume --target-org X` (sin deployment fallido - debería mostrar mensaje apropiado)
-- `resume --target-org X --source-path .` (con deployment fallido - requeriría setup previo)
+- La frontera real con Salesforce CLI y una org autenticada
 
 ### 5. `status`
 
@@ -143,13 +128,13 @@
 
 | Comando    | Flags Totales | Flags Cubiertos | Cobertura | Tests Actuales |
 | ---------- | ------------- | --------------- | --------- | -------------- |
-| `analyze`  | 10            | 3               | 30%       | 3              |
-| `start`    | 15            | 6               | 40%       | 6              |
+| `analyze`  | 6             | 3               | 50%       | 3              |
+| `start`    | 11            | 6               | 55%       | 6              |
 | `validate` | 3             | 2               | 67%       | 1              |
-| `resume`   | 2             | 0               | 0%        | 0              |
+| `resume`   | 2             | 2               | 100%      | 2              |
 | `status`   | 2             | 0               | 0%        | 0              |
 | `config`   | 2             | 0               | 0%        | 0              |
-| **TOTAL**  | **34**        | **11**          | **32%**   | **10**         |
+| **TOTAL**  | **28**        | **13**          | **46%**   | **12**         |
 
 ## 🎯 Prioridades para Agregar Tests
 
@@ -167,10 +152,9 @@
 
 ### Baja Prioridad (Nice to Have)
 
-9. ⚠️ `analyze --format html` (output formats)
-10. ⚠️ `analyze --industry` (AI context)
-11. ⚠️ `start --source-path` (custom paths)
-12. ⚠️ Combinaciones de múltiples flags
+8. ⚠️ `analyze --format html` (output formats)
+9. ⚠️ `start --source-path` (custom paths)
+10. ⚠️ Combinaciones de múltiples flags
 
 ## 🔍 Combinaciones de Flags Críticas a Probar
 
@@ -178,20 +162,16 @@
 
 - `--dry-run --use-plan plan.json` ✅ CRÍTICO
 - `--strict --use-plan plan.json` ✅ CRÍTICO
-- ` --org-type Production` ⚠️ IMPORTANTE
 - `--no-test-run --run-wave-test` (conflicto) ⚠️ IMPORTANTE
-- `--dry-run --org-type Production --industry Healthcare` ⚠️ NICE TO HAVE
 
 ### `analyze` command:
 
-- ` --target-org X --org-type Production` ⚠️ IMPORTANTE
 - `--save-plan --plan-path custom/path.json` ⚠️ IMPORTANTE
-- ` --industry Healthcare` ⚠️ NICE TO HAVE
 
 ## 📝 Notas
 
 - Los tests E2E actuales cubren los casos básicos y más comunes
-- Faltan tests para comandos `resume`, `status`, y `config`
+- Faltan tests para comandos `status` y `config`; `resume` ya tiene integración local con estado fallido real
 - Faltan combinaciones de flags importantes, especialmente para CI/CD (`--use-plan`, `--strict`)
 - Algunos flags como `--watch` son difíciles de testear en E2E automatizado
-- Los tests de `resume` requieren setup previo (deployment fallido)
+- El happy path, la ausencia de estado y la reanudación local desde un fallo real están cubiertos

@@ -10,18 +10,17 @@ Smart Deployment supports deterministic, reproducible deployments in CI/CD pipel
 
 ```
 Development → Generate Plan → Review Plan → Commit Plan → CI/CD Deploy
-   (with AI)      (.json)       (Human)      (Git)      (deterministic)
+ (deterministic)    (.json)       (Human)      (Git)      (deterministic)
 ```
 
 ### Why Pre-Approved Plans?
 
-| Without Plan                | With Plan            |
-| --------------------------- | -------------------- |
-| ❌ Non-deterministic        | ✅ Deterministic     |
-| ❌ AI can change priorities | ✅ Fixed priorities  |
-| ❌ No audit trail           | ✅ Git history       |
-| ❌ No human review          | ✅ PR review process |
-| ❌ Rollback complex         | ✅ Easy rollback     |
+| Without Plan           | With Plan            |
+| ---------------------- | -------------------- |
+| ❌ Recomputed in CI/CD | ✅ Precomputed waves |
+| ❌ No audit trail      | ✅ Git history       |
+| ❌ No human review     | ✅ PR review process |
+| ❌ Rollback complex    | ✅ Easy rollback     |
 
 ---
 
@@ -30,18 +29,13 @@ Development → Generate Plan → Review Plan → Commit Plan → CI/CD Deploy
 ### Step 1: Generate Plan (Development)
 
 ```bash
-# Analyze with AI and save plan
-sf smart-deployment analyze \
-  \
-  --org-type Production \
-  --industry Fintech \
-  --save-plan
+# Analyze metadata and save the deterministic plan
+sf smart-deployment analyze --save-plan
 
 # Output:
 # 📊 Analyzing metadata...
 # ✅ Found 2,382 components
-# 🤖 AI analysis complete (5 priorities adjusted)
-# 📋 Generating deployment plan...
+# 📋 Generating deployment plan and waves...
 # ✅ Plan saved to: .smart-deployment/deployment-plan.json
 ```
 
@@ -52,19 +46,9 @@ sf smart-deployment analyze \
   "metadata": {
     "version": "1.0",
     "generatedAt": "2024-12-11T10:00:00Z",
-    "aiEnabled": true,
-    "orgType": "Production",
     "totalComponents": 2382,
     "totalWaves": 12,
     "estimatedTime": 1800
-  },
-  "priorityOverrides": {
-    "ApexClass:PaymentHandler": {
-      "priority": 95,
-      "source": "ai",
-      "confidence": 0.92,
-      "reason": "Critical payment processing"
-    }
   },
   "waves": [
     /* ... */
@@ -132,7 +116,7 @@ sf smart-deployment start \
   --strict
 
 # ✅ Deterministic
-# ✅ No AI calls
+# ✅ No runtime analysis
 # ✅ Fast deployment
 ```
 
@@ -141,50 +125,7 @@ sf smart-deployment start \
 - ✅ Loads plan from file
 - ✅ Fails if plan not found
 - ✅ Uses exact priorities from plan
-- ✅ No AI in runtime
-
-### Mode 2: AI with Verification
-
-```bash
-# Uses AI but verifies against plan
-sf smart-deployment start \
-  --target-org prod \
-  \
-  --verify-against-plan deployment-plan.json \
-  --max-diff 10%
-
-# 🤖 Uses AI
-# ✅ Validates against plan
-# ⚠️ Warns if diff > 10%
-```
-
-**Behavior:**
-
-1. Runs AI analysis
-2. Compares with approved plan
-3. If diff > threshold → fails with report
-4. If diff < threshold → proceeds
-
-### Mode 3: Fallback (AI with Safety Net)
-
-```bash
-# Try AI, fallback to plan on error
-sf smart-deployment start \
-  --target-org prod \
-  \
-  --use-plan deployment-plan.json \
-  --ai-timeout 10s
-
-# 🤖 Tries AI (10s timeout)
-# 🛡️ Fallbacks to plan on error
-```
-
-**Behavior:**
-
-- Attempts AI analysis (with timeout)
-- Falls back to plan if:
-  - AI timeout
-  - AI returns error
+- ✅ No analysis or external service calls at runtime
 
 ---
 
@@ -200,11 +141,6 @@ sf smart-deployment start \
     "strictMode": true,
     "maxDiffPercentage": 20,
     "validateBeforeDeploy": true
-  },
-  "ai": {
-    "enabled": false,
-    "confidenceThreshold": 0.9,
-    "timeout": 10000
   }
 }
 ```
@@ -290,7 +226,7 @@ Before deploy, validates:
 
 - Requires `--use-plan`
 - Fails if plan not found
-- No AI calls
+- No runtime plan generation
 - Deterministic behavior
 
 ### 3. Max Diff Threshold
@@ -369,15 +305,15 @@ done
    - Reviewable in PRs
    - Easy rollback
 
-2. ✅ **Use AI in development, not production**
+2. ✅ **Generate plans in development, not production**
 
-   - Generate plan with AI locally
+   - Analyze metadata locally
    - Review and approve
    - Deploy deterministically
 
 3. ✅ **Set strict mode in production**
 
-   - Prevents accidental AI usage
+   - Prevents accidental plan regeneration
    - Requires approved plan
    - Predictable behavior
 
@@ -426,4 +362,4 @@ done
 ## 📚 Related Documentation
 
 - [Wave Generation](./ARCHITECTURE.md#wave-generation)
-- [Error Handling](./ERROR_HANDLING.md)
+- [Error Handling](./ERROR_HANDLING_INTEGRATION.md)

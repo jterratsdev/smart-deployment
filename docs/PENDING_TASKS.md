@@ -1,6 +1,6 @@
 # 📋 Pending Tasks - Smart Deployment Plugin
 
-**Last Updated**: August 27, 2026
+**Last Updated**: September 1, 2026
 
 Complete list of pending tasks and improvements for the Smart Deployment Plugin.
 
@@ -56,26 +56,6 @@ No open issues currently block the core deployment workflow.
   - Trending analysis
   - Dashboard/reporting
 - **Priority**: Low
-
----
-
-## 📝 Code TODOs
-
-### High Priority
-
-1. **`src/commands/start.ts:234`**
-   ```typescript
-   // TODO: Integrate AI priority weighting
-   ```
-   **Status**: AI priority weighting exists but may need better integration
-
-### Medium Priority
-
-2. **`src/commands/start.ts:254`**
-   ```typescript
-   // const skipTests = flags['skip-tests'] as boolean; // TODO: Use when implementing test execution
-   ```
-   **Status**: Test execution is implemented, this TODO may be outdated
 
 ---
 
@@ -140,7 +120,7 @@ No open issues currently block the core deployment workflow.
 | ---------------------------- | ----- | ----------- |
 | **Open Issues**              | 0     | Enhancement |
 | **Incremental Improvements** | 6     | Low-Medium  |
-| **Code TODOs**               | 2     | Medium      |
+| **Code TODOs**               | 0     | -           |
 | **Documentation Updates**    | 3     | High-Medium |
 | **Testing Improvements**     | 2     | Medium      |
 | **Technical Debt**           | 3     | Low-Medium  |
@@ -153,7 +133,7 @@ No open issues currently block the core deployment workflow.
 
 1. ✅ Update `README.md` with current status
 2. ✅ Update `docs/README.md` with new links
-3. ✅ Complete `resume` command implementation and local integration coverage
+3. ✅ `resume` command implemented with state restoration, manifest regeneration, Agentforce target validation, retries, reporting, and focused unit coverage
 
 ### Short Term (Next Sprint)
 
@@ -167,4 +147,4 @@ No open issues currently block the core deployment workflow.
 
 ---
 
-**Note**: The deployment workflow is deterministic and does not depend on external AI services. Remaining items are hardening, reporting, coverage, and additional metadata support.
+**Note**: The deployment workflow is deterministic. Remaining items are hardening, reporting, coverage, and additional metadata support.

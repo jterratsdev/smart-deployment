@@ -6,8 +6,6 @@ Deterministic repository documentation inventory. Generated/reference trees and 
 | ------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------- |
 | `.setup-agents/state/README.md`                         | Setup Agents Local State                                     | For project context and documented behavior |
 | `CONTRIBUTING.md`                                       | Contributing to Smart Deployment Plugin                      | Before contributing changes                 |
-| `docs/AGENTFORCE_API_KEY_SETUP.md`                      | 🔑 Agentforce API Key Configuration                          | For project context and documented behavior |
-| `docs/AI_AUTO_APPLY.md`                                 | 🤖 AI Auto-Apply Mode                                        | For project context and documented behavior |
 | `docs/API_REFERENCE.md`                                 | 📚 API Reference - Smart Deployment Plugin                   | For project context and documented behavior |
 | `docs/ARCHITECTURE_DECISION_STATE_MANAGER_V2.md`        | Architecture Decision: State Manager Approach (Revised)      | For project context and documented behavior |
 | `docs/ARCHITECTURE_DECISION_STATE_MANAGER.md`           | Architecture Decision: State Manager Approach                | For project context and documented behavior |
@@ -31,11 +29,8 @@ Deterministic repository documentation inventory. Generated/reference trees and 
 | `docs/ERROR_HANDLING_INTEGRATION.md`                    | 🛡️ Error Handling Integration Guide                          | For project context and documented behavior |
 | `docs/ERROR_HANDLING_STATUS.md`                         | 🛡️ Error Handling - Implementation Status                    | For project context and documented behavior |
 | `docs/guides/ACCEPTANCE_CRITERIA_TESTING.md`            | 🎯 Acceptance Criteria Testing Guide                         | For project context and documented behavior |
-| `docs/guides/AGENTFORCE_INTEGRATION.md`                 | 🤖 Agentforce Integration                                    | For project context and documented behavior |
-| `docs/guides/AGENTFORCE_TOKEN_LIMITS.md`                | Agentforce Token Limits & Batching Strategy                  | For project context and documented behavior |
 | `docs/guides/E2E_TESTING.md`                            | E2E Testing Guide - Smart Deployment Plugin                  | For project context and documented behavior |
 | `docs/guides/GITHUB_SETUP.md`                           | ⚙️ GitHub Repository Setup                                   | For project context and documented behavior |
-| `docs/guides/MEMORY_VS_API_COSTS.md`                    | Memory vs API Costs Trade-off                                | For project context and documented behavior |
 | `docs/guides/METADATA_SIMPLIFICATION_FALLBACK.md`       | Metadata Simplification as Fallback Strategy                 | For project context and documented behavior |
 | `docs/guides/PYTHON_ANALYZER_INSIGHTS.md`               | Insights del Analizador Python - Aplicación a Simplificación | For project context and documented behavior |
 | `docs/guides/SELF_LEARNING_ANALYZER.md`                 | 🧠 Self-Learning Dependency Analyzer                         | For project context and documented behavior |
@@ -51,7 +46,6 @@ Deterministic repository documentation inventory. Generated/reference trees and 
 | `docs/PROVISIONING_CI_CD.md`                            | 🔄 Data Provisioning in CI/CD                                | For project context and documented behavior |
 | `docs/README.md`                                        | 📚 Documentation                                             | For project context and documented behavior |
 | `docs/SECURITY_GUIDE.md`                                | 🔒 Security Guide - Smart Deployment Plugin                  | For project context and documented behavior |
-| `docs/TESTING_ENVIRONMENT_POLICY.md`                    | Testing Environment Policy                                   | For project context and documented behavior |
 | `docs/TESTING_REVIEW.md`                                | Testing Review - Smart Deployment Plugin                     | For project context and documented behavior |
 | `docs/TESTING_SUMMARY.md`                               | 🧪 Testing Infrastructure - Summary                          | For project context and documented behavior |
 | `docs/TODO_MAPPING.md`                                  | 📋 TODO to User Story Mapping                                | For project context and documented behavior |

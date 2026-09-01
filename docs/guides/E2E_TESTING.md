@@ -32,7 +32,7 @@ E2E tests validate that the Smart Deployment plugin works correctly against real
 - ✅ Real metadata scanning and analysis
 - ✅ Deployment plan generation
 - ✅ Manifest generation and validation
-- ✅ AI integration (when available)
+- ✅ Deterministic metadata analysis
 
 ### What E2E Tests Don't Cover
 
@@ -311,7 +311,7 @@ The current GitHub Actions workflows do not run these shell E2E scripts automati
 
 - Basic analyze
 - Save plan
-- Use AI
+- Metadata analysis and wave generation
 - Locale support
 - Custom plan path
 - JSON report generation
@@ -326,7 +326,7 @@ The current GitHub Actions workflows do not run these shell E2E scripts automati
 
 - Dry-run mode
 - Validate-only mode
-- AI integration
+- Plan-based execution
 - Test execution flags
 - Plan-based deployment
 - Strict validation
@@ -352,7 +352,7 @@ The current GitHub Actions workflows do not run these shell E2E scripts automati
 Tests are organized by:
 
 1. **Command** (analyze, start, validate, resume, status)
-2. **Feature** (flags, AI, reports, etc.)
+2. **Feature** (flags, manifests, reports, etc.)
 3. **Priority** (critical → nice-to-have)
 
 ---
@@ -569,10 +569,7 @@ Flag coverage is not maintained as a verified current percentage. The comprehens
 
 2. **Important Flags** (Should Have)
 
-   - `--org-type`
-   - `--industry`
    - `--source-path`
-   - `--ai-confidence-threshold`
 
 3. **Nice-to-Have Flags** (Could Have)
    - `--watch`
