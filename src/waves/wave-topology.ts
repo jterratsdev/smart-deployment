@@ -16,13 +16,13 @@ export type CircularWaveResolutionInput = {
   processed: ReadonlySet<NodeId>;
 };
 
-export function calculateInDegree(graph: DependencyGraph): Map<NodeId, number> {
+export function calculateInDegree(graph: DependencyGraph, ignoreExternalDependencies = false): Map<NodeId, number> {
   const inDegree = new Map<NodeId, number>();
 
   for (const [nodeId, deps] of graph.entries()) {
     let localDependencies = 0;
     for (const dependency of deps) {
-      if (graph.has(dependency)) localDependencies += 1;
+      if (!ignoreExternalDependencies || graph.has(dependency)) localDependencies += 1;
     }
     inDegree.set(nodeId, localDependencies);
   }

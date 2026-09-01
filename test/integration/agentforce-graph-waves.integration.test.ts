@@ -84,7 +84,7 @@ describe('Agentforce scanner graph and waves', () => {
     );
 
     const scan = await new MetadataScannerService().scan({ sourcePath: project });
-    const result = new WaveBuilder().generateWaves(scan.dependencyResult.graph);
+    const result = new WaveBuilder({ ignoreExternalDependencies: true }).generateWaves(scan.dependencyResult.graph);
 
     expect(result.unplacedComponents).to.deep.equal([]);
     expect(result.waves.flatMap((wave) => wave.components)).to.include('AiAuthoringBundle:SupportAgent');
