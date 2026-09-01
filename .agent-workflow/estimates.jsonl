@@ -4,3 +4,4 @@
 {"id":"est-1785956284376-cebdbd","taskId":"SD-DATAKIT-PAUSES","sizingLabel":"xl","soloEstimateDays":12,"aiUnguidedEstimateDays":6,"aiGuidedEstimateDays":3,"confidence":"medium","declaredBy":"pm","declaredAt":"2026-08-05T18:58:04.376Z"}
 {"id":"est-1786128268335-9058a7","taskId":"SD-DATACLOUD-ORG-VALIDATION","sizingLabel":"m","soloEstimateDays":3,"aiUnguidedEstimateDays":2,"aiGuidedEstimateDays":1,"confidence":"medium","declaredBy":"pm","declaredAt":"2026-08-07T18:44:28.335Z"}
 {"id":"est-1786150046105-228ce3","taskId":"SD-RELEASE-1.5.0","sizingLabel":"s","soloEstimateDays":1,"aiUnguidedEstimateDays":0.5,"aiGuidedEstimateDays":0.25,"confidence":"medium","declaredBy":"pm","declaredAt":"2026-08-08T00:47:26.104Z"}
+{"id":"est-1788302040980-349768","taskId":"SD-RC-RECONCILE","sizingLabel":"l","soloEstimateDays":5,"aiUnguidedEstimateDays":2,"aiGuidedEstimateDays":1,"confidence":"medium","declaredBy":"pm","declaredAt":"2026-09-01T22:34:00.979Z"}

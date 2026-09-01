@@ -1,5 +1,6 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import { parseLegacyAgentforce, type LegacyAgentforceType } from '../../parsers/legacy-agentforce-parser.js';
 import { parseXml } from '../../utils/xml.js';
 import type { MetadataComponent, MetadataDependencyReference, MetadataType } from '../../types/metadata.js';
 import { getLogger } from '../../utils/logger.js';
@@ -24,6 +25,18 @@ type BundleScanner = {
 };
 
 const SIMPLE_FILE_SCANNERS: SimpleFileScanner[] = [
+  {
+    type: 'GenAiFunction',
+    pattern: '**/genAiFunctions/**/*.genAiFunction-meta.xml',
+    suffix: '.genAiFunction-meta.xml',
+    parseDependencies: (filePath) => parseLegacyAgentforceDependencies(filePath, 'GenAiFunction'),
+  },
+  {
+    type: 'GenAiPlugin',
+    pattern: '**/genAiPlugins/**/*.genAiPlugin-meta.xml',
+    suffix: '.genAiPlugin-meta.xml',
+    parseDependencies: (filePath) => parseLegacyAgentforceDependencies(filePath, 'GenAiPlugin'),
+  },
   {
     type: 'StandardValueSet',
     pattern: '**/standardValueSets/**/*.standardValueSet-meta.xml',
@@ -196,6 +209,13 @@ async function parseEmbeddedServiceConfigDependencies(filePath: string): Promise
   addXmlTextDependencies(dependencies, parsed, 'aiAuthoringBundle', 'AiAuthoringBundle');
   addXmlTextDependencies(dependencies, parsed, 'agent', 'AiAuthoringBundle');
   return { dependencies };
+}
+
+async function parseLegacyAgentforceDependencies(
+  filePath: string,
+  type: LegacyAgentforceType
+): Promise<ParsedDependencies> {
+  return { dependencies: parseLegacyAgentforce(filePath, await fs.readFile(filePath, 'utf-8'), type).dependencies };
 }
 
 async function parseNetworkDependencies(filePath: string): Promise<ParsedDependencies> {

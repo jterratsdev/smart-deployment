@@ -128,8 +128,10 @@ const P0_DEFINITIONS: readonly MetadataCapabilityDefinition[] = [
     '66.0',
     {
       discovery: proven('automation-ai-metadata-scanner.ts discovers AiAuthoringBundle source.'),
-      parsing: partial('Bundle descriptor and Agent Script references are not fully parsed.'),
-      dependencies: absent('No complete AiAuthoringBundle dependency graph is emitted.'),
+      parsing: partial(
+        'Agent Script action targets are parsed; non-action bundle semantics remain intentionally unsupported.'
+      ),
+      dependencies: partial('Deterministic Flow, Apex, prompt, and nested agent targets are emitted.'),
       ordering: proven('AiAuthoringBundle has explicit special deployment ordering.'),
       lifecycle: proven('special-deployment executor publishes and optionally activates authoring bundles.'),
       fixtures: proven('API 66 authoring bundle and special deployment fixtures exist.'),

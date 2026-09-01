@@ -359,7 +359,10 @@ export default class AccountCard extends LightningElement {
       'PHP_Pacific_Haven_Agent'
     );
     await mkdir(agentDir, { recursive: true });
-    await writeFile(path.join(agentDir, 'PHP_Pacific_Haven_Agent.agent'), 'agentType: customer');
+    await writeFile(
+      path.join(agentDir, 'PHP_Pacific_Haven_Agent.agent'),
+      'agentType: customer\ntarget: flow://Resolve_Case\ntarget: apex://AgentAction\ntarget: prompt://CaseSummary'
+    );
 
     return projectRoot;
   }
@@ -625,6 +628,11 @@ export default class AccountCard extends LightningElement {
 
     expect(result.apiVersion).to.equal('66.0');
     expect(component).to.exist;
+    expect([...component!.dependencies]).to.deep.equal([
+      'Flow:Resolve_Case',
+      'ApexClass:AgentAction',
+      'GenAiPromptTemplate:CaseSummary',
+    ]);
     expect(
       result.components.map((metadataComponent) => `${metadataComponent.type}:${metadataComponent.name}`)
     ).to.not.include('Bot:PHP_Pacific_Haven_Agent');

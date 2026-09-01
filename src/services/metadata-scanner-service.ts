@@ -332,7 +332,7 @@ export class MetadataScannerService {
       errors,
       'AiAuthoringBundle',
       this.shouldIgnorePath,
-      (filePath) => Promise.resolve(parseAiAuthoringBundleComponent(filePath))
+      parseAiAuthoringBundleComponent
     );
 
     const aiEvaluationDefinitionComponents = (
