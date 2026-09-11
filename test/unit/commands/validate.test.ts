@@ -81,6 +81,7 @@ type ValidateCommandTestDouble = {
   log: (message?: string) => void;
   warn: (message?: string | Error) => void;
   error: (message: string) => never;
+  jsonEnabled: () => boolean;
 };
 
 describe('ValidateCommand', () => {
@@ -147,6 +148,37 @@ describe('ValidateCommand', () => {
     expect(result.releaseReportPath).to.match(/release-report\.json$/u);
     expect(logs.some((message) => message.includes('Hard / Soft / Inferred: 1 / 0 / 0'))).to.be.true;
     expect(logs.some((message) => message.includes('No deployment was executed'))).to.be.true;
+  });
+
+  it('serializes JSON logging when target-org is an Org object', async () => {
+    MetadataScannerService.prototype.scan = async function scanMock() {
+      return createScanResult();
+    };
+    StateManager.prototype.loadState = async function loadStateMock() {
+      return null;
+    };
+    const targetOrg: { getUsername: () => string; connection?: unknown } = {
+      getUsername: () => 'json-org@example.com',
+    };
+    targetOrg.connection = targetOrg;
+    const command = new Validate([], {} as never);
+
+    (command as unknown as ValidateCommandTestDouble).parse = async () => ({
+      flags: { 'target-org': targetOrg },
+      args: {},
+      argv: [],
+      raw: [],
+      metadata: { flags: {}, args: {} },
+      nonExistentFlags: [],
+      _runtime: {},
+    });
+    (command as unknown as ValidateCommandTestDouble).log = () => undefined;
+    (command as unknown as ValidateCommandTestDouble).warn = () => undefined;
+    (command as unknown as ValidateCommandTestDouble).jsonEnabled = () => true;
+
+    const result = await command.run();
+
+    expect(result.releaseReport?.targetOrg).to.equal('json-org@example.com');
   });
 
   it('US-048: fails when validation issues are detected', async () => {

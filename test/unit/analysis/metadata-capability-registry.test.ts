@@ -119,7 +119,7 @@ describe('MetadataCapabilityRegistry', () => {
     expect(capabilityStatuses(authoringBundle)).to.deep.equal([
       'proven',
       'partial',
-      'absent',
+      'partial',
       'proven',
       'proven',
       'proven',
@@ -166,7 +166,7 @@ describe('MetadataCapabilityRegistry', () => {
       row('AiAuthoringBundle', 'source-format-composite', 'C2', [
         'proven',
         'partial',
-        'absent',
+        'partial',
         'proven',
         'proven',
         'proven',
