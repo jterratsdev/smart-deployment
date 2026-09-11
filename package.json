@@ -25,7 +25,7 @@
     "@types/node": "^24.12.4",
     "baseline-browser-mapping": "2.10.31",
     "chai": "^4.5.0",
-    "commitizen": "^4.3.1",
+    "commitizen": "^4.3.2",
     "cz-customizable": "^7.5.4",
     "eslint-plugin-sf-plugin": "^1.20.33",
     "mocha": "^11.7.6",
