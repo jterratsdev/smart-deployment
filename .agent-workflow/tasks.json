@@ -706,46 +706,5 @@
     "status": "pending",
     "createdAt": "2026-08-08T00:47:26.325Z",
     "updatedAt": "2026-08-08T00:47:26.325Z"
-  },
-  {
-    "id": "SD-RC-RECONCILE",
-    "title": "Reconcile deployment changes onto main",
-    "ownerRole": "developer",
-    "dependencies": [],
-    "goal": "Apply still-relevant smart deployment, resume, deterministic Agentforce metadata, validation, and reporting changes onto current origin/main and validate a release candidate",
-    "assumptions": [],
-    "risks": [],
-    "paths": ["src", "test", "docs", "scripts", "package.json"],
-    "workflow": {
-      "requiredRoles": ["developer"]
-    },
-    "status": "blocked",
-    "createdAt": "2026-09-01T22:34:00.751Z",
-    "updatedAt": "2026-09-01T22:55:32.010Z",
-    "blockedReason": "release_manager requested block: The RC cannot be published safely as 1.5.0: package.json/npm-shrinkwrap are unchanged at 1.5.0, v1.5.0 points to a predecessor, npm 1.5.0 is already published, and the workflow's duplicate-version guard will fail or skip publication depending on entry path."
-  },
-  {
-    "id": "SD-RC-RECONCILE-developer-c60a10",
-    "title": "[DEVELOPER] SD-RC-RECONCILE",
-    "ownerRole": "developer",
-    "dependencies": [],
-    "workflow": {
-      "requiredRoles": ["developer"]
-    },
-    "status": "done",
-    "createdAt": "2026-09-01T22:34:12.424Z",
-    "updatedAt": "2026-09-01T22:42:40.113Z"
-  },
-  {
-    "id": "SD-RC-RECONCILE-developer-c60a10-retry1",
-    "title": "[DEVELOPER] SD-RC-RECONCILE (retry 1)",
-    "ownerRole": "developer",
-    "dependencies": [],
-    "workflow": {
-      "requiredRoles": ["developer"]
-    },
-    "status": "pending",
-    "createdAt": "2026-09-01T22:42:40.047Z",
-    "updatedAt": "2026-09-01T22:42:40.047Z"
   }
 ]
