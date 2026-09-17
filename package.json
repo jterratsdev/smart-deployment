@@ -53,12 +53,12 @@
     "sfdx",
     "sfdx-plugin"
   ],
-  "homepage": "https://github.com/jterrats/smart-deployment",
+  "homepage": "https://github.com/jterratsdev/smart-deployment",
   "license": "BSD-3-Clause",
-  "bugs": "https://github.com/jterrats/smart-deployment/issues",
+  "bugs": "https://github.com/jterratsdev/smart-deployment/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jterrats/smart-deployment"
+    "url": "https://github.com/jterratsdev/smart-deployment"
   },
   "oclif": {
     "commands": "./lib/commands",
