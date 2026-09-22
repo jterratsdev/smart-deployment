@@ -16,4 +16,7 @@ test('Sonar Analyze always dispatches on a GitHub-hosted runner', async () => {
   const analyzeJob = source.match(/  scan:\n    name: Analyze\n    runs-on: (.+)/);
 
   assert.equal(analyzeJob?.[1], 'ubuntu-latest');
+  assert.match(source, /::warning::Cloudflare Access proxy could not validate SonarQube access/);
+  assert.match(source, /echo "SONAR_RUN_ENABLED=false" >> "\$GITHUB_ENV"/);
+  assert.doesNotMatch(source, /if \[\[ "\$GITHUB_EVENT_NAME" == "pull_request" \]\]/);
 });

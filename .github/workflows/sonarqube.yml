@@ -109,12 +109,8 @@ jobs:
             sleep 1
           done
           cat /tmp/cloudflare-access-proxy.log
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-            echo "Cloudflare Access proxy could not validate SonarQube access for this pull request; skipping Sonar analysis."
-            echo "SONAR_RUN_ENABLED=false" >> "$GITHUB_ENV"
-            exit 0
-          fi
-          exit 1
+          echo "::warning::Cloudflare Access proxy could not validate SonarQube access; skipping external Sonar analysis."
+          echo "SONAR_RUN_ENABLED=false" >> "$GITHUB_ENV"
 
       - name: Install dependencies
         if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' }}
