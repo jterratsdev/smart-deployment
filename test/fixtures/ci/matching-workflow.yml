@@ -1,0 +1,12 @@
+name: Fixture checks
+
+on:
+  pull_request:
+
+jobs:
+  unit:
+    name: Linux unit tests
+    runs-on: ubuntu-latest
+  integration:
+    name: nuts
+    runs-on: ubuntu-latest

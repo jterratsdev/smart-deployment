@@ -1,0 +1,11 @@
+name: Disabled checks
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  integration:
+    if: false
+    name: nuts
+    runs-on: ubuntu-latest

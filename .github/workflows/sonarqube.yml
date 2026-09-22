@@ -20,15 +20,13 @@ permissions:
 jobs:
   scan:
     name: Analyze
-    runs-on: ${{ vars.SONAR_RUNNER == 'self-hosted' && fromJSON('["self-hosted","sonar","local-sonar"]') || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || vars.SONAR_HOST_URL }}
       SONAR_PROVIDER: ${{ vars.SONAR_PROVIDER }}
       SONAR_QUALITY_GATE_WAIT: ${{ vars.SONAR_QUALITY_GATE_WAIT }}
-      SONAR_RUNNER: ${{ vars.SONAR_RUNNER }}
-      SONAR_LOCAL_HOST_URL: ${{ vars.SONAR_LOCAL_HOST_URL }}
       CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
       CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
@@ -44,17 +42,15 @@ jobs:
           set -euo pipefail
           PROVIDER="${SONAR_PROVIDER:-sonarqube-self-hosted}"
           HOST_URL="${SONAR_HOST_URL:-https://sonarqube.jterrats.dev}"
-          if [[ "$SONAR_RUNNER" == "self-hosted" ]]; then
-            PROVIDER="sonarqube-local"
-            HOST_URL="${SONAR_LOCAL_HOST_URL:-http://localhost:9001}"
-          fi
           if [[ -z "$HOST_URL" ]]; then
             echo "SONAR_HOST_URL is required."
             exit 1
           fi
-          echo "SONAR_PROVIDER_RESOLVED=$PROVIDER" >> "$GITHUB_ENV"
-          echo "SONAR_HOST_URL_RESOLVED=$HOST_URL" >> "$GITHUB_ENV"
-          echo "SONAR_RUN_ENABLED=true" >> "$GITHUB_ENV"
+          {
+            echo "SONAR_PROVIDER_RESOLVED=$PROVIDER"
+            echo "SONAR_HOST_URL_RESOLVED=$HOST_URL"
+            echo "SONAR_RUN_ENABLED=true"
+          } >> "$GITHUB_ENV"
 
       - name: Checkout code
         if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' }}
@@ -70,7 +66,7 @@ jobs:
           cache: yarn
 
       - name: Validate Cloudflare Access secrets
-        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' && env.SONAR_RUNNER != 'self-hosted' && env.CF_ACCESS_CLIENT_ID != '' && env.CF_ACCESS_CLIENT_SECRET != '' }}
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' && env.CF_ACCESS_CLIENT_ID != '' && env.CF_ACCESS_CLIENT_SECRET != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -94,7 +90,7 @@ jobs:
           fi
 
       - name: Start Cloudflare Access proxy
-        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' && env.SONAR_RUNNER != 'self-hosted' && env.CF_ACCESS_CLIENT_ID != '' && env.CF_ACCESS_CLIENT_SECRET != '' }}
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_RUN_ENABLED == 'true' && env.CF_ACCESS_CLIENT_ID != '' && env.CF_ACCESS_CLIENT_SECRET != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -103,7 +99,7 @@ jobs:
           export CF_ACCESS_PROXY_LISTEN_PORT="9010"
           node scripts/ci/cloudflare-access-proxy.mjs > /tmp/cloudflare-access-proxy.log 2>&1 &
           echo "CF_ACCESS_PROXY_PID=$!" >> "$GITHUB_ENV"
-          for attempt in {1..20}; do
+          for _ in {1..20}; do
             if curl -fsS -u "$SONAR_TOKEN:" "http://127.0.0.1:9010/api/authentication/validate" >/dev/null; then
               echo "SONAR_HOST_URL_RESOLVED=http://127.0.0.1:9010" >> "$GITHUB_ENV"
               echo "SONAR_PROVIDER_RESOLVED=sonarqube-local" >> "$GITHUB_ENV"
