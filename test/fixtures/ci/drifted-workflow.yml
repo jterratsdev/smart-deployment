@@ -1,0 +1,9 @@
+name: Fixture checks
+
+on:
+  pull_request:
+
+jobs:
+  integration:
+    name: NUTs (Linux)
+    runs-on: ubuntu-latest

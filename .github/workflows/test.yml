@@ -1,6 +1,9 @@
 name: Tests
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -22,6 +25,20 @@ permissions:
   contents: read
 
 jobs:
+  required-check-contexts:
+    name: Required check context drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test required check context validation
+        run: node --test test/ci/*.test.mjs
+
+      - name: Compare ruleset and workflow contexts
+        run: node scripts/ci/check-required-contexts.mjs
+
   yarn-lockfile-check:
     uses: salesforcecli/github-workflows/.github/workflows/lockFileCheck.yml@main
 
@@ -52,7 +69,7 @@ jobs:
         run: yarn test
 
   linux-nuts:
-    name: NUTs (self-hosted Linux)
+    name: nuts
     needs: linux-unit-tests
     runs-on: ${{ vars.CI_LINUX_RUNNER == 'github-hosted' && 'ubuntu-latest' || fromJSON('["self-hosted","linux","smart-deployment"]') }}
     timeout-minutes: 20
