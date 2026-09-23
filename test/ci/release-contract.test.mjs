@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import {
   canonicalRepository,
@@ -15,6 +16,14 @@ const validPackage = {
 
 test('active package and semantic-release configuration satisfy the release contract', async () => {
   assert.deepEqual(await validateReleaseContractFiles(), []);
+});
+
+test('release analysis job checks out full tag history', async () => {
+  const workflow = await readFile(new URL('../../.github/workflows/test.yml', import.meta.url), 'utf8');
+  const linuxUnitJob = workflow.match(/  linux-unit-tests:[\s\S]*?(?=\n  [a-z][a-z0-9-]+:|$)/)?.[0] ?? '';
+
+  assert.match(linuxUnitJob, /uses: actions\/checkout@v4\n        with:\n          fetch-depth: 0/);
+  assert.match(linuxUnitJob, /run: yarn release:analyze/);
 });
 
 test('repository, homepage, and bugs must all identify the canonical repository', () => {
