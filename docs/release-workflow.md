@@ -46,6 +46,16 @@ Every release run should leave evidence for:
 - npm publication verification: `npm view <package>@<version> version`
 - dist-tag verification: `npm view <package> dist-tags.latest`
 
+Pull-request CI also runs `yarn release:analyze`, which directly invokes only semantic-release's commit analyzer. It reads commits since the latest semantic-version tag, independently checks the configured release rules, and asserts the expected next release type and version. The analyzer process does not load npm or GitHub publication plugins, use a release remote, or need release credentials, so pull-request analysis cannot publish artifacts.
+
+## Packed Plugin Installation Contract
+
+`yarn test:clean-install` packs the current checkout and installs that tarball into a temporary Salesforce CLI installation. The harness isolates `HOME`, npm cache/config, XDG directories, and Salesforce CLI cache/config/plugin data; it then verifies the exact `package.json` version and help discovery for `smart-deployment validate` and `smart-deployment ci-publish`. It does not authenticate to a Salesforce org or read from the npm registry for the plugin under test.
+
+The package is an unsigned community plugin, so Salesforce CLI asks for confirmation. The harness sends `y` to that single install invocation rather than changing a global allowlist or relying on `--force` (which controls npm fetching, not signature consent).
+
+Some developer machines and runners set npm `min-release-age` to delay newly published dependencies. CI sets `npm_config_min_release_age=0` only for its frozen dependency install, and the tarball test applies an equivalent invocation-scoped override only while Salesforce CLI installs the local plugin tarball. Neither path edits user or global npm configuration; normal installs retain the configured policy.
+
 ## Safe Rerun Behavior
 
 Rerunning the workflow for an already-published version must not republish the package.
