@@ -11,6 +11,9 @@
       "@semantic-release/commit-analyzer",
       {
         "preset": "conventionalcommits",
+        "parserOpts": {
+          "breakingHeaderPattern": "^(\\w*)(?:\\((.*)\\))?!: (.*)$"
+        },
         "releaseRules": [
           { "type": "feat", "release": "minor" },
           { "type": "fix", "release": "patch" },

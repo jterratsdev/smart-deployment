@@ -34,7 +34,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Test required check context validation
-        run: node --test test/ci/*.test.mjs
+        run: node --test test/ci/release-contract.test.mjs
+
+      - name: Validate release contracts
+        run: npm run release:contracts
 
       - name: Compare ruleset and workflow contexts
         run: node scripts/ci/check-required-contexts.mjs
@@ -44,7 +47,9 @@ jobs:
 
   linux-unit-tests:
     name: Linux unit tests
-    needs: yarn-lockfile-check
+    needs:
+      - required-check-contexts
+      - yarn-lockfile-check
     runs-on: ${{ vars.CI_LINUX_RUNNER == 'github-hosted' && 'ubuntu-latest' || fromJSON('["self-hosted","linux","smart-deployment"]') }}
     timeout-minutes: 20
     steps:
@@ -60,13 +65,40 @@ jobs:
       - name: Install dependencies
         uses: salesforcecli/github-workflows/.github/actions/retry@main
         with:
-          command: yarn install --frozen-lockfile --network-timeout 600000
+          command: npm_config_min_release_age=0 yarn install --frozen-lockfile --network-timeout 600000
+
+      - name: Test dependency-backed release analysis
+        run: node --test test/ci/analyze-release.test.mjs
 
       - name: Build
         run: yarn build
 
       - name: Test
         run: yarn test
+
+      - name: Assert next release from commit analysis without publishing
+        run: yarn release:analyze
+
+  clean-install:
+    name: Packed plugin clean install
+    needs: linux-unit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: npm_config_min_release_age=0 yarn install --frozen-lockfile --network-timeout 600000
+
+      - name: Test packed plugin in isolated Salesforce CLI
+        run: yarn test:clean-install
 
   linux-nuts:
     name: nuts
@@ -86,7 +118,7 @@ jobs:
       - name: Install dependencies
         uses: salesforcecli/github-workflows/.github/actions/retry@main
         with:
-          command: yarn install --frozen-lockfile --network-timeout 600000
+          command: npm_config_min_release_age=0 yarn install --frozen-lockfile --network-timeout 600000
 
       - name: Install Salesforce CLI
         run: npm install --global @salesforce/cli
@@ -122,7 +154,7 @@ jobs:
       - name: Install dependencies
         uses: salesforcecli/github-workflows/.github/actions/retry@main
         with:
-          command: yarn install --frozen-lockfile --network-timeout 600000
+          command: npm_config_min_release_age=0 yarn install --frozen-lockfile --network-timeout 600000
 
       - name: Build
         run: yarn build
