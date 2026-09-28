@@ -13,6 +13,7 @@
 
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
+import { RECOMMENDED_API_VERSION } from '../constants/api-version.js';
 import { getLogger } from '../utils/logger.js';
 import type { SfdxProjectJson } from './sfdx-project-detector.js';
 
@@ -66,7 +67,7 @@ export class StructureValidator {
           code: 'MISSING_API_VERSION',
           message: 'sourceApiVersion is recommended in sfdx-project.json',
           path: sfdxProjectPath,
-          suggestion: 'Add sourceApiVersion (e.g., "66.0")',
+          suggestion: `Add sourceApiVersion (e.g., "${RECOMMENDED_API_VERSION.toFixed(1)}")`,
         });
       }
 
