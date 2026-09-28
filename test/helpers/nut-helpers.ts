@@ -43,7 +43,7 @@ export async function createSalesforceProject(
     JSON.stringify(
       {
         packageDirectories: [{ path: 'force-app', default: true }],
-        sourceApiVersion: '61.0',
+        sourceApiVersion: '67.0',
       },
       null,
       2

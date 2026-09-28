@@ -107,6 +107,32 @@ describe('XmlMetadataValidator', () => {
       expect(hasVersionError).to.be.true;
     });
 
+    it('accepts API 67 and warns for API 68 as newer than tested', async () => {
+      const results = await Promise.all(
+        [67, 68].map(async (version) => {
+          const testFile = path.join(testDir, `Api${version}.cls-meta.xml`);
+          await fs.writeFile(
+            testFile,
+            `<?xml version="1.0" encoding="UTF-8"?>
+<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>${version}.0</apiVersion>
+    <status>Active</status>
+</ApexClass>`,
+            'utf-8'
+          );
+          return validator.validateFile(testFile);
+        })
+      );
+
+      expect(results[0].warnings.filter((warning) => warning.message.includes('newer than tested'))).to.have.lengthOf(
+        0
+      );
+      expect(results[1].warnings.filter((warning) => warning.message.includes('newer than tested'))).to.have.lengthOf(
+        1
+      );
+      expect(results[1].warnings[0].message).to.include('tested version 67');
+    });
+
     /** @ac US-091-AC-4: Validate field references */
     it('US-091-AC-4: should validate field references', async () => {
       const xmlWithInvalidField = `<?xml version="1.0" encoding="UTF-8"?>
