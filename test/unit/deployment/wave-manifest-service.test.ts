@@ -7,6 +7,18 @@ import { WaveManifestService } from '../../../src/deployment/wave-manifest-servi
 import type { MetadataComponent } from '../../../src/types/metadata.js';
 
 describe('WaveManifestService', () => {
+  it('uses the recommended API version when no version is provided', async () => {
+    const baseDir = await mkdtemp(path.join(os.tmpdir(), 'wave-manifest-default-version-'));
+    const manifestPath = await new WaveManifestService().generateManifest({
+      baseDir,
+      waveNumber: 1,
+      components: [],
+      componentMap: new Map(),
+    });
+
+    expect(await readFile(manifestPath, 'utf8')).to.include('<version>67.0</version>');
+  });
+
   it('generates a sorted package.xml manifest for a wave', async () => {
     const baseDir = await mkdtemp(path.join(os.tmpdir(), 'wave-manifest-'));
     const service = new WaveManifestService();

@@ -80,7 +80,7 @@ async function createRollbackProject(rootDir: string): Promise<string> {
     JSON.stringify(
       {
         packageDirectories: [{ path: 'force-app', default: true }],
-        sourceApiVersion: '61.0',
+        sourceApiVersion: '67.0',
       },
       null,
       2
@@ -122,7 +122,7 @@ async function writeApexClass(classesDir: string, name: string, body: string): P
     [
       '<?xml version="1.0" encoding="UTF-8"?>',
       '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">',
-      '  <apiVersion>61.0</apiVersion>',
+      '  <apiVersion>67.0</apiVersion>',
       '  <status>Active</status>',
       '</ApexClass>',
       '',

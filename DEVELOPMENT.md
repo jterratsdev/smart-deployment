@@ -19,6 +19,16 @@ yarn test:only
 yarn lint
 ```
 
+## Opt-in Live Org Validation
+
+The linked-plugin harness builds and links the current checkout, deploys a uniquely named Apex class, executes it, removes it, verifies the org is clean, and restores the previously installed plugin:
+
+```bash
+SMART_DEPLOYMENT_LIVE_TARGET_ORG=my-disposable-org yarn test:live-org
+```
+
+Use only a disposable or explicitly approved non-customer org. The command is intentionally absent from normal CI and fails unless the target-org environment variable is set.
+
 ## Working Rules
 
 - prefer updating the real command surface over adding planning-only artifacts
