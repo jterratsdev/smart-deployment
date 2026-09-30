@@ -4,7 +4,7 @@ import { ReleaseReportPresenter } from '../../../src/presentation/release-report
 import type { ReleaseReportV1 } from '../../../src/types/release-report.js';
 
 const report: ReleaseReportV1 = {
-  schemaVersion: '1.0',
+  schemaVersion: '1.1',
   generatedAt: '2026-07-27T12:34:56.000Z',
   command: 'smart-deployment.ci-publish',
   targetOrg: 'qa-org',

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import * as path from 'node:path';
+import type { OwdPostcondition } from '../deployment/deployment-postcondition.js';
 import type { Wave } from '../waves/wave-builder.js';
 import type { NodeId } from './dependency.js';
 import type { MetadataComponent } from './metadata.js';
@@ -57,15 +58,29 @@ export function createDeploymentPlanFingerprint(options: {
   skipTests: boolean;
   apiVersion?: string;
   sourceFingerprint?: string;
+  postconditions?: readonly OwdPostcondition[];
 }): string {
-  const value = JSON.stringify({
+  const plan: {
+    waves: Array<{ number: number; components: string[] }>;
+    checkpoints: ManualCheckpoint[];
+    destructive: boolean;
+    skipTests: boolean;
+    apiVersion?: string;
+    sourceFingerprint?: string;
+    postconditions?: OwdPostcondition[];
+  } = {
     waves: options.waves.map((wave) => ({ number: wave.number, components: [...wave.components].sort() })),
     checkpoints: [...options.checkpoints].sort((left, right) => left.id.localeCompare(right.id)),
     destructive: options.destructive,
     skipTests: options.skipTests,
     apiVersion: options.apiVersion,
     sourceFingerprint: options.sourceFingerprint,
-  });
+  };
+  // Preserve the exact pre-postcondition serialization for legacy resumable states.
+  if (options.postconditions && options.postconditions.length > 0) {
+    plan.postconditions = [...options.postconditions].sort((left, right) => left.id.localeCompare(right.id));
+  }
+  const value = JSON.stringify(plan);
   return `sha256:${createHash('sha256').update(value).digest('hex')}`;
 }
 

@@ -10,6 +10,7 @@ import type { DeploymentResult, SfCliIntegration } from '../../../src/deployment
 import { TestExecutor } from '../../../src/deployment/test-executor.js';
 import type { MetadataComponent } from '../../../src/types/metadata.js';
 import type { Wave } from '../../../src/waves/wave-builder.js';
+import { PostconditionPoller } from '../../../src/deployment/postcondition-poller.js';
 
 describe('DeploymentRunner', () => {
   let tempDir: string | undefined;
@@ -234,6 +235,271 @@ describe('DeploymentRunner', () => {
     expect(state?.completedWaves).to.deep.equal([2]);
     expect(state?.execution?.orderedWaveNumbers).to.deep.equal([2, 1]);
     expect(state?.execution?.nextExecutionIndex).to.equal(1);
+  });
+
+  it('persists a resumable cursor after a successful OWD wave without marking the wave failed', async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), 'smart-deployment-runner-owd-'));
+    await writeProjectFile(tempDir);
+    await writeNestedFile(tempDir, 'force-app/main/default/objects/Case/Case.object-meta.xml', '<CustomObject />');
+    const stateManager = new StateManager({ baseDir: tempDir });
+    const owdComponent: MetadataComponent = {
+      name: 'Case',
+      type: 'CustomObject',
+      filePath: path.join(tempDir, 'force-app/main/default/objects/Case/Case.object-meta.xml'),
+      dependencies: new Set(),
+      dependents: new Set(),
+      priorityBoost: 0,
+    };
+    const runner = new DeploymentRunner({
+      postconditionPoller: new PostconditionPoller({
+        query: async () => ({
+          kind: 'observed',
+          observation: { internalSharingModel: 'ReadWriteTransfer', externalSharingModel: 'Private' },
+        }),
+        now: (() => {
+          let now = 0;
+          return () => (now += 100);
+        })(),
+        sleep: async () => undefined,
+      }),
+    });
+
+    const result = await runner.execute({
+      deploymentId: 'owd-pause',
+      targetOrg: 'test-org',
+      sourcePath: tempDir,
+      orderedWaves: [
+        { ...wave(1, 'CustomObject:Case'), metadata: { ...wave().metadata, types: ['CustomObject'] } },
+        wave(2),
+      ],
+      componentMap: new Map([['CustomObject:Case', owdComponent], ...componentMap()]),
+      apiVersion: '66.0',
+      skipTests: true,
+      destructive: false,
+      testExecutor: new TestExecutor(),
+      tracker: new DeploymentTracker(),
+      stateManager,
+      sfCli: {
+        deploy: async () => ({
+          success: true,
+          status: 'Succeeded',
+          componentSuccesses: 1,
+          componentFailures: 0,
+          output: 'ok',
+        }),
+      } as unknown as SfCliIntegration,
+      postconditions: [
+        {
+          id: 'owd:Case:Private',
+          kind: 'owd-internal-sharing-model',
+          objectName: 'Case',
+          afterWaveNumber: 1,
+          expectedInternalSharingModel: 'Private',
+          expectedExternalSharingModel: 'Private',
+        },
+      ],
+      postconditionOptions: { timeoutMs: 100, initialDelayMs: 10, maximumDelayMs: 20 },
+      log: () => undefined,
+    });
+
+    expect(result.kind).to.equal('postcondition-paused');
+    const state = await stateManager.loadState();
+    expect(state?.failedWave).to.equal(undefined);
+    expect(state?.completedWaves).to.deep.equal([1]);
+    expect(state?.execution?.nextExecutionIndex).to.equal(1);
+    expect(state?.pausedPostcondition).to.deep.include({
+      status: 'timed-out',
+      observedExternalSharingModel: 'Private',
+    });
+  });
+
+  it('rechecks a pending postcondition before the next wave and does not redeploy the completed wave', async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), 'smart-deployment-runner-owd-resume-'));
+    await writeProjectFile(tempDir);
+    await writeNestedFile(
+      tempDir,
+      'force-app/main/default/classes/AccountService.cls',
+      'public class AccountService {}'
+    );
+    let deployCalls = 0;
+    const runner = new DeploymentRunner({
+      postconditionPoller: new PostconditionPoller({
+        query: async () => ({
+          kind: 'observed',
+          observation: { internalSharingModel: 'Private', externalSharingModel: 'Private' },
+        }),
+      }),
+    });
+    const result = await runner.execute({
+      deploymentId: 'owd-resume',
+      targetOrg: 'test-org',
+      sourcePath: tempDir,
+      orderedWaves: [wave(1, 'CustomObject:Case'), wave(2)],
+      componentMap: componentMap(),
+      apiVersion: '66.0',
+      skipTests: true,
+      destructive: false,
+      testExecutor: new TestExecutor(),
+      tracker: new DeploymentTracker(),
+      stateManager: new StateManager({ baseDir: tempDir }),
+      sfCli: {
+        deploy: async () => {
+          deployCalls += 1;
+          return { success: true, status: 'Succeeded', componentSuccesses: 1, componentFailures: 0, output: 'ok' };
+        },
+      } as unknown as SfCliIntegration,
+      postconditions: [
+        {
+          id: 'owd:Case:Private',
+          kind: 'owd-internal-sharing-model',
+          objectName: 'Case',
+          afterWaveNumber: 1,
+          expectedInternalSharingModel: 'Private',
+        },
+      ],
+      pendingPostconditionId: 'owd:Case:Private',
+      startExecutionIndex: 1,
+      log: () => undefined,
+    });
+    expect(result.kind).to.equal('completed');
+    expect(deployCalls).to.equal(1);
+    if (result.kind === 'completed') {
+      expect(result.postconditions[0]).to.deep.include({
+        status: 'satisfied',
+        observedInternalSharingModel: 'Private',
+        observedExternalSharingModel: 'Private',
+        resumedPhase: 2,
+      });
+    }
+  });
+
+  it('does not recheck a satisfied preceding postcondition on an unrelated failed-wave resume', async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), 'smart-deployment-runner-satisfied-resume-'));
+    await writeProjectFile(tempDir);
+    await writeNestedFile(
+      tempDir,
+      'force-app/main/default/classes/AccountService.cls',
+      'public class AccountService {}'
+    );
+    let queryCalls = 0;
+    const condition = {
+      id: 'owd:Case:Private',
+      kind: 'owd-internal-sharing-model' as const,
+      objectName: 'Case',
+      afterWaveNumber: 1,
+      expectedInternalSharingModel: 'Private',
+    };
+    const satisfied = {
+      ...condition,
+      status: 'satisfied' as const,
+      observedInternalSharingModel: 'Private',
+      attempts: 1,
+      waitedMs: 0,
+    };
+    const result = await new DeploymentRunner({
+      postconditionPoller: new PostconditionPoller({
+        query: async () => {
+          queryCalls += 1;
+          return { kind: 'unavailable', error: { category: 'network', message: 'transient' } };
+        },
+      }),
+    }).execute({
+      deploymentId: 'failed-wave-resume',
+      targetOrg: 'test-org',
+      sourcePath: tempDir,
+      orderedWaves: [wave(1, 'CustomObject:Case'), wave(2)],
+      componentMap: componentMap(),
+      apiVersion: '66.0',
+      skipTests: true,
+      destructive: false,
+      testExecutor: new TestExecutor(),
+      tracker: new DeploymentTracker(),
+      stateManager: new StateManager({ baseDir: tempDir }),
+      sfCli: {
+        deploy: async () => ({
+          success: true,
+          status: 'Succeeded',
+          componentSuccesses: 1,
+          componentFailures: 0,
+          output: 'ok',
+        }),
+      } as unknown as SfCliIntegration,
+      postconditions: [condition],
+      satisfiedPostconditions: [satisfied],
+      startExecutionIndex: 1,
+      log: () => undefined,
+    });
+
+    expect(queryCalls).to.equal(0);
+    expect(result).to.deep.equal({ kind: 'completed', postconditions: [satisfied] });
+  });
+
+  it('persists cumulative satisfied history when a later barrier pauses', async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), 'smart-deployment-runner-multi-barrier-'));
+    await writeProjectFile(tempDir);
+    await writeNestedFile(
+      tempDir,
+      'force-app/main/default/classes/AccountService.cls',
+      'public class AccountService {}'
+    );
+    const first = {
+      id: 'owd:Account:Private',
+      kind: 'owd-internal-sharing-model' as const,
+      objectName: 'Account',
+      afterWaveNumber: 1,
+      expectedInternalSharingModel: 'Private',
+      status: 'satisfied' as const,
+      observedInternalSharingModel: 'Private',
+      attempts: 2,
+      waitedMs: 10,
+    };
+    const second = {
+      id: 'owd:Case:Private',
+      kind: 'owd-internal-sharing-model' as const,
+      objectName: 'Case',
+      afterWaveNumber: 2,
+      expectedInternalSharingModel: 'Private',
+    };
+    const stateManager = new StateManager({ baseDir: tempDir });
+    const result = await new DeploymentRunner({
+      postconditionPoller: new PostconditionPoller({
+        query: async () => ({
+          kind: 'unavailable',
+          error: { category: 'query', message: 'EntityDefinition temporarily unavailable' },
+        }),
+      }),
+    }).execute({
+      deploymentId: 'multi-barrier',
+      targetOrg: 'test-org',
+      sourcePath: tempDir,
+      orderedWaves: [wave(1, 'CustomObject:Account'), wave(2, 'CustomObject:Case'), wave(3)],
+      componentMap: componentMap(),
+      apiVersion: '66.0',
+      skipTests: true,
+      destructive: false,
+      testExecutor: new TestExecutor(),
+      tracker: new DeploymentTracker(),
+      stateManager,
+      sfCli: {
+        deploy: async () => ({
+          success: true,
+          status: 'Succeeded',
+          componentSuccesses: 1,
+          componentFailures: 0,
+          output: 'ok',
+        }),
+      } as unknown as SfCliIntegration,
+      postconditions: [first, second],
+      satisfiedPostconditions: [first],
+      startExecutionIndex: 1,
+      postconditionOptions: { timeoutMs: 1, initialDelayMs: 1, maximumDelayMs: 1 },
+      log: () => undefined,
+    });
+
+    expect(result.kind).to.equal('postcondition-paused');
+    const state = await stateManager.loadState();
+    expect(state?.satisfiedPostconditions).to.deep.equal([first]);
+    expect(state?.pausedPostcondition).to.deep.include({ id: second.id, status: 'observation-unavailable' });
   });
 });
 

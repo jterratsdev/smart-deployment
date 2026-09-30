@@ -46,6 +46,14 @@ export function sanitizeReleaseReport(
     phases: report.phases.map((phase) => sanitizePhase(phase, options)),
     items: report.items.map((item) => sanitizeItem(item, options)),
     reportWarnings: sanitizeList(report.reportWarnings, 1000) ?? [],
+    postconditions: report.postconditions?.map((condition) => ({
+      ...condition,
+      objectName: sanitizeText(condition.objectName, 256),
+      expectedInternalSharingModel: sanitizeText(condition.expectedInternalSharingModel, 128),
+      observedInternalSharingModel: optionalText(condition.observedInternalSharingModel, 128),
+      expectedExternalSharingModel: optionalText(condition.expectedExternalSharingModel, 128),
+      observedExternalSharingModel: optionalText(condition.observedExternalSharingModel, 128),
+    })),
   };
 }
 

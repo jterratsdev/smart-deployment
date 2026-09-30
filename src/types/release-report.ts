@@ -1,4 +1,4 @@
-export const RELEASE_REPORT_SCHEMA_VERSION = '1.0' as const;
+export const RELEASE_REPORT_SCHEMA_VERSION = '1.1' as const;
 
 export const RELEASE_ANALYSIS_MODES = ['deterministic', 'ai_enriched'] as const;
 export const RELEASE_ENRICHMENT_STATUSES = ['available', 'unavailable', 'partial', 'skipped'] as const;
@@ -106,6 +106,21 @@ export type ReleaseReportV1 = {
   phases: ReleasePhaseV1[];
   items: ReleaseItemV1[];
   reportWarnings: string[];
+  postconditions?: ReleasePostconditionV1[];
+};
+
+export type ReleasePostconditionV1 = {
+  code: 'OWD_PROPAGATION_PENDING' | 'OWD_PROPAGATION_SATISFIED';
+  status: 'timed-out' | 'observation-unavailable' | 'blocked-before-deploy' | 'satisfied';
+  objectName: string;
+  expectedInternalSharingModel: string;
+  observedInternalSharingModel?: string;
+  expectedExternalSharingModel?: string;
+  observedExternalSharingModel?: string;
+  attempts: number;
+  waitedMs: number;
+  errorCategory?: 'authentication' | 'network' | 'query' | 'entity-not-found' | 'invalid-response';
+  resumedPhase?: number;
 };
 
 export type ReleaseReportFacts = {
@@ -117,6 +132,7 @@ export type ReleaseReportFacts = {
   phases: ReleasePhaseFact[];
   items: ReleaseItemFact[];
   reportWarnings?: string[];
+  postconditions?: ReleasePostconditionV1[];
 };
 
 export type ReleaseFactStatus = ReleaseStatus | 'unknown' | 'inapplicable';

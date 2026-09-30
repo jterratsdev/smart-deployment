@@ -58,7 +58,7 @@ describe('NUT: release report', () => {
 
     expect(output.success).to.equal(true);
     expect(output.releaseReport).to.deep.include({
-      schemaVersion: '1.0',
+      schemaVersion: '1.1',
       outcome: 'succeeded',
       analysisMode: 'deterministic',
     });
