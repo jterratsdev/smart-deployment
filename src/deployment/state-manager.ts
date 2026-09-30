@@ -17,6 +17,7 @@ import { getLogger } from '../utils/logger.js';
 import type { ManualCheckpoint, ReachedManualCheckpoint } from '../types/manual-checkpoint.js';
 import type { CommitScopeOptions } from './commit-scope-service.js';
 import type { CycleSourceEditRecord } from './cycle-source-editor.js';
+import type { OwdPostcondition, PausedPostcondition, SatisfiedPostcondition } from './deployment-postcondition.js';
 
 const logger = getLogger('StateManager');
 
@@ -43,6 +44,8 @@ export type DeploymentState = {
   };
   status?: 'running' | 'paused' | 'failed' | 'completed';
   pausedCheckpoint?: ReachedManualCheckpoint;
+  pausedPostcondition?: PausedPostcondition;
+  satisfiedPostconditions?: SatisfiedPostcondition[];
   approvedCheckpointIds?: string[];
   execution?: {
     sourcePath: string;
@@ -53,6 +56,12 @@ export type DeploymentState = {
     apiVersion?: string;
     planFingerprint: string;
     checkpoints: ManualCheckpoint[];
+    postconditions?: OwdPostcondition[];
+    postconditionOptions?: {
+      timeoutMs: number;
+      initialDelayMs: number;
+      maximumDelayMs: number;
+    };
     contextOptions?: {
       useAI?: boolean;
       orgType?: string;
@@ -129,7 +138,11 @@ export class StateManager {
 
   public async hasResumableDeployment(): Promise<boolean> {
     const state = await this.loadState();
-    return state?.failedWave !== undefined || state?.pausedCheckpoint !== undefined;
+    return (
+      state?.failedWave !== undefined ||
+      state?.pausedCheckpoint !== undefined ||
+      state?.pausedPostcondition !== undefined
+    );
   }
 
   public getStateFilePath(): string {
@@ -137,28 +150,14 @@ export class StateManager {
   }
 
   private normalizeState(state: DeploymentState): DeploymentState {
-    if (state.cycleRemediation === undefined) {
-      return {
-        ...state,
-        completedWaves: [...state.completedWaves],
-        ...(state.approvedCheckpointIds === undefined
-          ? {}
-          : { approvedCheckpointIds: [...state.approvedCheckpointIds] }),
-        ...(state.execution === undefined
-          ? {}
-          : {
-              execution: {
-                ...state.execution,
-                orderedWaveNumbers: [...state.execution.orderedWaveNumbers],
-                checkpoints: state.execution.checkpoints.map((checkpoint) => ({ ...checkpoint })),
-              },
-            }),
-      };
-    }
-
-    return {
+    const pausedPostcondition = normalizePausedPostcondition(state.pausedPostcondition);
+    const common = {
       ...state,
+      ...(pausedPostcondition === undefined ? {} : { pausedPostcondition }),
       completedWaves: [...state.completedWaves],
+      ...(state.satisfiedPostconditions === undefined
+        ? {}
+        : { satisfiedPostconditions: state.satisfiedPostconditions.map((condition) => ({ ...condition })) }),
       ...(state.approvedCheckpointIds === undefined ? {} : { approvedCheckpointIds: [...state.approvedCheckpointIds] }),
       ...(state.execution === undefined
         ? {}
@@ -167,8 +166,18 @@ export class StateManager {
               ...state.execution,
               orderedWaveNumbers: [...state.execution.orderedWaveNumbers],
               checkpoints: state.execution.checkpoints.map((checkpoint) => ({ ...checkpoint })),
+              ...(state.execution.postconditions === undefined
+                ? {}
+                : { postconditions: state.execution.postconditions.map((postcondition) => ({ ...postcondition })) }),
             },
           }),
+    };
+    if (state.cycleRemediation === undefined) {
+      return common;
+    }
+
+    return {
+      ...common,
       cycleRemediation: {
         ...state.cycleRemediation,
         completedPhases: [...state.cycleRemediation.completedPhases],
@@ -176,4 +185,15 @@ export class StateManager {
       },
     };
   }
+}
+
+function normalizePausedPostcondition(
+  condition: DeploymentState['pausedPostcondition']
+): DeploymentState['pausedPostcondition'] {
+  if (!condition) return undefined;
+  return {
+    ...condition,
+    attempts: Number.isSafeInteger(condition.attempts) && condition.attempts > 0 ? condition.attempts : 1,
+    waitedMs: Number.isFinite(condition.waitedMs) && condition.waitedMs >= 0 ? condition.waitedMs : 0,
+  };
 }

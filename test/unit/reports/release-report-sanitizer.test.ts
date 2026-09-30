@@ -5,7 +5,7 @@ import type { ReleaseReportV1 } from '../../../src/types/release-report.js';
 
 function createReport(): ReleaseReportV1 {
   return {
-    schemaVersion: '1.0',
+    schemaVersion: '1.1',
     generatedAt: '2026-07-27T12:34:56.000Z',
     command: 'smart-deployment.start',
     targetOrg: '\u001B[31mqa-org\u001B[0m\u0000',
@@ -50,6 +50,26 @@ function createReport(): ReleaseReportV1 {
 }
 
 describe('sanitizeReleaseReport', () => {
+  it('sanitizes structured postcondition values', () => {
+    const sanitized = sanitizeReleaseReport({
+      ...createReport(),
+      postconditions: [
+        {
+          code: 'OWD_PROPAGATION_PENDING',
+          status: 'observation-unavailable',
+          objectName: 'Case\u001b[31m',
+          expectedInternalSharingModel: 'Private',
+          observedInternalSharingModel: 'token=secret',
+          attempts: 2,
+          waitedMs: 10,
+          errorCategory: 'authentication',
+        },
+      ],
+    });
+    expect(sanitized.postconditions?.[0].objectName).to.equal('Case');
+    expect(sanitized.postconditions?.[0].observedInternalSharingModel).to.equal('token=[REDACTED]');
+  });
+
   it('redacts credentials and strips ANSI and control characters with length limits', () => {
     const sanitized = sanitizeReleaseReport(createReport(), { projectRoot: '/workspace/project' });
     const serialized = JSON.stringify(sanitized);

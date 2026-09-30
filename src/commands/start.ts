@@ -32,6 +32,8 @@ import { RollbackPlanningService, type RollbackExecutionPlan } from '../deployme
 import type { CommitScopeOptions } from '../deployment/commit-scope-service.js';
 import { loadRepoConfigStrict } from '../config/repo-config.js';
 import type { ReachedManualCheckpoint } from '../types/manual-checkpoint.js';
+import type { PausedPostcondition } from '../deployment/deployment-postcondition.js';
+import { projectDeploymentPostcondition } from '../presentation/deployment-postcondition-projector.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('@jterrats/smart-deployment', 'start');
@@ -88,6 +90,7 @@ type StartResult = {
   releaseReportWarning?: string;
   outcome?: 'completed' | 'paused' | 'skipped';
   checkpoint?: ReachedManualCheckpoint;
+  postcondition?: import('../presentation/deployment-postcondition-projector.js').DeploymentPostconditionView;
 };
 
 export default class Start extends SfCommand<StartResult> {
@@ -243,6 +246,7 @@ export default class Start extends SfCommand<StartResult> {
         throw new Error('Manual wave checkpoints are not supported during rollback deployments.');
       }
       let reachedCheckpoint: ReachedManualCheckpoint | undefined;
+      let pausedPostcondition: PausedPostcondition | undefined;
 
       for (const target of executionTargets) {
         const executionOptions = {
@@ -256,6 +260,11 @@ export default class Start extends SfCommand<StartResult> {
           deploymentContext: target.deploymentContext,
           log: reportLog,
           checkpoints: repoConfig.checkpoints,
+          postconditionOptions: {
+            timeoutMs: repoConfig.owdBarrier?.timeoutMs ?? 120_000,
+            initialDelayMs: repoConfig.owdBarrier?.initialDelayMs ?? 1000,
+            maximumDelayMs: repoConfig.owdBarrier?.maximumDelayMs ?? 10_000,
+          },
           contextOptions: {
             useAI: Boolean(flags['use-ai']),
             orgType: typeof flags['org-type'] === 'string' ? flags['org-type'] : undefined,
@@ -273,6 +282,11 @@ export default class Start extends SfCommand<StartResult> {
         }
         if (executionResult.kind === 'paused') {
           reachedCheckpoint = executionResult.checkpoint;
+          break;
+        }
+        if (executionResult.kind === 'postcondition-paused' || executionResult.kind === 'precondition-blocked') {
+          pausedPostcondition = executionResult.postcondition;
+          if (!this.jsonEnabled()) presenter.reportPostconditionPaused(this, executionResult.postcondition);
           break;
         }
       }
@@ -299,7 +313,7 @@ export default class Start extends SfCommand<StartResult> {
       }
 
       const result: StartResult = {
-        success: true,
+        success: pausedPostcondition === undefined,
         waves,
         reports: reportResult ? { jsonPath: reportResult.jsonPath, htmlPath: reportResult.htmlPath } : undefined,
         commitScope: activeContext.commitScope,
@@ -313,8 +327,14 @@ export default class Start extends SfCommand<StartResult> {
             }
           : undefined,
         ai: activeContext.aiContext,
-        outcome: reachedCheckpoint ? 'paused' : flags['dry-run'] || flags['validate-only'] ? 'skipped' : 'completed',
+        outcome:
+          reachedCheckpoint || pausedPostcondition
+            ? 'paused'
+            : flags['dry-run'] || flags['validate-only']
+            ? 'skipped'
+            : 'completed',
         checkpoint: reachedCheckpoint,
+        postcondition: pausedPostcondition ? projectDeploymentPostcondition(pausedPostcondition) : undefined,
       };
       if (reachedCheckpoint) {
         return result;
@@ -324,6 +344,7 @@ export default class Start extends SfCommand<StartResult> {
         dryRun: flags['dry-run'] === true,
         validateOnly: flags['validate-only'] === true,
         reportDir: typeof flags['report-dir'] === 'string' ? flags['report-dir'] : undefined,
+        postcondition: pausedPostcondition,
       });
     } catch (error) {
       // AC-10: Handle failures gracefully

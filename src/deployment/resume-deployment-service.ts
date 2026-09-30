@@ -6,6 +6,8 @@ import { StateManager } from './state-manager.js';
 import { SfCliIntegration } from './sf-cli-integration.js';
 import { DeploymentContextService } from './deployment-context-service.js';
 import { StartExecutionService, type StartExecutionResult } from './start-execution-service.js';
+import { OwdBarrierPlanner } from './owd-barrier-planner.js';
+import type { PausedPostcondition, SatisfiedPostcondition } from './deployment-postcondition.js';
 
 export type ResumeRetryStrategy = 'standard' | 'quick' | 'validate-only';
 
@@ -27,6 +29,7 @@ type ResumeDeploymentServiceDependencies = {
   deploymentContextService?: DeploymentContextService;
   startExecutionService?: StartExecutionService;
   loadConfig?: (sourcePath: string) => Promise<DeploymentConfig>;
+  owdBarrierPlanner?: OwdBarrierPlanner;
 };
 
 export class ResumeDeploymentService {
@@ -38,11 +41,21 @@ export class ResumeDeploymentService {
     this.deploymentContextService = dependencies.deploymentContextService ?? new DeploymentContextService();
     this.startExecutionService = dependencies.startExecutionService ?? new StartExecutionService();
     this.loadConfig = dependencies.loadConfig ?? loadRepoConfigStrict;
+    this.owdBarrierPlanner =
+      dependencies.owdBarrierPlanner ??
+      new OwdBarrierPlanner({
+        query: (): Promise<import('./deployment-postcondition.js').SharingModelQueryResult> =>
+          Promise.resolve({
+            kind: 'unavailable' as const,
+            error: { category: 'query' as const, message: 'not used while restoring a plan' },
+          }),
+      });
   }
 
   private readonly deploymentContextService: DeploymentContextService;
   private readonly startExecutionService: StartExecutionService;
   private readonly loadConfig: NonNullable<ResumeDeploymentServiceDependencies['loadConfig']>;
+  private readonly owdBarrierPlanner: OwdBarrierPlanner;
 
   public async prepareResume(
     retryStrategy: ResumeRetryStrategy,
@@ -111,6 +124,15 @@ export class ResumeDeploymentService {
     return this.continueLocalExecution({ ...state, execution: state.execution }, options);
   }
 
+  public async resumePostcondition(options: ResumeOptions = {}): Promise<StartExecutionResult> {
+    const state = await this.stateManager.loadState();
+    if (!state?.pausedPostcondition || !state.execution) {
+      throw new Error('No paused deployment postcondition found to resume');
+    }
+
+    return this.continueLocalExecution({ ...state, execution: state.execution }, options);
+  }
+
   private async continueLocalExecution(
     state: NonNullable<Awaited<ReturnType<StateManager['loadState']>>> & {
       execution: NonNullable<NonNullable<Awaited<ReturnType<StateManager['loadState']>>>['execution']>;
@@ -124,9 +146,6 @@ export class ResumeDeploymentService {
     }
     const sourcePath = options.sourcePath ?? state.execution.sourcePath;
     const currentConfig = await this.loadConfig(sourcePath);
-    if (JSON.stringify(currentConfig.checkpoints ?? []) !== JSON.stringify(state.execution.checkpoints)) {
-      throw new Error('Manual checkpoint configuration changed after the deployment was paused.');
-    }
     if (
       state.pausedCheckpoint !== undefined &&
       (state.pausedCheckpoint.planFingerprint !== state.execution.planFingerprint ||
@@ -138,16 +157,52 @@ export class ResumeDeploymentService {
       sourcePath,
       ...state.execution.contextOptions,
     });
-    const executionWaves = state.execution.destructive
+    if (state.pausedPostcondition?.status === 'blocked-before-deploy') {
+      return this.startExecutionService.execute({
+        dryRun: false,
+        validateOnly: false,
+        allowCycleRemediation: false,
+        skipTests: state.execution.skipTests,
+        destructive: state.execution.destructive,
+        targetOrg,
+        sourcePath,
+        deploymentContext,
+        log: () => undefined,
+        checkpoints: currentConfig.checkpoints,
+        approvedCheckpointIds: new Set(state.approvedCheckpointIds ?? []),
+        startExecutionIndex: 0,
+        deploymentId: state.deploymentId,
+        contextOptions: state.execution.contextOptions,
+        postconditionOptions: state.execution.postconditionOptions,
+        satisfiedPostconditions: state.satisfiedPostconditions,
+      });
+    }
+    let executionWaves = state.execution.destructive
       ? [...deploymentContext.orderedWaves].reverse()
       : deploymentContext.orderedWaves;
+    let checkpoints = currentConfig.checkpoints ?? [];
+    if (!state.execution.destructive && (state.execution.postconditions?.length ?? 0) > 0) {
+      const restored = this.owdBarrierPlanner.restorePlan(
+        executionWaves,
+        deploymentContext.scanResult.dependencyResult.components,
+        state.execution.postconditions ?? [],
+        checkpoints,
+        deploymentContext.scanResult.dependencyResult.graph
+      );
+      executionWaves = restored.waves;
+      checkpoints = restored.checkpoints;
+    }
+    if (JSON.stringify(checkpoints) !== JSON.stringify(state.execution.checkpoints)) {
+      throw new Error('Manual checkpoint configuration changed after the deployment was paused.');
+    }
     const fingerprint = createDeploymentPlanFingerprint({
       waves: executionWaves,
-      checkpoints: state.execution.checkpoints,
+      checkpoints,
       destructive: state.execution.destructive,
       skipTests: state.execution.skipTests,
       apiVersion: deploymentContext.scanResult.apiVersion,
       sourceFingerprint: await createSourceFingerprint(deploymentContext.scanResult.dependencyResult.components),
+      postconditions: state.execution.postconditions,
     });
     if (fingerprint !== state.execution.planFingerprint) {
       throw new Error(
@@ -162,7 +217,7 @@ export class ResumeDeploymentService {
       throw new Error('Completed waves do not match the persisted execution position.');
     }
 
-    return this.startExecutionService.execute({
+    const result = await this.startExecutionService.execute({
       dryRun: false,
       validateOnly: false,
       allowCycleRemediation: false,
@@ -181,6 +236,38 @@ export class ResumeDeploymentService {
       deploymentId: state.deploymentId,
       planFingerprint: fingerprint,
       contextOptions: state.execution.contextOptions,
+      postconditions: state.execution.postconditions,
+      postconditionOptions: state.execution.postconditionOptions,
+      satisfiedPostconditions: state.satisfiedPostconditions,
+      pendingPostconditionId: state.pausedPostcondition?.id,
     });
+
+    const mergedResult =
+      state.pausedPostcondition && result.kind === 'completed'
+        ? {
+            ...result,
+            postconditions: result.postconditions.map((condition) =>
+              condition.id === state.pausedPostcondition?.id
+                ? mergePostconditionHistory(state.pausedPostcondition, condition)
+                : condition
+            ),
+          }
+        : result;
+    if (mergedResult.kind !== 'completed') return mergedResult;
+    const byId = new Map((state.satisfiedPostconditions ?? []).map((condition) => [condition.id, condition]));
+    for (const condition of mergedResult.postconditions) byId.set(condition.id, condition);
+    return { ...mergedResult, postconditions: [...byId.values()] };
   }
+}
+
+function mergePostconditionHistory(
+  paused: PausedPostcondition,
+  satisfied: SatisfiedPostcondition
+): SatisfiedPostcondition {
+  return {
+    ...satisfied,
+    attempts: paused.attempts + satisfied.attempts,
+    waitedMs: paused.waitedMs + satisfied.waitedMs,
+    resumedPhase: satisfied.resumedPhase ?? paused.resumedPhase,
+  };
 }

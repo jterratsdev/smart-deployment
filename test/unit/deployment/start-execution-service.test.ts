@@ -193,6 +193,52 @@ describe('StartExecutionService', () => {
     await expectMissingFile(path.join(tempDir, '.smart-deployment/deployment-state.json'));
   });
 
+  it('returns a blocked diagnostic without deploying when OWD observation is unavailable', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-service-owd-'));
+    const sfCli = new SequencedSfCli([]);
+    const object = createComponent(tempDir, 'Case', 'CustomObject');
+    object.facts = { kind: 'custom-object-sharing-model', sharingModel: 'Private' };
+    const rules = createComponent(tempDir, 'Case', 'SharingRules');
+    rules.facts = { kind: 'sharing-rules', objectName: 'Case', criteriaFields: [], principals: [] };
+    const service = new StartExecutionService({
+      createSfCli: () => sfCli,
+      owdBarrierPlanner: new (await import('../../../src/deployment/owd-barrier-planner.js')).OwdBarrierPlanner({
+        query: async () => ({
+          kind: 'unavailable',
+          error: { category: 'authentication', message: 'EntityDefinition authentication unavailable' },
+        }),
+      }),
+    });
+
+    const result = await service.execute({
+      dryRun: false,
+      validateOnly: false,
+      allowCycleRemediation: false,
+      skipTests: true,
+      targetOrg: 'fixture@example.com',
+      sourcePath: tempDir,
+      deploymentContext: createDeploymentContext([object, rules], [['CustomObject:Case'], ['SharingRules:Case']]),
+      log: () => undefined,
+    });
+
+    expect(result.kind).to.equal('precondition-blocked');
+    expect(sfCli.deployCalls).to.have.length(0);
+    const state = await new StateManager({ baseDir: tempDir }).loadState();
+    expect(state).to.deep.include({ status: 'paused', completedWaves: [], currentWave: 1 });
+    expect(state?.execution?.nextExecutionIndex).to.equal(0);
+    expect(state?.pausedPostcondition).to.deep.include({
+      status: 'blocked-before-deploy',
+      observationError: { category: 'authentication', message: 'EntityDefinition authentication unavailable' },
+    });
+    if (result.kind === 'precondition-blocked') {
+      expect(result.postcondition).to.deep.include({
+        status: 'blocked-before-deploy',
+        attempts: 1,
+        waitedMs: 0,
+      });
+    }
+  });
+
   it('persists completed waves when a later wave fails', async () => {
     tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-service-'));
     const sfCli = new SequencedSfCli([
