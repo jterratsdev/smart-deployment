@@ -53,6 +53,7 @@ export type DeploymentState = {
     nextExecutionIndex: number;
     destructive: boolean;
     skipTests: boolean;
+    enableDataQualityReadiness?: boolean;
     apiVersion?: string;
     planFingerprint: string;
     checkpoints: ManualCheckpoint[];

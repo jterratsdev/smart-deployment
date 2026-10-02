@@ -62,6 +62,7 @@ export const DEPLOYMENT_ORDER: Readonly<Record<MetadataType, number>> = Object.f
   WorkflowRule: 16, // Workflow rules
 
   // ========== Tier 2: Security Foundation (17-23) ==========
+  MatchingRules: 17, // Matching rules depend on object schema and activate asynchronously
   OrgSettings: 17, // Org-wide settings
   CorsWhitelistOrigin: 18, // CORS settings
   CspTrustedSite: 19, // CSP trusted sites
@@ -74,6 +75,7 @@ export const DEPLOYMENT_ORDER: Readonly<Record<MetadataType, number>> = Object.f
   DataSourceObject: 26, // Data source objects
 
   // ========== Tier 3: Code & Resources (27-36) ==========
+  DuplicateRule: 17, // Lifecycle edges order activation and deactivation relative to MatchingRules
   StaticResource: 27, // Static resources
   Document: 28, // Documents
   ContentAsset: 29, // Content assets

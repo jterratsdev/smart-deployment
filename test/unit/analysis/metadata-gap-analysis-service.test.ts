@@ -29,17 +29,11 @@ describe('MetadataGapAnalysisService', () => {
 
     expect(result.analysisMode).to.equal('deterministic');
     expect(result.summary.detectedTypeCount).to.equal(4);
-    expect(result.summary.supportedTypeCount).to.equal(1);
-    expect(result.gaps.map((gap) => gap.metadataType)).to.deep.equal([
-      'CustomApplication',
-      'GenAiPlugin',
-      'MatchingRules',
-    ]);
-    expect(result.gaps.find((gap) => gap.metadataType === 'MatchingRules')).to.deep.include({
-      classification: 'dependency-rule',
-      supportStatus: 'unsupported',
-      requiresHumanReview: false,
-    });
+    expect(result.summary.supportedTypeCount).to.equal(2);
+    expect(result.gaps.map((gap) => gap.metadataType)).to.deep.equal(['CustomApplication', 'GenAiPlugin']);
+    expect(result.detectedTypes.find((entry) => entry.metadataType === 'MatchingRules')?.supportStatus).to.equal(
+      'supported'
+    );
     expect(result.gaps.find((gap) => gap.metadataType === 'GenAiPlugin')).to.deep.include({
       classification: 'provider-owned',
       supportStatus: 'ordered-only',

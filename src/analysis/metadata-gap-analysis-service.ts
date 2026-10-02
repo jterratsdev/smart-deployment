@@ -121,6 +121,7 @@ const FILE_SUFFIX_TYPES: Array<[suffix: string, metadataType: string]> = [
   ['.embeddedServiceConfig-meta.xml', 'EmbeddedServiceConfig'],
   ['.app-meta.xml', 'CustomApplication'],
   ['.matchingRule-meta.xml', 'MatchingRules'],
+  ['.duplicateRule-meta.xml', 'DuplicateRule'],
 ];
 
 export class MetadataGapAnalysisService {

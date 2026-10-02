@@ -17,6 +17,7 @@ import { SfCliOrgQuery } from './sf-cli-org-query.js';
 import type { OwdPostcondition } from './deployment-postcondition.js';
 import { createDeploymentPlanFingerprint, createSourceFingerprint } from '../types/manual-checkpoint.js';
 import { WaveValidator } from '../waves/wave-validator.js';
+import { addDataQualityReadinessCheckpoints } from './data-quality-readiness-planner.js';
 
 export type StartExecutionOptions = {
   dryRun: boolean;
@@ -38,6 +39,7 @@ export type StartExecutionOptions = {
   satisfiedPostconditions?: Array<import('./deployment-postcondition.js').SatisfiedPostcondition>;
   pendingPostconditionId?: string;
   postconditionOptions?: { timeoutMs: number; initialDelayMs: number; maximumDelayMs: number };
+  enableDataQualityReadiness?: boolean;
 };
 
 export type StartExecutionResult =
@@ -101,6 +103,9 @@ export class StartExecutionService {
     }
 
     const { scanResult, orderedWaves, aiContext } = options.deploymentContext;
+    if (scanResult.errors.length > 0) {
+      throw new Error(`Metadata scan failed:\n${scanResult.errors.map((error) => `- ${error}`).join('\n')}`);
+    }
     const destructive = options.destructive === true;
     let executionWaves = destructive ? [...orderedWaves].reverse() : orderedWaves;
     const testExecutor = this.testPlanService.createExecutor(scanResult.components);
@@ -216,6 +221,7 @@ export class StartExecutionService {
             nextExecutionIndex: 0,
             destructive,
             skipTests: options.skipTests,
+            enableDataQualityReadiness: options.enableDataQualityReadiness,
             apiVersion: scanResult.apiVersion,
             planFingerprint,
             checkpoints,
@@ -232,6 +238,13 @@ export class StartExecutionService {
         );
         return { kind: 'precondition-blocked', postcondition };
       }
+    }
+    if (!destructive && options.enableDataQualityReadiness !== false) {
+      checkpoints = addDataQualityReadinessCheckpoints(
+        executionWaves,
+        scanResult.dependencyResult.components,
+        checkpoints
+      );
     }
 
     if (!destructive) {
@@ -285,6 +298,7 @@ export class StartExecutionService {
       postconditions,
       satisfiedPostconditions: options.satisfiedPostconditions,
       pendingPostconditionId: options.pendingPostconditionId,
+      enableDataQualityReadiness: options.enableDataQualityReadiness,
       postconditionOptions: options.postconditionOptions,
     });
 

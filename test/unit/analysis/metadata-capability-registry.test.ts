@@ -130,6 +130,14 @@ describe('MetadataCapabilityRegistry', () => {
     expect(metadataCapabilityRegistry.resolve('RetailExecutionSettings', '46.0')).to.equal(undefined);
   });
 
+  it('registers MatchingRules and DuplicateRule as C1 metadata with partial readiness lifecycle', () => {
+    for (const metadataType of ['MatchingRules', 'DuplicateRule']) {
+      const entry = metadataCapabilityRegistry.resolve(metadataType, '67.0', 'metadata-api');
+      expect(entry).to.deep.include({ vendorType: metadataType, canonicalOwner: 'C1', minimumApiVersion: '61.0' });
+      expect(capabilityStatuses(entry)).to.deep.equal(['proven', 'proven', 'proven', 'proven', 'partial', 'proven']);
+    }
+  });
+
   it('conforms actual AI rows to their source-format and provider lifecycle boundaries', () => {
     const authoringBundle = metadataCapabilityRegistry.resolve('AiAuthoringBundle', '67.0');
     expect(authoringBundle).to.deep.include({
@@ -174,7 +182,8 @@ describe('MetadataCapabilityRegistry', () => {
       row('CustomMetadata', 'metadata-api', 'C1', ['proven', 'proven', 'proven', 'proven', 'not-applicable', 'proven']),
       row('CustomObject', 'metadata-api', 'C1', ['proven', 'proven', 'partial', 'proven', 'not-applicable', 'proven']),
       row('Flow', 'metadata-api', 'C1', ['proven', 'proven', 'partial', 'proven', 'not-applicable', 'proven']),
-      row('MatchingRules', 'metadata-api', 'C1', ['partial', 'absent', 'absent', 'absent', 'not-applicable', 'absent']),
+      row('MatchingRules', 'metadata-api', 'C1', ['proven', 'proven', 'proven', 'proven', 'partial', 'proven']),
+      row('DuplicateRule', 'metadata-api', 'C1', ['proven', 'proven', 'proven', 'proven', 'partial', 'proven']),
       row('PermissionSet', 'metadata-api', 'C1', ['proven', 'proven', 'partial', 'proven', 'not-applicable', 'proven']),
       row('SharingRules', 'metadata-api', 'C1', ['proven', 'proven', 'proven', 'proven', 'partial', 'proven']),
       row('OrderManagementSettings', 'metadata-api', 'C1', [

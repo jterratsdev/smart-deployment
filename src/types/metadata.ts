@@ -31,6 +31,7 @@ export type MetadataType =
   | 'BusinessProcess'
   | 'ValidationRule'
   | 'WorkflowRule'
+  | 'MatchingRules'
   // Tier 2: Security Foundation
   | 'OrgSettings'
   | 'CorsWhitelistOrigin'
@@ -42,6 +43,7 @@ export type MetadataType =
   | 'ExternalCredential'
   | 'NamedCredential'
   | 'DataSourceObject'
+  | 'DuplicateRule'
   // Tier 3: Code & Resources
   | 'StaticResource'
   | 'Document'
@@ -153,6 +155,18 @@ export type MetadataFacts =
       enableRetailExecution?: boolean;
       enableProductHierarchy?: boolean;
       enableVisitSharing?: boolean;
+    }
+  | {
+      kind: 'matching-rules';
+      objectName: string;
+      rules: Array<{ name: string; fields: string[]; isActive: boolean }>;
+    }
+  | {
+      kind: 'duplicate-rule';
+      objectName: string;
+      matchingRules: Array<{ objectName: string; matchingRuleName: string }>;
+      filterFields: string[];
+      isActive: boolean;
     }
   | {
       kind: 'custom-object-sharing-model';

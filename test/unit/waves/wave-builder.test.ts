@@ -318,6 +318,24 @@ describe('WaveBuilder', () => {
       ]);
     });
 
+    it('should sequence object schema, matching rules, and duplicate rules in separate stages', () => {
+      const graph: DependencyGraph = new Map([
+        ['CustomObject:Account', new Set()],
+        ['CustomField:Account.Email__c', new Set(['CustomObject:Account'])],
+        ['MatchingRules:Account', new Set(['CustomObject:Account', 'CustomField:Account.Email__c'])],
+        ['DuplicateRule:Account.Email_Duplicate', new Set(['CustomObject:Account', 'MatchingRules:Account'])],
+      ]);
+
+      const result = new WaveBuilder().generateWaves(graph);
+
+      expect(result.waves.map((wave) => wave.components)).to.deep.equal([
+        ['CustomObject:Account'],
+        ['CustomField:Account.Email__c'],
+        ['MatchingRules:Account'],
+        ['DuplicateRule:Account.Email_Duplicate'],
+      ]);
+    });
+
     it('should reject an unknown type before creating executable waves', () => {
       const graph: DependencyGraph = new Map([['UnknownMetadata:Config', new Set()]]);
 

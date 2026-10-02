@@ -8,6 +8,7 @@ import { DeploymentContextService } from './deployment-context-service.js';
 import { StartExecutionService, type StartExecutionResult } from './start-execution-service.js';
 import { OwdBarrierPlanner } from './owd-barrier-planner.js';
 import type { PausedPostcondition, SatisfiedPostcondition } from './deployment-postcondition.js';
+import { addDataQualityReadinessCheckpoints } from './data-quality-readiness-planner.js';
 
 export type ResumeRetryStrategy = 'standard' | 'quick' | 'validate-only';
 
@@ -175,6 +176,7 @@ export class ResumeDeploymentService {
         contextOptions: state.execution.contextOptions,
         postconditionOptions: state.execution.postconditionOptions,
         satisfiedPostconditions: state.satisfiedPostconditions,
+        enableDataQualityReadiness: state.execution.enableDataQualityReadiness,
       });
     }
     let executionWaves = state.execution.destructive
@@ -191,6 +193,13 @@ export class ResumeDeploymentService {
       );
       executionWaves = restored.waves;
       checkpoints = restored.checkpoints;
+    }
+    if (!state.execution.destructive && state.execution.enableDataQualityReadiness !== false) {
+      checkpoints = addDataQualityReadinessCheckpoints(
+        executionWaves,
+        deploymentContext.scanResult.dependencyResult.components,
+        checkpoints
+      );
     }
     if (JSON.stringify(checkpoints) !== JSON.stringify(state.execution.checkpoints)) {
       throw new Error('Manual checkpoint configuration changed after the deployment was paused.');
@@ -240,6 +249,7 @@ export class ResumeDeploymentService {
       postconditionOptions: state.execution.postconditionOptions,
       satisfiedPostconditions: state.satisfiedPostconditions,
       pendingPostconditionId: state.pausedPostcondition?.id,
+      enableDataQualityReadiness: state.execution.enableDataQualityReadiness,
     });
 
     const mergedResult =

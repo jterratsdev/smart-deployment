@@ -34,6 +34,17 @@ export class WaveManifestService {
         `Retail Execution settings cannot be deleted through destructiveChanges: ${nonDeletable.join(', ')}`
       );
     }
+    const dataQualityRules = params.components.filter((nodeId) => {
+      const type = params.componentMap.get(nodeId)?.type;
+      return type === 'MatchingRules' || type === 'DuplicateRule';
+    });
+    if (dataQualityRules.length > 0) {
+      throw new Error(
+        `Matching and duplicate rules cannot be deleted automatically; deactivate and remove them through an approved lifecycle: ${dataQualityRules.join(
+          ', '
+        )}`
+      );
+    }
     const manifestDir = await this.ensureManifestDir(params.baseDir);
     const waveName = `wave-${String(params.waveNumber).padStart(3, '0')}`;
     const packagePath = path.join(manifestDir, `${waveName}-package.xml`);

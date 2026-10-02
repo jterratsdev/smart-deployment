@@ -98,12 +98,22 @@ const P0_DEFINITIONS: readonly MetadataCapabilityDefinition[] = [
     fixtures: proven('Focused Flow parser and scanner fixtures exist.'),
   }),
   metadataDefinition('MatchingRules', 'MatchingRules', 'C1', '61.0', {
-    discovery: partial('Manifest and matchingRule source suffix detection exist.'),
-    parsing: absent('No MatchingRules parser is registered.'),
-    dependencies: absent('No MatchingRules dependency extraction is registered.'),
-    ordering: absent('MatchingRules is absent from DEPLOYMENT_ORDER.'),
-    lifecycle: notApplicable(),
-    fixtures: absent('Only metadata-gap detection coverage exists.'),
+    discovery: proven('data-quality-rule-scanner.ts discovers matchingRules source files.'),
+    parsing: proven('matching-rules-parser.ts parses rule names, fields, and active state.'),
+    dependencies: proven('Local owning objects and custom fields produce typed hard dependencies.'),
+    ordering: proven('Lifecycle edges place MatchingRules before activation and after DuplicateRule deactivation.'),
+    lifecycle: partial('Active matching rules use a resumable manual readiness checkpoint pending a stable org query.'),
+    fixtures: proven('Focused parser, scanner, ordering, checkpoint, manifest, and destructive fixtures exist.'),
+  }),
+  metadataDefinition('DuplicateRule', 'DuplicateRule', 'C1', '61.0', {
+    discovery: proven('data-quality-rule-scanner.ts discovers duplicateRules source files.'),
+    parsing: proven('duplicate-rule-parser.ts parses matching references, filters, and active state.'),
+    dependencies: proven('Local objects, fields, and MatchingRules containers produce typed hard dependencies.'),
+    ordering: proven(
+      'Lifecycle edges place active DuplicateRule after MatchingRules and deactivation before MatchingRules.'
+    ),
+    lifecycle: partial('Matching-rule activation readiness remains an approved manual checkpoint.'),
+    fixtures: proven('Focused parser, scanner, ordering, checkpoint, manifest, and destructive fixtures exist.'),
   }),
   metadataDefinition('PermissionSet', 'PermissionSet', 'C1', '61.0', {
     discovery: proven('security-metadata-scanner.ts discovers PermissionSet components.'),

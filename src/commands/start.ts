@@ -271,6 +271,7 @@ export default class Start extends SfCommand<StartResult> {
             industry: typeof flags.industry === 'string' ? flags.industry : undefined,
             commitScope,
           },
+          enableDataQualityReadiness: rollbackPlan === undefined,
         } as const;
 
         if (!executionOptions.dryRun && !executionOptions.validateOnly) {

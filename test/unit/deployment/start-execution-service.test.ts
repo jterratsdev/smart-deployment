@@ -187,6 +187,34 @@ describe('StartExecutionService', () => {
     expect(sfCli.deployCalls).to.be.empty;
   });
 
+  it('rejects metadata scan errors before planning or invoking Salesforce', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-scan-error-'));
+    const sfCli = new FailingSfCli();
+    const component = createComponent(tempDir);
+    const context = createDeploymentContext(component);
+    context.scanResult.errors = ['Failed to parse MatchingRules: invalid XML'];
+    const service = new StartExecutionService({ createSfCli: () => sfCli });
+
+    let error: Error | undefined;
+    try {
+      await service.execute({
+        dryRun: false,
+        validateOnly: false,
+        allowCycleRemediation: false,
+        skipTests: true,
+        targetOrg: 'fixture@example.com',
+        sourcePath: tempDir,
+        deploymentContext: context,
+        log: () => undefined,
+      });
+    } catch (caught) {
+      error = caught as Error;
+    }
+
+    expect(error?.message).to.equal('Metadata scan failed:\n- Failed to parse MatchingRules: invalid XML');
+    expect(sfCli.deployCalls).to.be.empty;
+  });
+
   it('rejects cycle remediation when non-cycle components would be omitted', async () => {
     tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-service-'));
     const sfCli = new FailingSfCli();
@@ -262,6 +290,122 @@ describe('StartExecutionService', () => {
       'wave-002.xml',
     ]);
     expect(sfCli.deployCalls.map((call) => call.workingDirectory)).to.deep.equal([tempDir, tempDir]);
+    await expectMissingFile(path.join(tempDir, '.smart-deployment/deployment-state.json'));
+  });
+
+  it('pauses after active MatchingRules before deploying a dependent DuplicateRule', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-data-quality-'));
+    const sfCli = new SequencedSfCli([
+      createDeploymentResult({ deploymentId: '0AfMatching', status: 'Succeeded', success: true }),
+    ]);
+    const matching = createComponent(tempDir, 'Account', 'MatchingRules');
+    matching.facts = {
+      kind: 'matching-rules',
+      objectName: 'Account',
+      rules: [{ name: 'Email_Rule', fields: ['Email__c'], isActive: true }],
+    };
+    const duplicate = createComponent(tempDir, 'Account.Email_Duplicate', 'DuplicateRule');
+    duplicate.dependencies = new Set(['MatchingRules:Account']);
+    duplicate.facts = {
+      kind: 'duplicate-rule',
+      objectName: 'Account',
+      matchingRules: [{ objectName: 'Account', matchingRuleName: 'Email_Rule' }],
+      filterFields: [],
+      isActive: true,
+    };
+    const context = createDeploymentContext(
+      [matching, duplicate],
+      [['MatchingRules:Account'], ['DuplicateRule:Account.Email_Duplicate']]
+    );
+    context.scanResult.dependencyResult.graph = new Map([
+      ['MatchingRules:Account', new Set()],
+      ['DuplicateRule:Account.Email_Duplicate', new Set(['MatchingRules:Account'])],
+    ]);
+    const service = new StartExecutionService({
+      createSfCli: () => sfCli,
+      createStateManager: (baseDir?: string) => new StateManager({ baseDir }),
+      createDeploymentId: () => 'deployment-data-quality',
+    });
+
+    const result = await service.execute({
+      dryRun: false,
+      validateOnly: false,
+      allowCycleRemediation: false,
+      skipTests: true,
+      targetOrg: 'fixture@example.com',
+      sourcePath: tempDir,
+      deploymentContext: context,
+      log: () => undefined,
+    });
+
+    expect(result.kind).to.equal('paused');
+    if (result.kind === 'paused') {
+      expect(result.checkpoint).to.deep.include({
+        id: 'matching-rules-ready:wave-1',
+        phase: 'after',
+        waveNumber: 1,
+        executionIndex: 1,
+      });
+    }
+    expect(sfCli.deployCalls).to.have.lengthOf(1);
+    const state = await new StateManager({ baseDir: tempDir }).loadState();
+    expect(state?.completedWaves).to.deep.equal([1]);
+    expect(state?.execution?.nextExecutionIndex).to.equal(1);
+    expect(state?.execution?.checkpoints[0]).to.deep.include({
+      id: 'matching-rules-ready:wave-1',
+      phase: 'after',
+      waveNumber: 1,
+    });
+  });
+
+  it('does not create matching-rule checkpoints for rollback restoration execution', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-data-quality-rollback-'));
+    const sfCli = new SequencedSfCli([
+      createDeploymentResult({ deploymentId: '0AfMatching', status: 'Succeeded', success: true }),
+      createDeploymentResult({ deploymentId: '0AfDuplicate', status: 'Succeeded', success: true }),
+    ]);
+    const matching = createComponent(tempDir, 'Account', 'MatchingRules');
+    matching.facts = {
+      kind: 'matching-rules',
+      objectName: 'Account',
+      rules: [{ name: 'Email_Rule', fields: [], isActive: true }],
+    };
+    const duplicate = createComponent(tempDir, 'Account.Email_Duplicate', 'DuplicateRule');
+    duplicate.dependencies = new Set(['MatchingRules:Account']);
+    duplicate.facts = {
+      kind: 'duplicate-rule',
+      objectName: 'Account',
+      matchingRules: [{ objectName: 'Account', matchingRuleName: 'Email_Rule' }],
+      filterFields: [],
+      isActive: true,
+    };
+    const context = createDeploymentContext(
+      [matching, duplicate],
+      [['MatchingRules:Account'], ['DuplicateRule:Account.Email_Duplicate']]
+    );
+    context.scanResult.dependencyResult.graph = new Map([
+      ['MatchingRules:Account', new Set()],
+      ['DuplicateRule:Account.Email_Duplicate', new Set(['MatchingRules:Account'])],
+    ]);
+    const service = new StartExecutionService({
+      createSfCli: () => sfCli,
+      createStateManager: (baseDir?: string) => new StateManager({ baseDir }),
+    });
+
+    const result = await service.execute({
+      dryRun: false,
+      validateOnly: false,
+      allowCycleRemediation: false,
+      skipTests: true,
+      targetOrg: 'fixture@example.com',
+      sourcePath: tempDir,
+      deploymentContext: context,
+      log: () => undefined,
+      enableDataQualityReadiness: false,
+    });
+
+    expect(result.kind).to.equal('completed');
+    expect(sfCli.deployCalls).to.have.lengthOf(2);
     await expectMissingFile(path.join(tempDir, '.smart-deployment/deployment-state.json'));
   });
 

@@ -52,6 +52,7 @@ export type DeploymentRunnerParams = {
   postconditionOptions?: { timeoutMs: number; initialDelayMs: number; maximumDelayMs: number };
   satisfiedPostconditions?: SatisfiedPostcondition[];
   pendingPostconditionId?: string;
+  enableDataQualityReadiness?: boolean;
 };
 
 export type DeploymentRunnerResult =
@@ -410,6 +411,7 @@ export class DeploymentRunner {
         nextExecutionIndex: options.executionIndex,
         destructive: options.params.destructive,
         skipTests: options.params.skipTests,
+        enableDataQualityReadiness: options.params.enableDataQualityReadiness,
         apiVersion: options.params.apiVersion,
         planFingerprint: options.planFingerprint,
         checkpoints: options.params.checkpoints ?? [],
@@ -439,6 +441,7 @@ export class DeploymentRunner {
       nextExecutionIndex,
       destructive: params.destructive,
       skipTests: params.skipTests,
+      enableDataQualityReadiness: params.enableDataQualityReadiness,
       apiVersion: params.apiVersion,
       planFingerprint,
       checkpoints: params.checkpoints ?? [],

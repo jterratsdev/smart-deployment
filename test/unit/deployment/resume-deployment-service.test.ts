@@ -132,6 +132,7 @@ describe('ResumeDeploymentService', () => {
             nextExecutionIndex: 1,
             destructive: false,
             skipTests: true,
+            enableDataQualityReadiness: false,
             apiVersion: '66.0',
             planFingerprint,
             checkpoints,
@@ -156,7 +157,63 @@ describe('ResumeDeploymentService', () => {
     expect(result).to.deep.equal({ kind: 'completed', postconditions: [] });
     expect(executionOptions?.deploymentId).to.equal('deploy-checkpoint');
     expect(executionOptions?.startExecutionIndex).to.equal(1);
+    expect(executionOptions?.enableDataQualityReadiness).to.equal(false);
     expect([...(executionOptions?.approvedCheckpointIds ?? [])]).to.deep.equal(['activate-table']);
+  });
+
+  it('preserves disabled matching readiness when resuming an OWD precondition block', async () => {
+    const waves = [createWave(1)];
+    const context = createContext(waves);
+    let executionOptions: StartExecutionOptions | undefined;
+    const service = new ResumeDeploymentService(
+      {
+        loadState: async () => ({
+          deploymentId: 'rollback-precondition',
+          targetOrg: 'test-org',
+          timestamp: '2026-08-05T00:00:00.000Z',
+          totalWaves: 1,
+          completedWaves: [],
+          currentWave: 1,
+          status: 'paused',
+          pausedPostcondition: {
+            id: 'owd:Case:Private',
+            kind: 'owd-internal-sharing-model',
+            objectName: 'Case',
+            afterWaveNumber: 1,
+            expectedInternalSharingModel: 'Private',
+            status: 'blocked-before-deploy',
+            attempts: 1,
+            waitedMs: 0,
+            pausedAt: '2026-08-05T00:00:00.000Z',
+          },
+          execution: {
+            sourcePath: '/fixture',
+            orderedWaveNumbers: [1],
+            nextExecutionIndex: 0,
+            destructive: false,
+            skipTests: true,
+            enableDataQualityReadiness: false,
+            planFingerprint: 'legacy',
+            checkpoints: [],
+          },
+        }),
+      } as never,
+      undefined,
+      {
+        deploymentContextService: { buildContext: async () => context } as never,
+        loadConfig: async () => ({ checkpoints: [] }),
+        startExecutionService: {
+          execute: async (options: StartExecutionOptions) => {
+            executionOptions = options;
+            return { kind: 'completed' as const, postconditions: [] };
+          },
+        } as never,
+      }
+    );
+
+    await service.resumePostcondition({ targetOrg: 'test-org' });
+
+    expect(executionOptions?.enableDataQualityReadiness).to.equal(false);
   });
 
   it('rejects checkpoint continuation when the source-derived plan changes', async () => {

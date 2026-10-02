@@ -113,5 +113,7 @@ describe('getDeploymentPriority', () => {
     expect(getDeploymentStage('ApexClass')).to.equal(3);
     expect(getDeploymentStage('Flow')).to.equal(5);
     expect(getDeploymentStage('PermissionSet')).to.equal(9);
+    expect(getDeploymentStage('MatchingRules')).to.equal(2);
+    expect(getDeploymentStage('DuplicateRule')).to.equal(2);
   });
 });

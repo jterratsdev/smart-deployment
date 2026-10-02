@@ -186,6 +186,91 @@ describe('WaveManifestService', () => {
     );
   });
 
+  it('renders MatchingRules and DuplicateRule with exact transport identities', async () => {
+    const baseDir = await mkdtemp(path.join(os.tmpdir(), 'wave-manifest-data-quality-rules-'));
+    const components = new Map<string, MetadataComponent>([
+      [
+        'MatchingRules:Account',
+        {
+          name: 'Account',
+          type: 'MatchingRules',
+          filePath: 'matching',
+          dependencies: new Set(),
+          dependents: new Set(),
+          priorityBoost: 0,
+        },
+      ],
+      [
+        'DuplicateRule:Account.Email_Duplicate',
+        {
+          name: 'Account.Email_Duplicate',
+          type: 'DuplicateRule',
+          filePath: 'duplicate',
+          dependencies: new Set(),
+          dependents: new Set(),
+          priorityBoost: 0,
+        },
+      ],
+    ]);
+    const manifestPath = await new WaveManifestService().generateManifest({
+      baseDir,
+      waveNumber: 1,
+      components: [...components.keys()],
+      componentMap: components,
+      apiVersion: '67.0',
+    });
+    const content = await readFile(manifestPath, 'utf8');
+    expect(content).to.include('<members>Account</members>');
+    expect(content).to.include('<name>MatchingRules</name>');
+    expect(content).to.include('<members>Account.Email_Duplicate</members>');
+    expect(content).to.include('<name>DuplicateRule</name>');
+  });
+
+  it('blocks destructive deletion of matching and duplicate rules regardless of source state', async () => {
+    const baseDir = await mkdtemp(path.join(os.tmpdir(), 'wave-manifest-data-quality-delete-'));
+    const matching: MetadataComponent = {
+      name: 'Account',
+      type: 'MatchingRules',
+      filePath: 'matching',
+      dependencies: new Set(),
+      dependents: new Set(),
+      priorityBoost: 0,
+      facts: { kind: 'matching-rules', objectName: 'Account', rules: [{ name: 'Rule', fields: [], isActive: true }] },
+    };
+    const duplicate: MetadataComponent = {
+      name: 'Account.Rule',
+      type: 'DuplicateRule',
+      filePath: 'duplicate',
+      dependencies: new Set(),
+      dependents: new Set(),
+      priorityBoost: 0,
+      facts: {
+        kind: 'duplicate-rule',
+        objectName: 'Account',
+        matchingRules: [{ objectName: 'Account', matchingRuleName: 'Rule' }],
+        filterFields: [],
+        isActive: true,
+      },
+    };
+    const components = new Map([
+      ['MatchingRules:Account', matching],
+      ['DuplicateRule:Account.Rule', duplicate],
+    ]);
+    let error: Error | undefined;
+    try {
+      await new WaveManifestService().generateDestructiveManifest({
+        baseDir,
+        waveNumber: 1,
+        components: [...components.keys()],
+        componentMap: components,
+        apiVersion: '67.0',
+      });
+    } catch (caught) {
+      error = caught as Error;
+    }
+    expect(error?.message).to.include('Matching and duplicate rules cannot be deleted automatically');
+  });
+
   it('generates a destructiveChanges manifest with an empty package manifest', async () => {
     const baseDir = await mkdtemp(path.join(os.tmpdir(), 'wave-manifest-destructive-'));
     const service = new WaveManifestService();

@@ -46,6 +46,12 @@ import {
   addLocalSharingPrincipalDependencies,
 } from './scanners/security-metadata-scanner.js';
 import { scanAdditionalMetadata } from './scanners/additional-metadata-scanner.js';
+import {
+  addLocalDataQualityRuleDependencies,
+  parseCustomFieldComponent,
+  parseDuplicateRuleComponent,
+  parseMatchingRulesComponent,
+} from './scanners/data-quality-rule-scanner.js';
 
 const logger = getLogger('MetadataScannerService');
 
@@ -172,7 +178,7 @@ export class MetadataScannerService {
       })
     );
 
-    return scannedPackages.flat();
+    return addLocalDataQualityRuleDependencies(addLocalSharingPrincipalDependencies(scannedPackages.flat()));
   }
 
   /**
@@ -195,7 +201,7 @@ export class MetadataScannerService {
       this.scanAdditionalMetadata(packagePath, errors),
     ]);
 
-    return addLocalSharingPrincipalDependencies(componentGroups.flat());
+    return componentGroups.flat();
   }
 
   private async scanAutomationMetadata(packagePath: string, errors: string[]): Promise<MetadataComponent[]> {
@@ -237,7 +243,38 @@ export class MetadataScannerService {
       (directoryPath) => path.basename(directoryPath)
     );
 
-    return [...objectComponents, ...customMetadataComponents];
+    const matchingRulesComponents = await scanMetadataFiles(
+      packagePath,
+      '**/matchingRules/**/*.matchingRule-meta.xml',
+      errors,
+      'MatchingRules',
+      this.shouldIgnorePath,
+      parseMatchingRulesComponent
+    );
+    const customFieldComponents = await scanMetadataFiles(
+      packagePath,
+      '**/objects/*/fields/**/*.field-meta.xml',
+      errors,
+      'CustomField',
+      this.shouldIgnorePath,
+      (filePath) => Promise.resolve(parseCustomFieldComponent(filePath))
+    );
+    const duplicateRuleComponents = await scanMetadataFiles(
+      packagePath,
+      '**/duplicateRules/**/*.duplicateRule-meta.xml',
+      errors,
+      'DuplicateRule',
+      this.shouldIgnorePath,
+      parseDuplicateRuleComponent
+    );
+
+    return [
+      ...objectComponents,
+      ...customFieldComponents,
+      ...customMetadataComponents,
+      ...matchingRulesComponents,
+      ...duplicateRuleComponents,
+    ];
   }
 
   private async scanSecurityMetadata(packagePath: string, errors: string[]): Promise<MetadataComponent[]> {
