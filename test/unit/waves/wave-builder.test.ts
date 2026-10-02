@@ -302,6 +302,22 @@ describe('WaveBuilder', () => {
       ]);
     });
 
+    it('should isolate Retail Execution settings before foundation and code metadata', () => {
+      const graph: DependencyGraph = new Map([
+        ['ApexClass:Service', new Set()],
+        ['CustomObject:Account', new Set()],
+        ['RetailExecutionSettings:RetailExecution', new Set()],
+      ]);
+
+      const result = new WaveBuilder().generateWaves(graph);
+
+      expect(result.waves.map((wave) => wave.components)).to.deep.equal([
+        ['RetailExecutionSettings:RetailExecution'],
+        ['CustomObject:Account'],
+        ['ApexClass:Service'],
+      ]);
+    });
+
     it('should reject an unknown type before creating executable waves', () => {
       const graph: DependencyGraph = new Map([['UnknownMetadata:Config', new Set()]]);
 

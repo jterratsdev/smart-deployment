@@ -103,4 +103,94 @@ describe('additional metadata scanner', () => {
 
     expect(components).to.deep.equal([]);
   });
+
+  it('discovers the canonical Retail Execution settings singleton and parses documented flags', async () => {
+    const packagePath = await mkdtemp(path.join(os.tmpdir(), 'additional-metadata-retail-settings-'));
+    tempDirectories.push(packagePath);
+    const settingsDir = path.join(packagePath, 'settings');
+    await mkdir(settingsDir, { recursive: true });
+    await Promise.all([
+      writeFile(
+        path.join(settingsDir, 'RetailExecution.settings-meta.xml'),
+        `<?xml version="1.0" encoding="UTF-8"?>
+<RetailExecutionSettings xmlns="http://soap.sforce.com/2006/04/metadata">
+  <enableRetailExecution>true</enableRetailExecution>
+  <enableProductHierarchy>false</enableProductHierarchy>
+  <enableVisitSharing>true</enableVisitSharing>
+</RetailExecutionSettings>`
+      ),
+      writeFile(
+        path.join(settingsDir, 'StockRotation.settings-meta.xml'),
+        '<StockRotationSettings xmlns="http://soap.sforce.com/2006/04/metadata" />'
+      ),
+      writeFile(path.join(packagePath, 'cgcloud__Promotion__c.xml'), '<records />'),
+      writeFile(path.join(packagePath, 'modeler.businessobject.xml'), '<businessObject />'),
+      writeFile(path.join(packagePath, 'cgc_sync__Sync_Config__c.records.xml'), '<records />'),
+    ]);
+
+    const errors: string[] = [];
+    const components = await scanAdditionalMetadata(packagePath, errors, () => false);
+    const retailSettings = components.find((component) => component.type === 'RetailExecutionSettings');
+
+    expect(components.map((component) => `${component.type}:${component.name}`)).to.include(
+      'RetailExecutionSettings:RetailExecution'
+    );
+    expect(retailSettings?.facts).to.deep.equal({
+      kind: 'retail-execution-settings',
+      enableRetailExecution: true,
+      enableProductHierarchy: false,
+      enableVisitSharing: true,
+    });
+    expect(components.map((component) => component.type)).not.to.include('StockRotationSettings');
+    expect(components.map((component) => component.filePath)).not.to.satisfy((paths: string[]) =>
+      paths.some((filePath) => filePath.includes('modeler.') || filePath.includes('cgc_sync__'))
+    );
+    expect(errors).to.deep.equal([]);
+  });
+
+  it('rejects a Retail Execution filename with the wrong XML root', async () => {
+    const packagePath = await mkdtemp(path.join(os.tmpdir(), 'additional-metadata-retail-settings-invalid-'));
+    tempDirectories.push(packagePath);
+    const settingsDir = path.join(packagePath, 'settings');
+    await mkdir(settingsDir, { recursive: true });
+    await writeFile(
+      path.join(settingsDir, 'RetailExecution.settings-meta.xml'),
+      '<StockRotationSettings xmlns="http://soap.sforce.com/2006/04/metadata" />'
+    );
+    const errors: string[] = [];
+
+    const components = await scanAdditionalMetadata(packagePath, errors, () => false);
+
+    expect(components).to.deep.equal([]);
+    expect(errors[0]).to.include('Expected RetailExecutionSettings XML root');
+  });
+
+  it('rejects malformed Retail Execution XML and invalid boolean values', async () => {
+    const packagePath = await mkdtemp(path.join(os.tmpdir(), 'additional-metadata-retail-settings-malformed-'));
+    tempDirectories.push(packagePath);
+    const settingsDir = path.join(packagePath, 'settings');
+    await mkdir(settingsDir, { recursive: true });
+    const filePath = path.join(settingsDir, 'RetailExecution.settings-meta.xml');
+    await writeFile(filePath, '<RetailExecutionSettings><enableRetailExecution>true</RetailExecutionSettings>');
+    const malformedErrors: string[] = [];
+
+    expect(await scanAdditionalMetadata(packagePath, malformedErrors, () => false)).to.deep.equal([]);
+    expect(malformedErrors[0]).to.include('Invalid RetailExecutionSettings XML');
+
+    await writeFile(
+      filePath,
+      '<RetailExecutionSettings><enableRetailExecution>garbage</enableRetailExecution></RetailExecutionSettings>'
+    );
+    const booleanErrors: string[] = [];
+    expect(await scanAdditionalMetadata(packagePath, booleanErrors, () => false)).to.deep.equal([]);
+    expect(booleanErrors[0]).to.include('Invalid boolean value for enableRetailExecution: garbage');
+
+    await writeFile(
+      filePath,
+      '<RetailExecutionSettings><enableRetailExecution>1</enableRetailExecution></RetailExecutionSettings>'
+    );
+    const numericErrors: string[] = [];
+    expect(await scanAdditionalMetadata(packagePath, numericErrors, () => false)).to.deep.equal([]);
+    expect(numericErrors[0]).to.include('Invalid boolean value for enableRetailExecution: 1');
+  });
 });

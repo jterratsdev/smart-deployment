@@ -131,6 +131,14 @@ const P0_DEFINITIONS: readonly MetadataCapabilityDefinition[] = [
     lifecycle: absent('Enablement and rollback behavior require licensed-org evidence.'),
     fixtures: absent('No licensed-org fixture or CLI contract exists.'),
   }),
+  metadataDefinition('RetailExecutionSettings', 'RetailExecutionSettings', 'C6', '47.0', {
+    discovery: proven('additional-metadata-scanner.ts discovers settings/RetailExecution.settings-meta.xml.'),
+    parsing: proven('Retail Execution enablement flags are parsed from the canonical XML root.'),
+    dependencies: notApplicable('The documented settings fields have no source component references.'),
+    ordering: proven('RetailExecutionSettings has an isolated product-settings stage before foundation metadata.'),
+    lifecycle: partial('License, mobile/offline readiness, and rollback require licensed-org evidence.'),
+    fixtures: proven('Focused RetailExecutionSettings scanner, capability, manifest, gap, and wave fixtures exist.'),
+  }),
   metadataDefinition(
     'AiAuthoringBundle',
     'AiAuthoringBundle',

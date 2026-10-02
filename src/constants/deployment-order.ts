@@ -38,6 +38,9 @@ import type { MetadataType } from '../types/metadata.js';
  * - 90-99: Post-deployment (translations, static resources)
  */
 export const DEPLOYMENT_ORDER: Readonly<Record<MetadataType, number>> = Object.freeze({
+  // ========== Product Settings (isolated before foundation) ==========
+  RetailExecutionSettings: 0,
+
   // ========== Tier 0: Global Configuration (1-5) ==========
   GlobalValueSet: 1, // Global value sets used by picklists
   StandardValueSet: 2, // Standard value sets
@@ -170,6 +173,7 @@ export function getDeploymentPriority(metadataType: string): number {
 /** Return the deployment stage for a known metadata type. */
 export function getDeploymentStage(metadataType: string): number {
   const priority = getDeploymentPriority(metadataType);
+  if (priority === 0) return 0;
   const stageIndex = DEPLOYMENT_STAGE_MAX_PRIORITIES.findIndex((maximum) => priority <= maximum);
   if (stageIndex === -1) {
     throw new Error(`Metadata type "${metadataType}" has an invalid deployment priority: ${priority}`);

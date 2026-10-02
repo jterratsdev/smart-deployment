@@ -127,7 +127,7 @@ export class AIEnhancedPriorityWaveGenerator extends PriorityWaveGenerator {
     for (const component of components.values()) {
       const priority = DEPLOYMENT_ORDER[component.type];
 
-      if (!priority) {
+      if (priority === undefined) {
         this.unknownTypesDetected.add(component.type);
         unknownComponents.push(component);
       }

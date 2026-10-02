@@ -109,6 +109,27 @@ describe('MetadataCapabilityRegistry', () => {
     expect(operationalRecords?.capabilities.lifecycle.status).to.equal('absent');
   });
 
+  it('registers Retail Execution settings as C6 metadata with a partial licensed lifecycle', () => {
+    const entry = metadataCapabilityRegistry.resolve('RetailExecutionSettings', '67.0', 'metadata-api');
+
+    expect(entry).to.deep.include({
+      catalogKey: '67.0|metadata-api|RetailExecutionSettings',
+      vendorType: 'RetailExecutionSettings',
+      canonicalType: 'RetailExecutionSettings',
+      canonicalOwner: 'C6',
+      minimumApiVersion: '47.0',
+    });
+    expect(capabilityStatuses(entry)).to.deep.equal([
+      'proven',
+      'proven',
+      'not-applicable',
+      'proven',
+      'partial',
+      'proven',
+    ]);
+    expect(metadataCapabilityRegistry.resolve('RetailExecutionSettings', '46.0')).to.equal(undefined);
+  });
+
   it('conforms actual AI rows to their source-format and provider lifecycle boundaries', () => {
     const authoringBundle = metadataCapabilityRegistry.resolve('AiAuthoringBundle', '67.0');
     expect(authoringBundle).to.deep.include({

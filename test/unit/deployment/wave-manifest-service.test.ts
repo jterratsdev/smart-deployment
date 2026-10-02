@@ -122,6 +122,70 @@ describe('WaveManifestService', () => {
     expect(content).to.include('<name>CustomSite</name>');
   });
 
+  it('renders Retail Execution settings through the Settings transport member', async () => {
+    const baseDir = await mkdtemp(path.join(os.tmpdir(), 'wave-manifest-retail-settings-'));
+    const components = new Map<string, MetadataComponent>([
+      [
+        'RetailExecutionSettings:RetailExecution',
+        {
+          name: 'RetailExecution',
+          type: 'RetailExecutionSettings',
+          filePath: 'force-app/main/default/settings/RetailExecution.settings-meta.xml',
+          dependencies: new Set(),
+          dependents: new Set(),
+          priorityBoost: 0,
+        },
+      ],
+    ]);
+
+    const manifestPath = await new WaveManifestService().generateManifest({
+      baseDir,
+      waveNumber: 1,
+      components: [...components.keys()],
+      componentMap: components,
+      apiVersion: '67.0',
+    });
+    const content = await readFile(manifestPath, 'utf8');
+
+    expect(content).to.include('<members>RetailExecution</members>');
+    expect(content).to.include('<name>Settings</name>');
+    expect(content).not.to.include('<name>RetailExecutionSettings</name>');
+  });
+
+  it('blocks destructive deletion of Retail Execution settings', async () => {
+    const baseDir = await mkdtemp(path.join(os.tmpdir(), 'wave-manifest-retail-settings-delete-'));
+    const components = new Map<string, MetadataComponent>([
+      [
+        'RetailExecutionSettings:RetailExecution',
+        {
+          name: 'RetailExecution',
+          type: 'RetailExecutionSettings',
+          filePath: 'force-app/main/default/settings/RetailExecution.settings-meta.xml',
+          dependencies: new Set(),
+          dependents: new Set(),
+          priorityBoost: 0,
+        },
+      ],
+    ]);
+
+    let thrownError: Error | undefined;
+    try {
+      await new WaveManifestService().generateDestructiveManifest({
+        baseDir,
+        waveNumber: 1,
+        components: [...components.keys()],
+        componentMap: components,
+        apiVersion: '67.0',
+      });
+    } catch (error) {
+      thrownError = error as Error;
+    }
+
+    expect(thrownError?.message).to.equal(
+      'Retail Execution settings cannot be deleted through destructiveChanges: RetailExecutionSettings:RetailExecution'
+    );
+  });
+
   it('generates a destructiveChanges manifest with an empty package manifest', async () => {
     const baseDir = await mkdtemp(path.join(os.tmpdir(), 'wave-manifest-destructive-'));
     const service = new WaveManifestService();

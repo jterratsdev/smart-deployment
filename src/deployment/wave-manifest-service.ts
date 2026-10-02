@@ -26,6 +26,14 @@ export class WaveManifestService {
   }
 
   public async generateDestructiveManifest(params: WaveManifestParams): Promise<DestructiveWaveManifestResult> {
+    const nonDeletable = params.components.filter(
+      (nodeId) => params.componentMap.get(nodeId)?.type === 'RetailExecutionSettings'
+    );
+    if (nonDeletable.length > 0) {
+      throw new Error(
+        `Retail Execution settings cannot be deleted through destructiveChanges: ${nonDeletable.join(', ')}`
+      );
+    }
     const manifestDir = await this.ensureManifestDir(params.baseDir);
     const waveName = `wave-${String(params.waveNumber).padStart(3, '0')}`;
     const packagePath = path.join(manifestDir, `${waveName}-package.xml`);
@@ -60,17 +68,18 @@ export class WaveManifestService {
   }
 
   private buildTypeBlocks(components: NodeId[], componentMap: ReadonlyMap<NodeId, MetadataComponent>): string[] {
-    const grouped = new Map<MetadataType, Set<string>>();
+    const grouped = new Map<string, Set<string>>();
     for (const nodeId of components) {
       const component = componentMap.get(nodeId);
       if (!component) {
         continue;
       }
 
-      if (!grouped.has(component.type)) {
-        grouped.set(component.type, new Set());
+      const manifestType = this.getManifestType(component.type);
+      if (!grouped.has(manifestType)) {
+        grouped.set(manifestType, new Set());
       }
-      grouped.get(component.type)!.add(component.name);
+      grouped.get(manifestType)!.add(component.name);
     }
 
     return [...grouped.entries()]
@@ -82,5 +91,9 @@ export class WaveManifestService {
 
         return ['    <types>', ...memberLines, `        <name>${type}</name>`, '    </types>'].join('\n');
       });
+  }
+
+  private getManifestType(type: MetadataType): string {
+    return type === 'RetailExecutionSettings' ? 'Settings' : type;
   }
 }

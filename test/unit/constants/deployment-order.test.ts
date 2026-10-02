@@ -108,6 +108,7 @@ describe('getDeploymentPriority', () => {
   });
 
   it('should map priorities to executable deployment stages', () => {
+    expect(getDeploymentStage('RetailExecutionSettings')).to.equal(0);
     expect(getDeploymentStage('CustomObject')).to.equal(1);
     expect(getDeploymentStage('ApexClass')).to.equal(3);
     expect(getDeploymentStage('Flow')).to.equal(5);

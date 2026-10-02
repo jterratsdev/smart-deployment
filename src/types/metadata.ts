@@ -11,6 +11,8 @@
  */
 
 export type MetadataType =
+  // Product settings: isolated before foundation metadata
+  | 'RetailExecutionSettings'
   // Tier 0: Global Configuration & Translations
   | 'GlobalValueSet'
   | 'StandardValueSet'
@@ -146,6 +148,12 @@ export type MetadataComponent = {
 };
 
 export type MetadataFacts =
+  | {
+      kind: 'retail-execution-settings';
+      enableRetailExecution?: boolean;
+      enableProductHierarchy?: boolean;
+      enableVisitSharing?: boolean;
+    }
   | {
       kind: 'custom-object-sharing-model';
       sharingModel?: string;

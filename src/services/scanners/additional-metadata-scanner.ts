@@ -1,7 +1,7 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { parseLegacyAgentforce, type LegacyAgentforceType } from '../../parsers/legacy-agentforce-parser.js';
-import { parseXml } from '../../utils/xml.js';
+import { parseXml, validateXml } from '../../utils/xml.js';
 import type { MetadataComponent, MetadataDependencyReference, MetadataType } from '../../types/metadata.js';
 import { getLogger } from '../../utils/logger.js';
 import { buildScannerError, findDirectories, findFiles } from './scanner-runtime.js';
@@ -11,6 +11,7 @@ type SimpleFileScanner = {
   pattern: string;
   suffix: string;
   parseDependencies?: (filePath: string) => Promise<ParsedDependencies>;
+  parseFacts?: (filePath: string) => Promise<MetadataComponent['facts']>;
 };
 
 type ParsedDependencies = {
@@ -25,6 +26,12 @@ type BundleScanner = {
 };
 
 const SIMPLE_FILE_SCANNERS: SimpleFileScanner[] = [
+  {
+    type: 'RetailExecutionSettings',
+    pattern: '**/settings/RetailExecution.settings-meta.xml',
+    suffix: '.settings-meta.xml',
+    parseFacts: parseRetailExecutionSettingsFacts,
+  },
   {
     type: 'GenAiFunction',
     pattern: '**/genAiFunctions/**/*.genAiFunction-meta.xml',
@@ -130,10 +137,12 @@ async function scanSimpleFileMetadata(
             ? await scanner.parseDependencies(filePath)
             : { dependencies: new Set<string>() };
           return createComponent({
-            name: path.basename(filePath, scanner.suffix),
+            name:
+              scanner.type === 'RetailExecutionSettings' ? 'RetailExecution' : path.basename(filePath, scanner.suffix),
             type: scanner.type,
             filePath,
             ...parsedDependencies,
+            facts: scanner.parseFacts ? await scanner.parseFacts(filePath) : undefined,
           });
         } catch (error) {
           const errorMessage = buildScannerError(scanner.type, filePath, error);
@@ -189,6 +198,7 @@ function createComponent(options: {
   filePath: string;
   dependencies: Set<string>;
   dependencyDetails?: MetadataDependencyReference[];
+  facts?: MetadataComponent['facts'];
 }): MetadataComponent {
   return {
     name: options.name,
@@ -196,8 +206,28 @@ function createComponent(options: {
     filePath: options.filePath,
     dependencies: options.dependencies,
     dependencyDetails: options.dependencyDetails,
+    facts: options.facts,
     dependents: new Set<string>(),
     priorityBoost: 0,
+  };
+}
+
+async function parseRetailExecutionSettingsFacts(filePath: string): Promise<MetadataComponent['facts']> {
+  const content = await fs.readFile(filePath, 'utf-8');
+  const validation = validateXml(content);
+  if (validation !== true) {
+    throw new Error(`Invalid RetailExecutionSettings XML: ${validation.err.msg}`);
+  }
+  const parsed = parseMetadataXml(content);
+  if (!Object.hasOwn(parsed, 'RetailExecutionSettings')) {
+    throw new Error('Expected RetailExecutionSettings XML root');
+  }
+
+  return {
+    kind: 'retail-execution-settings',
+    enableRetailExecution: readOptionalBoolean(parsed, 'enableRetailExecution'),
+    enableProductHierarchy: readOptionalBoolean(parsed, 'enableProductHierarchy'),
+    enableVisitSharing: readOptionalBoolean(parsed, 'enableVisitSharing'),
   };
 }
 
@@ -303,6 +333,29 @@ function extractTextValues(value: unknown): string[] {
 
   const textValue = (value as { '#text'?: unknown })['#text'];
   return typeof textValue === 'string' && textValue.length > 0 ? [textValue] : [];
+}
+
+function readOptionalBoolean(parsed: ParsedXml, key: string): boolean | undefined {
+  const values = collectXmlPrimitiveValues(parsed, key);
+  const value = values[0];
+  if (typeof value === 'boolean') return value;
+  if (value === undefined) return undefined;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  throw new Error(`Invalid boolean value for ${key}: ${String(value)}`);
+}
+
+function collectXmlPrimitiveValues(value: unknown, key: string): Array<string | boolean> {
+  if (typeof value !== 'object' || value === null) return [];
+  if (Array.isArray(value)) return value.flatMap((item) => collectXmlPrimitiveValues(item, key));
+
+  return Object.entries(value).flatMap(([entryKey, entryValue]) => {
+    const nested = collectXmlPrimitiveValues(entryValue, key);
+    if (entryKey !== key) return nested;
+    if (typeof entryValue === 'string' || typeof entryValue === 'boolean') return [entryValue, ...nested];
+    if (typeof entryValue === 'number') return [String(entryValue), ...nested];
+    return [...extractTextValues(entryValue), ...nested];
+  });
 }
 
 function collectTextReferences(

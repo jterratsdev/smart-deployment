@@ -90,6 +90,37 @@ describe('MetadataGapAnalysisService', () => {
     expect(result.gaps.map((gap) => gap.metadataType)).not.to.include('SharingRules');
   });
 
+  it('recognizes the canonical Retail Execution settings source type', async () => {
+    const projectRoot = await createProject();
+    await mkdir(path.join(projectRoot, 'force-app/main/default/settings'), { recursive: true });
+    await writeFile(
+      path.join(projectRoot, 'force-app/main/default/settings/RetailExecution.settings-meta.xml'),
+      '<RetailExecutionSettings />'
+    );
+
+    const result = await new MetadataGapAnalysisService().analyze({ sourcePath: projectRoot });
+
+    expect(result.detectedTypes.find((entry) => entry.metadataType === 'RetailExecutionSettings')).to.deep.include({
+      supportStatus: 'supported',
+    });
+    expect(result.detectedTypes.map((entry) => entry.metadataType)).not.to.include('RetailExecution');
+  });
+
+  it('normalizes the Settings manifest transport member to RetailExecutionSettings', async () => {
+    const projectRoot = await createProject();
+    await writeFile(
+      path.join(projectRoot, 'force-app/main/default/package.xml'),
+      '<?xml version="1.0"?><Package><types><members>RetailExecution</members><name>Settings</name></types><version>67.0</version></Package>'
+    );
+
+    const result = await new MetadataGapAnalysisService().analyze({ sourcePath: projectRoot });
+
+    expect(result.detectedTypes.find((entry) => entry.metadataType === 'RetailExecutionSettings')).to.deep.include({
+      supportStatus: 'supported',
+    });
+    expect(result.detectedTypes.map((entry) => entry.metadataType)).not.to.include('Settings');
+  });
+
   async function createProject(): Promise<string> {
     const projectRoot = await mkdtemp(path.join(tmpdir(), 'metadata-gaps-'));
     tempDirs.push(projectRoot);

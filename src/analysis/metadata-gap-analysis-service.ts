@@ -103,6 +103,7 @@ const SOURCE_DIRECTORY_TYPES: Record<string, string> = {
 };
 
 const FILE_SUFFIX_TYPES: Array<[suffix: string, metadataType: string]> = [
+  ['RetailExecution.settings-meta.xml', 'RetailExecutionSettings'],
   ['.cls-meta.xml', 'ApexClass'],
   ['.trigger-meta.xml', 'ApexTrigger'],
   ['.flow-meta.xml', 'Flow'],
@@ -183,6 +184,13 @@ export class MetadataGapAnalysisService {
 
           const members = toArray(entry.members);
           const memberCount = members.length;
+          if (entry.name === 'Settings') {
+            const normalizedMembers = members.map(normalizeSettingsManifestMember);
+            for (const metadataType of normalizedMembers.filter((value): value is string => value !== undefined)) {
+              this.addEvidence(evidenceByType, metadataType, `${manifestPath} (${metadataType})`, 'package-manifest');
+            }
+            if (normalizedMembers.every((value) => value !== undefined)) continue;
+          }
           this.addEvidence(
             evidenceByType,
             entry.name,
@@ -298,6 +306,10 @@ function inferTypeFromFilePath(filePath: string): string | undefined {
 
   const genericSuffix = /\.([A-Za-z][A-Za-z0-9]*)-meta\.xml$/u.exec(fileName);
   return genericSuffix ? toMetadataTypeName(genericSuffix[1]) : undefined;
+}
+
+function normalizeSettingsManifestMember(member: string): string | undefined {
+  return member === 'RetailExecution' ? 'RetailExecutionSettings' : undefined;
 }
 
 function toMetadataTypeName(rawType: string): string {
