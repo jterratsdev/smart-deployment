@@ -1,5 +1,9 @@
 import { expect } from 'chai';
-import { DEPLOYMENT_ORDER, getDeploymentPriority } from '../../../src/constants/deployment-order.js';
+import {
+  DEPLOYMENT_ORDER,
+  getDeploymentPriority,
+  getDeploymentStage,
+} from '../../../src/constants/deployment-order.js';
 
 describe('DEPLOYMENT_ORDER', () => {
   /**
@@ -92,14 +96,21 @@ describe('getDeploymentPriority', () => {
     expect(getDeploymentPriority('ApexClass')).to.equal(31);
   });
 
-  it('should return default priority (99) for unknown metadata type', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    expect(getDeploymentPriority('UnknownType' as any)).to.equal(99);
+  it('should reject an unknown metadata type', () => {
+    expect(() => getDeploymentPriority('UnknownType')).to.throw(
+      'Metadata type "UnknownType" has no deployment-order contract'
+    );
   });
 
   it('should handle case-sensitive metadata types', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    expect(getDeploymentPriority('customobject' as any)).to.equal(99); // Case matters
+    expect(() => getDeploymentPriority('customobject')).to.throw();
     expect(getDeploymentPriority('CustomObject')).to.equal(6);
+  });
+
+  it('should map priorities to executable deployment stages', () => {
+    expect(getDeploymentStage('CustomObject')).to.equal(1);
+    expect(getDeploymentStage('ApexClass')).to.equal(3);
+    expect(getDeploymentStage('Flow')).to.equal(5);
+    expect(getDeploymentStage('PermissionSet')).to.equal(9);
   });
 });

@@ -272,7 +272,7 @@ describe('WaveBuilder', () => {
       expect(result.unplacedComponents.length).to.be.greaterThan(0);
     });
 
-    it('should place circular components in final wave', () => {
+    it('should never place circular components in an executable fallback wave', () => {
       const graph = createGraph([
         ['ApexClass:A', 'ApexClass:B'],
         ['ApexClass:B', 'ApexClass:A'],
@@ -281,13 +281,13 @@ describe('WaveBuilder', () => {
       const builder = new WaveBuilder({ handleCircularDeps: true });
       const result = builder.generateWaves(graph);
 
-      const finalWave = result.waves[result.waves.length - 1];
-      expect(finalWave.metadata.hasCircularDeps).to.be.true;
+      expect(result.waves).to.be.empty;
+      expect(result.unplacedComponents).to.deep.equal(['ApexClass:A', 'ApexClass:B']);
     });
   });
 
   describe('Type Order', () => {
-    it('should respect metadata type order when configured', () => {
+    it('should emit independent deployment stages as separate waves', () => {
       const graph: DependencyGraph = new Map();
       graph.set('ApexClass:A', new Set());
       graph.set('CustomObject:Account', new Set());
@@ -296,14 +296,34 @@ describe('WaveBuilder', () => {
       const builder = new WaveBuilder({ respectTypeOrder: true });
       const result = builder.generateWaves(graph);
 
-      const wave = result.waves[0];
-      // CustomObject should come before ApexClass
-      const customObjIndex = wave.components.findIndex((c) => c.startsWith('CustomObject:'));
-      const apexClassIndex = wave.components.findIndex((c) => c.startsWith('ApexClass:'));
+      expect(result.waves.map((wave) => wave.components)).to.deep.equal([
+        ['CustomObject:Account', 'CustomField:Name'],
+        ['ApexClass:A'],
+      ]);
+    });
 
-      if (customObjIndex !== -1 && apexClassIndex !== -1) {
-        expect(customObjIndex).to.be.lessThan(apexClassIndex);
-      }
+    it('should reject an unknown type before creating executable waves', () => {
+      const graph: DependencyGraph = new Map([['UnknownMetadata:Config', new Set()]]);
+
+      expect(() => new WaveBuilder({ respectTypeOrder: true }).generateWaves(graph)).to.throw(
+        'Metadata type "UnknownMetadata" has no deployment-order contract'
+      );
+    });
+
+    it('should reject an unknown type even when type ordering is disabled', () => {
+      const graph: DependencyGraph = new Map([['UnknownMetadata:Config', new Set()]]);
+
+      expect(() => new WaveBuilder({ respectTypeOrder: false }).generateWaves(graph)).to.throw(
+        'Metadata type "UnknownMetadata" has no deployment-order contract'
+      );
+    });
+
+    it('should reject dependencies that require a backward deployment-stage transition', () => {
+      const graph = createGraph([['CustomObject:Consumer', 'ApexClass:Dependency']]);
+
+      expect(() => new WaveBuilder().generateWaves(graph)).to.throw(
+        'Deployment-order conflict: CustomObject:Consumer (stage 1) depends on ApexClass:Dependency (stage 3)'
+      );
     });
 
     it('should prioritize hard dependencies ahead of soft and inferred ones within the same wave', () => {

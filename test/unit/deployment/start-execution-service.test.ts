@@ -154,6 +154,78 @@ describe('StartExecutionService', () => {
     });
   });
 
+  it('rejects an incomplete wave plan before invoking Salesforce', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-service-'));
+    const sfCli = new FailingSfCli();
+    const placed = createComponent(tempDir, 'Placed');
+    const unplaced = createComponent(tempDir, 'Unplaced');
+    const context = createDeploymentContext([placed, unplaced], [['ApexClass:Placed']]);
+    const service = new StartExecutionService({
+      createSfCli: () => sfCli,
+      createStateManager: (baseDir?: string) => new StateManager({ baseDir }),
+    });
+
+    let thrownError: Error | undefined;
+    try {
+      await service.execute({
+        dryRun: false,
+        validateOnly: false,
+        allowCycleRemediation: false,
+        skipTests: true,
+        targetOrg: 'fixture@example.com',
+        sourcePath: tempDir,
+        deploymentContext: context,
+        log: () => {},
+      });
+    } catch (error) {
+      thrownError = error as Error;
+    }
+
+    expect(thrownError?.message).to.equal(
+      'Deployment plan is invalid:\n- Component ApexClass:Unplaced is not assigned to a wave'
+    );
+    expect(sfCli.deployCalls).to.be.empty;
+  });
+
+  it('rejects cycle remediation when non-cycle components would be omitted', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-service-'));
+    const sfCli = new FailingSfCli();
+    const alpha = createComponent(tempDir, 'Alpha');
+    const beta = createComponent(tempDir, 'Beta');
+    const independent = createComponent(tempDir, 'Independent');
+    const context = createDeploymentContext([alpha, beta, independent], []);
+    context.scanResult.dependencyResult.graph = new Map([
+      ['ApexClass:Alpha', new Set(['ApexClass:Beta'])],
+      ['ApexClass:Beta', new Set(['ApexClass:Alpha'])],
+      ['ApexClass:Independent', new Set()],
+    ]);
+    const service = new StartExecutionService({
+      createSfCli: () => sfCli,
+      createStateManager: (baseDir?: string) => new StateManager({ baseDir }),
+    });
+
+    let thrownError: Error | undefined;
+    try {
+      await service.execute({
+        dryRun: false,
+        validateOnly: false,
+        allowCycleRemediation: true,
+        skipTests: true,
+        targetOrg: 'fixture@example.com',
+        sourcePath: tempDir,
+        deploymentContext: context,
+        log: () => {},
+      });
+    } catch (error) {
+      thrownError = error as Error;
+    }
+
+    expect(thrownError?.message).to.equal(
+      'Cycle remediation cannot safely compose with non-cycle components: ApexClass:Independent'
+    );
+    expect(sfCli.deployCalls).to.be.empty;
+  });
+
   it('clears persisted deployment state after all waves succeed', async () => {
     tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-service-'));
     const sfCli = new SequencedSfCli([
@@ -237,6 +309,52 @@ describe('StartExecutionService', () => {
         waitedMs: 0,
       });
     }
+  });
+
+  it('rejects an incomplete plan before OWD precondition state can be persisted', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-service-owd-invalid-'));
+    const sfCli = new SequencedSfCli([]);
+    const object = createComponent(tempDir, 'Case', 'CustomObject');
+    object.facts = { kind: 'custom-object-sharing-model', sharingModel: 'Private' };
+    const rules = createComponent(tempDir, 'Case', 'SharingRules');
+    rules.facts = { kind: 'sharing-rules', objectName: 'Case', criteriaFields: [], principals: [] };
+    const context = createDeploymentContext([object, rules], [['CustomObject:Case']]);
+    let queryCalls = 0;
+    const service = new StartExecutionService({
+      createSfCli: () => sfCli,
+      owdBarrierPlanner: new (await import('../../../src/deployment/owd-barrier-planner.js')).OwdBarrierPlanner({
+        query: async () => {
+          queryCalls += 1;
+          return {
+            kind: 'unavailable',
+            error: { category: 'authentication', message: 'EntityDefinition authentication unavailable' },
+          };
+        },
+      }),
+    });
+
+    let thrownError: Error | undefined;
+    try {
+      await service.execute({
+        dryRun: false,
+        validateOnly: false,
+        allowCycleRemediation: false,
+        skipTests: true,
+        targetOrg: 'fixture@example.com',
+        sourcePath: tempDir,
+        deploymentContext: context,
+        log: () => undefined,
+      });
+    } catch (error) {
+      thrownError = error as Error;
+    }
+
+    expect(thrownError?.message).to.equal(
+      'Deployment plan is invalid:\n- Component SharingRules:Case is not assigned to a wave'
+    );
+    expect(queryCalls).to.equal(0);
+    expect(sfCli.deployCalls).to.be.empty;
+    await expectMissingFile(path.join(tempDir, '.smart-deployment/deployment-state.json'));
   });
 
   it('persists completed waves when a later wave fails', async () => {

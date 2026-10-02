@@ -4,8 +4,8 @@
  * This union defines the most common metadata types (~78).
  * Salesforce has 100+ types total and adds more each release.
  *
- * **Extensibility**: Runtime code handles unknown types via fallback logic.
- * See: src/constants/deployment-order.ts (priority 99 for unknown types)
+ * **Extensibility**: Unknown runtime types remain reportable, but automatic wave
+ * execution requires an explicit deployment-order contract.
  *
  * @see https://developer.salesforce.com/docs/metadata-coverage/61
  */

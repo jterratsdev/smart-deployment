@@ -16,6 +16,7 @@ import { OwdBarrierPlanner } from './owd-barrier-planner.js';
 import { SfCliOrgQuery } from './sf-cli-org-query.js';
 import type { OwdPostcondition } from './deployment-postcondition.js';
 import { createDeploymentPlanFingerprint, createSourceFingerprint } from '../types/manual-checkpoint.js';
+import { WaveValidator } from '../waves/wave-validator.js';
 
 export type StartExecutionOptions = {
   dryRun: boolean;
@@ -126,6 +127,20 @@ export class StartExecutionService {
           ].join('\n')
         );
       }
+
+      const cycleNodes = new Set(remediationPlan.cycles.flatMap((cycle) => cycle.nodes));
+      const nonCycleNodes = [...scanResult.dependencyResult.graph.keys()]
+        .filter((nodeId) => !cycleNodes.has(nodeId))
+        .sort();
+      if (nonCycleNodes.length > 0) {
+        throw new Error(
+          `Cycle remediation cannot safely compose with non-cycle components: ${nonCycleNodes.join(', ')}`
+        );
+      }
+    }
+
+    if (!remediationPlan || remediationPlan.cycles.length === 0) {
+      this.assertValidWavePlan(orderedWaves, scanResult.dependencyResult.graph);
     }
 
     const sfCli = this.createSfCli();
@@ -244,6 +259,8 @@ export class StartExecutionService {
       return { kind: 'completed', postconditions: [] };
     }
 
+    this.assertValidWavePlan(destructive ? orderedWaves : executionWaves, scanResult.dependencyResult.graph);
+
     const result = await this.deploymentRunner.execute({
       deploymentId,
       targetOrg: options.targetOrg,
@@ -272,6 +289,16 @@ export class StartExecutionService {
     });
 
     return result;
+  }
+
+  private assertValidWavePlan(
+    waves: DeploymentContext['orderedWaves'],
+    graph: DeploymentContext['scanResult']['dependencyResult']['graph']
+  ): void {
+    const validation = new WaveValidator().validateWaves(waves, graph);
+    if (!validation.isValid) {
+      throw new Error(['Deployment plan is invalid:', ...validation.errors.map((error) => `- ${error}`)].join('\n'));
+    }
   }
 
   private async assertDynamicQueryFieldsAreSafe(

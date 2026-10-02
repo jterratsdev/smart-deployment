@@ -32,11 +32,7 @@ describe('WaveMerger', () => {
      * @ac US-041-AC-1: Identify waves with <50 components
      */
     it('US-041-AC-1: should identify waves with <50 components', () => {
-      const waves = [
-        createWave(1, 30),
-        createWave(2, 40),
-        createWave(3, 100),
-      ];
+      const waves = [createWave(1, 30), createWave(2, 40), createWave(3, 100)];
 
       const merger = new WaveMerger();
       const graph: DependencyGraph = new Map();
@@ -51,10 +47,7 @@ describe('WaveMerger', () => {
      * @ac US-041-AC-2: Merge if combined < 300 components
      */
     it('US-041-AC-2: should merge if combined < 300 components', () => {
-      const waves = [
-        createWave(1, 40),
-        createWave(2, 50),
-      ];
+      const waves = [createWave(1, 40), createWave(2, 50)];
 
       const merger = new WaveMerger();
       const graph: DependencyGraph = new Map();
@@ -69,16 +62,41 @@ describe('WaveMerger', () => {
      * @ac US-041-AC-4: Don't merge if different test requirements
      */
     it('US-041-AC-3: should not merge if combined > 300 components', () => {
-      const waves = [
-        createWave(1, 200),
-        createWave(2, 150),
-      ];
+      const waves = [createWave(1, 200), createWave(2, 150)];
 
       const merger = new WaveMerger();
       const graph: DependencyGraph = new Map();
       const result = merger.mergeWaves(waves, graph);
 
       expect(result.mergedWaves.length).to.equal(2);
+    });
+
+    it('should not merge waves from different deployment stages', () => {
+      const foundation = createWave(1, 1);
+      foundation.components = ['CustomObject:Account'];
+      foundation.metadata.types = ['CustomObject'];
+      const code = createWave(2, 1);
+      code.components = ['ApexClass:AccountService'];
+
+      const result = new WaveMerger().mergeWaves([foundation, code], new Map());
+
+      expect(result.mergedWaves).to.have.lengthOf(2);
+      expect(result.decisions).to.be.empty;
+    });
+
+    it('should not merge waves connected by a dependency', () => {
+      const first = createWave(1, 1);
+      first.components = ['ApexClass:Base'];
+      const second = createWave(2, 1);
+      second.components = ['ApexClass:Consumer'];
+      const graph: DependencyGraph = new Map([
+        ['ApexClass:Base', new Set()],
+        ['ApexClass:Consumer', new Set(['ApexClass:Base'])],
+      ]);
+
+      const result = new WaveMerger().mergeWaves([first, second], graph);
+
+      expect(result.mergedWaves).to.have.lengthOf(2);
     });
   });
 
@@ -87,10 +105,7 @@ describe('WaveMerger', () => {
      * @ac US-041-AC-5: Report merge decisions
      */
     it('US-041-AC-5: should report merge decisions', () => {
-      const waves = [
-        createWave(1, 30),
-        createWave(2, 40),
-      ];
+      const waves = [createWave(1, 30), createWave(2, 40)];
 
       const merger = new WaveMerger();
       const graph: DependencyGraph = new Map();
@@ -118,11 +133,7 @@ describe('WaveMerger', () => {
 
   describe('Statistics', () => {
     it('should calculate merge statistics', () => {
-      const waves = [
-        createWave(1, 30),
-        createWave(2, 40),
-        createWave(3, 200),
-      ];
+      const waves = [createWave(1, 30), createWave(2, 40), createWave(3, 200)];
 
       const merger = new WaveMerger();
       const graph: DependencyGraph = new Map();

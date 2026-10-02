@@ -3,7 +3,6 @@ import type { NodeId, DependencyGraph } from '../types/dependency.js';
 export type WavePlacementPolicy = {
   maxComponentsPerWave: number;
   respectTypeOrder: boolean;
-  handleCircularDeps: boolean;
 };
 
 export type WaveTopologyStage = {
@@ -15,6 +14,8 @@ export type CircularWaveResolutionInput = {
   graph: DependencyGraph;
   processed: ReadonlySet<NodeId>;
 };
+
+const DEFAULT_DEPLOYMENT_STAGE = (): number => 1;
 
 export function calculateInDegree(graph: DependencyGraph, ignoreExternalDependencies = false): Map<NodeId, number> {
   const inDegree = new Map<NodeId, number>();
@@ -35,16 +36,23 @@ export function planTopologyStage({
   processed,
   policy,
   comparePriority,
+  getDeploymentStage = DEFAULT_DEPLOYMENT_STAGE,
 }: {
   inDegree: ReadonlyMap<NodeId, number>;
   processed: ReadonlySet<NodeId>;
   policy: WavePlacementPolicy;
   comparePriority: (left: NodeId, right: NodeId) => number;
+  getDeploymentStage?: (nodeId: NodeId) => number;
 }): WaveTopologyStage {
   const orderedCandidates = collectWaveCandidates(inDegree, processed);
 
   if (policy.respectTypeOrder) {
     orderedCandidates.sort(comparePriority);
+    const earliestStage = orderedCandidates[0] ? getDeploymentStage(orderedCandidates[0]) : undefined;
+    if (earliestStage !== undefined) {
+      const stageCandidates = orderedCandidates.filter((candidate) => getDeploymentStage(candidate) === earliestStage);
+      orderedCandidates.splice(0, orderedCandidates.length, ...stageCandidates);
+    }
   }
 
   return {

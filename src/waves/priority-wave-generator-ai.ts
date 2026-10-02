@@ -119,7 +119,7 @@ export class AIEnhancedPriorityWaveGenerator extends PriorityWaveGenerator {
   }
 
   /**
-   * Detect components with unknown metadata types (priority 99 or not in DEPLOYMENT_ORDER)
+   * Detect components with metadata types absent from DEPLOYMENT_ORDER.
    */
   private detectUnknownTypes(components: Map<NodeId, MetadataComponent>): MetadataComponent[] {
     const unknownComponents: MetadataComponent[] = [];
@@ -127,8 +127,7 @@ export class AIEnhancedPriorityWaveGenerator extends PriorityWaveGenerator {
     for (const component of components.values()) {
       const priority = DEPLOYMENT_ORDER[component.type];
 
-      // Unknown if priority is 99 or not defined
-      if (!priority || priority === 99) {
+      if (!priority) {
         this.unknownTypesDetected.add(component.type);
         unknownComponents.push(component);
       }

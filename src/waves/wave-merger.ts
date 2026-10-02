@@ -13,7 +13,9 @@
  */
 
 import { getLogger } from '../utils/logger.js';
+import type { DependencyGraph } from '../types/dependency.js';
 import type { Wave } from './wave-builder.js';
+import { getNodeDeploymentStage } from './wave-priority-policy.js';
 
 const logger = getLogger('WaveMerger');
 
@@ -103,9 +105,8 @@ export class WaveMerger {
    * @ac US-041-AC-3: Respect dependency order
    * @ac US-041-AC-5: Report merge decisions
    */
-  public mergeWaves(waves: Wave[], graph?: unknown): MergeResult {
+  public mergeWaves(waves: Wave[], graph: DependencyGraph): MergeResult {
     const startTime = Date.now();
-    void graph;
     const decisions: MergeDecision[] = [];
     const mergedWaves: Wave[] = [];
     let i = 0;
@@ -125,7 +126,7 @@ export class WaveMerger {
         const nextWave = waves[i + 1];
         const combined = currentWave.components.length + nextWave.components.length;
 
-        if (this.canMerge(currentWave, nextWave, combined)) {
+        if (this.canMerge(currentWave, nextWave, combined, graph)) {
           // Merge waves
           const merged = this.createMergedWave(currentWave, nextWave, mergedWaves.length + 1);
 
@@ -175,9 +176,13 @@ export class WaveMerger {
   /**
    * Check if waves can be merged
    */
-  private canMerge(wave1: Wave, wave2: Wave, combinedSize: number): boolean {
+  private canMerge(wave1: Wave, wave2: Wave, combinedSize: number, graph: DependencyGraph): boolean {
     // Check size limit
     if (combinedSize > this.options.maxComponentsAfterMerge) {
+      return false;
+    }
+
+    if (this.hasDifferentDeploymentStages(wave1, wave2) || this.hasCrossWaveDependency(wave1, wave2, graph)) {
       return false;
     }
 
@@ -189,6 +194,19 @@ export class WaveMerger {
     }
 
     return true;
+  }
+
+  private hasDifferentDeploymentStages(wave1: Wave, wave2: Wave): boolean {
+    return new Set([...wave1.components, ...wave2.components].map(getNodeDeploymentStage)).size > 1;
+  }
+
+  private hasCrossWaveDependency(wave1: Wave, wave2: Wave, graph: DependencyGraph): boolean {
+    const first = new Set(wave1.components);
+    const second = new Set(wave2.components);
+    return (
+      [...first].some((component) => [...(graph.get(component) ?? [])].some((dependency) => second.has(dependency))) ||
+      [...second].some((component) => [...(graph.get(component) ?? [])].some((dependency) => first.has(dependency)))
+    );
   }
 
   /**
