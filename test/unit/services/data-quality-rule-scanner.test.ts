@@ -40,8 +40,9 @@ describe('data-quality-rule-scanner', () => {
     const field = parseCustomFieldComponent(fieldFile);
     const matching = await parseMatchingRulesComponent(matchingFile);
     const duplicate = await parseDuplicateRuleComponent(duplicateFile);
+    expect(matching).not.to.equal(undefined);
 
-    const normalized = addLocalDataQualityRuleDependencies([object, field, matching, duplicate]);
+    const normalized = addLocalDataQualityRuleDependencies([object, field, matching!, duplicate]);
     const byId = new Map(normalized.map((item) => [`${item.type}:${item.name}`, item]));
 
     expect(byId.get('CustomField:Account.Email__c')?.dependencies).to.deep.equal(new Set(['CustomObject:Account']));
@@ -68,6 +69,30 @@ describe('data-quality-rule-scanner', () => {
       error = caught as Error;
     }
     expect(error?.message).to.include('DuplicateRule filename must be Object.RuleName');
+  });
+
+  it('omits empty containers retrieved for non-retrievable standard matching rules', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'standard-matching-rules-'));
+    const matchingFile = path.join(tempDir, 'matchingRules', 'Account.matchingRule-meta.xml');
+    await mkdir(path.dirname(matchingFile), { recursive: true });
+    await writeFile(matchingFile, '<MatchingRules xmlns="http://soap.sforce.com/2006/04/metadata" />');
+
+    expect(await parseMatchingRulesComponent(matchingFile)).to.equal(undefined);
+  });
+
+  it('keeps a standard matching-rule reference target-owned when no local container is discovered', () => {
+    const duplicate = component('DuplicateRule', 'Account.Standard_Rule');
+    duplicate.facts = {
+      kind: 'duplicate-rule',
+      objectName: 'Account',
+      matchingRules: [{ objectName: 'Account', matchingRuleName: 'Standard_Match_Rule' }],
+      filterFields: [],
+      isActive: true,
+    };
+
+    const normalized = addLocalDataQualityRuleDependencies([duplicate]);
+
+    expect(normalized[0].dependencies).to.deep.equal(new Set());
   });
 
   it('orders deactivation with DuplicateRule before MatchingRules', async () => {

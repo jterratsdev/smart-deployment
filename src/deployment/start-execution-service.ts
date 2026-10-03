@@ -94,14 +94,6 @@ export class StartExecutionService {
   }
 
   public async execute(options: StartExecutionOptions): Promise<StartExecutionResult> {
-    if (options.dryRun) {
-      return { kind: 'skipped', reason: 'dry-run' };
-    }
-
-    if (options.validateOnly) {
-      return { kind: 'skipped', reason: 'validate-only' };
-    }
-
     const { scanResult, orderedWaves, aiContext } = options.deploymentContext;
     if (scanResult.errors.length > 0) {
       throw new Error(`Metadata scan failed:\n${scanResult.errors.map((error) => `- ${error}`).join('\n')}`);
@@ -146,6 +138,14 @@ export class StartExecutionService {
 
     if (!remediationPlan || remediationPlan.cycles.length === 0) {
       this.assertValidWavePlan(orderedWaves, scanResult.dependencyResult.graph);
+    }
+
+    if (options.dryRun) {
+      return { kind: 'skipped', reason: 'dry-run' };
+    }
+
+    if (options.validateOnly) {
+      return { kind: 'skipped', reason: 'validate-only' };
     }
 
     const sfCli = this.createSfCli();

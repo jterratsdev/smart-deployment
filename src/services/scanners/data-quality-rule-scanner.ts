@@ -4,9 +4,11 @@ import { parseDuplicateRule } from '../../parsers/duplicate-rule-parser.js';
 import { parseMatchingRules } from '../../parsers/matching-rules-parser.js';
 import type { MetadataComponent } from '../../types/metadata.js';
 
-export async function parseMatchingRulesComponent(filePath: string): Promise<MetadataComponent> {
+export async function parseMatchingRulesComponent(filePath: string): Promise<MetadataComponent | undefined> {
   const objectName = path.basename(filePath, '.matchingRule-meta.xml');
   const parsed = parseMatchingRules(objectName, await readFile(filePath, 'utf8'));
+  if (parsed.rules.length === 0) return undefined;
+
   return {
     name: objectName,
     type: 'MatchingRules',

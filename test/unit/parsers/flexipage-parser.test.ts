@@ -238,6 +238,38 @@ describe('FlexiPage Parser', () => {
       expect(result.dependencies.recordTypes).to.include('Customer');
     });
 
+    it('should ignore structured visibility values returned by Metadata API', async () => {
+      const filePath = join(testDir, 'StructuredVisibility.flexipage-meta.xml');
+      await writeFile(
+        filePath,
+        `<?xml version="1.0" encoding="UTF-8"?>
+<FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+  <flexiPageRegions>
+    <itemInstances>
+      <componentInstance>
+        <componentName>force:recordDetail</componentName>
+        <visibilityRule>
+          <criteria>
+            <leftValue>{!Record.Type}</leftValue>
+            <operator>EQUAL</operator>
+            <rightValue><value>Customer</value></rightValue>
+          </criteria>
+        </visibilityRule>
+      </componentInstance>
+    </itemInstances>
+    <name>main</name>
+    <type>Region</type>
+  </flexiPageRegions>
+  <masterLabel>Structured Visibility</masterLabel>
+  <type>RecordPage</type>
+</FlexiPage>`
+      );
+
+      const result = await parseFlexiPage(filePath, 'StructuredVisibility');
+
+      expect(result.recordTypeFilters).to.deep.equal([]);
+    });
+
     /**
      * @ac US-022-AC-5: Extract region configurations
      */

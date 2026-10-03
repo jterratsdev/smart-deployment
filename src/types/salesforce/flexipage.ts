@@ -4,10 +4,7 @@
  */
 
 // Re-export shared types from layout.ts to avoid duplication
-import type {
-  PlatformActionList,
-  QuickActionList,
-} from './layout.js';
+import type { PlatformActionList, QuickActionList } from './layout.js';
 
 export type { PlatformActionList, QuickActionList };
 
@@ -152,7 +149,7 @@ export type UiFormulaRule = {
 export type UiFormulaCriterion = {
   leftValue: string;
   operator: string;
-  rightValue?: string;
+  rightValue?: unknown;
 };
 
 /**
@@ -192,4 +189,3 @@ export type {
   PlatformActionType,
   QuickActionListItem,
 } from './layout.js';
-

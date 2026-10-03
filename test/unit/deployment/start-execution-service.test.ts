@@ -187,6 +187,39 @@ describe('StartExecutionService', () => {
     expect(sfCli.deployCalls).to.be.empty;
   });
 
+  for (const mode of ['dry-run', 'validate-only'] as const) {
+    it(`rejects an incomplete wave plan during ${mode}`, async () => {
+      tempDir = await mkdtemp(path.join(os.tmpdir(), `start-execution-${mode}-incomplete-`));
+      const sfCli = new FailingSfCli();
+      const first = createComponent(tempDir, 'FirstClass', 'ApexClass');
+      const omitted = createComponent(tempDir, 'OmittedClass', 'ApexClass');
+      const context = createDeploymentContext([first, omitted], [['ApexClass:FirstClass']]);
+      context.scanResult.dependencyResult.graph = new Map([
+        ['ApexClass:FirstClass', new Set()],
+        ['ApexClass:OmittedClass', new Set()],
+      ]);
+      const service = new StartExecutionService({ createSfCli: () => sfCli });
+
+      let error: Error | undefined;
+      try {
+        await service.execute({
+          dryRun: mode === 'dry-run',
+          validateOnly: mode === 'validate-only',
+          allowCycleRemediation: false,
+          skipTests: true,
+          sourcePath: tempDir,
+          deploymentContext: context,
+          log: () => undefined,
+        });
+      } catch (caught) {
+        error = caught as Error;
+      }
+
+      expect(error?.message).to.include('Component ApexClass:OmittedClass is not assigned to a wave');
+      expect(sfCli.deployCalls).to.be.empty;
+    });
+  }
+
   it('rejects metadata scan errors before planning or invoking Salesforce', async () => {
     tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-scan-error-'));
     const sfCli = new FailingSfCli();

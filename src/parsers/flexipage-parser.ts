@@ -75,8 +75,10 @@ function extractRecordTypesFromVisibilityRule(visibilityRule: UiFormulaRule | un
   const criteria = normalizeArray(visibilityRule.criteria);
 
   for (const criterion of criteria) {
-    if (criterion.leftValue?.includes('RecordType') || criterion.rightValue?.includes('RecordType')) {
-      const candidate = criterion.rightValue?.includes('RecordType') ? criterion.leftValue : criterion.rightValue;
+    const leftValue = typeof criterion.leftValue === 'string' ? criterion.leftValue : undefined;
+    const rightValue = typeof criterion.rightValue === 'string' ? criterion.rightValue : undefined;
+    if (leftValue?.includes('RecordType') || rightValue?.includes('RecordType')) {
+      const candidate = rightValue?.includes('RecordType') ? leftValue : rightValue;
       if (candidate && !candidate.includes('RecordType')) {
         recordTypes.push(candidate);
       }
