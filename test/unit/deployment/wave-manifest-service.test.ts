@@ -7,6 +7,52 @@ import { WaveManifestService } from '../../../src/deployment/wave-manifest-servi
 import type { MetadataComponent } from '../../../src/types/metadata.js';
 
 describe('WaveManifestService', () => {
+  it('deploys the CustomLabels container without enumerating child labels', async () => {
+    const baseDir = await mkdtemp(path.join(os.tmpdir(), 'wave-manifest-labels-'));
+    const component: MetadataComponent = {
+      name: 'CustomLabels',
+      type: 'CustomLabels',
+      filePath: 'force-app/main/default/labels/CustomLabels.labels-meta.xml',
+      dependencies: new Set(),
+      dependents: new Set(),
+      priorityBoost: 0,
+    };
+    const manifestPath = await new WaveManifestService().generateManifest({
+      baseDir,
+      waveNumber: 1,
+      components: ['CustomLabels:CustomLabels'],
+      componentMap: new Map([['CustomLabels:CustomLabels', component]]),
+    });
+    const content = await readFile(manifestPath, 'utf8');
+
+    expect(content).to.include('<name>CustomLabels</name>');
+    expect(content).to.include('<members>*</members>');
+    expect(content).to.not.include('<members>CustomLabels</members>');
+  });
+
+  it('rejects a destructive manifest for the CustomLabels container', async () => {
+    const component: MetadataComponent = {
+      name: 'CustomLabels',
+      type: 'CustomLabels',
+      filePath: 'force-app/main/default/labels/CustomLabels.labels-meta.xml',
+      dependencies: new Set(),
+      dependents: new Set(),
+      priorityBoost: 0,
+    };
+
+    try {
+      await new WaveManifestService().generateDestructiveManifest({
+        baseDir: 'unused',
+        waveNumber: 1,
+        components: ['CustomLabels:CustomLabels'],
+        componentMap: new Map([['CustomLabels:CustomLabels', component]]),
+      });
+      expect.fail('Expected destructive CustomLabels manifest to be rejected');
+    } catch (error) {
+      expect((error as Error).message).to.equal('CustomLabels container cannot be used in a destructive manifest');
+    }
+  });
+
   it('generates a sorted package.xml manifest for a wave', async () => {
     const baseDir = await mkdtemp(path.join(os.tmpdir(), 'wave-manifest-'));
     const service = new WaveManifestService();

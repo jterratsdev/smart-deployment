@@ -1,6 +1,6 @@
 import type { NodeId, DependencyEdge } from '../types/dependency.js';
 import type { MetadataType } from '../types/metadata.js';
-import { getDeploymentPriority } from '../constants/deployment-order.js';
+import { getDeploymentPriority, getDeploymentStage } from '../constants/deployment-order.js';
 
 type DependencyRiskProfile = {
   hard: number;
@@ -49,6 +49,10 @@ export function compareWavePriority(
 
 export function extractMetadataType(nodeId: NodeId): MetadataType {
   return nodeId.split(':')[0] as MetadataType;
+}
+
+export function getNodeDeploymentStage(nodeId: NodeId): number {
+  return getDeploymentStage(extractMetadataType(nodeId));
 }
 
 function createWavePriorityProfile(

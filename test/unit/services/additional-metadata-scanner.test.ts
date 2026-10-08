@@ -14,6 +14,25 @@ describe('additional metadata scanner', () => {
     );
   });
 
+  it('discovers the CustomLabels source file as one container and ignores other label files', async () => {
+    const packagePath = await mkdtemp(path.join(os.tmpdir(), 'additional-metadata-labels-'));
+    tempDirectories.push(packagePath);
+    const labelsDir = path.join(packagePath, 'labels');
+    await mkdir(labelsDir);
+    const filePath = path.join(labelsDir, 'CustomLabels.labels-meta.xml');
+    await writeFile(
+      filePath,
+      '<CustomLabels><labels><fullName>First</fullName></labels><labels><fullName>Second</fullName></labels></CustomLabels>'
+    );
+    await writeFile(path.join(labelsDir, 'Other.labels-meta.xml'), '<CustomLabels/>');
+
+    const components = await scanAdditionalMetadata(packagePath, [], () => false);
+    expect(components.map(({ type, name, filePath: source }) => ({ type, name, source }))).to.deep.equal([
+      { type: 'CustomLabels', name: 'CustomLabels', source: filePath },
+    ]);
+    expect(await scanAdditionalMetadata(packagePath, [], (candidate) => candidate === filePath)).to.deep.equal([]);
+  });
+
   it('discovers Data Kit source formats and preserves the parent dependency', async () => {
     const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'additional-metadata-data-kit-'));
     tempDirectories.push(projectRoot);

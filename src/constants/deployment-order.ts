@@ -5,12 +5,12 @@
  *
  * **Important**: Salesforce has 100+ metadata types and adds new ones each release.
  * This file defines priorities for the MOST COMMON types (~78).
- * For unlisted types, the plugin uses a fallback priority (99) via getDeploymentPriority().
+ * Unlisted types are blocked from automatic wave planning until classified.
  *
  * **Extensibility Strategy**:
  * - Add new types here as needed (e.g., new Einstein features)
- * - Unknown types automatically get priority 99 (deploy last, safe default)
- * - Plugin works with ANY metadata type, even if not listed here
+ * - Unknown types are blocked from automatic wave planning
+ * - Priority bands create deployment stages; priorities order components inside a stage
  *
  * Lower numbers = deploy first
  * Higher numbers = deploy later
@@ -143,24 +143,35 @@ export const DEPLOYMENT_ORDER: Readonly<Record<MetadataType, number>> = Object.f
   DataPackageKitObject: 82, // Data package kit objects
 });
 
+const DEPLOYMENT_STAGE_MAX_PRIORITIES = [16, 26, 36, 42, 49, 61, 71, 74, 79, 82] as const;
+
 /**
  * Get deployment priority for a given metadata type.
  *
- * **Extensibility**: Returns 99 for unknown/new metadata types (safe fallback).
- * This ensures the plugin works with future Salesforce metadata types without updates.
- *
  * @param metadataType - The Salesforce metadata type
- * @returns Priority number (1-99), or 99 (lowest priority) if type is unknown
+ * @returns Known priority number
+ * @throws When the metadata type has no reviewed deployment-order contract
  *
  * @example
  * ```typescript
  * const priority = getDeploymentPriority('CustomObject'); // 6
  * const priority2 = getDeploymentPriority('ApexClass'); // 31
- * const unknown = getDeploymentPriority('UnknownNewType'); // 99 (safe fallback)
  * ```
  */
-export function getDeploymentPriority(metadataType: MetadataType): number {
-  return DEPLOYMENT_ORDER[metadataType] ?? 99; // Fallback for unknown/future types
+export function getDeploymentPriority(metadataType: string): number {
+  if (!Object.hasOwn(DEPLOYMENT_ORDER, metadataType)) {
+    throw new Error(`Metadata type "${metadataType}" has no deployment-order contract`);
+  }
+  return (DEPLOYMENT_ORDER as Readonly<Record<string, number>>)[metadataType];
+}
+
+export function getDeploymentStage(metadataType: string): number {
+  const priority = getDeploymentPriority(metadataType);
+  const stageIndex = DEPLOYMENT_STAGE_MAX_PRIORITIES.findIndex((maximum) => priority <= maximum);
+  if (stageIndex === -1) {
+    throw new Error(`Metadata type "${metadataType}" has an invalid deployment priority: ${priority}`);
+  }
+  return stageIndex + 1;
 }
 
 /**
