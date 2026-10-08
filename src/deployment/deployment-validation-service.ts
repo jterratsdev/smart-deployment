@@ -5,6 +5,7 @@ import { getLogger } from '../utils/logger.js';
 import { XmlMetadataValidator } from '../validators/xml-metadata-validator.js';
 import { WaveValidationService } from '../ai/wave-validation-service.js';
 import { validateWaveOrder } from '../waves/wave-executor.js';
+import { WaveValidator } from '../waves/wave-validator.js';
 import type { MetadataComponent, MetadataDependencyKind } from '../types/metadata.js';
 import type { CommitScopeOptions, CommitScopeSummary } from './commit-scope-service.js';
 
@@ -75,6 +76,9 @@ export class DeploymentValidationService {
       });
     }
 
+    const waveValidation = new WaveValidator().validateWaves(waveResult.waves, scanResult.dependencyResult.graph);
+    issues.push(...waveValidation.errors.map((message) => ({ severity: 'error' as const, message })));
+
     if (waveResult.circularDependencies.length > 0) {
       issues.push({
         severity: 'error',
@@ -84,8 +88,8 @@ export class DeploymentValidationService {
 
     if (waveResult.unplacedComponents.length > 0) {
       issues.push({
-        severity: 'warning',
-        message: `${waveResult.unplacedComponents.length} component(s) required manual placement.`,
+        severity: 'error',
+        message: `${waveResult.unplacedComponents.length} component(s) could not be placed safely.`,
       });
     }
 

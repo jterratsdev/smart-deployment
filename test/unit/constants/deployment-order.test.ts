@@ -92,14 +92,13 @@ describe('getDeploymentPriority', () => {
     expect(getDeploymentPriority('ApexClass')).to.equal(31);
   });
 
-  it('should return default priority (99) for unknown metadata type', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    expect(getDeploymentPriority('UnknownType' as any)).to.equal(99);
+  it('rejects unknown metadata types', () => {
+    expect(() => getDeploymentPriority('UnknownType')).to.throw('has no deployment-order contract');
+    expect(() => getDeploymentPriority('toString')).to.throw('has no deployment-order contract');
   });
 
   it('should handle case-sensitive metadata types', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    expect(getDeploymentPriority('customobject' as any)).to.equal(99); // Case matters
+    expect(() => getDeploymentPriority('customobject')).to.throw('has no deployment-order contract');
     expect(getDeploymentPriority('CustomObject')).to.equal(6);
   });
 });
