@@ -1,7 +1,7 @@
 {
   "name": "@jterrats/smart-deployment",
   "description": "Intelligent Salesforce metadata deployment plugin that automatically analyzes dependencies, generates optimal deployment",
-  "version": "1.5.0",
+  "version": "1.6.3",
   "dependencies": {
     "@oclif/core": "4.11.4",
     "@salesforce/core": "^8.31.0",
@@ -18,7 +18,7 @@
     "@salesforce/cli-plugins-testkit": "^5.3.41",
     "@salesforce/dev-scripts": "^11.0.4",
     "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/commit-analyzer": "^13.0.1",
     "@types/chai": "^5.2.2",
     "@types/cucumber": "^7.0.3",
     "@types/mocha": "^10.0.10",
@@ -53,12 +53,12 @@
     "sfdx",
     "sfdx-plugin"
   ],
-  "homepage": "https://github.com/jterrats/smart-deployment",
+  "homepage": "https://github.com/jterratsdev/smart-deployment",
   "license": "BSD-3-Clause",
-  "bugs": "https://github.com/jterrats/smart-deployment/issues",
+  "bugs": "https://github.com/jterratsdev/smart-deployment/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jterrats/smart-deployment"
+    "url": "https://github.com/jterratsdev/smart-deployment"
   },
   "oclif": {
     "commands": "./lib/commands",
@@ -83,11 +83,15 @@
     "postinstall": "husky install || true",
     "prepack": "tsc -p . --pretty false --incremental false && oclif manifest && oclif lock && npm shrinkwrap",
     "release": "semantic-release",
+    "release:analyze": "bash scripts/ci/semantic-release-analysis.sh",
+    "release:contracts": "node scripts/ci/release-contract.mjs",
     "site:content": "node scripts/generate-site-content.js",
     "site:dev": "npm --prefix site run dev",
     "site:build": "npm --prefix site run build",
     "site:preview": "npm --prefix site run preview",
     "test": "wireit",
+    "test:clean-install": "bash scripts/ci/clean-install-test.sh",
+    "test:live-org": "bash scripts/live-org-linked-e2e.sh",
     "test:nuts": "nyc mocha \"**/*.nut.ts\" --slow 4500 --timeout 600000 --parallel",
     "test:only": "wireit",
     "test:bdd": "node --loader ts-node/esm --no-warnings=ExperimentalWarning node_modules/@cucumber/cucumber/bin/cucumber.js",
@@ -227,7 +231,7 @@
     "baseline-browser-mapping": "2.10.31",
     "**/jake": "12.10.1",
     "**/filelist": "2.0.2",
-    "**/fast-uri": "3.1.6",
+    "**/fast-uri": "3.1.7",
     "**/csv-parse": "7.0.2",
     "**/form-data": "4.0.6",
     "**/websocket-driver": "0.7.5",
@@ -236,7 +240,7 @@
   "overrides": {
     "jake": "12.10.1",
     "filelist": "2.0.2",
-    "fast-uri": "3.1.6",
+    "fast-uri": "3.1.7",
     "csv-parse": "7.0.2",
     "form-data": "4.0.6",
     "websocket-driver": "0.7.5",

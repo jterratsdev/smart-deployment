@@ -40,6 +40,24 @@ describe('StartCommandPresenter', () => {
     presenter.reportReportGenerationStart({
       log: (message) => logs.push(message),
     });
+    presenter.reportPostconditionPaused(
+      { log: (message) => logs.push(message) },
+      {
+        id: 'owd:Case:Private',
+        kind: 'owd-internal-sharing-model',
+        objectName: 'Case',
+        afterWaveNumber: 1,
+        expectedInternalSharingModel: 'Private',
+        expectedExternalSharingModel: 'Private',
+        status: 'timed-out',
+        observedInternalSharingModel: 'ReadWriteTransfer',
+        observedExternalSharingModel: 'Private',
+        attempts: 3,
+        waitedMs: 5000,
+        pausedAt: '2026-01-01T00:00:00.000Z',
+        resumedPhase: 2,
+      }
+    );
 
     expect(logs).to.include.members([
       '🚀 Executing deployment...',
@@ -53,6 +71,10 @@ describe('StartCommandPresenter', () => {
       '\n📊 Deployment Report:',
       '   - Waves: 2',
       '   - Status: Success',
+      'OWD_PROPAGATION_PENDING: Case',
+      'Internal sharing model: expected=Private, observed=ReadWriteTransfer',
+      'External sharing model: expected=Private, observed=Private',
+      'Attempts=3, waitedMs=5000, errorCategory=none, resumedPhase=2',
     ]);
   });
 });

@@ -121,7 +121,7 @@ describe('CiPublishCommand', () => {
     expect(logs).to.include('Coordinated publish plan');
     expect(logs).to.include('Target Org: release-org');
     expect(logs.some((message) => message.includes('sf agent publish authoring-bundle'))).to.equal(true);
-    expect(result.releaseReport?.schemaVersion).to.equal('1.0');
+    expect(result.releaseReport?.schemaVersion).to.equal('1.1');
     expect(result.releaseReport?.outcome).to.equal('skipped');
     expect(result.releaseReport?.items[0]).to.deep.include({
       metadataType: 'AiAuthoringBundle',

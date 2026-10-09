@@ -39,7 +39,12 @@ import {
   scanRegisteredDirectoryMetadata,
   scanRegisteredFileMetadata,
 } from './scanners/scanner-runtime.js';
-import { parsePermissionSetComponent, parseProfileComponent } from './scanners/security-metadata-scanner.js';
+import {
+  parsePermissionSetComponent,
+  parseProfileComponent,
+  parseSharingRulesComponent,
+  addLocalSharingPrincipalDependencies,
+} from './scanners/security-metadata-scanner.js';
 import { scanAdditionalMetadata } from './scanners/additional-metadata-scanner.js';
 
 const logger = getLogger('MetadataScannerService');
@@ -190,7 +195,7 @@ export class MetadataScannerService {
       this.scanAdditionalMetadata(packagePath, errors),
     ]);
 
-    return componentGroups.flat();
+    return addLocalSharingPrincipalDependencies(componentGroups.flat());
   }
 
   private async scanAutomationMetadata(packagePath: string, errors: string[]): Promise<MetadataComponent[]> {
@@ -254,7 +259,22 @@ export class MetadataScannerService {
       parsePermissionSetComponent
     );
 
-    return [...profileComponents, ...permissionSetComponents];
+    const sharingRulesComponents = (
+      await Promise.all(
+        ['**/sharingRules/**/*.sharingRules-meta.xml', '**/objects/*/*.sharingRules-meta.xml'].map((pattern) =>
+          scanMetadataFiles(
+            packagePath,
+            pattern,
+            errors,
+            'Sharing Rules',
+            this.shouldIgnorePath,
+            parseSharingRulesComponent
+          )
+        )
+      )
+    ).flat();
+
+    return [...profileComponents, ...permissionSetComponents, ...sharingRulesComponents];
   }
 
   private async scanExperienceMetadata(packagePath: string, errors: string[]): Promise<MetadataComponent[]> {

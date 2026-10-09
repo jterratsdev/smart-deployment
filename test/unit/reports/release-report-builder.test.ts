@@ -1,7 +1,9 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { ReleaseReportBuilder } from '../../../src/reports/release-report-builder.js';
+import { buildStartReportFacts } from '../../../src/reports/release-report-facts-factory.js';
 import type { ReleaseReportFacts } from '../../../src/types/release-report.js';
+import type { DeploymentContext } from '../../../src/deployment/deployment-context-service.js';
 
 const FIXED_DATE = new Date('2026-07-27T12:34:56.000Z');
 
@@ -79,10 +81,64 @@ function createFacts(): ReleaseReportFacts {
 }
 
 describe('ReleaseReportBuilder', () => {
+  it('preserves structured paused postconditions in schema 1.1', () => {
+    const report = new ReleaseReportBuilder({ now: () => new Date('2026-01-01T00:00:00.000Z') }).build({
+      command: 'smart-deployment start',
+      analysisMode: 'deterministic',
+      enrichment: { status: 'skipped' },
+      outcome: 'partial',
+      phases: [],
+      items: [],
+      postconditions: [
+        {
+          code: 'OWD_PROPAGATION_PENDING',
+          status: 'blocked-before-deploy',
+          objectName: 'Case',
+          expectedInternalSharingModel: 'Private',
+          attempts: 1,
+          waitedMs: 0,
+          errorCategory: 'entity-not-found',
+          resumedPhase: 0,
+        },
+      ],
+    });
+    expect(report.schemaVersion).to.equal('1.1');
+    expect(report.postconditions?.[0]).to.deep.include({
+      status: 'blocked-before-deploy',
+      errorCategory: 'entity-not-found',
+      resumedPhase: 0,
+    });
+  });
+
+  it('marks a paused start report partial with a review-required phase', () => {
+    const context = {
+      scanResult: { components: [], projectRoot: '/tmp/project' },
+    } as unknown as DeploymentContext;
+    const facts = buildStartReportFacts(context, {
+      dryRun: false,
+      validateOnly: false,
+      postcondition: {
+        id: 'owd:Case:Private',
+        kind: 'owd-internal-sharing-model',
+        objectName: 'Case',
+        afterWaveNumber: 1,
+        expectedInternalSharingModel: 'Private',
+        status: 'timed-out',
+        attempts: 4,
+        waitedMs: 120_000,
+        pausedAt: '2026-01-01T00:00:00.000Z',
+        resumedPhase: 2,
+      },
+    });
+    expect(facts.outcome).to.equal('partial');
+    expect(facts.phases[0].status).to.equal('needs_review');
+    expect(facts.postconditions?.[0]).to.deep.include({ attempts: 4, waitedMs: 120_000, resumedPhase: 2 });
+  });
+
   it('builds schema v1 with injected time, explicit counters, and underlying outcome', () => {
     const report = new ReleaseReportBuilder({ now: () => FIXED_DATE }).build(createFacts());
 
-    expect(report.schemaVersion).to.equal('1.0');
+    expect(report.schemaVersion).to.equal('1.1');
     expect(report.generatedAt).to.equal('2026-07-27T12:34:56.000Z');
     expect(report.targetOrg).to.equal(undefined);
     expect(report.outcome).to.equal('partial');
@@ -98,6 +154,34 @@ describe('ReleaseReportBuilder', () => {
       needsReview: 1,
     });
     expect(report.reportWarnings).to.deep.equal(['A warning', 'B warning']);
+  });
+
+  it('preserves the required schema 1.0 contract unchanged in additive schema 1.1 output', () => {
+    const report = new ReleaseReportBuilder({ now: () => FIXED_DATE }).build(createFacts());
+    const legacyRequiredFields = {
+      generatedAt: report.generatedAt,
+      command: report.command,
+      analysisMode: report.analysisMode,
+      enrichment: report.enrichment,
+      outcome: report.outcome,
+      summary: report.summary,
+      phases: report.phases,
+      items: report.items,
+      reportWarnings: report.reportWarnings,
+    };
+
+    expect(legacyRequiredFields).to.deep.equal({
+      generatedAt: '2026-07-27T12:34:56.000Z',
+      command: 'smart-deployment.ci-publish',
+      analysisMode: 'deterministic',
+      enrichment: { status: 'unavailable', warnings: ['Provider unavailable'] },
+      outcome: 'partial',
+      summary: { total: 4, succeeded: 1, failed: 1, skipped: 1, needsReview: 1 },
+      phases: report.phases,
+      items: report.items,
+      reportWarnings: ['A warning', 'B warning'],
+    });
+    expect(report.schemaVersion).to.equal('1.1');
   });
 
   it('orders special phases and shuffled items deterministically', () => {

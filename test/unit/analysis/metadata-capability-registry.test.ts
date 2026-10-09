@@ -155,6 +155,7 @@ describe('MetadataCapabilityRegistry', () => {
       row('Flow', 'metadata-api', 'C1', ['proven', 'proven', 'partial', 'proven', 'not-applicable', 'proven']),
       row('MatchingRules', 'metadata-api', 'C1', ['partial', 'absent', 'absent', 'absent', 'not-applicable', 'absent']),
       row('PermissionSet', 'metadata-api', 'C1', ['proven', 'proven', 'partial', 'proven', 'not-applicable', 'proven']),
+      row('SharingRules', 'metadata-api', 'C1', ['proven', 'proven', 'proven', 'proven', 'partial', 'proven']),
       row('OrderManagementSettings', 'metadata-api', 'C1', [
         'partial',
         'absent',

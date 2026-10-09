@@ -10,6 +10,8 @@ import type {
   ReleaseReportFacts,
   ReleaseRoute,
 } from '../types/release-report.js';
+import type { ResumeCommandResult } from '../presentation/resume-result-projector.js';
+import { projectDeploymentPostcondition } from '../presentation/deployment-postcondition-projector.js';
 
 export function buildCiPublishReportFacts(
   plan: SpecialDeploymentPlan,
@@ -83,10 +85,17 @@ export function buildStartReportFacts(
     validateOnly: boolean;
     failed?: boolean;
     warning?: string;
+    postcondition?: import('../deployment/deployment-postcondition.js').PausedPostcondition;
   }
 ): ReleaseReportFacts {
   const operation: ReleaseOperation = options.validateOnly ? 'validate' : 'deploy';
-  const status: ReleaseFactStatus = options.failed ? 'failed' : options.dryRun ? 'skipped' : 'succeeded';
+  const status: ReleaseFactStatus = options.failed
+    ? 'failed'
+    : options.postcondition
+    ? 'needs_review'
+    : options.dryRun
+    ? 'skipped'
+    : 'succeeded';
   const phaseId = options.validateOnly ? 'validation' : 'core-metadata';
   const route = options.validateOnly ? 'validation' : 'salesforce-metadata';
   const aiContext = context.aiContext;
@@ -104,7 +113,7 @@ export function buildStartReportFacts(
           ? ['AI enrichment was partial; deterministic planning was retained.']
           : undefined,
     },
-    outcome: options.failed ? 'failed' : options.dryRun ? 'skipped' : 'succeeded',
+    outcome: options.failed ? 'failed' : options.postcondition ? 'partial' : options.dryRun ? 'skipped' : 'succeeded',
     phases: [
       {
         id: phaseId,
@@ -124,6 +133,21 @@ export function buildStartReportFacts(
       targetOrg: options.targetOrg,
     })),
     reportWarnings: options.warning ? [options.warning] : undefined,
+    postconditions: options.postcondition ? [projectDeploymentPostcondition(options.postcondition)] : undefined,
+  };
+}
+
+export function buildResumeReportFacts(result: ResumeCommandResult, targetOrg?: string): ReleaseReportFacts {
+  const status = result.outcome === 'paused' ? 'needs_review' : result.outcome === 'prepared' ? 'skipped' : 'succeeded';
+  return {
+    command: 'smart-deployment resume',
+    targetOrg,
+    analysisMode: 'deterministic',
+    enrichment: { status: 'skipped' },
+    outcome: result.outcome === 'paused' ? 'partial' : result.outcome === 'prepared' ? 'skipped' : 'succeeded',
+    phases: [{ id: 'core-metadata', route: 'salesforce-metadata', operation: 'deploy', status }],
+    items: [],
+    postconditions: result.postconditions ?? (result.postcondition ? [result.postcondition] : undefined),
   };
 }
 

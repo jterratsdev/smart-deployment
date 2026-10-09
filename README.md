@@ -199,10 +199,14 @@ When `--target-org` is provided, the coordinated publish flow also passes the or
 ```
 
 `start --report-dir <path>` relocates the report alongside the other requested report artifacts. The versioned
-`schemaVersion: "1.0"` contract includes the command, target org when supplied, deterministic or AI-enriched analysis
+`schemaVersion: "1.1"` contract includes the command, target org when supplied, deterministic or AI-enriched analysis
 mode, enrichment availability, overall outcome, totals, phases, metadata items, safe command evidence, and remediation.
 Operations (`deploy`, `publish`, `activate`, `validate`) are separate from statuses (`succeeded`, `failed`, `skipped`,
 `needs_review`) so CI can parse the artifact without scraping logs.
+
+Schema 1.1 is an additive migration from 1.0. Every required 1.0 field retains its name, type, and meaning; 1.1 adds
+the optional `postconditions` collection for deployment barriers. Consumers written for 1.0 remain compatible when
+they ignore unknown fields. Producers emit 1.1 only; there is no dual serializer because no consumer requires one.
 
 Report creation is advisory. A build, sanitization, serialization, persistence, or optional enrichment failure emits a
 warning but does not replace the underlying command result or exit behavior. Evidence excludes raw arguments,

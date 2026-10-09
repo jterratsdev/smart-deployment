@@ -113,6 +113,16 @@ const P0_DEFINITIONS: readonly MetadataCapabilityDefinition[] = [
     lifecycle: notApplicable(),
     fixtures: proven('Focused PermissionSet parser and scanner fixtures exist.'),
   }),
+  metadataDefinition('SharingRules', 'SharingRules', 'C1', '61.0', {
+    discovery: proven('security-metadata-scanner.ts discovers standalone SharingRules metadata.'),
+    parsing: proven('sharing-rules-parser.ts parses criteria fields and principals.'),
+    dependencies: proven(
+      'Owning objects, custom criteria fields, and deployable principals produce typed dependencies.'
+    ),
+    ordering: proven('SharingRules is present in DEPLOYMENT_ORDER and OWD barriers isolate changed objects.'),
+    lifecycle: partial('Internal sharing-model propagation is observed through a resumable org postcondition.'),
+    fixtures: proven('Focused parser, scanner, planner, poller, runner, and command fixtures exist.'),
+  }),
   metadataDefinition('OrderManagementSettings', 'OrderManagementSettings', 'C1', '67.0', {
     discovery: partial('Manifest discovery preserves the vendor type; source inference remains generic.'),
     parsing: absent('No OrderManagementSettings parser is registered.'),

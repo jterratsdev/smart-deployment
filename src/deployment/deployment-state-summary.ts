@@ -30,6 +30,19 @@ export type DeploymentStatusSummary = {
     waveNumber: number;
     message?: string;
   };
+  pausedPostcondition?: {
+    id: string;
+    status: 'timed-out' | 'observation-unavailable' | 'blocked-before-deploy';
+    objectName: string;
+    expectedInternalSharingModel: string;
+    observedInternalSharingModel?: string;
+    observedExternalSharingModel?: string;
+    attempts: number;
+    waitedMs: number;
+    expectedExternalSharingModel?: string;
+    errorCategory?: 'authentication' | 'network' | 'query' | 'entity-not-found' | 'invalid-response';
+    resumedPhase?: number;
+  };
   cycleRemediation?: CycleRemediationStatusSummary;
   ai?: {
     provider?: string;
@@ -90,6 +103,10 @@ function inferCurrentWave(state: DeploymentState, completedWaves: number[]): num
 
   if (state.pausedCheckpoint) {
     return state.currentWave ?? state.pausedCheckpoint.waveNumber;
+  }
+
+  if (state.pausedPostcondition) {
+    return state.currentWave ?? state.pausedPostcondition.afterWaveNumber;
   }
 
   if (state.currentWave && state.currentWave > 0) {
@@ -194,12 +211,15 @@ export function summarizeDeploymentState(state: DeploymentState, nowTimestamp = 
   const metadata = state.metadata ?? {};
   const completedWaves = normalizeCompletedWaves(state);
   const currentWave = inferCurrentWave(state, completedWaves);
-  const canResume = state.failedWave !== undefined || state.pausedCheckpoint !== undefined;
+  const canResume =
+    state.failedWave !== undefined || state.pausedCheckpoint !== undefined || state.pausedPostcondition !== undefined;
 
   let status: DeploymentStatusSummary['status'] = 'In Progress';
   if (state.failedWave !== undefined) {
     status = 'Failed';
   } else if (state.pausedCheckpoint !== undefined) {
+    status = 'Paused';
+  } else if (state.pausedPostcondition !== undefined) {
     status = 'Paused';
   } else if (state.totalWaves > 0 && completedWaves.length >= state.totalWaves) {
     status = 'Completed';
@@ -234,6 +254,22 @@ export function summarizeDeploymentState(state: DeploymentState, nowTimestamp = 
             phase: state.pausedCheckpoint.phase,
             waveNumber: state.pausedCheckpoint.waveNumber,
             message: state.pausedCheckpoint.message,
+          },
+    pausedPostcondition:
+      state.pausedPostcondition === undefined
+        ? undefined
+        : {
+            id: state.pausedPostcondition.id,
+            status: state.pausedPostcondition.status,
+            objectName: state.pausedPostcondition.objectName,
+            expectedInternalSharingModel: state.pausedPostcondition.expectedInternalSharingModel,
+            observedInternalSharingModel: state.pausedPostcondition.observedInternalSharingModel,
+            observedExternalSharingModel: state.pausedPostcondition.observedExternalSharingModel,
+            expectedExternalSharingModel: state.pausedPostcondition.expectedExternalSharingModel,
+            attempts: state.pausedPostcondition.attempts,
+            waitedMs: state.pausedPostcondition.waitedMs,
+            errorCategory: state.pausedPostcondition.observationError?.category,
+            resumedPhase: state.pausedPostcondition.resumedPhase,
           },
     cycleRemediation,
     ai: hasAIContext ? ai : undefined,
@@ -291,6 +327,19 @@ export function formatDeploymentStatus(summary: DeploymentStatusSummary): string
     if (summary.pausedCheckpoint.message) {
       lines.push(`Manual Action: ${summary.pausedCheckpoint.message}`);
     }
+  }
+
+  if (summary.pausedPostcondition) {
+    const postcondition = summary.pausedPostcondition;
+    lines.push('Postcondition Code: OWD_PROPAGATION_PENDING');
+    lines.push(`Postcondition: ${postcondition.id} (${postcondition.status})`);
+    lines.push(
+      `OWD Internal: ${postcondition.observedInternalSharingModel ?? 'unavailable'} -> ${
+        postcondition.expectedInternalSharingModel
+      }`
+    );
+    lines.push(`OWD External Observed: ${postcondition.observedExternalSharingModel ?? 'unavailable'}`);
+    if (postcondition.errorCategory) lines.push(`Observation Error: ${postcondition.errorCategory}`);
   }
 
   if (summary.cycleRemediation !== undefined) {

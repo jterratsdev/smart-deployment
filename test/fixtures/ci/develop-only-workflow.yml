@@ -1,0 +1,10 @@
+name: Develop checks
+
+on:
+  pull_request:
+    branches: [develop]
+
+jobs:
+  integration:
+    name: nuts
+    runs-on: ubuntu-latest

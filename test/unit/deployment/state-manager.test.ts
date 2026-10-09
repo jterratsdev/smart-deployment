@@ -110,6 +110,57 @@ describe('StateManager', () => {
     expect(loaded?.cycleRemediation).to.equal(undefined);
   });
 
+  it('normalizes legacy paused postcondition counters without dropping diagnostics', async () => {
+    const legacy = {
+      deploymentId: 'deploy-paused',
+      targetOrg: 'org',
+      timestamp: '2026-04-22T00:00:00.000Z',
+      totalWaves: 2,
+      completedWaves: [1],
+      status: 'paused',
+      pausedPostcondition: {
+        id: 'owd:Case:Private',
+        kind: 'owd-internal-sharing-model',
+        objectName: 'Case',
+        afterWaveNumber: 1,
+        expectedInternalSharingModel: 'Private',
+        status: 'observation-unavailable',
+        attempts: 0,
+        waitedMs: -1,
+        pausedAt: '2026-04-22T00:00:00.000Z',
+        observationError: { category: 'authentication', message: 'unavailable' },
+      },
+    };
+    await mkdir(path.dirname(stateManager.getStateFilePath()), { recursive: true });
+    await writeFile(stateManager.getStateFilePath(), JSON.stringify(legacy), 'utf8');
+    const loaded = await stateManager.loadState();
+    expect(loaded?.pausedPostcondition).to.deep.include({ attempts: 1, waitedMs: 0 });
+    expect(loaded?.pausedPostcondition?.observationError?.category).to.equal('authentication');
+  });
+
+  it('loads legacy state without adding empty postcondition history or execution postconditions', async () => {
+    const legacy: DeploymentState = {
+      deploymentId: 'legacy-no-postconditions',
+      targetOrg: 'org',
+      timestamp: '2026-01-01T00:00:00.000Z',
+      totalWaves: 1,
+      completedWaves: [],
+      execution: {
+        sourcePath: '/fixture',
+        orderedWaveNumbers: [1],
+        nextExecutionIndex: 0,
+        destructive: false,
+        skipTests: true,
+        planFingerprint: 'sha256:legacy',
+        checkpoints: [],
+      },
+    };
+    await stateManager.saveState(legacy);
+    const loaded = await stateManager.loadState();
+    expect(loaded).to.not.have.property('satisfiedPostconditions');
+    expect(loaded?.execution).to.not.have.property('postconditions');
+  });
+
   it('preserves AI metadata fields across save and load', async () => {
     const state: DeploymentState = {
       deploymentId: 'deploy-ai-1',

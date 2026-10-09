@@ -4,6 +4,28 @@ export type StartPresenterIO = {
 };
 
 export class StartCommandPresenter {
+  public reportPostconditionPaused(
+    io: Pick<StartPresenterIO, 'log'>,
+    condition: import('../deployment/deployment-postcondition.js').PausedPostcondition
+  ): void {
+    io.log(`OWD_PROPAGATION_PENDING: ${condition.objectName}`);
+    io.log(
+      `Internal sharing model: expected=${condition.expectedInternalSharingModel}, observed=${
+        condition.observedInternalSharingModel ?? 'unavailable'
+      }`
+    );
+    io.log(
+      `External sharing model: expected=${condition.expectedExternalSharingModel ?? 'unspecified'}, observed=${
+        condition.observedExternalSharingModel ?? 'unavailable'
+      }`
+    );
+    io.log(
+      `Attempts=${condition.attempts}, waitedMs=${condition.waitedMs}, errorCategory=${
+        condition.observationError?.category ?? 'none'
+      }, resumedPhase=${condition.resumedPhase ?? 'not-resumed'}`
+    );
+  }
+
   public reportExecutionStart(io: Pick<StartPresenterIO, 'log'>): void {
     io.log('🚀 Executing deployment...');
   }
@@ -44,7 +66,10 @@ export class StartCommandPresenter {
     io.log('   - Status: Success');
   }
 
-  public reportPlanReportsSaved(io: Pick<StartPresenterIO, 'log'>, paths: { jsonPath: string; htmlPath: string }): void {
+  public reportPlanReportsSaved(
+    io: Pick<StartPresenterIO, 'log'>,
+    paths: { jsonPath: string; htmlPath: string }
+  ): void {
     io.log(`   - JSON report: ${paths.jsonPath}`);
     io.log(`   - HTML report: ${paths.htmlPath}`);
   }

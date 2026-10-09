@@ -40,6 +40,7 @@ export class ReleaseReportBuilder {
       phases,
       items,
       reportWarnings: sortedUnique(facts.reportWarnings) ?? [],
+      postconditions: facts.postconditions?.map((postcondition) => ({ ...postcondition })),
     };
   }
 }

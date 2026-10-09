@@ -5,6 +5,7 @@ import {
   cleanupNutWorkspace,
   createNutWorkspace,
   createStandardProject,
+  parseJsonStdout,
   writeDeploymentState,
 } from './nut/command-fixtures.js';
 
@@ -80,5 +81,55 @@ describe('NUT: status command', () => {
     expect(result.shellOutput.stdout).to.include('Failure: Wave 2 - UNABLE_TO_LOCK_ROW');
     expect(result.shellOutput.stdout).to.include('Cycle Remediation: Phase 2 of 2');
     expect(result.shellOutput.stdout).to.include('Remediation Strategy: comment-reference');
+  });
+
+  it('reports a stable automatic OWD postcondition contract', async () => {
+    const workspace = await createNutWorkspace('smart-deployment-status-owd-nut-');
+    tempDirs.push(workspace.tempDir);
+    const projectRoot = await createStandardProject(workspace.tempDir);
+    await writeDeploymentState(projectRoot, {
+      deploymentId: 'deploy-owd',
+      targetOrg: 'status@example.com',
+      timestamp: '2026-09-30T12:00:00.000Z',
+      totalWaves: 2,
+      completedWaves: [1],
+      currentWave: 2,
+      status: 'paused',
+      pausedPostcondition: {
+        id: 'owd:Case:Private',
+        kind: 'owd-internal-sharing-model',
+        objectName: 'Case',
+        afterWaveNumber: 1,
+        expectedInternalSharingModel: 'Private',
+        expectedExternalSharingModel: 'Private',
+        status: 'timed-out',
+        observedInternalSharingModel: 'ReadWriteTransfer',
+        observedExternalSharingModel: 'Private',
+        attempts: 5,
+        waitedMs: 120_000,
+        pausedAt: '2026-09-30T12:02:00.000Z',
+      },
+    });
+
+    const result = execCmd<{
+      status: string;
+      canResume: boolean;
+      postcondition?: { code: string; objectName: string };
+    }>(`status --source-path ${projectRoot} --json`, {
+      cwd: repoRoot,
+      ensureExitCode: 0,
+      cli: 'dev',
+      env: { ...process.env, HOME: workspace.homeDir, TESTKIT_HOMEDIR: workspace.homeDir },
+    });
+    const output = parseJsonStdout<{
+      status: string;
+      canResume: boolean;
+      postcondition: { code: string; objectName: string };
+    }>(result.shellOutput.stdout);
+    expect(output).to.deep.include({ status: 'Paused', canResume: true });
+    expect(output.postcondition).to.deep.include({
+      code: 'OWD_PROPAGATION_PENDING',
+      objectName: 'Case',
+    });
   });
 });

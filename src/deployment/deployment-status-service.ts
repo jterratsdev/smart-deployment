@@ -32,6 +32,7 @@ export type DeploymentStatusSummary = {
     waveNumber: number;
     message?: string;
   };
+  pausedPostcondition?: import('./deployment-state-summary.js').DeploymentStatusSummary['pausedPostcondition'];
   waveGraph?: WaveGraph;
   timestamp?: string;
   stateFilePath: string;
@@ -76,7 +77,7 @@ export class DeploymentStatusService {
       };
     }
 
-    if (options.refreshRemote && state.pausedCheckpoint === undefined) {
+    if (options.refreshRemote && state.pausedCheckpoint === undefined && state.pausedPostcondition === undefined) {
       state = await this.refreshRemoteStatus(state, options.targetOrg);
     }
 
@@ -106,6 +107,7 @@ export class DeploymentStatusService {
       testStatusText: summary.testStatus,
       cycleRemediation: summary.cycleRemediation,
       pausedCheckpoint: summary.pausedCheckpoint,
+      pausedPostcondition: summary.pausedPostcondition,
       waveGraph: buildWaveGraphFromState(state),
       timestamp: summary.lastUpdated,
       stateFilePath: this.stateManager.getStateFilePath(),
@@ -166,6 +168,7 @@ export class DeploymentStatusService {
       failureReason: summary.failedWaveError,
       cycleRemediation: summary.cycleRemediation,
       pausedCheckpoint: summary.pausedCheckpoint,
+      pausedPostcondition: summary.pausedPostcondition,
     }).join('\n');
   }
 

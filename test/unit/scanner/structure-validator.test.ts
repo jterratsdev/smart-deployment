@@ -2,6 +2,9 @@
  * Tests for Structure Validator - US-084
  */
 import { expect } from 'chai';
+import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import { describe, it } from 'mocha';
 import { StructureValidator } from '../../../src/scanner/structure-validator.js';
 
@@ -19,6 +22,21 @@ describe('StructureValidator', () => {
         expect(issue).to.have.property('code');
         expect(issue).to.have.property('message');
       }
+    });
+
+    it('recommends the tested API version when sourceApiVersion is missing', async () => {
+      const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'structure-validator-api-'));
+      await mkdir(path.join(projectRoot, 'force-app'));
+      await writeFile(
+        path.join(projectRoot, 'sfdx-project.json'),
+        JSON.stringify({ packageDirectories: [{ path: 'force-app', default: true }] }),
+        'utf8'
+      );
+
+      const issues = await validator.validateSfdxProject(projectRoot);
+      const apiIssue = issues.find((issue) => issue.code === 'MISSING_API_VERSION');
+
+      expect(apiIssue?.suggestion).to.equal('Add sourceApiVersion (e.g., "67.0")');
     });
 
     /** @ac US-084-AC-2: Check package directories exist */
@@ -63,4 +81,3 @@ describe('StructureValidator', () => {
     });
   });
 });
-

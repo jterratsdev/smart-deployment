@@ -41,6 +41,19 @@ type StatusResult = {
     inferenceFallback?: boolean;
     inferredDependencies?: number;
   };
+  postcondition?: {
+    code: 'OWD_PROPAGATION_PENDING';
+    status: 'timed-out' | 'observation-unavailable' | 'blocked-before-deploy';
+    objectName: string;
+    expectedInternalSharingModel: string;
+    observedInternalSharingModel?: string;
+    observedExternalSharingModel?: string;
+    expectedExternalSharingModel?: string;
+    attempts: number;
+    waitedMs: number;
+    errorCategory?: 'authentication' | 'network' | 'query' | 'entity-not-found' | 'invalid-response';
+    resumedPhase?: number;
+  };
 };
 
 export default class Status extends SfCommand<StatusResult> {
@@ -101,6 +114,21 @@ export default class Status extends SfCommand<StatusResult> {
             : 'Not Started',
         canResume: summary.resumable,
         waveGraph: summary.waveGraph,
+        postcondition: summary.pausedPostcondition
+          ? {
+              code: 'OWD_PROPAGATION_PENDING',
+              status: summary.pausedPostcondition.status,
+              objectName: summary.pausedPostcondition.objectName,
+              expectedInternalSharingModel: summary.pausedPostcondition.expectedInternalSharingModel,
+              observedInternalSharingModel: summary.pausedPostcondition.observedInternalSharingModel,
+              observedExternalSharingModel: summary.pausedPostcondition.observedExternalSharingModel,
+              expectedExternalSharingModel: summary.pausedPostcondition.expectedExternalSharingModel,
+              attempts: summary.pausedPostcondition.attempts,
+              waitedMs: summary.pausedPostcondition.waitedMs,
+              errorCategory: summary.pausedPostcondition.errorCategory,
+              resumedPhase: summary.pausedPostcondition.resumedPhase,
+            }
+          : undefined,
       };
 
       if (summary.hasState && summary.status !== 'not-started') {

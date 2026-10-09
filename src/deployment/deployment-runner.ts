@@ -18,6 +18,14 @@ import type { TestExecutor } from './test-executor.js';
 import type { DeploymentAIContext, DeploymentContextBuildOptions } from './deployment-context-service.js';
 import { buildPersistedWaveGraphContext } from './wave-graph-state.js';
 import { formatDeploymentDiagnostics } from './deployment-error-diagnostics.js';
+import {
+  sanitizeSatisfiedPostcondition,
+  type OwdPostcondition,
+  type PausedPostcondition,
+  type SatisfiedPostcondition,
+} from './deployment-postcondition.js';
+import { PostconditionPoller } from './postcondition-poller.js';
+import { SfCliOrgQuery } from './sf-cli-org-query.js';
 
 export type DeploymentRunnerParams = {
   deploymentId: string;
@@ -40,25 +48,41 @@ export type DeploymentRunnerParams = {
   startExecutionIndex?: number;
   planFingerprint?: string;
   contextOptions?: Omit<DeploymentContextBuildOptions, 'sourcePath'>;
+  postconditions?: OwdPostcondition[];
+  postconditionOptions?: { timeoutMs: number; initialDelayMs: number; maximumDelayMs: number };
+  satisfiedPostconditions?: SatisfiedPostcondition[];
+  pendingPostconditionId?: string;
 };
 
-export type DeploymentRunnerResult = { kind: 'completed' } | { kind: 'paused'; checkpoint: ReachedManualCheckpoint };
+export type DeploymentRunnerResult =
+  | { kind: 'completed'; postconditions: SatisfiedPostcondition[] }
+  | { kind: 'paused'; checkpoint: ReachedManualCheckpoint }
+  | { kind: 'postcondition-paused'; postcondition: PausedPostcondition };
 
 type DeploymentRunnerDependencies = {
   testPlanService?: TestPlanService;
   waveManifestService?: WaveManifestService;
   forceIgnoreStagingService?: ForceIgnoreStagingService;
+  postconditionPoller?: PostconditionPoller;
 };
 
 export class DeploymentRunner {
   private readonly testPlanService: TestPlanService;
   private readonly waveManifestService: WaveManifestService;
   private readonly forceIgnoreStagingService: ForceIgnoreStagingService;
+  private readonly postconditionPoller: PostconditionPoller;
 
   public constructor(dependencies: DeploymentRunnerDependencies = {}) {
     this.testPlanService = dependencies.testPlanService ?? new TestPlanService();
     this.waveManifestService = dependencies.waveManifestService ?? new WaveManifestService();
     this.forceIgnoreStagingService = dependencies.forceIgnoreStagingService ?? new ForceIgnoreStagingService();
+    const query = new SfCliOrgQuery();
+    this.postconditionPoller =
+      dependencies.postconditionPoller ??
+      new PostconditionPoller({
+        query: (targetOrg, objectName): ReturnType<SfCliOrgQuery['getEntitySharingModels']> =>
+          query.getEntitySharingModels(targetOrg, objectName),
+      });
   }
 
   public async execute(params: DeploymentRunnerParams): Promise<DeploymentRunnerResult> {
@@ -95,9 +119,32 @@ export class DeploymentRunner {
         skipTests,
         apiVersion,
         sourceFingerprint: await createSourceFingerprint(componentMap),
+        postconditions: params.postconditions,
       });
     const completedWaveNumbers = orderedWaves.slice(0, startExecutionIndex).map((wave) => wave.number);
     let persistedDeploymentId = deploymentId;
+    const satisfiedPostconditions = [...(params.satisfiedPostconditions ?? [])];
+    const satisfiedPostconditionIds = new Set(satisfiedPostconditions.map((condition) => condition.id));
+
+    if (params.pendingPostconditionId) {
+      const pending = params.postconditions?.find((condition) => condition.id === params.pendingPostconditionId);
+      if (!pending)
+        throw new Error(`Persisted postcondition ${params.pendingPostconditionId} is missing from the plan.`);
+      if (pending && !satisfiedPostconditionIds.has(pending.id)) {
+        const paused = await this.checkPostcondition(
+          pending,
+          persistedDeploymentId,
+          startExecutionIndex,
+          completedWaveNumbers,
+          params,
+          planFingerprint,
+          satisfiedPostconditions
+        );
+        if (paused.kind === 'postcondition-paused') return paused;
+        satisfiedPostconditions.push(paused.postcondition);
+        satisfiedPostconditionIds.add(paused.postcondition.id);
+      }
+    }
 
     for (let executionIndex = startExecutionIndex; executionIndex < orderedWaves.length; executionIndex += 1) {
       const wave = orderedWaves[executionIndex];
@@ -110,6 +157,7 @@ export class DeploymentRunner {
           completedWaveNumbers,
           params,
           planFingerprint,
+          satisfiedPostconditions,
         });
       }
 
@@ -185,6 +233,7 @@ export class DeploymentRunner {
               ...this.buildAIMetadata(aiContext),
             },
             approvedCheckpointIds: [...approvedCheckpointIds],
+            satisfiedPostconditions,
             execution: this.buildExecutionState(params, planFingerprint, executionIndex),
           });
           throw new Error(`Wave ${wave.number} failed: ${failureMessage}`);
@@ -208,6 +257,7 @@ export class DeploymentRunner {
             ...this.buildAIMetadata(aiContext),
           },
           approvedCheckpointIds: [...approvedCheckpointIds],
+          satisfiedPostconditions,
           execution: this.buildExecutionState(params, planFingerprint, executionIndex + 1),
         });
 
@@ -216,6 +266,22 @@ export class DeploymentRunner {
         await workspace.cleanup();
       }
       completedWaveNumbers.push(wave.number);
+
+      const postcondition = params.postconditions?.find((condition) => condition.afterWaveNumber === wave.number);
+      if (postcondition && !satisfiedPostconditionIds.has(postcondition.id)) {
+        const paused = await this.checkPostcondition(
+          postcondition,
+          persistedDeploymentId,
+          executionIndex + 1,
+          completedWaveNumbers,
+          params,
+          planFingerprint,
+          satisfiedPostconditions
+        );
+        if (paused.kind === 'postcondition-paused') return paused;
+        satisfiedPostconditions.push(paused.postcondition);
+        satisfiedPostconditionIds.add(paused.postcondition.id);
+      }
 
       const afterCheckpoint = this.findCheckpoint(checkpoints, 'after', wave.number, approvedCheckpointIds);
       if (afterCheckpoint) {
@@ -226,13 +292,14 @@ export class DeploymentRunner {
           completedWaveNumbers,
           params,
           planFingerprint,
+          satisfiedPostconditions,
         });
       }
     }
 
     await stateManager.clearState();
     log(`\n✅ All waves ${params.destructive ? 'deleted' : 'deployed'} successfully!`);
-    return { kind: 'completed' };
+    return { kind: 'completed', postconditions: satisfiedPostconditions };
   }
 
   private findCheckpoint(
@@ -247,6 +314,66 @@ export class DeploymentRunner {
     );
   }
 
+  private async checkPostcondition(
+    postcondition: OwdPostcondition,
+    deploymentId: string,
+    nextExecutionIndex: number,
+    completedWaveNumbers: number[],
+    params: DeploymentRunnerParams,
+    planFingerprint: string,
+    satisfiedPostconditions: readonly SatisfiedPostcondition[]
+  ): Promise<
+    | Extract<DeploymentRunnerResult, { kind: 'postcondition-paused' }>
+    | { kind: 'postcondition-satisfied'; postcondition: SatisfiedPostcondition }
+  > {
+    const pollResult = await this.postconditionPoller.wait(
+      params.targetOrg,
+      postcondition,
+      params.postconditionOptions ?? { timeoutMs: 120_000, initialDelayMs: 1000, maximumDelayMs: 10_000 }
+    );
+    if (pollResult.kind === 'satisfied') {
+      return {
+        kind: 'postcondition-satisfied',
+        postcondition: sanitizeSatisfiedPostcondition({
+          ...postcondition,
+          status: 'satisfied',
+          observedInternalSharingModel: pollResult.observation.internalSharingModel,
+          observedExternalSharingModel: pollResult.observation.externalSharingModel,
+          attempts: pollResult.attempts,
+          waitedMs: pollResult.waitedMs,
+          resumedPhase: params.orderedWaves[nextExecutionIndex]?.number ?? nextExecutionIndex + 1,
+        }),
+      };
+    }
+
+    const pausedPostcondition: PausedPostcondition = {
+      ...pollResult.postcondition,
+      resumedPhase: params.orderedWaves[nextExecutionIndex]?.number ?? nextExecutionIndex + 1,
+    };
+
+    await params.stateManager.saveState({
+      deploymentId,
+      targetOrg: params.targetOrg,
+      timestamp: pausedPostcondition.pausedAt,
+      totalWaves: params.orderedWaves.length,
+      completedWaves: [...completedWaveNumbers],
+      currentWave: params.orderedWaves[nextExecutionIndex]?.number ?? postcondition.afterWaveNumber,
+      status: 'paused',
+      pausedPostcondition,
+      satisfiedPostconditions: [...satisfiedPostconditions],
+      approvedCheckpointIds: [...(params.approvedCheckpointIds ?? new Set<string>())],
+      execution: this.buildExecutionState(params, planFingerprint, nextExecutionIndex),
+      metadata: {
+        lastKnownStatus: 'PostconditionPaused',
+        destructive: params.destructive,
+        waveGraphContext: buildPersistedWaveGraphContext(params.orderedWaves, params.dependencyGraph),
+        ...this.buildAIMetadata(params.aiContext),
+      },
+    });
+    params.log(`Deployment paused waiting for internal sharing model on ${postcondition.objectName}.`);
+    return { kind: 'postcondition-paused', postcondition: pausedPostcondition };
+  }
+
   private async pauseAtCheckpoint(options: {
     checkpoint: ManualCheckpoint;
     deploymentId: string;
@@ -254,6 +381,7 @@ export class DeploymentRunner {
     completedWaveNumbers: number[];
     params: DeploymentRunnerParams;
     planFingerprint: string;
+    satisfiedPostconditions: readonly SatisfiedPostcondition[];
   }): Promise<DeploymentRunnerResult> {
     const reachedAt = new Date().toISOString();
     const reachedCheckpoint: ReachedManualCheckpoint = {
@@ -274,6 +402,7 @@ export class DeploymentRunner {
       currentWave: nextWave?.number ?? options.checkpoint.waveNumber,
       status: 'paused',
       pausedCheckpoint: reachedCheckpoint,
+      satisfiedPostconditions: [...options.satisfiedPostconditions],
       approvedCheckpointIds: [...(options.params.approvedCheckpointIds ?? new Set<string>())],
       execution: {
         sourcePath: options.params.sourcePath ?? process.cwd(),
@@ -284,6 +413,8 @@ export class DeploymentRunner {
         apiVersion: options.params.apiVersion,
         planFingerprint: options.planFingerprint,
         checkpoints: options.params.checkpoints ?? [],
+        postconditions: options.params.postconditions ?? [],
+        postconditionOptions: options.params.postconditionOptions,
         contextOptions: options.params.contextOptions,
       },
       metadata: {
@@ -311,6 +442,8 @@ export class DeploymentRunner {
       apiVersion: params.apiVersion,
       planFingerprint,
       checkpoints: params.checkpoints ?? [],
+      postconditions: params.postconditions ?? [],
+      postconditionOptions: params.postconditionOptions,
       contextOptions: params.contextOptions,
     };
   }

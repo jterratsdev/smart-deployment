@@ -173,4 +173,36 @@ describe('deployment-state-summary', () => {
     expect(formatDeploymentStatus(summary)).to.include('Checkpoint: activate-table (after wave 1)');
     expect(formatDeploymentStatus(summary)).to.include('Manual Action: Activate the Decision Table');
   });
+
+  it('reports an automatic OWD postcondition separately from failures and manual checkpoints', () => {
+    const summary = summarizeDeploymentState({
+      deploymentId: 'deploy-owd',
+      targetOrg: 'org',
+      timestamp: '2026-09-30T00:00:00.000Z',
+      totalWaves: 2,
+      completedWaves: [1],
+      currentWave: 2,
+      status: 'paused',
+      pausedPostcondition: {
+        id: 'owd:Case:Private',
+        kind: 'owd-internal-sharing-model',
+        objectName: 'Case',
+        afterWaveNumber: 1,
+        expectedInternalSharingModel: 'Private',
+        expectedExternalSharingModel: 'Private',
+        status: 'timed-out',
+        observedInternalSharingModel: 'ReadWriteTransfer',
+        observedExternalSharingModel: 'Private',
+        attempts: 4,
+        waitedMs: 120_000,
+        pausedAt: '2026-09-30T00:02:00.000Z',
+      },
+    });
+    expect(summary).to.deep.include({ status: 'Paused', canResume: true, failedWaveNumber: undefined });
+    expect(summary.pausedPostcondition).to.deep.include({
+      objectName: 'Case',
+      observedExternalSharingModel: 'Private',
+    });
+    expect(formatDeploymentStatus(summary).join('\n')).to.include('OWD Internal: ReadWriteTransfer -> Private');
+  });
 });

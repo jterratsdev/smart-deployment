@@ -136,7 +136,7 @@ describe('ValidateCommand', () => {
     });
     expect(result.waves).to.equal(2);
     expect(result.issueCount).to.equal(0);
-    expect(result.releaseReport?.schemaVersion).to.equal('1.0');
+    expect(result.releaseReport?.schemaVersion).to.equal('1.1');
     expect(result.releaseReport?.targetOrg).to.equal('test-org');
     expect(result.releaseReport?.summary).to.deep.equal({
       total: 2,
