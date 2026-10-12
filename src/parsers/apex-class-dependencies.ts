@@ -14,14 +14,20 @@ import { buildDependency, isStandardClass } from './apex-class-names.js';
  */
 function extractStaticMethodCalls(code: string): ApexDependency[] {
   const staticCallPattern = /([a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z][a-zA-Z0-9_]*)*)\s*\.\s*[a-zA-Z][a-zA-Z0-9_]*\s*\(/g;
-  const matches = code.matchAll(staticCallPattern);
+  const withoutStrings = code.replace(/'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"/g, (literal) => ' '.repeat(literal.length));
+  const declaredVariables = new Set(
+    [...withoutStrings.matchAll(/\b[A-Za-z][\w.]*(?:<[^;{}()]+>)?\s+([a-z]\w*)\s*(?=[=;,:)])/g)].map(
+      (match) => match[1]
+    )
+  );
+  const matches = withoutStrings.matchAll(staticCallPattern);
   const dependencies: ApexDependency[] = [];
   const seen = new Set<string>();
 
   for (const match of matches) {
     const className = match[1];
 
-    if (seen.has(className) || isStandardClass(className)) {
+    if (seen.has(className) || isStandardClass(className) || declaredVariables.has(className.split('.')[0])) {
       continue;
     }
 
@@ -46,7 +52,7 @@ function extractInstantiations(code: string): ApexDependency[] {
   for (const match of matches) {
     const className = match[1];
 
-    if (seen.has(className) || isStandardClass(className)) {
+    if (seen.has(className) || isStandardClass(className) || className.endsWith('__c')) {
       continue;
     }
 
@@ -153,9 +159,12 @@ export function collectDependencyBuckets(
   };
 }
 
-export function collectDependencies(dependencyBuckets: ApexDependencyBuckets): ApexDependency[] {
+export function collectDependencies(
+  dependencyBuckets: ApexDependencyBuckets,
+  symbols: ApexSymbolExtraction
+): ApexDependency[] {
   return [
     ...dependencyBuckets.signatureDependencies,
     ...flattenReferenceDependencies(dependencyBuckets.referenceDependencies),
-  ];
+  ].filter((dependency) => dependency.namespace !== undefined || !symbols.innerClasses.includes(dependency.className));
 }

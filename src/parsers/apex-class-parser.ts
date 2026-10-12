@@ -58,7 +58,7 @@ export function parseApexClass(filePath: string, content: string): ApexParseResu
     const symbols = extractSymbols(lexicalContext);
     const testMetadata = detectTestMetadata(lexicalContext);
     const dependencyBuckets = collectDependencyBuckets(lexicalContext, symbols);
-    const dependencies = collectDependencies(dependencyBuckets);
+    const dependencies = collectDependencies(dependencyBuckets, symbols);
     const dynamicQueryReferences = extractDynamicQueryReferences(lexicalContext.cleanCode);
     const result = buildParseResult(lexicalContext.className, symbols, dependencies, dynamicQueryReferences);
 
