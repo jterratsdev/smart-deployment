@@ -27,8 +27,10 @@ export async function parseFlowComponent(filePath: string): Promise<MetadataComp
 
   const deps = new Set<string>();
   parsed.dependencies.forEach((dependency) => {
-    if (dependency.type === 'apex_action' || dependency.type === 'subflow') {
-      deps.add(dependency.name);
+    if (dependency.type === 'apex_action') {
+      deps.add(`ApexClass:${dependency.name.split('.')[0]}`);
+    } else if (dependency.type === 'subflow') {
+      deps.add(`Flow:${dependency.name}`);
     }
   });
 

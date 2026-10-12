@@ -9,6 +9,8 @@ import {
   parseFlowComponent,
   parseGenAiPromptComponent,
 } from '../../../src/services/scanners/automation-ai-metadata-scanner.js';
+import { DependencyGraphBuilder } from '../../../src/dependencies/dependency-graph-builder.js';
+import { WaveBuilder } from '../../../src/waves/wave-builder.js';
 
 describe('automation-ai-metadata-scanner helpers', () => {
   const tempDirectories: string[] = [];
@@ -130,7 +132,7 @@ describe('automation-ai-metadata-scanner helpers', () => {
     expect(prompt).to.exist;
 
     expect(flow?.name).to.equal('CaseOrchestrator');
-    expect([...flow!.dependencies]).to.deep.equal(['CaseActionRouter.route', 'CaseSummarySubflow']);
+    expect([...flow!.dependencies]).to.deep.equal(['ApexClass:CaseActionRouter', 'Flow:CaseSummarySubflow']);
 
     expect(bot?.name).to.equal('SupportAssistant');
     expect([...bot!.dependencies]).to.include.members([
@@ -142,6 +144,42 @@ describe('automation-ai-metadata-scanner helpers', () => {
 
     expect(prompt?.name).to.equal('SupportPrompt');
     expect([...prompt!.dependencies]).to.include.members(['Case', 'Contact']);
+  });
+
+  it('places a Flow after its local Apex action and subflow', async () => {
+    const baseDir = await createFixture();
+    const flow = await parseFlowComponent(path.join(baseDir, 'flows', 'CaseOrchestrator.flow-meta.xml'));
+    expect(flow).to.exist;
+
+    const graphBuilder = new DependencyGraphBuilder();
+    for (const [type, name] of [
+      ['ApexClass', 'CaseActionRouter'],
+      ['Flow', 'CaseSummarySubflow'],
+    ] as const) {
+      graphBuilder.addComponent({
+        type,
+        name,
+        filePath: name,
+        dependencies: new Set(),
+        dependents: new Set(),
+        priorityBoost: 0,
+      });
+    }
+    graphBuilder.addComponent(flow!);
+    const result = graphBuilder.build();
+    const waves = new WaveBuilder({ dependencyEdges: result.edges }).generateWaves(result.graph);
+
+    expect(result.graph.get('Flow:CaseOrchestrator')).to.deep.equal(
+      new Set(['ApexClass:CaseActionRouter', 'Flow:CaseSummarySubflow'])
+    );
+    expect(waves.unplacedComponents).to.deep.equal([]);
+    const flowWave = waves.waves.find((wave) => wave.components.includes('Flow:CaseOrchestrator'))?.number;
+    expect(flowWave).to.be.greaterThan(
+      waves.waves.find((wave) => wave.components.includes('ApexClass:CaseActionRouter'))?.number ?? 0
+    );
+    expect(flowWave).to.be.greaterThan(
+      waves.waves.find((wave) => wave.components.includes('Flow:CaseSummarySubflow'))?.number ?? 0
+    );
   });
 
   it('parses canonical AiEvaluationDefinition agent subjects as one hard Bot dependency', async () => {

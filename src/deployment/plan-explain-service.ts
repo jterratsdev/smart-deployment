@@ -65,6 +65,7 @@ export type PlanExplainResult = {
     componentCount: number;
     dependencyCount: number;
     unresolvedReferenceCount: number;
+    unplacedComponentCount: number;
     providerDecisionCount: number;
     waves: number;
   };
@@ -109,9 +110,12 @@ export class PlanExplainService {
     const dependencyResult = context.scanResult.dependencyResult;
     const dependencies = dependencyResult.edges.map((edge) => explainDependency(edge, dependencyResult, waveByNodeId));
     const unresolvedReferences = dependencies.filter((dependency) => !dependency.resolved);
+    const unplacedComponentCount = context.scanResult.components.filter(
+      (component) => !waveByNodeId.has(toNodeId(component))
+    ).length;
 
     return {
-      success: context.scanResult.errors.length === 0 && providerPlan.success,
+      success: context.scanResult.errors.length === 0 && providerPlan.success && unplacedComponentCount === 0,
       projectRoot: context.scanResult.projectRoot,
       apiVersion: context.scanResult.apiVersion,
       components: context.scanResult.components
@@ -124,6 +128,7 @@ export class PlanExplainService {
         componentCount: context.scanResult.components.length,
         dependencyCount: dependencies.length,
         unresolvedReferenceCount: unresolvedReferences.length,
+        unplacedComponentCount,
         providerDecisionCount: providerPlan.phases.length,
         waves: context.orderedWaves.length,
       },

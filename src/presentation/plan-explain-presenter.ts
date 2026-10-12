@@ -12,6 +12,9 @@ export class PlanExplainPresenter {
     if (result.unresolvedReferences.length > 0) {
       io.warn(`Plan contains ${result.unresolvedReferences.length} unresolved reference(s).`);
     }
+    if (result.summary.unplacedComponentCount > 0) {
+      io.warn(`Plan contains ${result.summary.unplacedComponentCount} component(s) without a deployment wave.`);
+    }
   }
 
   public formatSummary(result: PlanExplainResult): string {
@@ -20,6 +23,7 @@ export class PlanExplainPresenter {
       `Components: ${result.summary.componentCount}`,
       `Dependencies: ${result.summary.dependencyCount}`,
       `Unresolved References: ${result.summary.unresolvedReferenceCount}`,
+      `Unplaced Components: ${result.summary.unplacedComponentCount}`,
       `Provider Decisions: ${result.summary.providerDecisionCount}`,
       `Waves: ${result.summary.waves}`,
     ];
