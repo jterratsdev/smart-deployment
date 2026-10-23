@@ -1,15 +1,19 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.0 -->
+
 # Threat Model Playbook
 
 ## Goal
+
 Create or update a STRIDE-based threat model for the feature under review.
 
 ## When to Run
+
 - New external integrations or APIs
 - New user roles or permission changes
 - Data model changes involving PII or sensitive fields
 
 ## Steps
+
 1. Identify trust boundaries (org boundary, API gateway, external system).
 2. Apply STRIDE categories:
    - **S**poofing — authentication controls
@@ -22,8 +26,8 @@ Create or update a STRIDE-based threat model for the feature under review.
 4. Cross-reference `docs/strategy/env-audit.md` for any secrets or credentials.
 5. Record mitigations as decisions.
 
-
 ## Evidence
+
 ```bash
-sf setup-agents evidence add --task <id> --role security --type report --summary "Threat Model Playbook completed"
+sf setup-agents evidence add --task <id> --role architect --type report --summary "Threat Model Playbook completed"
 ```

@@ -1,0 +1,1238 @@
+{
+  "schemaVersion": 1,
+  "completeness": "full",
+  "requestedLevel": "full",
+  "profiles": ["developer"],
+  "tools": ["cursor"],
+  "generator": "setup-agents:local",
+  "pluginVersion": "3.23.0",
+  "sourceDigest": "5e232504b19a78785959f7e82f2c3b5a61eda0abf2ef5d7ee26ed193c42e7444",
+  "expectedArtifacts": [
+    {
+      "path": ".cursor/rules/agent-guidelines.mdc",
+      "owner": "setup-agents",
+      "marker": "pluginVersion: \"3.23.0",
+      "expectedDigest": "605cec3704c38e97d81c7866f81390bb5583bee35d2563811d9ec50c1a0f4156"
+    },
+    {
+      "path": ".cursor/rules/developer-standards.mdc",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"cursor-profile-developer\" version=\"3.23.0\" -->",
+      "expectedDigest": "644c6400b0f842987469dc56a5166e57f54db1672181fa47fc1a8a7392c4faad"
+    },
+    {
+      "path": ".cursor/rules/salesforce-standards.mdc",
+      "owner": "setup-agents",
+      "marker": "pluginVersion: \"3.23.0",
+      "expectedDigest": "6d9b0bf3da185c69055dbbe18dd72f30f5804927373c29c1b72dc77ce5e00dd7"
+    },
+    {
+      "path": ".cursor/rules/setup-agents-autonomous.mdc",
+      "owner": "setup-agents",
+      "marker": "pluginVersion: \"3.23.0",
+      "expectedDigest": "bd43bbccd4d42276310266e184a2dff90b504dece07cb61897d9aa01a2f9618f"
+    },
+    {
+      "path": ".cursor/rules/setup-agents-gate-approval.mdc",
+      "owner": "setup-agents",
+      "marker": "pluginVersion: \"3.23.0",
+      "expectedDigest": "ec067957479e146fade3f1247426d219cdbe04c350e3278fbc2c3675362f946f"
+    },
+    {
+      "path": ".cursor/rules/sub-agent-protocol.mdc",
+      "owner": "setup-agents",
+      "marker": "pluginVersion: \"3.23.0",
+      "expectedDigest": "3f20b767d227b4719be4074b4ab21017239e83c810e1a45d9a63b684df62a257"
+    },
+    {
+      "path": ".cursor/skills/doc-sync/SKILL.md",
+      "owner": "setup-agents",
+      "marker": "pluginVersion: \"3.23.0",
+      "expectedDigest": "3210b10f4122cc477cb35c7ee0862388d7763061b51c2fc6e1ce2444820b4381"
+    },
+    {
+      "path": ".cursor/skills/prompt-registry/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "e9f7e27473e5dfd05eff43f0c63cf664fba11f15390952fc567b867b929d6d7d"
+    },
+    {
+      "path": ".cursor/skills/qa-evidence-pack/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "9bf78090bbcfd222f44542abe396a9ed6df3c17ba4b13e617498b9212f22ee5d"
+    },
+    {
+      "path": ".cursor/skills/sf-code-analyzer/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "57af1bcc5d03a003227e221bfaa89daf4909278d195869c701967cb2eef25b7f"
+    },
+    {
+      "path": ".cursor/skills/sf-deploy/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "98fae60b0b64b5d3d1fad45b6baaeab764a5fec5bac89402a19aa15ea119cc07"
+    },
+    {
+      "path": ".generated-prompts/apex.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "a20992fbc6afe473039774c3e4ffd097a8b4999691c16f71734e9b201dd5ae05"
+    },
+    {
+      "path": ".generated-prompts/aura.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "eb24e3f6d1637b559a42f0ea869560c71c2619b09362d70d974504c529462b62"
+    },
+    {
+      "path": ".generated-prompts/docs.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "481f3d6807b125ffc5c9d50fa617e38aa075e9dd6dee89fa6093ddee535aad85"
+    },
+    {
+      "path": ".generated-prompts/flows.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "c4f7319cfaea0cadc43db3f55b033cb3f54b4076b8c4f69c3f79f21d130efe3b"
+    },
+    {
+      "path": ".generated-prompts/lwc.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "6a98ef1e9aca3fc89790ac6057b9121e34c59fae28dff6e6841a79faa6a6eebf"
+    },
+    {
+      "path": ".generated-prompts/metadata.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "cbe2a9bf05c51277b9972cfed826a7b6393ae381187640efd6af22db41d2e208"
+    },
+    {
+      "path": ".generated-prompts/triggers.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "1c93b1a1210a12c14b5fb342be2014a4e0ddcb9825d027e82d7161f7a8d891b1"
+    },
+    {
+      "path": ".generated-prompts/visualforce.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "3a3114afced3f274a4be9690aeea6a065ad497374fc5bb19385016f05685ed08"
+    },
+    {
+      "path": ".setup-agents/artifacts.json",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "e3af1ab8f47213bce63d9543e5704226549da6e26644bfbd8e296f2540c19b8b"
+    },
+    {
+      "path": ".setup-agents/env-audit.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "060ecc15c99dd48ffed9b690ebfd7c11f32e9b69e7b8a043e9a403fd62be37c7"
+    },
+    {
+      "path": ".setup-agents/OFFLINE.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "15cdf45f96e5f0ad1f1731e526d0b99757b934acb9ec84fee74d08282cbfbde9"
+    },
+    {
+      "path": ".setup-agents/permissions.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "c047e971640e8f6a1eee33bb421642cf021dcf47951be4787a4c26d8edf4ba86"
+    },
+    {
+      "path": ".setup-agents/playbooks/a11y-audit.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "4ed79162279cc7609a762dcbe6d837e9cf698cfd34ee8bbdde137c87d73ff8a2"
+    },
+    {
+      "path": ".setup-agents/playbooks/adr.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "e400307ddcc0fd18c571d73e3585134c7c31655cc210899ba9d5033d3aad82b6"
+    },
+    {
+      "path": ".setup-agents/playbooks/architecture-review.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "635f59aef308dc60593f7acbb4898c28d5eb5cd6c087c346a8014542879f6b39"
+    },
+    {
+      "path": ".setup-agents/playbooks/candidate-release.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "eb267ee7bc80dfb1119484f4f497b8a200292d06457b7189605e38e6ea9c47b4"
+    },
+    {
+      "path": ".setup-agents/playbooks/contract-test.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "874671ef01b18ef1abeac1858f99891f47cc5cbe143094e7c14352da0177ab7b"
+    },
+    {
+      "path": ".setup-agents/playbooks/create-apex-class.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "da840465d6edebfb6a8f5928847d8489375b539d18d1db0656e571f086aa5cdf"
+    },
+    {
+      "path": ".setup-agents/playbooks/create-lwc.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "0194a6711d1ef25570a221544512cbf418ea967a5f869369aad9a8ee3cd14688"
+    },
+    {
+      "path": ".setup-agents/playbooks/create-trigger.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "1b75bb22a663b56ab21b963985ad245d7607edda561087070191553274252ac4"
+    },
+    {
+      "path": ".setup-agents/playbooks/data-model-design.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "c3f13f23f1950aaaad0a5f0bc9d3c9fb140a0ca1bcc0fa8e9d7d033f8f67eb9c"
+    },
+    {
+      "path": ".setup-agents/playbooks/declare-story-points.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "db3bec914c0667b3aced07b296fbd38c10062bc335df50dbc1685f73bab3fed4"
+    },
+    {
+      "path": ".setup-agents/playbooks/delivery-metrics.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "805e5fd2c052ff8043cdec37288285929c1c77975c78ec3f23cc4ccc1a11c3e4"
+    },
+    {
+      "path": ".setup-agents/playbooks/design-review.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "6f36218994f276a57af202a1fc0d4b28ac93a4d8b6745529cc09ecdacb2d704c"
+    },
+    {
+      "path": ".setup-agents/playbooks/doc-review.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "00dcfc6191e121bf20e6c981057c341be75dce0c1c601afe15831a0ab2ca750a"
+    },
+    {
+      "path": ".setup-agents/playbooks/env-audit.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "9c8d21573aa5056f8a9c75b608e753ae4b16579fe2052bd90049517f93017a38"
+    },
+    {
+      "path": ".setup-agents/playbooks/flaky-test-triage.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "3ca55aaeec62c3d5552ab3ddc289567d886815dda7a79ec24529dbd692cda3c7"
+    },
+    {
+      "path": ".setup-agents/playbooks/generate-test-report.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "3c6f918b908f5ec99dc85802dde773a326dca5382c97050a4c2fee2bb5f9cade"
+    },
+    {
+      "path": ".setup-agents/playbooks/groom-backlog.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "19c793bf00733ac2c6158a127b97f6dc53c8098637c9f777f4e287f4928d455f"
+    },
+    {
+      "path": ".setup-agents/playbooks/observable-assertions.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "fc90fb141dcf3312a94e978244d264e1ed39f05614f1b1fc37268418005c99fc"
+    },
+    {
+      "path": ".setup-agents/playbooks/orchestrate-run.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "6714dc60fbb0492f4efd34cac73245e8f3db433833a31512f8007f51d0ab6537"
+    },
+    {
+      "path": ".setup-agents/playbooks/performance-test.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "f94d926f3527d016788bb4007b80927f2da2d1c76bdf875107f7b598558074fe"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/close-phase.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "01592a3b6d87d80b8b2cd4450c9a30b8bcaf81d7e8cd36ecbf6f4e7e6de44c23"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/create-apex-class.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "e85762497eb0894230b5e1bbdb6c9959aba747514c0fc717b3611aec8d34eca0"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/create-flow.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "426e805ea52d4a9b39a2833996a3c2f10e8cc02421d894ac93f9cede7cca964e"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/create-lwc.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "8bbbbbf40595a95fb53ad3cef64ed2909903601f5d8c2b7985a9246b8c3b7524"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/create-record-navigation.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "20faca8fe2fd304840d8be4c2414b6e10f430849e73ec80ce9d3aeaf1b35b4ac"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/create-trigger.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "05eabdd9cff3a7ad7a62e309706076cce92f72f2c0f1151b249dec8fbe7f2f17"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/create-validation-rule.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "6fa8a4a3384cd4eea6d1924533c23f8d0a3d9e83dfa2134e712600862ea92409"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/design-large-data-volume-processing.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "3a0604f4ddffe36a9101dc2eccc4b4751ecffd084af86434055ab801e99d3799"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/destructive-deploy.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "e842da47bf7a9733ef062232d36a2406db2454bb031cd8485f6d7f3cdb97aea8"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/permission-set-setup.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "1034bb62527334f1d1c2ab61c3ca1380a25e9d5a7b6a54319ac4dc3274b3bc9e"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/review-release-264-api-contracts.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "883f7c8ecf804181457f73fbe933710a7a1eba231d56a4e939b2177e1f220325"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/review-release-264-label-translations.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "e536ba54a3cd0717390b937e53d20a60fbaf2b21556fdb131890a966b04d4481"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/review-release-264-lifecycle.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "1dfb0ead32f55b6dceb39591cf20d6b5d383a2de965d2b3b534976a5445eec7b"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/run-apex-integration-test.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "ae40e41e503976dad0836e4592b39936edf9a8fa52f025a476cce5ed28ceae24"
+    },
+    {
+      "path": ".setup-agents/playbooks/qa-checklist.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "5882c5265620f3051f0cdd5a2f3a1cbbd2c884266c41b427c8ffa8fa123a5d86"
+    },
+    {
+      "path": ".setup-agents/playbooks/qa-plan.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "be48aed84299196fb00b47dd3f645a6f876a5c4bebafe73419de44346100e1a8"
+    },
+    {
+      "path": ".setup-agents/playbooks/refine-stories.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "9f1d3d427df43346697276d9c41a7f1f27b2671e359164fc3e122640ef612f7f"
+    },
+    {
+      "path": ".setup-agents/playbooks/regression.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "1e54c76aba978e2f4c137baff13f8d30b3dbd9bb2c5a1640532002374e7cc168"
+    },
+    {
+      "path": ".setup-agents/playbooks/release.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "bf9020ecf75369e79261b0a427d8b4eb0240d5089f4d8e2b2149c2c087eb52e9"
+    },
+    {
+      "path": ".setup-agents/playbooks/risk-register.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "ef279a09550282114e3b155b390a8bb718aac9a2b57997807fd0ace6464d0228"
+    },
+    {
+      "path": ".setup-agents/playbooks/run-playwright.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "f117cbf394ccafe8120aa9c96091edddf7c527a551ebeca60ff452376cd24dd7"
+    },
+    {
+      "path": ".setup-agents/playbooks/scope-assessment.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "08a05f01eb9249d9cffe0dea0190117eb56d2ae6f4550752548c19b9f4ed60ee"
+    },
+    {
+      "path": ".setup-agents/playbooks/security-review.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "c97468969e8a122f285d79fc1fa96b5fa628721b467215590f3ed25916981fb9"
+    },
+    {
+      "path": ".setup-agents/playbooks/smoke-test.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "75da55503abceca7044220d4663bf7024a3e25644bb1974dd7beb1e480463228"
+    },
+    {
+      "path": ".setup-agents/playbooks/sprint-plan.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "93616d2cdfc8d19715be4dd885d1250bf47d7a78952745c0e99d0af22b4871e1"
+    },
+    {
+      "path": ".setup-agents/playbooks/status-report.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "5ab62507c71f72f3a24fdac854f3bc37dde7601455e67b68a60f4772429f6fc9"
+    },
+    {
+      "path": ".setup-agents/playbooks/threat-model.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "dc33d2f561c5e455511e76032ce61e8e1df90144907771995e5670143c2ae696"
+    },
+    {
+      "path": ".setup-agents/playbooks/update-jira-ticket.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "c7e9036be106bce9b073fa5d272aa7185e13155f3adfd8c5c66426879d454789"
+    },
+    {
+      "path": ".setup-agents/playbooks/validate.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "a3d9e33d7fa80f4257afe8ef52389f6df2ce7ed1b65d89ba0cd33f95368098ee"
+    },
+    {
+      "path": ".setup-agents/playbooks/wireframe.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "52c79dd5ddc66914a3d365f30a430326a4c2b9a3def92ac45d06bdb0896e37d6"
+    },
+    {
+      "path": ".setup-agents/profiles/developer/rule.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "bef18c14294c643b3f1cbabda35b413b45eed55634b909b179c06cd97ade29eb"
+    },
+    {
+      "path": ".setup-agents/sf-skills/INDEX-developer.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"sf-skills-index-developer\" version=\"3.23.0\" -->",
+      "expectedDigest": "ffd4134da8342f08e2db615cf1451526bf86cd43822c77c27784380c0fff9cbe"
+    },
+    {
+      "path": ".setup-agents/skills/doc-sync/SKILL.md",
+      "owner": "setup-agents",
+      "marker": "pluginVersion: \"3.23.0",
+      "expectedDigest": "3210b10f4122cc477cb35c7ee0862388d7763061b51c2fc6e1ce2444820b4381"
+    },
+    {
+      "path": ".setup-agents/skills/oclif-plugin/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "3065084060aaeb42b66941ceb0f3d7ed7566b9d3f7ccde7072a77af69db58134"
+    },
+    {
+      "path": ".setup-agents/skills/org-health-assessment/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "d171ecb68a5a696f40733ea1c8b038c52934bdb64e5c39f6d3856fc46df2c687"
+    },
+    {
+      "path": ".setup-agents/skills/project-knowledge-bootstrap/SKILL.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"...\" -->",
+      "expectedDigest": "78d285111b24a0d8ea5fc8a0730688ae515ba9b7c077c79945f941ad93b8ac61"
+    },
+    {
+      "path": ".setup-agents/skills/prompt-registry/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "e9f7e27473e5dfd05eff43f0c63cf664fba11f15390952fc567b867b929d6d7d"
+    },
+    {
+      "path": ".setup-agents/skills/qa-evidence-pack/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "9bf78090bbcfd222f44542abe396a9ed6df3c17ba4b13e617498b9212f22ee5d"
+    },
+    {
+      "path": ".setup-agents/skills/sf-code-analyzer/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "57af1bcc5d03a003227e221bfaa89daf4909278d195869c701967cb2eef25b7f"
+    },
+    {
+      "path": ".setup-agents/skills/sf-deploy/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "98fae60b0b64b5d3d1fad45b6baaeab764a5fec5bac89402a19aa15ea119cc07"
+    },
+    {
+      "path": ".setup-agents/skills/transcription-evidence/scripts/transcribe.sh",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "3dbbf8e488a773e114f4e876e05ac8ccf2b0270595ea8f5ba3cd3a6841080f70"
+    },
+    {
+      "path": ".setup-agents/skills/transcription-evidence/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "c766258ad310c820422d8682b0f72b8c1489f512a9de666b6abc8d0a5ffb63f7"
+    },
+    {
+      "path": ".setup-agents/skills/workflow-estimate/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "e3796fdd6c35219f98cec4fa7f49b9faec1e055eadfec4739252e133d187c33d"
+    },
+    {
+      "path": ".setup-agents/state/README.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "3481c08a83a523de48480d4b8cca57609489180e67d6ea285dead050aa9df759"
+    }
+  ],
+  "producedArtifacts": [
+    {
+      "path": ".cursor/rules/agent-guidelines.mdc",
+      "owner": "setup-agents",
+      "marker": "pluginVersion: \"3.23.0",
+      "expectedDigest": "605cec3704c38e97d81c7866f81390bb5583bee35d2563811d9ec50c1a0f4156",
+      "digest": "605cec3704c38e97d81c7866f81390bb5583bee35d2563811d9ec50c1a0f4156",
+      "status": "current"
+    },
+    {
+      "path": ".cursor/rules/developer-standards.mdc",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"cursor-profile-developer\" version=\"3.23.0\" -->",
+      "expectedDigest": "644c6400b0f842987469dc56a5166e57f54db1672181fa47fc1a8a7392c4faad",
+      "digest": "644c6400b0f842987469dc56a5166e57f54db1672181fa47fc1a8a7392c4faad",
+      "status": "current"
+    },
+    {
+      "path": ".cursor/rules/salesforce-standards.mdc",
+      "owner": "setup-agents",
+      "marker": "pluginVersion: \"3.23.0",
+      "expectedDigest": "6d9b0bf3da185c69055dbbe18dd72f30f5804927373c29c1b72dc77ce5e00dd7",
+      "digest": "6d9b0bf3da185c69055dbbe18dd72f30f5804927373c29c1b72dc77ce5e00dd7",
+      "status": "current"
+    },
+    {
+      "path": ".cursor/rules/setup-agents-autonomous.mdc",
+      "owner": "setup-agents",
+      "marker": "pluginVersion: \"3.23.0",
+      "expectedDigest": "bd43bbccd4d42276310266e184a2dff90b504dece07cb61897d9aa01a2f9618f",
+      "digest": "bd43bbccd4d42276310266e184a2dff90b504dece07cb61897d9aa01a2f9618f",
+      "status": "current"
+    },
+    {
+      "path": ".cursor/rules/setup-agents-gate-approval.mdc",
+      "owner": "setup-agents",
+      "marker": "pluginVersion: \"3.23.0",
+      "expectedDigest": "ec067957479e146fade3f1247426d219cdbe04c350e3278fbc2c3675362f946f",
+      "digest": "ec067957479e146fade3f1247426d219cdbe04c350e3278fbc2c3675362f946f",
+      "status": "current"
+    },
+    {
+      "path": ".cursor/rules/sub-agent-protocol.mdc",
+      "owner": "setup-agents",
+      "marker": "pluginVersion: \"3.23.0",
+      "expectedDigest": "3f20b767d227b4719be4074b4ab21017239e83c810e1a45d9a63b684df62a257",
+      "digest": "3f20b767d227b4719be4074b4ab21017239e83c810e1a45d9a63b684df62a257",
+      "status": "current"
+    },
+    {
+      "path": ".cursor/skills/doc-sync/SKILL.md",
+      "owner": "setup-agents",
+      "marker": "pluginVersion: \"3.23.0",
+      "expectedDigest": "3210b10f4122cc477cb35c7ee0862388d7763061b51c2fc6e1ce2444820b4381",
+      "digest": "3210b10f4122cc477cb35c7ee0862388d7763061b51c2fc6e1ce2444820b4381",
+      "status": "current"
+    },
+    {
+      "path": ".cursor/skills/prompt-registry/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "e9f7e27473e5dfd05eff43f0c63cf664fba11f15390952fc567b867b929d6d7d",
+      "digest": "e9f7e27473e5dfd05eff43f0c63cf664fba11f15390952fc567b867b929d6d7d",
+      "status": "current"
+    },
+    {
+      "path": ".cursor/skills/qa-evidence-pack/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "9bf78090bbcfd222f44542abe396a9ed6df3c17ba4b13e617498b9212f22ee5d",
+      "digest": "9bf78090bbcfd222f44542abe396a9ed6df3c17ba4b13e617498b9212f22ee5d",
+      "status": "current"
+    },
+    {
+      "path": ".cursor/skills/sf-code-analyzer/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "57af1bcc5d03a003227e221bfaa89daf4909278d195869c701967cb2eef25b7f",
+      "digest": "57af1bcc5d03a003227e221bfaa89daf4909278d195869c701967cb2eef25b7f",
+      "status": "current"
+    },
+    {
+      "path": ".cursor/skills/sf-deploy/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "98fae60b0b64b5d3d1fad45b6baaeab764a5fec5bac89402a19aa15ea119cc07",
+      "digest": "98fae60b0b64b5d3d1fad45b6baaeab764a5fec5bac89402a19aa15ea119cc07",
+      "status": "current"
+    },
+    {
+      "path": ".generated-prompts/apex.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "a20992fbc6afe473039774c3e4ffd097a8b4999691c16f71734e9b201dd5ae05",
+      "digest": "a20992fbc6afe473039774c3e4ffd097a8b4999691c16f71734e9b201dd5ae05",
+      "status": "current"
+    },
+    {
+      "path": ".generated-prompts/aura.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "eb24e3f6d1637b559a42f0ea869560c71c2619b09362d70d974504c529462b62",
+      "digest": "eb24e3f6d1637b559a42f0ea869560c71c2619b09362d70d974504c529462b62",
+      "status": "current"
+    },
+    {
+      "path": ".generated-prompts/docs.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "481f3d6807b125ffc5c9d50fa617e38aa075e9dd6dee89fa6093ddee535aad85",
+      "digest": "481f3d6807b125ffc5c9d50fa617e38aa075e9dd6dee89fa6093ddee535aad85",
+      "status": "current"
+    },
+    {
+      "path": ".generated-prompts/flows.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "c4f7319cfaea0cadc43db3f55b033cb3f54b4076b8c4f69c3f79f21d130efe3b",
+      "digest": "c4f7319cfaea0cadc43db3f55b033cb3f54b4076b8c4f69c3f79f21d130efe3b",
+      "status": "current"
+    },
+    {
+      "path": ".generated-prompts/lwc.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "6a98ef1e9aca3fc89790ac6057b9121e34c59fae28dff6e6841a79faa6a6eebf",
+      "digest": "6a98ef1e9aca3fc89790ac6057b9121e34c59fae28dff6e6841a79faa6a6eebf",
+      "status": "current"
+    },
+    {
+      "path": ".generated-prompts/metadata.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "cbe2a9bf05c51277b9972cfed826a7b6393ae381187640efd6af22db41d2e208",
+      "digest": "cbe2a9bf05c51277b9972cfed826a7b6393ae381187640efd6af22db41d2e208",
+      "status": "current"
+    },
+    {
+      "path": ".generated-prompts/triggers.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "1c93b1a1210a12c14b5fb342be2014a4e0ddcb9825d027e82d7161f7a8d891b1",
+      "digest": "1c93b1a1210a12c14b5fb342be2014a4e0ddcb9825d027e82d7161f7a8d891b1",
+      "status": "current"
+    },
+    {
+      "path": ".generated-prompts/visualforce.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"prompt-register-guidance\" version=\"3.23.0\" -->",
+      "expectedDigest": "3a3114afced3f274a4be9690aeea6a065ad497374fc5bb19385016f05685ed08",
+      "digest": "3a3114afced3f274a4be9690aeea6a065ad497374fc5bb19385016f05685ed08",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/artifacts.json",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "e3af1ab8f47213bce63d9543e5704226549da6e26644bfbd8e296f2540c19b8b",
+      "digest": "e3af1ab8f47213bce63d9543e5704226549da6e26644bfbd8e296f2540c19b8b",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/env-audit.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "060ecc15c99dd48ffed9b690ebfd7c11f32e9b69e7b8a043e9a403fd62be37c7",
+      "digest": "060ecc15c99dd48ffed9b690ebfd7c11f32e9b69e7b8a043e9a403fd62be37c7",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/OFFLINE.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "15cdf45f96e5f0ad1f1731e526d0b99757b934acb9ec84fee74d08282cbfbde9",
+      "digest": "15cdf45f96e5f0ad1f1731e526d0b99757b934acb9ec84fee74d08282cbfbde9",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/permissions.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "c047e971640e8f6a1eee33bb421642cf021dcf47951be4787a4c26d8edf4ba86",
+      "digest": "c047e971640e8f6a1eee33bb421642cf021dcf47951be4787a4c26d8edf4ba86",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/a11y-audit.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "4ed79162279cc7609a762dcbe6d837e9cf698cfd34ee8bbdde137c87d73ff8a2",
+      "digest": "4ed79162279cc7609a762dcbe6d837e9cf698cfd34ee8bbdde137c87d73ff8a2",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/adr.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "e400307ddcc0fd18c571d73e3585134c7c31655cc210899ba9d5033d3aad82b6",
+      "digest": "e400307ddcc0fd18c571d73e3585134c7c31655cc210899ba9d5033d3aad82b6",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/architecture-review.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "635f59aef308dc60593f7acbb4898c28d5eb5cd6c087c346a8014542879f6b39",
+      "digest": "635f59aef308dc60593f7acbb4898c28d5eb5cd6c087c346a8014542879f6b39",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/candidate-release.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "eb267ee7bc80dfb1119484f4f497b8a200292d06457b7189605e38e6ea9c47b4",
+      "digest": "eb267ee7bc80dfb1119484f4f497b8a200292d06457b7189605e38e6ea9c47b4",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/contract-test.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "874671ef01b18ef1abeac1858f99891f47cc5cbe143094e7c14352da0177ab7b",
+      "digest": "874671ef01b18ef1abeac1858f99891f47cc5cbe143094e7c14352da0177ab7b",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/create-apex-class.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "da840465d6edebfb6a8f5928847d8489375b539d18d1db0656e571f086aa5cdf",
+      "digest": "da840465d6edebfb6a8f5928847d8489375b539d18d1db0656e571f086aa5cdf",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/create-lwc.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "0194a6711d1ef25570a221544512cbf418ea967a5f869369aad9a8ee3cd14688",
+      "digest": "0194a6711d1ef25570a221544512cbf418ea967a5f869369aad9a8ee3cd14688",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/create-trigger.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "1b75bb22a663b56ab21b963985ad245d7607edda561087070191553274252ac4",
+      "digest": "1b75bb22a663b56ab21b963985ad245d7607edda561087070191553274252ac4",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/data-model-design.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "c3f13f23f1950aaaad0a5f0bc9d3c9fb140a0ca1bcc0fa8e9d7d033f8f67eb9c",
+      "digest": "c3f13f23f1950aaaad0a5f0bc9d3c9fb140a0ca1bcc0fa8e9d7d033f8f67eb9c",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/declare-story-points.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "db3bec914c0667b3aced07b296fbd38c10062bc335df50dbc1685f73bab3fed4",
+      "digest": "db3bec914c0667b3aced07b296fbd38c10062bc335df50dbc1685f73bab3fed4",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/delivery-metrics.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "805e5fd2c052ff8043cdec37288285929c1c77975c78ec3f23cc4ccc1a11c3e4",
+      "digest": "805e5fd2c052ff8043cdec37288285929c1c77975c78ec3f23cc4ccc1a11c3e4",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/design-review.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "6f36218994f276a57af202a1fc0d4b28ac93a4d8b6745529cc09ecdacb2d704c",
+      "digest": "6f36218994f276a57af202a1fc0d4b28ac93a4d8b6745529cc09ecdacb2d704c",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/doc-review.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "00dcfc6191e121bf20e6c981057c341be75dce0c1c601afe15831a0ab2ca750a",
+      "digest": "00dcfc6191e121bf20e6c981057c341be75dce0c1c601afe15831a0ab2ca750a",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/env-audit.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "9c8d21573aa5056f8a9c75b608e753ae4b16579fe2052bd90049517f93017a38",
+      "digest": "9c8d21573aa5056f8a9c75b608e753ae4b16579fe2052bd90049517f93017a38",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/flaky-test-triage.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "3ca55aaeec62c3d5552ab3ddc289567d886815dda7a79ec24529dbd692cda3c7",
+      "digest": "3ca55aaeec62c3d5552ab3ddc289567d886815dda7a79ec24529dbd692cda3c7",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/generate-test-report.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "3c6f918b908f5ec99dc85802dde773a326dca5382c97050a4c2fee2bb5f9cade",
+      "digest": "3c6f918b908f5ec99dc85802dde773a326dca5382c97050a4c2fee2bb5f9cade",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/groom-backlog.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "19c793bf00733ac2c6158a127b97f6dc53c8098637c9f777f4e287f4928d455f",
+      "digest": "19c793bf00733ac2c6158a127b97f6dc53c8098637c9f777f4e287f4928d455f",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/observable-assertions.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "fc90fb141dcf3312a94e978244d264e1ed39f05614f1b1fc37268418005c99fc",
+      "digest": "fc90fb141dcf3312a94e978244d264e1ed39f05614f1b1fc37268418005c99fc",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/orchestrate-run.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "6714dc60fbb0492f4efd34cac73245e8f3db433833a31512f8007f51d0ab6537",
+      "digest": "6714dc60fbb0492f4efd34cac73245e8f3db433833a31512f8007f51d0ab6537",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/performance-test.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "f94d926f3527d016788bb4007b80927f2da2d1c76bdf875107f7b598558074fe",
+      "digest": "f94d926f3527d016788bb4007b80927f2da2d1c76bdf875107f7b598558074fe",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/close-phase.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "01592a3b6d87d80b8b2cd4450c9a30b8bcaf81d7e8cd36ecbf6f4e7e6de44c23",
+      "digest": "01592a3b6d87d80b8b2cd4450c9a30b8bcaf81d7e8cd36ecbf6f4e7e6de44c23",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/create-apex-class.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "e85762497eb0894230b5e1bbdb6c9959aba747514c0fc717b3611aec8d34eca0",
+      "digest": "e85762497eb0894230b5e1bbdb6c9959aba747514c0fc717b3611aec8d34eca0",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/create-flow.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "426e805ea52d4a9b39a2833996a3c2f10e8cc02421d894ac93f9cede7cca964e",
+      "digest": "426e805ea52d4a9b39a2833996a3c2f10e8cc02421d894ac93f9cede7cca964e",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/create-lwc.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "8bbbbbf40595a95fb53ad3cef64ed2909903601f5d8c2b7985a9246b8c3b7524",
+      "digest": "8bbbbbf40595a95fb53ad3cef64ed2909903601f5d8c2b7985a9246b8c3b7524",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/create-record-navigation.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "20faca8fe2fd304840d8be4c2414b6e10f430849e73ec80ce9d3aeaf1b35b4ac",
+      "digest": "20faca8fe2fd304840d8be4c2414b6e10f430849e73ec80ce9d3aeaf1b35b4ac",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/create-trigger.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "05eabdd9cff3a7ad7a62e309706076cce92f72f2c0f1151b249dec8fbe7f2f17",
+      "digest": "05eabdd9cff3a7ad7a62e309706076cce92f72f2c0f1151b249dec8fbe7f2f17",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/create-validation-rule.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "6fa8a4a3384cd4eea6d1924533c23f8d0a3d9e83dfa2134e712600862ea92409",
+      "digest": "6fa8a4a3384cd4eea6d1924533c23f8d0a3d9e83dfa2134e712600862ea92409",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/design-large-data-volume-processing.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "3a0604f4ddffe36a9101dc2eccc4b4751ecffd084af86434055ab801e99d3799",
+      "digest": "3a0604f4ddffe36a9101dc2eccc4b4751ecffd084af86434055ab801e99d3799",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/destructive-deploy.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "e842da47bf7a9733ef062232d36a2406db2454bb031cd8485f6d7f3cdb97aea8",
+      "digest": "e842da47bf7a9733ef062232d36a2406db2454bb031cd8485f6d7f3cdb97aea8",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/permission-set-setup.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "1034bb62527334f1d1c2ab61c3ca1380a25e9d5a7b6a54319ac4dc3274b3bc9e",
+      "digest": "1034bb62527334f1d1c2ab61c3ca1380a25e9d5a7b6a54319ac4dc3274b3bc9e",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/review-release-264-api-contracts.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "883f7c8ecf804181457f73fbe933710a7a1eba231d56a4e939b2177e1f220325",
+      "digest": "883f7c8ecf804181457f73fbe933710a7a1eba231d56a4e939b2177e1f220325",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/review-release-264-label-translations.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "e536ba54a3cd0717390b937e53d20a60fbaf2b21556fdb131890a966b04d4481",
+      "digest": "e536ba54a3cd0717390b937e53d20a60fbaf2b21556fdb131890a966b04d4481",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/review-release-264-lifecycle.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "1dfb0ead32f55b6dceb39591cf20d6b5d383a2de965d2b3b534976a5445eec7b",
+      "digest": "1dfb0ead32f55b6dceb39591cf20d6b5d383a2de965d2b3b534976a5445eec7b",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/profiles/developer/run-apex-integration-test.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "ae40e41e503976dad0836e4592b39936edf9a8fa52f025a476cce5ed28ceae24",
+      "digest": "ae40e41e503976dad0836e4592b39936edf9a8fa52f025a476cce5ed28ceae24",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/qa-checklist.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "5882c5265620f3051f0cdd5a2f3a1cbbd2c884266c41b427c8ffa8fa123a5d86",
+      "digest": "5882c5265620f3051f0cdd5a2f3a1cbbd2c884266c41b427c8ffa8fa123a5d86",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/qa-plan.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "be48aed84299196fb00b47dd3f645a6f876a5c4bebafe73419de44346100e1a8",
+      "digest": "be48aed84299196fb00b47dd3f645a6f876a5c4bebafe73419de44346100e1a8",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/refine-stories.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "9f1d3d427df43346697276d9c41a7f1f27b2671e359164fc3e122640ef612f7f",
+      "digest": "9f1d3d427df43346697276d9c41a7f1f27b2671e359164fc3e122640ef612f7f",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/regression.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "1e54c76aba978e2f4c137baff13f8d30b3dbd9bb2c5a1640532002374e7cc168",
+      "digest": "1e54c76aba978e2f4c137baff13f8d30b3dbd9bb2c5a1640532002374e7cc168",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/release.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "bf9020ecf75369e79261b0a427d8b4eb0240d5089f4d8e2b2149c2c087eb52e9",
+      "digest": "bf9020ecf75369e79261b0a427d8b4eb0240d5089f4d8e2b2149c2c087eb52e9",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/risk-register.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "ef279a09550282114e3b155b390a8bb718aac9a2b57997807fd0ace6464d0228",
+      "digest": "ef279a09550282114e3b155b390a8bb718aac9a2b57997807fd0ace6464d0228",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/run-playwright.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "f117cbf394ccafe8120aa9c96091edddf7c527a551ebeca60ff452376cd24dd7",
+      "digest": "f117cbf394ccafe8120aa9c96091edddf7c527a551ebeca60ff452376cd24dd7",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/scope-assessment.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "08a05f01eb9249d9cffe0dea0190117eb56d2ae6f4550752548c19b9f4ed60ee",
+      "digest": "08a05f01eb9249d9cffe0dea0190117eb56d2ae6f4550752548c19b9f4ed60ee",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/security-review.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "c97468969e8a122f285d79fc1fa96b5fa628721b467215590f3ed25916981fb9",
+      "digest": "c97468969e8a122f285d79fc1fa96b5fa628721b467215590f3ed25916981fb9",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/smoke-test.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "75da55503abceca7044220d4663bf7024a3e25644bb1974dd7beb1e480463228",
+      "digest": "75da55503abceca7044220d4663bf7024a3e25644bb1974dd7beb1e480463228",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/sprint-plan.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "93616d2cdfc8d19715be4dd885d1250bf47d7a78952745c0e99d0af22b4871e1",
+      "digest": "93616d2cdfc8d19715be4dd885d1250bf47d7a78952745c0e99d0af22b4871e1",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/status-report.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "5ab62507c71f72f3a24fdac854f3bc37dde7601455e67b68a60f4772429f6fc9",
+      "digest": "5ab62507c71f72f3a24fdac854f3bc37dde7601455e67b68a60f4772429f6fc9",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/threat-model.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "dc33d2f561c5e455511e76032ce61e8e1df90144907771995e5670143c2ae696",
+      "digest": "dc33d2f561c5e455511e76032ce61e8e1df90144907771995e5670143c2ae696",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/update-jira-ticket.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "c7e9036be106bce9b073fa5d272aa7185e13155f3adfd8c5c66426879d454789",
+      "digest": "c7e9036be106bce9b073fa5d272aa7185e13155f3adfd8c5c66426879d454789",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/validate.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "a3d9e33d7fa80f4257afe8ef52389f6df2ce7ed1b65d89ba0cd33f95368098ee",
+      "digest": "a3d9e33d7fa80f4257afe8ef52389f6df2ce7ed1b65d89ba0cd33f95368098ee",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/playbooks/wireframe.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "52c79dd5ddc66914a3d365f30a430326a4c2b9a3def92ac45d06bdb0896e37d6",
+      "digest": "52c79dd5ddc66914a3d365f30a430326a4c2b9a3def92ac45d06bdb0896e37d6",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/profiles/developer/rule.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents: 3.23.0 -->",
+      "expectedDigest": "bef18c14294c643b3f1cbabda35b413b45eed55634b909b179c06cd97ade29eb",
+      "digest": "bef18c14294c643b3f1cbabda35b413b45eed55634b909b179c06cd97ade29eb",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/sf-skills/INDEX-developer.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"sf-skills-index-developer\" version=\"3.23.0\" -->",
+      "expectedDigest": "ffd4134da8342f08e2db615cf1451526bf86cd43822c77c27784380c0fff9cbe",
+      "digest": "ffd4134da8342f08e2db615cf1451526bf86cd43822c77c27784380c0fff9cbe",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/skills/doc-sync/SKILL.md",
+      "owner": "setup-agents",
+      "marker": "pluginVersion: \"3.23.0",
+      "expectedDigest": "3210b10f4122cc477cb35c7ee0862388d7763061b51c2fc6e1ce2444820b4381",
+      "digest": "3210b10f4122cc477cb35c7ee0862388d7763061b51c2fc6e1ce2444820b4381",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/skills/oclif-plugin/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "3065084060aaeb42b66941ceb0f3d7ed7566b9d3f7ccde7072a77af69db58134",
+      "digest": "3065084060aaeb42b66941ceb0f3d7ed7566b9d3f7ccde7072a77af69db58134",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/skills/org-health-assessment/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "d171ecb68a5a696f40733ea1c8b038c52934bdb64e5c39f6d3856fc46df2c687",
+      "digest": "d171ecb68a5a696f40733ea1c8b038c52934bdb64e5c39f6d3856fc46df2c687",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/skills/project-knowledge-bootstrap/SKILL.md",
+      "owner": "setup-agents",
+      "marker": "<!-- setup-agents:block:start id=\"...\" -->",
+      "expectedDigest": "78d285111b24a0d8ea5fc8a0730688ae515ba9b7c077c79945f941ad93b8ac61",
+      "digest": "78d285111b24a0d8ea5fc8a0730688ae515ba9b7c077c79945f941ad93b8ac61",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/skills/prompt-registry/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "e9f7e27473e5dfd05eff43f0c63cf664fba11f15390952fc567b867b929d6d7d",
+      "digest": "e9f7e27473e5dfd05eff43f0c63cf664fba11f15390952fc567b867b929d6d7d",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/skills/qa-evidence-pack/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "9bf78090bbcfd222f44542abe396a9ed6df3c17ba4b13e617498b9212f22ee5d",
+      "digest": "9bf78090bbcfd222f44542abe396a9ed6df3c17ba4b13e617498b9212f22ee5d",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/skills/sf-code-analyzer/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "57af1bcc5d03a003227e221bfaa89daf4909278d195869c701967cb2eef25b7f",
+      "digest": "57af1bcc5d03a003227e221bfaa89daf4909278d195869c701967cb2eef25b7f",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/skills/sf-deploy/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "98fae60b0b64b5d3d1fad45b6baaeab764a5fec5bac89402a19aa15ea119cc07",
+      "digest": "98fae60b0b64b5d3d1fad45b6baaeab764a5fec5bac89402a19aa15ea119cc07",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/skills/transcription-evidence/scripts/transcribe.sh",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "3dbbf8e488a773e114f4e876e05ac8ccf2b0270595ea8f5ba3cd3a6841080f70",
+      "digest": "3dbbf8e488a773e114f4e876e05ac8ccf2b0270595ea8f5ba3cd3a6841080f70",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/skills/transcription-evidence/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "c766258ad310c820422d8682b0f72b8c1489f512a9de666b6abc8d0a5ffb63f7",
+      "digest": "c766258ad310c820422d8682b0f72b8c1489f512a9de666b6abc8d0a5ffb63f7",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/skills/workflow-estimate/SKILL.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "e3796fdd6c35219f98cec4fa7f49b9faec1e055eadfec4739252e133d187c33d",
+      "digest": "e3796fdd6c35219f98cec4fa7f49b9faec1e055eadfec4739252e133d187c33d",
+      "status": "current"
+    },
+    {
+      "path": ".setup-agents/state/README.md",
+      "owner": "setup-agents",
+      "marker": null,
+      "expectedDigest": "3481c08a83a523de48480d4b8cca57609489180e67d6ea285dead050aa9df759",
+      "digest": "3481c08a83a523de48480d4b8cca57609489180e67d6ea285dead050aa9df759",
+      "status": "current"
+    }
+  ],
+  "failedReasons": [],
+  "skippedReasons": [],
+  "knowledgeManifest": {
+    "path": ".setup-agents/knowledge-manifest.json",
+    "status": "current"
+  }
+}

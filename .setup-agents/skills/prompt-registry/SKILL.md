@@ -1,28 +1,42 @@
 ---
 name: prompt-registry
 description: >-
-  Maintain the .generated-prompts/ register: read before creating any artifact
-  to infer project conventions, write/update after creation. Keeps the latest
-  prompt that produced each component so the team can trace every generated
-  artifact back to its origin. USE FOR: generated prompts, prompt history,
+  Maintain prompt provenance when .generated-prompts/registry.jsonl exists.
+  Read only register views that exist; never claim coverage for arbitrary files.
+  USE FOR: generated prompts, prompt history,
   prompt register, artifact traceability, prompt registry, generated apex,
   generated lwc, generated flow, generated component, vibe coding history,
-  prompt persistence, ai prompt log. Active for Developer, Architect, Admin,
-  BA, UX, PM, DevOps, MuleSoft, QA, OmniStudio, CRMA, Data Cloud, Security profiles.
+  prompt persistence, ai prompt log. Active for Developer, Architect, SA,
+  UX, PM, Release Manager, MuleSoft, QA, OmniStudio, CRMA, Data Cloud profiles.
 ---
 
 # Prompt Registry
 
 ## Overview
 
-`.generated-prompts/` is a commit-tracked directory at the repo root.
-Each file registers the AI prompts that created or substantially changed
-artifacts of a given type. One entry per component. Latest prompt only.
-The git history holds the version trail.
+`.generated-prompts/registry.jsonl` is the canonical typed provenance store.
+The Markdown files beside it are human-maintained views and may not exist for every
+artifact type. A missing view means that artifact type is not configured, not covered.
+
+## Register file reference
+
+| Artifact                 | View             |
+| ------------------------ | ---------------- |
+| Apex                     | `apex.md`        |
+| Lightning Web Components | `lwc.md`         |
+| Flows                    | `flows.md`       |
+| Triggers                 | `triggers.md`    |
+| Visualforce              | `visualforce.md` |
+| Aura                     | `aura.md`        |
+| Metadata                 | `metadata.md`    |
+| Diagrams                 | `diagrams.md`    |
+| Documentation            | `docs.md`        |
+| CI/CD                    | `cicd.md`        |
+| Tests                    | `tests.md`       |
 
 ## Before creating any artifact (MANDATORY)
 
-1. Check if `.generated-prompts/<type>.md` exists.
+1. Check whether `.generated-prompts/registry.jsonl` and the applicable Markdown view exist.
 2. If it exists, read the **entire file** before generating the artifact.
 3. Use existing entries to infer:
    - Naming conventions in use
@@ -34,53 +48,41 @@ The git history holds the version trail.
 
 ## After creating or substantially changing an artifact (MANDATORY)
 
-1. Open the corresponding `.generated-prompts/<type>.md`.
-2. Search for an existing `## <ComponentName>` heading.
-3. **No existing entry** → append a new entry at the bottom of the file.
-4. **Entry exists** → update in place: increment **Iterations**, update **Updated**, replace **Prompt** with the refined prompt.
-5. Never stack multiple versions. Only the latest prompt lives in the file.
+1. If no corresponding Markdown view exists, do not create one or claim registry coverage.
+2. Open the existing corresponding `.generated-prompts/<type>.md`.
+3. Search for an existing `## <ComponentName>` heading.
+4. **No existing entry** → append a new entry at the bottom of the file.
+5. **Entry exists** → update in place: increment **Iterations**, update **Updated**, replace **Prompt** with the refined prompt.
+6. Never edit `registry.jsonl` by hand. Product-owned generators register their own outputs.
 
 ## What counts as a substantial change
 
-| Counts | Does NOT count |
-|--------|---------------|
-| New method or responsibility | Typo fix |
-| New business requirement | Formatting change |
-| Pattern change (e.g. @future → Queueable) | Single-line correction |
-| Architectural refactor | Test assertion adjustment |
-| New integration or dependency | Comment update |
-
-## Register file reference
-
-| File | Artifacts covered | Active profiles |
-|------|------------------|-----------------|
-| `apex.md` | Apex classes (.cls) | developer, architect |
-| `lwc.md` | LWC (.js / .html / .js-meta.xml) | developer, ux |
-| `flows.md` | Flows (.flow-meta.xml) | developer, admin, ba |
-| `triggers.md` | Apex triggers + handlers (.trigger) | developer |
-| `visualforce.md` | Visualforce pages and components | developer |
-| `aura.md` | Aura components (.cmp / .app) | developer |
-| `omnistudio.md` | OmniScripts, FlexCards, Integration Procedures | omnistudio |
-| `metadata.md` | CustomObjects, CustomFields, ValidationRules, PermissionSets, CMDT, Platform Events, FlexiPages, NamedCredentials | developer, architect, admin, security |
-| `diagrams.md` | Architecture diagrams (Mermaid / Lucid / draw.io) | architect, ba, ux, pm |
-| `cicd.md` | Pipeline YAML, deployment scripts, GitHub Actions, Azure Pipelines | devops, mulesoft |
-| `docs.md` | Generated documentation (ADRs, runbooks, data models, user guides) | architect, ba, ux, pm, devops, mulesoft, crma, data360, security |
-| `tests.md` | Test plans, Playwright specs, Apex test classes | qa |
+| Counts                                    | Does NOT count            |
+| ----------------------------------------- | ------------------------- |
+| New method or responsibility              | Typo fix                  |
+| New business requirement                  | Formatting change         |
+| Pattern change (e.g. @future → Queueable) | Single-line correction    |
+| Architectural refactor                    | Test assertion adjustment |
+| New integration or dependency             | Comment update            |
 
 ## Entry format
 
 ```markdown
 ## <ComponentName>
+
 - **Created:** YYYY-MM-DD
-- **Updated:** YYYY-MM-DD   ← omit if never updated
-- **Iterations:** N          ← increment on each substantial change
+- **Updated:** YYYY-MM-DD ← omit if never updated
+- **Iterations:** N ← increment on each substantial change
 
 ### Key decisions
+
 - <Pattern / constraint / design choice that shaped the component>
 
 ### Prompt
+
 \`\`\`
 <the final prompt, summarized to key decisions if over 500 words>
 \`\`\`
+
 ---
 ```

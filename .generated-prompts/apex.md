@@ -1,4 +1,5 @@
-<!-- setup-agents: 2.0.2 -->
+<!-- setup-agents: 3.23.0 -->
+<!-- setup-agents:block:start id="prompt-register-guidance" version="3.23.0" -->
 
 # Apex Class Prompts
 
@@ -33,7 +34,7 @@ Minor fixes (typos, formatting, single-line corrections) do NOT update the promp
 ## Usage
 
 When creating a new Apex class, the agent reads this file for existing naming patterns,
-data layer strategy (JT_DynamicQueries vs DataSelector), and sharing model decisions,
+data layer strategy, and sharing model decisions,
 then generates the class consistent with prior entries.
 
 When modifying an existing class substantially, the agent updates the entry in place
@@ -41,4 +42,5 @@ When modifying an existing class substantially, the agent updates the entry in p
 
 ---
 
+<!-- setup-agents:block:end id="prompt-register-guidance" -->
 <!-- Entries below this line are maintained by the agent -->

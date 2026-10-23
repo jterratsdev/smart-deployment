@@ -1,4 +1,6 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.0 -->
+<!-- setup-agents:block:start id="prompt-register-guidance" version="3.23.0" -->
+
 # Visualforce Prompts
 
 > AI prompt register for Visualforce pages (.page) and components (.component) in this project.
@@ -18,6 +20,7 @@
 
 ### Prompt
 ```
+
 <the final prompt that produced or substantially changed this component>
 ```
 ---
@@ -27,6 +30,7 @@
 Minor fixes (typos, formatting, single-line corrections) do NOT update the prompt entry.
 
 ---
+
 ## Usage
 
 When creating a new Visualforce page or component, the agent reads this file
@@ -34,4 +38,5 @@ for existing controller patterns and styling conventions.
 
 ---
 
+<!-- setup-agents:block:end id="prompt-register-guidance" -->
 <!-- Entries below this line are maintained by the agent -->

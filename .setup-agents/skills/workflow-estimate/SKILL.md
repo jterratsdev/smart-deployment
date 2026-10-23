@@ -10,6 +10,9 @@ Declare a t-shirt size delivery estimate for a story before handing off to imple
 - Trigger: `workflow estimate`
 - Trigger: `architect handoff`
 - Trigger: `baseline`
+- Trigger: `story-point declaration`
+- Trigger: `effort recording`
+- Trigger: `phase wrap-up`
 
 ## Procedure
 
@@ -47,11 +50,10 @@ Declare a t-shirt size delivery estimate for a story before handing off to imple
    ```bash
    sf setup-agents evidence add \
      --task <id> \
-     --type metric \
+     --type command \
      --summary "estimate declared: sizing=<label> solo=<n>d ai-unguided=<n>d"
    ```
 
 ## Evidence
 
 - `command`
-- `metric`

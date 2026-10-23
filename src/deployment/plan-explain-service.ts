@@ -1,6 +1,7 @@
 import type { DependencyAnalysisResult, DependencyEdge, NodeId } from '../types/dependency.js';
 import type { MetadataComponent } from '../types/metadata.js';
 import type { Wave } from '../waves/wave-builder.js';
+import type { DeploymentOrderConflict } from '../waves/wave-builder.js';
 import { DeploymentContextService, type DeploymentContextBuildOptions } from './deployment-context-service.js';
 import { SpecialDeploymentPlanService, type SpecialDeploymentPlan } from './special-deployment-plan.js';
 
@@ -61,6 +62,7 @@ export type PlanExplainResult = {
   dependencies: PlanExplainDependency[];
   unresolvedReferences: PlanExplainDependency[];
   providerDecisions: PlanExplainProviderDecision[];
+  stageConflicts?: DeploymentOrderConflict[];
   summary: {
     componentCount: number;
     dependencyCount: number;
@@ -98,7 +100,7 @@ export class PlanExplainService {
   }
 
   public async explain(options: PlanExplainOptions = {}): Promise<PlanExplainResult> {
-    const context = await this.deploymentContextService.buildContext(options);
+    const context = await this.deploymentContextService.buildContext({ ...options, explainStageConflicts: true });
     const providerPlan = await this.specialDeploymentPlanService.buildPlan({
       sourcePath: options.sourcePath,
       targetOrg: options.targetOrg,
@@ -115,7 +117,11 @@ export class PlanExplainService {
     ).length;
 
     return {
-      success: context.scanResult.errors.length === 0 && providerPlan.success && unplacedComponentCount === 0,
+      success:
+        context.scanResult.errors.length === 0 &&
+        providerPlan.success &&
+        unplacedComponentCount === 0 &&
+        (context.stageConflicts?.length ?? 0) === 0,
       projectRoot: context.scanResult.projectRoot,
       apiVersion: context.scanResult.apiVersion,
       components: context.scanResult.components
@@ -124,6 +130,7 @@ export class PlanExplainService {
       dependencies: dependencies.sort(compareDependency),
       unresolvedReferences: unresolvedReferences.sort(compareDependency),
       providerDecisions: explainProviderDecisions(providerPlan),
+      ...(context.stageConflicts?.length ? { stageConflicts: context.stageConflicts } : {}),
       summary: {
         componentCount: context.scanResult.components.length,
         dependencyCount: dependencies.length,

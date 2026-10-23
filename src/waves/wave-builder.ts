@@ -95,6 +95,30 @@ export type WaveStats = {
   totalEstimatedTime: number;
 };
 
+export type DeploymentOrderConflict = {
+  component: NodeId;
+  dependency: NodeId;
+  componentStage: number;
+  dependencyStage: number;
+};
+
+export function collectDeploymentOrderConflicts(graph: DependencyGraph): DeploymentOrderConflict[] {
+  const conflicts: DeploymentOrderConflict[] = [];
+  for (const [component, dependencies] of graph) {
+    const componentStage = getNodeDeploymentStage(component);
+    for (const dependency of dependencies) {
+      if (!graph.has(dependency)) continue;
+      const dependencyStage = getNodeDeploymentStage(dependency);
+      if (dependencyStage > componentStage) {
+        conflicts.push({ component, dependency, componentStage, dependencyStage });
+      }
+    }
+  }
+  return conflicts.sort(
+    (left, right) => left.component.localeCompare(right.component) || left.dependency.localeCompare(right.dependency)
+  );
+}
+
 /**
  * Wave builder options
  */
@@ -249,17 +273,11 @@ export class WaveBuilder {
   }
 
   private validateDeploymentOrderContracts(graph: DependencyGraph): void {
-    for (const [component, dependencies] of graph) {
-      const componentStage = getNodeDeploymentStage(component);
-      for (const dependency of dependencies) {
-        if (!graph.has(dependency)) continue;
-        const dependencyStage = getNodeDeploymentStage(dependency);
-        if (dependencyStage > componentStage) {
-          throw new Error(
-            `Deployment-order conflict: ${component} (stage ${componentStage}) depends on ${dependency} (stage ${dependencyStage})`
-          );
-        }
-      }
+    const conflict = collectDeploymentOrderConflicts(graph)[0];
+    if (conflict) {
+      throw new Error(
+        `Deployment-order conflict: ${conflict.component} (stage ${conflict.componentStage}) depends on ${conflict.dependency} (stage ${conflict.dependencyStage})`
+      );
     }
   }
 

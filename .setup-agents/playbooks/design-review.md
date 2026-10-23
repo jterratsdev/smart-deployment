@@ -1,10 +1,13 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.0 -->
+
 # Design Review
 
 ## Goal
+
 Validate wireframe/mockup fidelity against SLDS standards and Salesforce UX patterns before development begins.
 
 ## Steps
+
 1. Gather the wireframe or mockup (file path, Figma link, or description).
 2. Review against:
    - **SLDS Components:** Are standard SLDS components used instead of custom HTML?
@@ -15,6 +18,7 @@ Validate wireframe/mockup fidelity against SLDS standards and Salesforce UX patt
 4. Approve for development or return with required changes.
 
 ## Evidence
+
 ```bash
 sf setup-agents evidence add --task <id> --role ux --type report --summary "Design Review completed"
 ```

@@ -25,7 +25,11 @@ import {
   parseGenAiPromptComponent,
 } from './scanners/automation-ai-metadata-scanner.js';
 import { CODE_DIRECTORY_SCANNERS, CODE_FILE_SCANNERS } from './scanners/code-metadata-scanner.js';
-import { parseCustomMetadataComponents, parseCustomObjectComponent } from './scanners/data-metadata-scanner.js';
+import {
+  parseCustomFieldComponent,
+  parseCustomMetadataComponents,
+  parseCustomObjectComponent,
+} from './scanners/data-metadata-scanner.js';
 import {
   parseEmailTemplateComponent,
   parseFlexiPageComponent,
@@ -210,14 +214,37 @@ export class MetadataScannerService {
   }
 
   private async scanDataMetadata(packagePath: string, errors: string[]): Promise<MetadataComponent[]> {
-    const objectComponents = await scanMetadataDirectories(
-      packagePath,
-      '**/objects/*',
-      errors,
-      'Custom Object',
-      this.shouldIgnorePath,
-      parseCustomObjectComponent
-    );
+    const [objectComponents, fieldComponents] = await Promise.all([
+      scanMetadataDirectories(
+        packagePath,
+        '**/objects/*',
+        errors,
+        'Custom Object',
+        this.shouldIgnorePath,
+        (objectDir) => {
+          const objectName = path.basename(objectDir);
+          if (this.shouldIgnore(path.join(objectDir, `${objectName}.object-meta.xml`))) {
+            return Promise.resolve(undefined);
+          }
+          return parseCustomObjectComponent(objectDir);
+        }
+      ),
+      scanMetadataFiles(
+        packagePath,
+        '**/objects/*/fields/*.field-meta.xml',
+        errors,
+        'Custom Field',
+        this.shouldIgnorePath,
+        parseCustomFieldComponent
+      ),
+    ]);
+    const scannedObjects = new Set(objectComponents.map((component) => component.name));
+    for (const field of fieldComponents) {
+      const objectName = field.name.slice(0, field.name.lastIndexOf('.'));
+      if (scannedObjects.has(objectName)) {
+        field.dependencies.add(`CustomObject:${objectName}`);
+      }
+    }
 
     const customMetadataComponents = await scanMetadataDirectories(
       packagePath,
@@ -237,7 +264,7 @@ export class MetadataScannerService {
       (directoryPath) => path.basename(directoryPath)
     );
 
-    return [...objectComponents, ...customMetadataComponents];
+    return [...objectComponents, ...fieldComponents, ...customMetadataComponents];
   }
 
   private async scanSecurityMetadata(packagePath: string, errors: string[]): Promise<MetadataComponent[]> {

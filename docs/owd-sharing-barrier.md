@@ -34,6 +34,25 @@ containing `Case.object-meta.xml`. Either failure exits before any deploy. After
 validated source directory and polls both internal and external models to their original values with a bounded timeout.
 Restoration or cleanup failure fails the test. Normal CI never opts into this mutation path.
 
+## Isolated cg-demo probe
+
+`test/e2e/live-isolated-owd.e2e.test.ts` is a separate opt-in test for the explicitly approved
+`cg-demo` demo org. Set `SMART_DEPLOYMENT_LIVE_ISOLATED_OWD=1` and
+`SMART_DEPLOYMENT_LIVE_ISOLATED_OWD_APPROVAL=I_APPROVE_CG_DEMO_OBJECT_CREATE_DELETE` to run it.
+It creates a uniquely named `SD_OwdProbe_*__c` object, deploys an OWD transition and a
+dependent sharing rule using existing roles, then deletes only that object and verifies its
+absence. It does not modify `Case`. If cleanup cannot be verified, the test fails and retains
+its temporary project for diagnosis. This exercises Salesforce propagation and the poller with
+direct `sf` deployments; it does not prove the plugin's `start`/`resume` orchestration.
+
+The same opt-in test also exercises the locally linked `smart-deployment start` and `resume`:
+it creates the isolated object at `ReadWrite`, validates the local plan, then submits the
+`Private` object and its dependent sharing rule to the plugin with a 1 ms barrier timeout.
+The test requires a persisted `timed-out` postcondition and completed OWD wave before it
+rechecks propagation and resumes the dependent wave. It asserts a satisfied postcondition
+in the completed resume result and deletes the isolated object afterward. This is a
+deliberately forced timeout, not evidence of naturally slow propagation in the org.
+
 ## Release report compatibility
 
 Release reports use schema 1.1. This is an additive migration from schema 1.0: all required 1.0 fields remain

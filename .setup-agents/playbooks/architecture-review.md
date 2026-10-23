@@ -1,19 +1,25 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.0 -->
+
 # Architecture Review
 
 ## Goal
+
 Validate that the proposed solution meets non-functional requirements and delegate implementation to the correct domain profile.
 
 ## Step 0 — Identify the implementor profile (CRITICAL)
+
 Before closing this phase, read `.setup-agents/config.json` and identify which profile owns implementation:
+
 ```bash
 cat .setup-agents/config.json | grep -A20 '"profiles"'
 ```
-The implementor is the first active profile that is NOT `pm`, `ba`, `architect`, `qa`, or `devops`.
-Common values: `cgcloud`, `admin`, `service`, `commerce`, `crma`, `developer`, etc.
+
+The implementor is the first active profile that is NOT `pm`, `sa`, `architect`, `qa`, or `release-manager`.
+Common values: `cgcloud`, `developer`, `service`, `commerce`, `crma`, etc.
 Include the resolved profile in the handoff summary so the pipeline creates the task with the correct role.
 
 ## Checklist
+
 - [ ] Scope assessment: run `scope-assessment.md` playbook (REQUIRED for tasks ≥ m)
 - [ ] Scalability: handles expected load (1 to N records)
 - [ ] Security: sharing model correct, no hardcoded credentials
@@ -23,6 +29,7 @@ Include the resolved profile in the handoff summary so the pipeline creates the 
 - [ ] Implementor profile identified and declared in handoff
 
 ## Steps
+
 1. Read the story and proposed design.
 2. Identify the implementor profile (Step 0 above).
 3. Walk through the checklist.
@@ -30,6 +37,7 @@ Include the resolved profile in the handoff summary so the pipeline creates the 
 5. Declare delivery estimate (Step 6 below).
 
 ## Step 6 — Declare T-Shirt Estimate (REQUIRED before handoff)
+
 Before closing this phase, declare a delivery estimate so benchmarks can track actual vs. baseline:
 
 ```bash
@@ -50,13 +58,13 @@ sf setup-agents workflow estimate \
 **Sizing scale** — human-equivalent effort days (GH-496):
 | Label | Human effort |
 |-------|--------------|
-| xxs   | trivial, < 4 hours |
-| xs    | half-day–1 day (4–8h) |
-| s     | 1–2 days |
-| m     | 3–5 days (≈ 1 week) |
-| l     | 6–8 days |
-| xl    | 9–11 days (≈ 1 sprint) |
-| xxl   | 12+ days — **split gate** |
+| xxs | trivial, < 4 hours |
+| xs | half-day–1 day (4–8h) |
+| s | 1–2 days |
+| m | 3–5 days (≈ 1 week) |
+| l | 6–8 days |
+| xl | 9–11 days (≈ 1 sprint) |
+| xxl | 12+ days — **split gate** |
 
 > **`xxl` is a split gate, not an estimate.** An XXL story MUST be broken into
 > smaller stories (xl or below) before it can be estimated or enter a sprint.
@@ -71,6 +79,7 @@ sf setup-agents workflow estimate \
 > **Backfill:** if the estimate was already recorded without `--ai-guided-days`, re-run the command with only `--story`, `--sizing`, `--solo-days`, `--ai-unguided-days`, and `--ai-guided-days` to add the guided baseline. The log is append-only and the last record wins.
 
 ## Evidence
+
 ```bash
 sf setup-agents evidence add --task <id> --role architect --type report --summary "Architecture Review completed"
 ```

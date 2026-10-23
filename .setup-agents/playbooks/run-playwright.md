@@ -1,10 +1,13 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.0 -->
+
 # Run Playwright Tests
 
 ## Goal
+
 Execute the Playwright E2E suite and report results.
 
 ## Steps
+
 1. Start the target org / sandbox environment.
 2. Run:
    ```bash
@@ -15,6 +18,7 @@ Execute the Playwright E2E suite and report results.
 5. If failures exist, diagnose and fix before marking QA done.
 
 ## Evidence
+
 ```bash
 sf setup-agents evidence add --task <id> --role qa --type report --summary "Run Playwright Tests completed"
 ```

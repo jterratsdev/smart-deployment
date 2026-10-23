@@ -15,6 +15,9 @@ export class PlanExplainPresenter {
     if (result.summary.unplacedComponentCount > 0) {
       io.warn(`Plan contains ${result.summary.unplacedComponentCount} component(s) without a deployment wave.`);
     }
+    if (result.stageConflicts?.length) {
+      io.warn('Plan is not executable: deployment-order conflicts require resolution.');
+    }
   }
 
   public formatSummary(result: PlanExplainResult): string {
@@ -48,6 +51,19 @@ export class PlanExplainPresenter {
       lines.push('Provider Decisions:');
       for (const decision of result.providerDecisions) {
         lines.push(`- ${decision.kind}: ${decision.decision} (${decision.reason || 'No action required.'})`);
+      }
+    }
+
+    if (result.stageConflicts?.length) {
+      lines.push('', 'Stage Conflicts (not executable):');
+      for (const conflict of result.stageConflicts) {
+        const action =
+          conflict.component.startsWith('CustomObject:') && conflict.dependency.startsWith('FlexiPage:')
+            ? 'staged activation required'
+            : 'resolve deployment order before execution';
+        lines.push(
+          `- ${conflict.component} (stage ${conflict.componentStage}) depends on ${conflict.dependency} (stage ${conflict.dependencyStage}); ${action}.`
+        );
       }
     }
 

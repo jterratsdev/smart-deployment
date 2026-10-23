@@ -1,14 +1,18 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.0 -->
+
 # Declare Story Points
 
 ## Goal
+
 Record the actual effort for this implementation phase so delivery benchmarks stay accurate.
 
 ## When to run
+
 At the end of your implementation phase, before closing the task — after the work is done
 and you have a clear picture of actual complexity.
 
 ## Steps
+
 1. Assess the actual effort spent on this story:
    ```
    1 — trivial (< 1 hour, no surprises)
@@ -36,6 +40,7 @@ and you have a clear picture of actual complexity.
    ```
 
 ## Evidence
+
 ```bash
 sf setup-agents evidence add --task <id> --role developer --type validation --summary "Declare Story Points completed"
 ```

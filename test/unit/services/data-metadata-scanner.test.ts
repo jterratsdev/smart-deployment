@@ -127,4 +127,23 @@ describe('data-metadata-scanner helpers', () => {
       confidence: 1,
     });
   });
+
+  it('records only Flexipage action override content as a typed dependency', async () => {
+    const baseDir = await createFixture();
+    const objectDir = path.join(baseDir, 'objects', 'Invoice__c');
+    await writeFile(
+      path.join(objectDir, 'Invoice__c.object-meta.xml'),
+      `<CustomObject>
+      <actionOverrides><actionName>View</actionName><content>Invoice_Page</content><type>Flexipage</type><formFactor>Large</formFactor></actionOverrides>
+      <actionOverrides><actionName>View</actionName><content>Invoice_Page</content><type>Flexipage</type><formFactor>Small</formFactor></actionOverrides>
+      <actionOverrides><actionName>New</actionName><content>Invoice_VF</content><type>Visualforce</type></actionOverrides>
+      <actionOverrides><actionName>Edit</actionName><type>Default</type></actionOverrides>
+      <label>Invoice</label><pluralLabel>Invoices</pluralLabel>
+    </CustomObject>`
+    );
+
+    const object = await parseCustomObjectComponent(objectDir);
+
+    expect([...object!.dependencies]).to.deep.equal(['FlexiPage:Invoice_Page']);
+  });
 });

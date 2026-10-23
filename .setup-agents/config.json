@@ -1,23 +1,18 @@
 {
-  "version": "3.16.0",
+  "version": "3.23.0",
   "mode": "project",
   "profiles": [
     "developer",
-    "ta",
+    "architect",
     "sa",
-    "ba",
     "pm",
-    "mulesoft",
     "ux",
     "cgcloud",
-    "devops",
     "qa",
     "crma",
     "commerce",
     "data360",
-    "admin",
     "sfmc",
-    "security",
     "salescloud",
     "service",
     "cpq",
@@ -44,30 +39,23 @@
     "loyalty",
     "industries"
   ],
-  "tools": [
-    "codex"
-  ],
+  "tools": ["codex", "claude"],
   "orchestration": {
     "enabled": true,
     "engine": "native",
     "mode": "project",
     "profiles": [
       "developer",
-      "ta",
+      "architect",
       "sa",
-      "ba",
       "pm",
-      "mulesoft",
       "ux",
       "cgcloud",
-      "devops",
       "qa",
       "crma",
       "commerce",
       "data360",
-      "admin",
       "sfmc",
-      "security",
       "salescloud",
       "service",
       "cpq",
@@ -94,5 +82,11 @@
       "loyalty",
       "industries"
     ]
+  },
+  "artifactProtection": {
+    "enabled": true,
+    "policyVersion": 1,
+    "repositoryMode": "customer-repository",
+    "classificationSource": "default"
   }
 }

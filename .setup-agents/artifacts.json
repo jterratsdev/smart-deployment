@@ -1,0 +1,3935 @@
+{
+  "schemaVersion": 1,
+  "pluginVersion": "3.23.0",
+  "profiles": [
+    "ai",
+    "architect",
+    "automotive",
+    "cgcloud",
+    "commerce",
+    "communications",
+    "cpq",
+    "crma",
+    "data360",
+    "developer",
+    "education",
+    "energy",
+    "experience-cloud",
+    "fsc",
+    "fsl",
+    "health",
+    "industries",
+    "loyalty",
+    "manufacturing",
+    "maps",
+    "media",
+    "netzero",
+    "nonprofit",
+    "omnistudio",
+    "pm",
+    "public-sector",
+    "qa",
+    "release-manager",
+    "revenue",
+    "sa",
+    "salescloud",
+    "service",
+    "sfmc",
+    "slack",
+    "tableau",
+    "ux"
+  ],
+  "tools": ["claude", "codex"],
+  "artifacts": [
+    {
+      "id": "permissions",
+      "kind": "permissions",
+      "path": ".setup-agents/permissions.md",
+      "owner": "setup-agents",
+      "source": "permissions",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/permissions.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/permissions.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:a11y-audit.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/a11y-audit.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:adr.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/adr.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:architecture-review.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/architecture-review.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:candidate-release.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/candidate-release.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:contract-test.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/contract-test.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:create-apex-class.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/create-apex-class.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:create-lwc.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/create-lwc.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:create-trigger.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/create-trigger.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:data-model-design.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/data-model-design.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:declare-story-points.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/declare-story-points.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:delivery-metrics.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/delivery-metrics.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:design-review.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/design-review.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:doc-review.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/doc-review.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:env-audit.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/env-audit.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:flaky-test-triage.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/flaky-test-triage.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:generate-test-report.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/generate-test-report.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:groom-backlog.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/groom-backlog.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:observable-assertions.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/observable-assertions.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:orchestrate-run.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/orchestrate-run.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:performance-test.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/performance-test.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:qa-checklist.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/qa-checklist.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:qa-plan.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/qa-plan.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:refine-stories.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/refine-stories.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:regression.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/regression.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:release.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/release.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:risk-register.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/risk-register.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:run-playwright.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/run-playwright.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:scope-assessment.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/scope-assessment.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:security-review.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/security-review.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:smoke-test.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/smoke-test.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:sprint-plan.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/sprint-plan.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:status-report.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/status-report.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:threat-model.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/threat-model.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:update-jira-ticket.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/update-jira-ticket.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:validate.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/validate.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "playbook:wireframe.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/wireframe.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-rule:ai",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/ai/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:ai",
+      "profileId": "ai",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:architect",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/architect/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:architect",
+      "profileId": "architect",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/architect.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/architect.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-rule:automotive",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/automotive/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:automotive",
+      "profileId": "automotive",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:cgcloud",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/cgcloud/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:cgcloud",
+      "profileId": "cgcloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:commerce",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/commerce/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:commerce",
+      "profileId": "commerce",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:communications",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/communications/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:communications",
+      "profileId": "communications",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:cpq",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/cpq/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:cpq",
+      "profileId": "cpq",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:crma",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/crma/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:crma",
+      "profileId": "crma",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:data360",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/data360/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:data360",
+      "profileId": "data360",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:developer",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/developer/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:developer",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-rule:education",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/education/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:education",
+      "profileId": "education",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:energy",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/energy/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:energy",
+      "profileId": "energy",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:experience-cloud",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/experience-cloud/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:experience-cloud",
+      "profileId": "experience-cloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:fsc",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/fsc/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:fsc",
+      "profileId": "fsc",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:fsl",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/fsl/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:fsl",
+      "profileId": "fsl",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:health",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/health/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:health",
+      "profileId": "health",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:industries",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/industries/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:industries",
+      "profileId": "industries",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:loyalty",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/loyalty/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:loyalty",
+      "profileId": "loyalty",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:manufacturing",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/manufacturing/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:manufacturing",
+      "profileId": "manufacturing",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:maps",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/maps/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:maps",
+      "profileId": "maps",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:media",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/media/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:media",
+      "profileId": "media",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:netzero",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/netzero/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:netzero",
+      "profileId": "netzero",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:nonprofit",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/nonprofit/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:nonprofit",
+      "profileId": "nonprofit",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:omnistudio",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/omnistudio/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:omnistudio",
+      "profileId": "omnistudio",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:pm",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/pm/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:pm",
+      "profileId": "pm",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/pm.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/pm.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-rule:public-sector",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/public-sector/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:public-sector",
+      "profileId": "public-sector",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:qa",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/qa/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:qa",
+      "profileId": "qa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/qa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/qa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-rule:release-manager",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/release-manager/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:release-manager",
+      "profileId": "release-manager",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/release-manager.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/release-manager.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-rule:revenue",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/revenue/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:revenue",
+      "profileId": "revenue",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:sa",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/sa/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:sa",
+      "profileId": "sa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/sa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/sa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-rule:salescloud",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/salescloud/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:salescloud",
+      "profileId": "salescloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:service",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/service/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:service",
+      "profileId": "service",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:sfmc",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/sfmc/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:sfmc",
+      "profileId": "sfmc",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:slack",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/slack/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:slack",
+      "profileId": "slack",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:tableau",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/tableau/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:tableau",
+      "profileId": "tableau",
+      "adapters": []
+    },
+    {
+      "id": "profile-rule:ux",
+      "kind": "profile-rule",
+      "path": ".setup-agents/profiles/ux/rule.md",
+      "owner": "setup-agents",
+      "source": "profile:ux",
+      "profileId": "ux",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/ux.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/ux.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:ai:create-agent.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/ai/create-agent.md",
+      "owner": "setup-agents",
+      "source": "profile:ai:workflows",
+      "profileId": "ai",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:ai:deploy-agent.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/ai/deploy-agent.md",
+      "owner": "setup-agents",
+      "source": "profile:ai:workflows",
+      "profileId": "ai",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:ai:test-agent.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/ai/test-agent.md",
+      "owner": "setup-agents",
+      "source": "profile:ai:workflows",
+      "profileId": "ai",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:architect:adr.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/architect/adr.md",
+      "owner": "setup-agents",
+      "source": "profile:architect:workflows",
+      "profileId": "architect",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/architect.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/architect.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:architect:architecture-review.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/architect/architecture-review.md",
+      "owner": "setup-agents",
+      "source": "profile:architect:workflows",
+      "profileId": "architect",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/architect.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/architect.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:architect:close-phase.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/architect/close-phase.md",
+      "owner": "setup-agents",
+      "source": "profile:architect:workflows",
+      "profileId": "architect",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/architect.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/architect.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:architect:data-model-design.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/architect/data-model-design.md",
+      "owner": "setup-agents",
+      "source": "profile:architect:workflows",
+      "profileId": "architect",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/architect.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/architect.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:architect:review-release-264-lifecycle.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/architect/review-release-264-lifecycle.md",
+      "owner": "setup-agents",
+      "source": "profile:architect:workflows",
+      "profileId": "architect",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/architect.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/architect.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:architect:security-review.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/architect/security-review.md",
+      "owner": "setup-agents",
+      "source": "profile:architect:workflows",
+      "profileId": "architect",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/architect.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/architect.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:architect:threat-model.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/architect/threat-model.md",
+      "owner": "setup-agents",
+      "source": "profile:architect:workflows",
+      "profileId": "architect",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/architect.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/architect.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:automotive:dealer-management-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/automotive/dealer-management-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:automotive:workflows",
+      "profileId": "automotive",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:automotive:vehicle-lifecycle-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/automotive/vehicle-lifecycle-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:automotive:workflows",
+      "profileId": "automotive",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:cgcloud:build-and-release-cgcloud-modeler.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/cgcloud/build-and-release-cgcloud-modeler.md",
+      "owner": "setup-agents",
+      "source": "profile:cgcloud:workflows",
+      "profileId": "cgcloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:cgcloud:deploy-cgcloud.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/cgcloud/deploy-cgcloud.md",
+      "owner": "setup-agents",
+      "source": "profile:cgcloud:workflows",
+      "profileId": "cgcloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:cgcloud:design-cgcloud-mobile-ux.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/cgcloud/design-cgcloud-mobile-ux.md",
+      "owner": "setup-agents",
+      "source": "profile:cgcloud:workflows",
+      "profileId": "cgcloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:cgcloud:discover-cgcloud-mobile-sync.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/cgcloud/discover-cgcloud-mobile-sync.md",
+      "owner": "setup-agents",
+      "source": "profile:cgcloud:workflows",
+      "profileId": "cgcloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:cgcloud:discover-cgcloud-modeler.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/cgcloud/discover-cgcloud-modeler.md",
+      "owner": "setup-agents",
+      "source": "profile:cgcloud:workflows",
+      "profileId": "cgcloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:cgcloud:discover-cgcloud-retail-execution.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/cgcloud/discover-cgcloud-retail-execution.md",
+      "owner": "setup-agents",
+      "source": "profile:cgcloud:workflows",
+      "profileId": "cgcloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:cgcloud:setup-cgcloud-sandbox.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/cgcloud/setup-cgcloud-sandbox.md",
+      "owner": "setup-agents",
+      "source": "profile:cgcloud:workflows",
+      "profileId": "cgcloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:cgcloud:test-cgcloud-mobile.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/cgcloud/test-cgcloud-mobile.md",
+      "owner": "setup-agents",
+      "source": "profile:cgcloud:workflows",
+      "profileId": "cgcloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:commerce:cartridge-overlay.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/commerce/cartridge-overlay.md",
+      "owner": "setup-agents",
+      "source": "profile:commerce:workflows",
+      "profileId": "commerce",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:commerce:configure-b2b-checkout.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/commerce/configure-b2b-checkout.md",
+      "owner": "setup-agents",
+      "source": "profile:commerce:workflows",
+      "profileId": "commerce",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:commerce:create-sfra-controller.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/commerce/create-sfra-controller.md",
+      "owner": "setup-agents",
+      "source": "profile:commerce:workflows",
+      "profileId": "commerce",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:commerce:deploy-commerce.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/commerce/deploy-commerce.md",
+      "owner": "setup-agents",
+      "source": "profile:commerce:workflows",
+      "profileId": "commerce",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:commerce:discover-commerce-storefront.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/commerce/discover-commerce-storefront.md",
+      "owner": "setup-agents",
+      "source": "profile:commerce:workflows",
+      "profileId": "commerce",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:commerce:test-commerce-storefront.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/commerce/test-commerce-storefront.md",
+      "owner": "setup-agents",
+      "source": "profile:commerce:workflows",
+      "profileId": "commerce",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:communications:order-orchestration-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/communications/order-orchestration-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:communications:workflows",
+      "profileId": "communications",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:communications:product-catalog-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/communications/product-catalog-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:communications:workflows",
+      "profileId": "communications",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:cpq:approval-chain.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/cpq/approval-chain.md",
+      "owner": "setup-agents",
+      "source": "profile:cpq:workflows",
+      "profileId": "cpq",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:cpq:deploy-cpq.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/cpq/deploy-cpq.md",
+      "owner": "setup-agents",
+      "source": "profile:cpq:workflows",
+      "profileId": "cpq",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:cpq:discover-cpq-quote-to-cash.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/cpq/discover-cpq-quote-to-cash.md",
+      "owner": "setup-agents",
+      "source": "profile:cpq:workflows",
+      "profileId": "cpq",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:cpq:pricing-rule.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/cpq/pricing-rule.md",
+      "owner": "setup-agents",
+      "source": "profile:cpq:workflows",
+      "profileId": "cpq",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:cpq:product-bundle-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/cpq/product-bundle-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:cpq:workflows",
+      "profileId": "cpq",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:cpq:test-cpq-quote-configuration.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/cpq/test-cpq-quote-configuration.md",
+      "owner": "setup-agents",
+      "source": "profile:cpq:workflows",
+      "profileId": "cpq",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:crma:create-dashboard.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/crma/create-dashboard.md",
+      "owner": "setup-agents",
+      "source": "profile:crma:workflows",
+      "profileId": "crma",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:crma:create-recipe.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/crma/create-recipe.md",
+      "owner": "setup-agents",
+      "source": "profile:crma:workflows",
+      "profileId": "crma",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:crma:deploy-analytics.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/crma/deploy-analytics.md",
+      "owner": "setup-agents",
+      "source": "profile:crma:workflows",
+      "profileId": "crma",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:crma:discover-crma-scope.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/crma/discover-crma-scope.md",
+      "owner": "setup-agents",
+      "source": "profile:crma:workflows",
+      "profileId": "crma",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:crma:test-crma-analytics.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/crma/test-crma-analytics.md",
+      "owner": "setup-agents",
+      "source": "profile:crma:workflows",
+      "profileId": "crma",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:data360:deploy-data360.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/data360/deploy-data360.md",
+      "owner": "setup-agents",
+      "source": "profile:data360:workflows",
+      "profileId": "data360",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:data360:discover-data360-scope.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/data360/discover-data360-scope.md",
+      "owner": "setup-agents",
+      "source": "profile:data360:workflows",
+      "profileId": "data360",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:data360:setup-data-stream.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/data360/setup-data-stream.md",
+      "owner": "setup-agents",
+      "source": "profile:data360:workflows",
+      "profileId": "data360",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:data360:validate-identity-resolution.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/data360/validate-identity-resolution.md",
+      "owner": "setup-agents",
+      "source": "profile:data360:workflows",
+      "profileId": "data360",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:developer:close-phase.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/developer/close-phase.md",
+      "owner": "setup-agents",
+      "source": "profile:developer:workflows",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:developer:create-apex-class.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/developer/create-apex-class.md",
+      "owner": "setup-agents",
+      "source": "profile:developer:workflows",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:developer:create-flow.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/developer/create-flow.md",
+      "owner": "setup-agents",
+      "source": "profile:developer:workflows",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:developer:create-lwc.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/developer/create-lwc.md",
+      "owner": "setup-agents",
+      "source": "profile:developer:workflows",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:developer:create-record-navigation.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/developer/create-record-navigation.md",
+      "owner": "setup-agents",
+      "source": "profile:developer:workflows",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:developer:create-trigger.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/developer/create-trigger.md",
+      "owner": "setup-agents",
+      "source": "profile:developer:workflows",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:developer:create-validation-rule.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/developer/create-validation-rule.md",
+      "owner": "setup-agents",
+      "source": "profile:developer:workflows",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:developer:design-large-data-volume-processing.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/developer/design-large-data-volume-processing.md",
+      "owner": "setup-agents",
+      "source": "profile:developer:workflows",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:developer:destructive-deploy.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/developer/destructive-deploy.md",
+      "owner": "setup-agents",
+      "source": "profile:developer:workflows",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:developer:permission-set-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/developer/permission-set-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:developer:workflows",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:developer:review-release-264-api-contracts.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/developer/review-release-264-api-contracts.md",
+      "owner": "setup-agents",
+      "source": "profile:developer:workflows",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:developer:review-release-264-label-translations.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/developer/review-release-264-label-translations.md",
+      "owner": "setup-agents",
+      "source": "profile:developer:workflows",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:developer:review-release-264-lifecycle.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/developer/review-release-264-lifecycle.md",
+      "owner": "setup-agents",
+      "source": "profile:developer:workflows",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:developer:run-apex-integration-test.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/developer/run-apex-integration-test.md",
+      "owner": "setup-agents",
+      "source": "profile:developer:workflows",
+      "profileId": "developer",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/developer.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/developer.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:education:academic-operations-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/education/academic-operations-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:education:workflows",
+      "profileId": "education",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:education:student-lifecycle-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/education/student-lifecycle-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:education:workflows",
+      "profileId": "education",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:energy:meter-data-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/energy/meter-data-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:energy:workflows",
+      "profileId": "energy",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:energy:rate-plan-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/energy/rate-plan-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:energy:workflows",
+      "profileId": "energy",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:experience-cloud:deploy-experience-cloud.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/experience-cloud/deploy-experience-cloud.md",
+      "owner": "setup-agents",
+      "source": "profile:experience-cloud:workflows",
+      "profileId": "experience-cloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:experience-cloud:discover-experience-cloud-scope.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/experience-cloud/discover-experience-cloud-scope.md",
+      "owner": "setup-agents",
+      "source": "profile:experience-cloud:workflows",
+      "profileId": "experience-cloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:experience-cloud:experience-cloud-access-model.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/experience-cloud/experience-cloud-access-model.md",
+      "owner": "setup-agents",
+      "source": "profile:experience-cloud:workflows",
+      "profileId": "experience-cloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:experience-cloud:experience-cloud-dev.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/experience-cloud/experience-cloud-dev.md",
+      "owner": "setup-agents",
+      "source": "profile:experience-cloud:workflows",
+      "profileId": "experience-cloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:experience-cloud:experience-cloud-security-review.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/experience-cloud/experience-cloud-security-review.md",
+      "owner": "setup-agents",
+      "source": "profile:experience-cloud:workflows",
+      "profileId": "experience-cloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:experience-cloud:guest-user-security.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/experience-cloud/guest-user-security.md",
+      "owner": "setup-agents",
+      "source": "profile:experience-cloud:workflows",
+      "profileId": "experience-cloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:experience-cloud:test-experience-cloud-site.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/experience-cloud/test-experience-cloud-site.md",
+      "owner": "setup-agents",
+      "source": "profile:experience-cloud:workflows",
+      "profileId": "experience-cloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:fsc:arc-configuration.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/fsc/arc-configuration.md",
+      "owner": "setup-agents",
+      "source": "profile:fsc:workflows",
+      "profileId": "fsc",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:fsc:deploy-fsc.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/fsc/deploy-fsc.md",
+      "owner": "setup-agents",
+      "source": "profile:fsc:workflows",
+      "profileId": "fsc",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:fsc:discover-fsc-data-model.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/fsc/discover-fsc-data-model.md",
+      "owner": "setup-agents",
+      "source": "profile:fsc:workflows",
+      "profileId": "fsc",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:fsc:financial-account-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/fsc/financial-account-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:fsc:workflows",
+      "profileId": "fsc",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:fsc:referral-management.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/fsc/referral-management.md",
+      "owner": "setup-agents",
+      "source": "profile:fsc:workflows",
+      "profileId": "fsc",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:fsc:test-fsc-household-sharing.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/fsc/test-fsc-household-sharing.md",
+      "owner": "setup-agents",
+      "source": "profile:fsc:workflows",
+      "profileId": "fsc",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:fsl:deploy-fsl.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/fsl/deploy-fsl.md",
+      "owner": "setup-agents",
+      "source": "profile:fsl:workflows",
+      "profileId": "fsl",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:fsl:discover-fsl-managed-package.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/fsl/discover-fsl-managed-package.md",
+      "owner": "setup-agents",
+      "source": "profile:fsl:workflows",
+      "profileId": "fsl",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:fsl:mobile-configuration.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/fsl/mobile-configuration.md",
+      "owner": "setup-agents",
+      "source": "profile:fsl:workflows",
+      "profileId": "fsl",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:fsl:scheduling-policy.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/fsl/scheduling-policy.md",
+      "owner": "setup-agents",
+      "source": "profile:fsl:workflows",
+      "profileId": "fsl",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:fsl:test-fsl-scheduling-optimization.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/fsl/test-fsl-scheduling-optimization.md",
+      "owner": "setup-agents",
+      "source": "profile:fsl:workflows",
+      "profileId": "fsl",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:fsl:work-order-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/fsl/work-order-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:fsl:workflows",
+      "profileId": "fsl",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:health:care-plan-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/health/care-plan-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:health:workflows",
+      "profileId": "health",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:health:ehr-integration-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/health/ehr-integration-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:health:workflows",
+      "profileId": "health",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:industries:industries-order-management.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/industries/industries-order-management.md",
+      "owner": "setup-agents",
+      "source": "profile:industries:workflows",
+      "profileId": "industries",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:industries:industries-platform-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/industries/industries-platform-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:industries:workflows",
+      "profileId": "industries",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:loyalty:loyalty-program-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/loyalty/loyalty-program-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:loyalty:workflows",
+      "profileId": "loyalty",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:loyalty:promotions-vouchers-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/loyalty/promotions-vouchers-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:loyalty:workflows",
+      "profileId": "loyalty",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:manufacturing:rebate-program-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/manufacturing/rebate-program-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:manufacturing:workflows",
+      "profileId": "manufacturing",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:manufacturing:sales-agreement-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/manufacturing/sales-agreement-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:manufacturing:workflows",
+      "profileId": "manufacturing",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:maps:route-optimization-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/maps/route-optimization-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:maps:workflows",
+      "profileId": "maps",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:maps:territory-planning-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/maps/territory-planning-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:maps:workflows",
+      "profileId": "maps",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:media:ad-sales-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/media/ad-sales-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:media:workflows",
+      "profileId": "media",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:media:subscription-management-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/media/subscription-management-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:media:workflows",
+      "profileId": "media",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:netzero:carbon-accounting-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/netzero/carbon-accounting-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:netzero:workflows",
+      "profileId": "netzero",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:netzero:esg-reporting-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/netzero/esg-reporting-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:netzero:workflows",
+      "profileId": "netzero",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:nonprofit:fundraising-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/nonprofit/fundraising-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:nonprofit:workflows",
+      "profileId": "nonprofit",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:nonprofit:program-management-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/nonprofit/program-management-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:nonprofit:workflows",
+      "profileId": "nonprofit",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:omnistudio:build-integration-procedure.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/omnistudio/build-integration-procedure.md",
+      "owner": "setup-agents",
+      "source": "profile:omnistudio:workflows",
+      "profileId": "omnistudio",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:omnistudio:create-omniscript.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/omnistudio/create-omniscript.md",
+      "owner": "setup-agents",
+      "source": "profile:omnistudio:workflows",
+      "profileId": "omnistudio",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:omnistudio:design-flexcard.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/omnistudio/design-flexcard.md",
+      "owner": "setup-agents",
+      "source": "profile:omnistudio:workflows",
+      "profileId": "omnistudio",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:pm:delivery-metrics.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/pm/delivery-metrics.md",
+      "owner": "setup-agents",
+      "source": "profile:pm:workflows",
+      "profileId": "pm",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/pm.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/pm.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:pm:risk-register.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/pm/risk-register.md",
+      "owner": "setup-agents",
+      "source": "profile:pm:workflows",
+      "profileId": "pm",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/pm.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/pm.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:pm:sprint-plan.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/pm/sprint-plan.md",
+      "owner": "setup-agents",
+      "source": "profile:pm:workflows",
+      "profileId": "pm",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/pm.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/pm.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:pm:status-report.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/pm/status-report.md",
+      "owner": "setup-agents",
+      "source": "profile:pm:workflows",
+      "profileId": "pm",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/pm.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/pm.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:public-sector:inspection-management-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/public-sector/inspection-management-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:public-sector:workflows",
+      "profileId": "public-sector",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:public-sector:licensing-permitting-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/public-sector/licensing-permitting-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:public-sector:workflows",
+      "profileId": "public-sector",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:qa:close-phase.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/qa/close-phase.md",
+      "owner": "setup-agents",
+      "source": "profile:qa:workflows",
+      "profileId": "qa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/qa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/qa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:qa:generate-test-report.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/qa/generate-test-report.md",
+      "owner": "setup-agents",
+      "source": "profile:qa:workflows",
+      "profileId": "qa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/qa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/qa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:qa:run-playwright.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/qa/run-playwright.md",
+      "owner": "setup-agents",
+      "source": "profile:qa:workflows",
+      "profileId": "qa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/qa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/qa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:qa:test-plan.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/qa/test-plan.md",
+      "owner": "setup-agents",
+      "source": "profile:qa:workflows",
+      "profileId": "qa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/qa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/qa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:release-manager:close-phase.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/release-manager/close-phase.md",
+      "owner": "setup-agents",
+      "source": "profile:release-manager:workflows",
+      "profileId": "release-manager",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/release-manager.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/release-manager.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:release-manager:environment-refresh.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/release-manager/environment-refresh.md",
+      "owner": "setup-agents",
+      "source": "profile:release-manager:workflows",
+      "profileId": "release-manager",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/release-manager.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/release-manager.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:release-manager:pipeline-design.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/release-manager/pipeline-design.md",
+      "owner": "setup-agents",
+      "source": "profile:release-manager:workflows",
+      "profileId": "release-manager",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/release-manager.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/release-manager.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:release-manager:pr-review.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/release-manager/pr-review.md",
+      "owner": "setup-agents",
+      "source": "profile:release-manager:workflows",
+      "profileId": "release-manager",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/release-manager.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/release-manager.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:release-manager:release-checklist.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/release-manager/release-checklist.md",
+      "owner": "setup-agents",
+      "source": "profile:release-manager:workflows",
+      "profileId": "release-manager",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/release-manager.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/release-manager.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:release-manager:release.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/release-manager/release.md",
+      "owner": "setup-agents",
+      "source": "profile:release-manager:workflows",
+      "profileId": "release-manager",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/release-manager.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/release-manager.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:revenue:billing-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/revenue/billing-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:revenue:workflows",
+      "profileId": "revenue",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:revenue:deploy-revenue-billing.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/revenue/deploy-revenue-billing.md",
+      "owner": "setup-agents",
+      "source": "profile:revenue:workflows",
+      "profileId": "revenue",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:revenue:discover-revenue-billing-model.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/revenue/discover-revenue-billing-model.md",
+      "owner": "setup-agents",
+      "source": "profile:revenue:workflows",
+      "profileId": "revenue",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:revenue:payment-processing-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/revenue/payment-processing-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:revenue:workflows",
+      "profileId": "revenue",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:revenue:test-revenue-billing-payments.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/revenue/test-revenue-billing-payments.md",
+      "owner": "setup-agents",
+      "source": "profile:revenue:workflows",
+      "profileId": "revenue",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:sa:flow-analysis.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sa/flow-analysis.md",
+      "owner": "setup-agents",
+      "source": "profile:sa:workflows",
+      "profileId": "sa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/sa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/sa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:sa:groom-backlog.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sa/groom-backlog.md",
+      "owner": "setup-agents",
+      "source": "profile:sa:workflows",
+      "profileId": "sa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/sa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/sa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:sa:input-analysis.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sa/input-analysis.md",
+      "owner": "setup-agents",
+      "source": "profile:sa:workflows",
+      "profileId": "sa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/sa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/sa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:sa:refine-stories.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sa/refine-stories.md",
+      "owner": "setup-agents",
+      "source": "profile:sa:workflows",
+      "profileId": "sa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/sa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/sa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:sa:refinement-analysis.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sa/refinement-analysis.md",
+      "owner": "setup-agents",
+      "source": "profile:sa:workflows",
+      "profileId": "sa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/sa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/sa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:sa:scope-analysis.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sa/scope-analysis.md",
+      "owner": "setup-agents",
+      "source": "profile:sa:workflows",
+      "profileId": "sa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/sa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/sa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:sa:solution-design.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sa/solution-design.md",
+      "owner": "setup-agents",
+      "source": "profile:sa:workflows",
+      "profileId": "sa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/sa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/sa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:sa:story-templating.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sa/story-templating.md",
+      "owner": "setup-agents",
+      "source": "profile:sa:workflows",
+      "profileId": "sa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/sa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/sa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:sa:test-case-generation.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sa/test-case-generation.md",
+      "owner": "setup-agents",
+      "source": "profile:sa:workflows",
+      "profileId": "sa",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/sa.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/sa.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:salescloud:deploy-salescloud.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/salescloud/deploy-salescloud.md",
+      "owner": "setup-agents",
+      "source": "profile:salescloud:workflows",
+      "profileId": "salescloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:salescloud:discover-salescloud-sales-process.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/salescloud/discover-salescloud-sales-process.md",
+      "owner": "setup-agents",
+      "source": "profile:salescloud:workflows",
+      "profileId": "salescloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:salescloud:opportunity-forecast-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/salescloud/opportunity-forecast-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:salescloud:workflows",
+      "profileId": "salescloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:salescloud:test-salescloud-opportunity-forecast.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/salescloud/test-salescloud-opportunity-forecast.md",
+      "owner": "setup-agents",
+      "source": "profile:salescloud:workflows",
+      "profileId": "salescloud",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:service:case-lifecycle-setup.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/service/case-lifecycle-setup.md",
+      "owner": "setup-agents",
+      "source": "profile:service:workflows",
+      "profileId": "service",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:service:deploy-service.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/service/deploy-service.md",
+      "owner": "setup-agents",
+      "source": "profile:service:workflows",
+      "profileId": "service",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:service:discover-service-support-model.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/service/discover-service-support-model.md",
+      "owner": "setup-agents",
+      "source": "profile:service:workflows",
+      "profileId": "service",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:service:knowledge-base-structure.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/service/knowledge-base-structure.md",
+      "owner": "setup-agents",
+      "source": "profile:service:workflows",
+      "profileId": "service",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:service:omni-channel-configuration.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/service/omni-channel-configuration.md",
+      "owner": "setup-agents",
+      "source": "profile:service:workflows",
+      "profileId": "service",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:service:test-service-case-lifecycle.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/service/test-service-case-lifecycle.md",
+      "owner": "setup-agents",
+      "source": "profile:service:workflows",
+      "profileId": "service",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:sfmc:build-journey.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sfmc/build-journey.md",
+      "owner": "setup-agents",
+      "source": "profile:sfmc:workflows",
+      "profileId": "sfmc",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:sfmc:create-cloudpage.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sfmc/create-cloudpage.md",
+      "owner": "setup-agents",
+      "source": "profile:sfmc:workflows",
+      "profileId": "sfmc",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:sfmc:data-extension-query.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sfmc/data-extension-query.md",
+      "owner": "setup-agents",
+      "source": "profile:sfmc:workflows",
+      "profileId": "sfmc",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:sfmc:deploy-sfmc-assets.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sfmc/deploy-sfmc-assets.md",
+      "owner": "setup-agents",
+      "source": "profile:sfmc:workflows",
+      "profileId": "sfmc",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:sfmc:discover-sfmc-account-model.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sfmc/discover-sfmc-account-model.md",
+      "owner": "setup-agents",
+      "source": "profile:sfmc:workflows",
+      "profileId": "sfmc",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:sfmc:test-sfmc-email-send.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/sfmc/test-sfmc-email-send.md",
+      "owner": "setup-agents",
+      "source": "profile:sfmc:workflows",
+      "profileId": "sfmc",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:slack:add-slash-command.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/slack/add-slash-command.md",
+      "owner": "setup-agents",
+      "source": "profile:slack:workflows",
+      "profileId": "slack",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:slack:create-bolt-app.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/slack/create-bolt-app.md",
+      "owner": "setup-agents",
+      "source": "profile:slack:workflows",
+      "profileId": "slack",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:slack:deploy-slack-app.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/slack/deploy-slack-app.md",
+      "owner": "setup-agents",
+      "source": "profile:slack:workflows",
+      "profileId": "slack",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:tableau:connect-data.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/tableau/connect-data.md",
+      "owner": "setup-agents",
+      "source": "profile:tableau:workflows",
+      "profileId": "tableau",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:tableau:discover-tableau-analytics.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/tableau/discover-tableau-analytics.md",
+      "owner": "setup-agents",
+      "source": "profile:tableau:workflows",
+      "profileId": "tableau",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:tableau:embed-analytics.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/tableau/embed-analytics.md",
+      "owner": "setup-agents",
+      "source": "profile:tableau:workflows",
+      "profileId": "tableau",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:tableau:publish-workbook.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/tableau/publish-workbook.md",
+      "owner": "setup-agents",
+      "source": "profile:tableau:workflows",
+      "profileId": "tableau",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:tableau:test-tableau-analytics.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/tableau/test-tableau-analytics.md",
+      "owner": "setup-agents",
+      "source": "profile:tableau:workflows",
+      "profileId": "tableau",
+      "adapters": []
+    },
+    {
+      "id": "profile-workflow:ux:close-phase.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/ux/close-phase.md",
+      "owner": "setup-agents",
+      "source": "profile:ux:workflows",
+      "profileId": "ux",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/ux.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/ux.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:ux:design-handoff.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/ux/design-handoff.md",
+      "owner": "setup-agents",
+      "source": "profile:ux:workflows",
+      "profileId": "ux",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/ux.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/ux.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "profile-workflow:ux:ux-audit.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/ux/ux-audit.md",
+      "owner": "setup-agents",
+      "source": "profile:ux:workflows",
+      "profileId": "ux",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/ux.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/ux.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "project-knowledge",
+      "kind": "project-knowledge",
+      "path": ".setup-agents/project-knowledge.md",
+      "owner": "setup-agents",
+      "source": "project-knowledge",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/project-knowledge.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/project-knowledge.md",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:audience-tailored-report/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/audience-tailored-report/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:backlog-sync/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/backlog-sync/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:decompose/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/decompose/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:diagram-export/examples/erd-grouped.json",
+      "kind": "skill",
+      "path": ".setup-agents/skills/diagram-export/examples/erd-grouped.json",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:diagram-export/scripts/export-diagram.sh",
+      "kind": "skill",
+      "path": ".setup-agents/skills/diagram-export/scripts/export-diagram.sh",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:diagram-export/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/diagram-export/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:doc-sync/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/doc-sync/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:elements-sync/scripts/push-to-elements.sh",
+      "kind": "skill",
+      "path": ".setup-agents/skills/elements-sync/scripts/push-to-elements.sh",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:elements-sync/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/elements-sync/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:generate-rom/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/generate-rom/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:mobile-appium-testing/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/mobile-appium-testing/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:oclif-plugin/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/oclif-plugin/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:org-health-assessment/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/org-health-assessment/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:project-knowledge-bootstrap/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/project-knowledge-bootstrap/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:prompt-registry/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/prompt-registry/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:qa-evidence-pack/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/qa-evidence-pack/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:record-adr/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/record-adr/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:refine-story-functionally/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/refine-story-functionally/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:refine-story-technically/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/refine-story-technically/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:sf-code-analyzer/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/sf-code-analyzer/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:sf-deploy/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/sf-deploy/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:story-mapping/assets/mermaid-pdf.css",
+      "kind": "skill",
+      "path": ".setup-agents/skills/story-mapping/assets/mermaid-pdf.css",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:story-mapping/scripts/render-pdf.sh",
+      "kind": "skill",
+      "path": ".setup-agents/skills/story-mapping/scripts/render-pdf.sh",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:story-mapping/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/story-mapping/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:transcription-evidence/scripts/transcribe.sh",
+      "kind": "skill",
+      "path": ".setup-agents/skills/transcription-evidence/scripts/transcribe.sh",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:transcription-evidence/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/transcription-evidence/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    },
+    {
+      "id": "skill:workflow-estimate/SKILL.md",
+      "kind": "skill",
+      "path": ".setup-agents/skills/workflow-estimate/SKILL.md",
+      "owner": "setup-agents",
+      "source": "skill-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        }
+      ]
+    }
+  ],
+  "contentHashes": {
+    ".setup-agents/sf-skills/INDEX-developer.md": "46e5ffe2a670ec7a25da60f0c03e98d0c64b5cf6ba395d05a00ff144fcf571f5",
+    ".setup-agents/sf-skills/INDEX-architect.md": "a16db72479f20553be098d5a5343be190546a947739531e300fb42f2b8186a6b",
+    ".setup-agents/sf-skills/INDEX-sa.md": "3908088988548be3b4af6603814bd5ce97fa9e961967c4d2096a88e68744b8ba",
+    ".setup-agents/sf-skills/INDEX-ux.md": "219c09c1a4bb3c8d6cf37b2520f8d37eaeaa7fd4075108e1d86a9b5ae706c0c6",
+    ".setup-agents/sf-skills/INDEX-qa.md": "a669c4c50dd5d38a3288024184a46ba70e9e94a119369e8967c4e7f37b1ce25c",
+    ".setup-agents/sf-skills/INDEX-release-manager.md": "cd7db5655394b6df4f09019a2da6ef8173ae7c5932ad3a89a2e563a9b517e103",
+    "AGENTS.md": "47e03c8b920f32e4bb00481c49b915134085fbc1ec09fb6498bea93e28b7a686",
+    ".codex/developer.md": "18ab73cec390872cb3fdee45c62c6f4c5a74fbfe75d55a8eb60fdbe2e32363d9",
+    ".codex/architect.md": "ad7aa4e47d812f22ff2fc78f17c6f9c7342c5c9c297dc25bfc572fae19d9647e",
+    ".codex/sa.md": "3f56cc14989c60a0abe7a7fc9d2c58827cbceb7456c0a39c238f68b173308525",
+    ".codex/pm.md": "6ac9d09635ae713df98889aea7e8e344c1e17f7d3d4066e1a81acb7f363eec5a",
+    ".codex/ux.md": "9c3219c20f418d45fbe7b4c2c8964c9aa460a4aeb7d993868d1e1a8a6168e4a2",
+    ".codex/qa.md": "721bf873d8b15dd6e6e0a07d862c67b97f1a1dad7135db2eeb302be528778661",
+    ".codex/release-manager.md": "94dc171265aee0b5e0def17c7b5c9d58a0995006db81c58a34c0295aa68ad3c5",
+    ".github/copilot-instructions.md": "6da82e5a80b11d9fa8791f56d4df666dd9562de5cbdaf4ae8453a6d3ae9532e3",
+    ".vscode/extensions.json": "ab7388e97d8fa8c7ae2c81759ac9c4adcd37df6bd42a9792d7d5cb3b59dfcc17",
+    ".setup-agents/profiles/developer/rule.md": "d411b3de5c07d623956174671d3c0255f2de07deae0e674d3f95a56ec160eb14",
+    ".setup-agents/profiles/architect/rule.md": "41c2b2dfcaf1ad9e2c2505c5b45a5a87f35219a9fcb6060423a58998fa974ba4",
+    ".setup-agents/profiles/sa/rule.md": "019c80d768d0e1d975a3f749847afcd7380cdb0dd444b4aadd57f01d32a8159b",
+    ".setup-agents/profiles/pm/rule.md": "3cadcb07766f634341bfa2550424d1e9eb089d34c91cbfcec3e795bc08d5e98d",
+    ".setup-agents/profiles/mulesoft/rule.md": "fcd5a2ff1948364831611097a1a9eca6f519e10b9bf5bc1281ea082ab581a4a2",
+    ".setup-agents/profiles/ux/rule.md": "59fef5166b597a86f9cffa482339874c3c2d9faa449195cc87df0824ca4a06b4",
+    ".setup-agents/profiles/cgcloud/rule.md": "9b29a98ced15d01b383a912812b3a458287590206fcde7920e28f42a85493454",
+    ".setup-agents/profiles/qa/rule.md": "f305ba2e364a19cf03b56472c24c620f1a96ed3019e1e0576f342c033bb03690",
+    ".setup-agents/profiles/crma/rule.md": "a868b3f7ade22ea8c8c8b44dd210f6a42636553b97bfdee8f6079cf2a9e4d0e4",
+    ".setup-agents/profiles/commerce/rule.md": "3391ceceec8380dd0cba80582eb3162ade8ba0b3eb85471a1f6220f80232a729",
+    ".setup-agents/profiles/data360/rule.md": "e9cd3d96ce598e493d702f073f80099979757c9bf1c8b41b2338ce6b02b58ab3",
+    ".setup-agents/profiles/sfmc/rule.md": "eeb3725e5ea66b1c822e5fb110e76001fd0ae90e729047b999618c5f7b6f89ba",
+    ".setup-agents/profiles/salescloud/rule.md": "a222123b259c38423aeff3bd4818bbdd83d8bf9e6114cc4546224408423a242d",
+    ".setup-agents/profiles/service/rule.md": "a215b20bb2bac605a0ffa431cf7afe76f30909bc7081b0aaa59f79ad394bd057",
+    ".setup-agents/profiles/cpq/rule.md": "7aa33bb3a5de11fd74a20eb030423db979776e9532b9cce49ed997289f55decc",
+    ".setup-agents/profiles/omnistudio/rule.md": "39dc3d6996f5682811b32ab04eec201d4824cfd6577ceff3c6b37f736b271ab6",
+    ".setup-agents/profiles/fsl/rule.md": "b627f951e695f5a688d61c9dc7445b97c3fb261098c5a7f29f299bc6edbbb445",
+    ".setup-agents/profiles/ai/rule.md": "4ce797712b8a46c1ca70cb8686b1dc55b8703bc1fa900c729dd1fd0fe7b485e4",
+    ".setup-agents/profiles/slack/rule.md": "2f578df2006022e7e225532d48d423382d5c93a265b4a17b86eca642fbce8868",
+    ".setup-agents/profiles/tableau/rule.md": "8a2e5cacc143a209250abd9b6a1ce849f5379c9cd3c2ddf742c5cf8aa76c5686",
+    ".setup-agents/profiles/experience-cloud/rule.md": "3be498ebca9b3b3d41a191861b795783d36848ce38e4f55d61d28c74f2905908",
+    ".setup-agents/profiles/release-manager/rule.md": "5ba779414208f65889cefcfd78df1ae1fdfa36fde14ffef7e4ff4edaddd6f270",
+    ".setup-agents/profiles/fsc/rule.md": "79263e423c5e44bc52ac6199cfb2d6ba36ab3e711a29a5c3aace1ac0e2181175",
+    ".setup-agents/profiles/health/rule.md": "08e7460b6439a79b56f70309ad07e97da2bbcaa24a5ae674f65ae4fe976c1596",
+    ".setup-agents/profiles/manufacturing/rule.md": "75c782e321ff2cd24cb57a8c63dbc4b14580b4c56c8b5be4728280229e5cdfc6",
+    ".setup-agents/profiles/communications/rule.md": "036b9c5af13dcc3dc6bce297a25bc10d9e3caf4c42af85457e899632e6f277a7",
+    ".setup-agents/profiles/automotive/rule.md": "80f5869da877c887f4ec74325534bd9290c8c70d418b517c2a0d9135422ee86b",
+    ".setup-agents/profiles/education/rule.md": "df5b1e54daee4da79159ae322b9bc6054822a9d03bc58576085a5e1837c7b7f9",
+    ".setup-agents/profiles/netzero/rule.md": "a68206d9540c73f894135932aeb8c8e629e9ffb494d47fd3195ec04327a02fba",
+    ".setup-agents/profiles/nonprofit/rule.md": "853e98f94dea52f2482b0417d787b356150813356c428d5180d26f206065acbd",
+    ".setup-agents/profiles/public-sector/rule.md": "968955864eb68ce5fe6121269524d48e45d56ffe48ca6185c9521069275915d8",
+    ".setup-agents/profiles/media/rule.md": "f68d2dfdd5abb70fbf668925312c06341e4f9f40194ac6bab7a2570ae89e1a23",
+    ".setup-agents/profiles/energy/rule.md": "c6b087f2a5dc74e25be642131bfc8db76f69b4f6bc7277954016d4ad675f6bf9",
+    ".setup-agents/profiles/revenue/rule.md": "fbf06abf01c8f62031a0c4f3d51d59314708d4339e33423ec0cc0994507c8198",
+    ".setup-agents/profiles/maps/rule.md": "39dab864bdefb050c7e17200ccc7fa03384b1adbcad37e3b9636349bb8835e46",
+    ".setup-agents/profiles/loyalty/rule.md": "ac12c5e1d94e5cace244fa1aa229763cb4b68e5b4f3030df06db128e169f8f15",
+    ".setup-agents/profiles/industries/rule.md": "9d3baaad276e4f0e908319da13bdfdfedb3ff66bb9e69b01a730ffecdd68162b",
+    ".setup-agents/skills/audience-tailored-report/SKILL.md": "7eb2ccc7a37fe57f511c9da8687a5f83b7c14480e4a922e819c470e002ceea6e",
+    ".setup-agents/skills/mobile-appium-testing/SKILL.md": "b4fb30ca62e16d8753344a329e8e311c227cab338c91733d9c4de45acb093591",
+    ".setup-agents/skills/doc-sync/SKILL.md": "744c5ace522a40bb806b307849e89a4cf0fc578ffa4742f7ae056727009f1e4e",
+    ".codex/doc-sync.md": "1baf220d5368b3722dcfdfa0269fac958053db5247dc25d86edbece4128f3c93",
+    ".github/skills/doc-sync.md": "744c5ace522a40bb806b307849e89a4cf0fc578ffa4742f7ae056727009f1e4e",
+    ".setup-agents/playbooks/orchestrate-run.md": "6714dc60fbb0492f4efd34cac73245e8f3db433833a31512f8007f51d0ab6537",
+    ".setup-agents/playbooks/contract-test.md": "874671ef01b18ef1abeac1858f99891f47cc5cbe143094e7c14352da0177ab7b",
+    ".setup-agents/playbooks/performance-test.md": "f94d926f3527d016788bb4007b80927f2da2d1c76bdf875107f7b598558074fe",
+    ".setup-agents/playbooks/flaky-test-triage.md": "3ca55aaeec62c3d5552ab3ddc289567d886815dda7a79ec24529dbd692cda3c7",
+    ".setup-agents/playbooks/profiles/developer/create-flow.md": "426e805ea52d4a9b39a2833996a3c2f10e8cc02421d894ac93f9cede7cca964e",
+    ".setup-agents/playbooks/profiles/developer/create-validation-rule.md": "6fa8a4a3384cd4eea6d1924533c23f8d0a3d9e83dfa2134e712600862ea92409",
+    ".setup-agents/playbooks/profiles/developer/permission-set-setup.md": "1034bb62527334f1d1c2ab61c3ca1380a25e9d5a7b6a54319ac4dc3274b3bc9e",
+    ".setup-agents/playbooks/profiles/developer/create-record-navigation.md": "20faca8fe2fd304840d8be4c2414b6e10f430849e73ec80ce9d3aeaf1b35b4ac",
+    ".setup-agents/playbooks/profiles/developer/destructive-deploy.md": "e842da47bf7a9733ef062232d36a2406db2454bb031cd8485f6d7f3cdb97aea8",
+    ".setup-agents/playbooks/profiles/developer/close-phase.md": "01592a3b6d87d80b8b2cd4450c9a30b8bcaf81d7e8cd36ecbf6f4e7e6de44c23",
+    ".setup-agents/playbooks/profiles/developer/review-release-264-api-contracts.md": "883f7c8ecf804181457f73fbe933710a7a1eba231d56a4e939b2177e1f220325",
+    ".setup-agents/playbooks/profiles/developer/review-release-264-lifecycle.md": "1dfb0ead32f55b6dceb39591cf20d6b5d383a2de965d2b3b534976a5445eec7b",
+    ".setup-agents/playbooks/profiles/developer/review-release-264-label-translations.md": "e536ba54a3cd0717390b937e53d20a60fbaf2b21556fdb131890a966b04d4481",
+    ".setup-agents/playbooks/profiles/developer/run-apex-integration-test.md": "ae40e41e503976dad0836e4592b39936edf9a8fa52f025a476cce5ed28ceae24",
+    ".setup-agents/playbooks/profiles/developer/design-large-data-volume-processing.md": "3a0604f4ddffe36a9101dc2eccc4b4751ecffd084af86434055ab801e99d3799",
+    ".setup-agents/playbooks/profiles/developer/create-apex-class.md": "e85762497eb0894230b5e1bbdb6c9959aba747514c0fc717b3611aec8d34eca0",
+    ".setup-agents/playbooks/profiles/developer/create-lwc.md": "8bbbbbf40595a95fb53ad3cef64ed2909903601f5d8c2b7985a9246b8c3b7524",
+    ".setup-agents/playbooks/profiles/developer/create-trigger.md": "05eabdd9cff3a7ad7a62e309706076cce92f72f2c0f1151b249dec8fbe7f2f17",
+    ".setup-agents/playbooks/profiles/architect/adr.md": "28cb30e81d48d52b032f5b3bb9bfefc076dc0898185ba836183db2fc70292b33",
+    ".setup-agents/playbooks/profiles/architect/architecture-review.md": "75432a4b503dbb2efb8fddcc84d72fdf7bbdf1015456fa4b50a8def904e093f5",
+    ".setup-agents/playbooks/profiles/architect/data-model-design.md": "e9b734b58fb4bcb1fe902200213dfdf3781bcb06ba23f6b420ccadea43460835",
+    ".setup-agents/playbooks/profiles/architect/threat-model.md": "19391e0030330cd770042e0911e4f5b31b3ab439e06d66e4177f79046c816c52",
+    ".setup-agents/playbooks/profiles/architect/security-review.md": "9abb9bd686c6b885c0d5e5831619cfd0295b3b06b9a6dc0f806c6f91c454ffce",
+    ".setup-agents/playbooks/profiles/architect/review-release-264-lifecycle.md": "1dfb0ead32f55b6dceb39591cf20d6b5d383a2de965d2b3b534976a5445eec7b",
+    ".setup-agents/playbooks/profiles/architect/close-phase.md": "86b1514cc98748088a95006b05de60ae17be1df5ab25010afd16fca996ce5bf6",
+    ".setup-agents/playbooks/profiles/sa/input-analysis.md": "f0a6214aec989bf937f8104ab95f43d763608429bdffe79e13350953d16f7a0d",
+    ".setup-agents/playbooks/profiles/sa/flow-analysis.md": "924340b9219795f2ae011ff18b5eb73d817b62fe578237fd916fe82de2e03092",
+    ".setup-agents/playbooks/profiles/sa/refinement-analysis.md": "ed1dc72aff0bf71eb3460ac089a199cab9d6ccd5ee6513932bb7519fb8371a01",
+    ".setup-agents/playbooks/profiles/sa/scope-analysis.md": "5c4adf440c23427a136a09bf275473f707513bda046f8cb90d86e944f0f1cc86",
+    ".setup-agents/playbooks/profiles/sa/solution-design.md": "26aa2731fe1bbc3745bc084d9de00027fd77ecfd2d69ee2492c813d6b3413120",
+    ".setup-agents/playbooks/profiles/sa/story-templating.md": "dbfdebda2a6e247ffeaba915330ecea470fc20d6e92d1ebb5e445d4c01b37b3d",
+    ".setup-agents/playbooks/profiles/sa/test-case-generation.md": "beec288c6f1a304fca4a4470f637629e1e332c414a93ead4f290e573f7d01ab5",
+    ".setup-agents/playbooks/profiles/sa/refine-stories.md": "3933df5ec7333f4fbd9559e954db6737466a2cd4281d43e5934da7f84138638e",
+    ".setup-agents/playbooks/profiles/sa/groom-backlog.md": "aee4a86cbff7636c334e4499d5bcdd9328ce6cc4a6d9932ccd821a91700e83d8",
+    ".setup-agents/playbooks/profiles/pm/sprint-plan.md": "3e22a0e885e36937c7335c53d254f219c4a470ecdfe850bf8e77d7bc18a17f0e",
+    ".setup-agents/playbooks/profiles/pm/status-report.md": "8f64f44da7f49322b1c887c674ef2e26b38f43550c90fcb041897211d7025eef",
+    ".setup-agents/playbooks/profiles/pm/risk-register.md": "96a72a3705477e772a0ad0315582269dee9bd344ba9e14a805c1290d86c0207b",
+    ".setup-agents/playbooks/profiles/pm/delivery-metrics.md": "416eded5d2432b19fd3c858a369554b2a33ffac537229403e955570a3a90c4b3",
+    ".setup-agents/playbooks/profiles/mulesoft/design-mule-api.md": "31df4ba45b67b12ce5152de8c419a22c7097d177b0654551a861a9da5258f26c",
+    ".setup-agents/playbooks/profiles/mulesoft/implement-mule-flow.md": "236eac26454c4eb42e7464e53a0d661fa7291a36b62daf0321b51ab9bb87e87e",
+    ".setup-agents/playbooks/profiles/mulesoft/deploy-mule-app.md": "c1fc566fdabcf70f425b940f548a70568d9b659d249aceead6862d802b2c3f1e",
+    ".setup-agents/playbooks/profiles/ux/close-phase.md": "ac6cb53afe9c4ec908c6e2e4e83c67f4df0685546a15b69323d8e168e53003d2",
+    ".setup-agents/playbooks/profiles/ux/ux-audit.md": "6adf15d1698d758362668e4b86d4194ca6e5e140c19bca99350697ce33eb6b1a",
+    ".setup-agents/playbooks/profiles/ux/design-handoff.md": "36037e1944922f5920c9ba1530d7d8818a304b7dd518d7407cec116754b46f09",
+    ".setup-agents/playbooks/profiles/cgcloud/test-cgcloud-mobile.md": "a72d12379af38b709814446bac7eec2eae2be44318440627bae545a61f3e4ed8",
+    ".setup-agents/playbooks/profiles/cgcloud/discover-cgcloud-retail-execution.md": "92e7489e3f2a3b1357afcda4f0e432164fcb0dc3beac6eefd25ff4d80afaffc5",
+    ".setup-agents/playbooks/profiles/cgcloud/design-cgcloud-mobile-ux.md": "5337a4cbf11fdad99c50e086cb9fc3af82aea1a70e5adb857b9a913b0106c987",
+    ".setup-agents/playbooks/profiles/cgcloud/deploy-cgcloud.md": "04c2ccf6c065bab2aaeb30d0fd4cb927b19098687fc3a418a7bec4f60c12c588",
+    ".setup-agents/playbooks/profiles/cgcloud/setup-cgcloud-sandbox.md": "42083ec41158baabbf076be9ab24bc892edddac0fbc3e84debed30d28de4f8f9",
+    ".setup-agents/playbooks/profiles/cgcloud/discover-cgcloud-modeler.md": "8b44d0ec160f9aeb95545f7e2976b2fd043f4aa51857d7ca8842496d9415dbdd",
+    ".setup-agents/playbooks/profiles/cgcloud/discover-cgcloud-mobile-sync.md": "3afd24a0949eb92c54048d8949e66ec8f5b6956ccba03134c94d04e9247cf6cc",
+    ".setup-agents/playbooks/profiles/cgcloud/build-and-release-cgcloud-modeler.md": "cc498c8e61983af8b52d140bec367b0d64bd75c4c2c3aa1cc06521bd9547337f",
+    ".setup-agents/playbooks/profiles/qa/close-phase.md": "c5b1954494cd0876b5e24aa7df193ee0045bf1d8ed458084bbd15901ad8f7110",
+    ".setup-agents/playbooks/profiles/qa/test-plan.md": "efe0a08546dcf9439335945f23b0c6c58926d5d822399246edad1a611c0884e4",
+    ".setup-agents/playbooks/profiles/qa/run-playwright.md": "cbee906ba6966c3e22427e0d0ead7b9fe0bdb7810dc674afdc1a741815e39359",
+    ".setup-agents/playbooks/profiles/qa/generate-test-report.md": "1e659945d078a561433ee1ef3b101b3d1d5f99011131472032e19db885b1aa0c",
+    ".setup-agents/playbooks/profiles/crma/deploy-analytics.md": "be82317b649d0cf35809015a1feed862609fda18d249452236e82ca2b8950de9",
+    ".setup-agents/playbooks/profiles/crma/discover-crma-scope.md": "3ea049a5faa3257c03544e502078298f56dda9866b19e292686f0fa0c79867e6",
+    ".setup-agents/playbooks/profiles/crma/test-crma-analytics.md": "8a1d7ef306577281749e949b80d65be080be25745f896ae8561ff6fc295aed94",
+    ".setup-agents/playbooks/profiles/crma/create-recipe.md": "b6a1286e3b06d76737213578127bd17379a416fce379f538ab494130d8135e3a",
+    ".setup-agents/playbooks/profiles/crma/create-dashboard.md": "685dac9983a39d84cc7a6a0071f24bd837fd04828c994aeb9e141bab1e2b2d4f",
+    ".setup-agents/playbooks/profiles/commerce/create-sfra-controller.md": "56e9da75a7c4a8476bb56201842db08b7821f1c4aafaa354b6b75dd41403e49a",
+    ".setup-agents/playbooks/profiles/commerce/configure-b2b-checkout.md": "0c98b79dbcea85617f38536eb88a40881437322cd2c31277571126d947e237d4",
+    ".setup-agents/playbooks/profiles/commerce/cartridge-overlay.md": "94628462a1200bd0bdba4d8d90387d7abc7105d958feb51ef00e6763cd0a645e",
+    ".setup-agents/playbooks/profiles/commerce/discover-commerce-storefront.md": "5e614d8790333ded2f569614c8ca1543d7712a026311e85cb2c397a3a17e360a",
+    ".setup-agents/playbooks/profiles/commerce/test-commerce-storefront.md": "4caf3e90fa6f40333c7fe5815f9a2cd90ab5302a04da4d4659286c4f5263127d",
+    ".setup-agents/playbooks/profiles/commerce/deploy-commerce.md": "5c51a9b5a732a03bf5c53f291cce8e373ccbedc43879aaa0a4495a60fd2e58a4",
+    ".setup-agents/playbooks/profiles/data360/discover-data360-scope.md": "7d0885a39b4a928b380765d26f076e63d9e5b83e1dd1ecd7fc2f2d43a02da4c8",
+    ".setup-agents/playbooks/profiles/data360/deploy-data360.md": "453d605fe87113c411140118950b7366d55cd5286418e29fc8a17f51288d4d55",
+    ".setup-agents/playbooks/profiles/data360/setup-data-stream.md": "b03630d476e228a583530c3faabc88acee7421b9e1a602b700dace0b59d9a827",
+    ".setup-agents/playbooks/profiles/data360/validate-identity-resolution.md": "d6f55b580514c202839ac6de57dbe6eae71e612616be786573ac2f213120aecc",
+    ".setup-agents/playbooks/profiles/sfmc/create-cloudpage.md": "650d3dfc86f3b3388678a79447e05c50dd8426e603779611b81cc2cd8d35f229",
+    ".setup-agents/playbooks/profiles/sfmc/build-journey.md": "942f839537f41093546e021612c6c822ea9aeed7ae6f5daa0dd3ba35a9d25bf8",
+    ".setup-agents/playbooks/profiles/sfmc/data-extension-query.md": "da9916757b57876bd6bb944af1dff953f511995a091eda293c62bdd7d80c0268",
+    ".setup-agents/playbooks/profiles/sfmc/discover-sfmc-account-model.md": "e4d0b8ae8b9fa55e4d2b889030c26006972fa95755dd62f9909014a938deb2c2",
+    ".setup-agents/playbooks/profiles/sfmc/test-sfmc-email-send.md": "e90f84482159bfa95025436358d296b2ebed2abf24db84cc5f550921951de40f",
+    ".setup-agents/playbooks/profiles/sfmc/deploy-sfmc-assets.md": "fc8b325bd2e3791a962e576469f8d1bef4f6da18c2516a6c0fe44104f4f57c1b",
+    ".setup-agents/playbooks/profiles/salescloud/discover-salescloud-sales-process.md": "faf0202426a6dafb4b1bdefb46914b509179ef64c9807a53ba784f0bdb0beae0",
+    ".setup-agents/playbooks/profiles/salescloud/opportunity-forecast-setup.md": "0b43fefdd04694bf40c106b2b406139460af4cffafe810dd367fa7cd5e6ff58c",
+    ".setup-agents/playbooks/profiles/salescloud/test-salescloud-opportunity-forecast.md": "1a3ecb69d1eacd6eb3203bf05e765d9c9aa86b74f5cc4e91a4b2e1c4c82cfb30",
+    ".setup-agents/playbooks/profiles/salescloud/deploy-salescloud.md": "435f8c39479e7a52ad29ced06acaa2ac09c4e078163ba3514c10bc535ee8e8e3",
+    ".setup-agents/playbooks/profiles/service/case-lifecycle-setup.md": "c6df7b7f92a4cbae6e31656594b96ac9bbc3857d3633f740b4490f9bf2d234aa",
+    ".setup-agents/playbooks/profiles/service/knowledge-base-structure.md": "3c593351b1d235ce19b5e8320006f324855cd96365abd4d432fcc4d2aa62470a",
+    ".setup-agents/playbooks/profiles/service/omni-channel-configuration.md": "7a415f1ae9d73626d7f4b8e2f9d8376d5c41ec2db38c7abe66e7953d6ea9359e",
+    ".setup-agents/playbooks/profiles/service/discover-service-support-model.md": "7481dcd547562b21b756e786876a1305b2db9bacc8fa217d49cc9e013986526a",
+    ".setup-agents/playbooks/profiles/service/test-service-case-lifecycle.md": "6ef9c45ba5e1ced47484974980f10d031c350934ea566fe5b144f9e6ef7551c8",
+    ".setup-agents/playbooks/profiles/service/deploy-service.md": "4632c736fe98e6ea39b84bdb1174ca5aa4876a5437ceeab92e45222a167d7358",
+    ".setup-agents/playbooks/profiles/cpq/product-bundle-setup.md": "d488707d14d97f5ca9e82dacab0e8abd16f952bfad9e3e3e8e01acf3cef23fcc",
+    ".setup-agents/playbooks/profiles/cpq/pricing-rule.md": "a898fc63a67fe01210211e036e72b95a1bae1b3780fdc0c971ee79d2e122e530",
+    ".setup-agents/playbooks/profiles/cpq/approval-chain.md": "68a8371572cb3cdf5ac245e8d78396c54119315861be3d1d7a5e1f993bda729a",
+    ".setup-agents/playbooks/profiles/cpq/discover-cpq-quote-to-cash.md": "b37f3803c387e56ccf679ed0073c5b9ef7a634a1f672521650ae51f2e197953c",
+    ".setup-agents/playbooks/profiles/cpq/test-cpq-quote-configuration.md": "2ee45aaf70abdec424b86f05754410fe865d7fca5ca336fcceeeadd22795466d",
+    ".setup-agents/playbooks/profiles/cpq/deploy-cpq.md": "3cb3740eb173320d7b8452ccf963aad6658e501f351e7229c26cd46108946dad",
+    ".setup-agents/playbooks/profiles/omnistudio/create-omniscript.md": "792f94dac844d3f6dd8d000542c599f707b8de6a50c6078bdf9320c66f28823e",
+    ".setup-agents/playbooks/profiles/omnistudio/build-integration-procedure.md": "766e3ecaaa9c9ef042d370445cca3ef63fa7aa0a089ab294e74e370cac6f912b",
+    ".setup-agents/playbooks/profiles/omnistudio/design-flexcard.md": "2efc8e0920a00d9ebfa62c061e1b3ced80a3664b4a8e8a80c3fbe5697fae8135",
+    ".setup-agents/playbooks/profiles/fsl/work-order-setup.md": "7689ab3eb113195aa41093535fa7c11c3694f041a0c918bfb5399fb93fe61c5f",
+    ".setup-agents/playbooks/profiles/fsl/scheduling-policy.md": "096a9b20df30d62ee3924e50453483e4564d15df61d4e9f9c9efb8f799c5a085",
+    ".setup-agents/playbooks/profiles/fsl/mobile-configuration.md": "76c5bcfee728f7e311311b33ee8f9438fc687690b1668d778a96e29865b406a6",
+    ".setup-agents/playbooks/profiles/fsl/discover-fsl-managed-package.md": "bc3df4427db8ab1e1756b043aaf2ecc6457d12d008d2bb8d2db869debce7def0",
+    ".setup-agents/playbooks/profiles/fsl/test-fsl-scheduling-optimization.md": "fe91ab3abcd20c87aef9d433615ca457ed72be633d406c843ef9e6a33db094df",
+    ".setup-agents/playbooks/profiles/fsl/deploy-fsl.md": "b24135b3b592c234a53db1470dfefde9f9b28ced6ad2f590ba12e947f1bbbdb3",
+    ".setup-agents/playbooks/profiles/ai/create-agent.md": "ddfda6f6e60c1289eae03112cf4cb3a6ed4f7ead66e7f3433e6c3825ad2ca70a",
+    ".setup-agents/playbooks/profiles/ai/test-agent.md": "3194961f8ad4ef2cd2d57d57db1f9118644b1a97bf4ccb72e17cad3188e46edf",
+    ".setup-agents/playbooks/profiles/ai/deploy-agent.md": "7efbebe80fc491ac052e6ff77d8cd02999becc615d8baaa4174f012d9a77b87b",
+    ".setup-agents/playbooks/profiles/slack/create-bolt-app.md": "2b4d0971ab1f84895574bbea92dc2b7d58506020e24d5fa7f03523ae229eaf0e",
+    ".setup-agents/playbooks/profiles/slack/add-slash-command.md": "b1dbb972affe1f729b017d977d2ae8ee3e38426fe2c558aadd67b78b3381fc88",
+    ".setup-agents/playbooks/profiles/slack/deploy-slack-app.md": "3152a36d0f92e8c131a121a2af5c4eed836cec75a1126dd46dc6bb4795f5be07",
+    ".setup-agents/playbooks/profiles/tableau/connect-data.md": "2c8d0f29636b2e7e210b0b614cbd82d73d42e291076a4daf4286fcdf0ee88233",
+    ".setup-agents/playbooks/profiles/tableau/publish-workbook.md": "bab36b8f5fb4a405f9f721660073cb294a44ed09db18121949af7f27c56a2727",
+    ".setup-agents/playbooks/profiles/tableau/embed-analytics.md": "b3b922f7bc17bc365daefcb2733bf03aa8f537f742b6ed20ec60115326a2844f",
+    ".setup-agents/playbooks/profiles/tableau/discover-tableau-analytics.md": "2c06b67ec72cb5aba3833c0fc05dccf0e8e2479524b54adbc611d351ca2ac3ed",
+    ".setup-agents/playbooks/profiles/tableau/test-tableau-analytics.md": "d879ff0b0f1feac3fddbf0ac76ef53c429c5196ebfdd595e6a3c225cc45c2dcb",
+    ".setup-agents/playbooks/profiles/experience-cloud/experience-cloud-dev.md": "7137463b01d074aa383d8f189a729e177bd5734853c5ff78be2f202a3674c56e",
+    ".setup-agents/playbooks/profiles/experience-cloud/discover-experience-cloud-scope.md": "dbe7a008d8f33c10c47be384ba29f4e512b668aaf9723badd195e6904fa809c5",
+    ".setup-agents/playbooks/profiles/experience-cloud/test-experience-cloud-site.md": "33831910b8c845f0e88c6469c6c3f95174545847c81babda230744d5f0bf537e",
+    ".setup-agents/playbooks/profiles/experience-cloud/deploy-experience-cloud.md": "d02507d9e1f9fabe8549d26a49c3d0a03119e22c2af5b8e622550c6a27d1d89c",
+    ".setup-agents/playbooks/profiles/experience-cloud/guest-user-security.md": "f72d96d45735d613b2dab76dfd45ed1f5af4f58065581bfd7e5f13fa2f19876c",
+    ".setup-agents/playbooks/profiles/experience-cloud/experience-cloud-security-review.md": "1b35ec6d663c826f944951c1207c9f216cf677add59dd11cc1726958eec4afda",
+    ".setup-agents/playbooks/profiles/experience-cloud/experience-cloud-access-model.md": "66906cd111df3de002c548de4079d61b452cf0177c2ee1b8ce429aeffef0ba35",
+    ".setup-agents/playbooks/profiles/release-manager/close-phase.md": "50356df002bca21b31d48a77f745d3977e0f8cfd6d23196223e09e59ff413794",
+    ".setup-agents/playbooks/profiles/release-manager/release-checklist.md": "0a21ca102f6eec04f593b1cc41a364833d5a8d5712c118ea0aad519b2ce84ed5",
+    ".setup-agents/playbooks/profiles/release-manager/environment-refresh.md": "3c25810730125e6543556130ad22e091824d462d0a30d06d0b905507cc641476",
+    ".setup-agents/playbooks/profiles/release-manager/release.md": "ee71700b150521285d3428f8ac9e70e94cd5b59253859fdd127b5b887d3da120",
+    ".setup-agents/playbooks/profiles/release-manager/pr-review.md": "f8f0f4463a6124b2905e2a87b41b432a5d051af020d6d739f1b78b3cd228e6d4",
+    ".setup-agents/playbooks/profiles/release-manager/pipeline-design.md": "0553f199f18fe442025f6007e8118a96428b6a379c1cf33787db8ec91044e366",
+    ".setup-agents/playbooks/profiles/fsc/financial-account-setup.md": "e1c9986acfbc5d3e7f845cbebcd26dd16c1e236b9030f14e27dacc4b5821f60e",
+    ".setup-agents/playbooks/profiles/fsc/arc-configuration.md": "b174a254461b5e6259f113e3a5ff57bf4333df5fb220f829e5d50cee803b7223",
+    ".setup-agents/playbooks/profiles/fsc/referral-management.md": "83d8ce41e5965758cfdf9e4dcae8bdd2b31e865b6c89d18430b4b2bd502d00a1",
+    ".setup-agents/playbooks/profiles/fsc/discover-fsc-data-model.md": "259a67f8d3ee66e707fc09e8321728fe46c8546471e529634c539044b7b72d1e",
+    ".setup-agents/playbooks/profiles/fsc/test-fsc-household-sharing.md": "9e83ba69396239ff841cfedb4925af433a1919282b5af68e1ed84c07b2281f62",
+    ".setup-agents/playbooks/profiles/fsc/deploy-fsc.md": "79f5a74fc3bea0ec60f64a33123c24e0d49a8495549ad92466d8edfb712ea185",
+    ".setup-agents/playbooks/profiles/health/care-plan-setup.md": "970a294252af0133445619a04b9fa6e3948ae085412fc976943404cb9d10b6c9",
+    ".setup-agents/playbooks/profiles/health/ehr-integration-setup.md": "a7e07cb591c082ea394fd269ed96cd232765c802b47f39dd97f0f56121fbb5f0",
+    ".setup-agents/playbooks/profiles/manufacturing/sales-agreement-setup.md": "de9685b565b13409685d6dc32cdb97b5bb51ae47afc5fbbfd187dac5408aefbf",
+    ".setup-agents/playbooks/profiles/manufacturing/rebate-program-setup.md": "435b0f0724e1a475774f3629ef71825c55061b7c4975b2cb40f4238e30ac00e4",
+    ".setup-agents/playbooks/profiles/communications/product-catalog-setup.md": "1349dfac9ba539d2b3a3a997fef656c229762793df627745b9a0937e5bf29a06",
+    ".setup-agents/playbooks/profiles/communications/order-orchestration-setup.md": "41497a23c8fd3bb63687f5efe6fe38dd60037d6b2f5b8a7c30e99d5341478eff",
+    ".setup-agents/playbooks/profiles/automotive/vehicle-lifecycle-setup.md": "1bc4e18fedbbf60dd3cb89d03dce5a30c99eb2b845f6c4ead8b6546dc4f3279f",
+    ".setup-agents/playbooks/profiles/automotive/dealer-management-setup.md": "a745430f529f456a61ab1f33fa9107c02af0cd9360428dc8ac11bea15e740649",
+    ".setup-agents/playbooks/profiles/education/student-lifecycle-setup.md": "f3757a405d463d25e71092cba172c643471079711fc9b77703a098eb06871534",
+    ".setup-agents/playbooks/profiles/education/academic-operations-setup.md": "40acad2600978c269788a682c5810552654a922ae61d8a4d9c39d1f2da1a1c7d",
+    ".setup-agents/playbooks/profiles/netzero/carbon-accounting-setup.md": "c37be2ce60e4f8b5d956fd0b6285d359eecba5efc5140f3ca18538baf1e20698",
+    ".setup-agents/playbooks/profiles/netzero/esg-reporting-setup.md": "0cead5b51093f7f92d11218ee726518f8fb306d6b9048a5222ce69ecd8227a8d",
+    ".setup-agents/playbooks/profiles/nonprofit/fundraising-setup.md": "7e922aeec8dc93648c64ae102951f7824a231bd3e30ff7dd5b842433fceeb1ef",
+    ".setup-agents/playbooks/profiles/nonprofit/program-management-setup.md": "6807a0045053301e340da323d6955fb8dc0afa1686517bd29869f25560251084",
+    ".setup-agents/playbooks/profiles/public-sector/licensing-permitting-setup.md": "b628da52ecd3cb727bd2a6cc28c4f4a5a32a86e0eed1a3cc11f01035c68fe2d2",
+    ".setup-agents/playbooks/profiles/public-sector/inspection-management-setup.md": "53dd1850551dc905ce15e44a5738167585c9439b5eb11011de5ce871839ed602",
+    ".setup-agents/playbooks/profiles/media/ad-sales-setup.md": "de66a74469108d0574b7a733387b0620e5ce92688fd3af8fdd99a2b3064b9002",
+    ".setup-agents/playbooks/profiles/media/subscription-management-setup.md": "777d995073fc6f20c4355141d9cca8a0602ed0cf1f994a9bed8eebb330720c55",
+    ".setup-agents/playbooks/profiles/energy/meter-data-setup.md": "db09d3ff920eaca4fe0a3f5bf4e3eac7fd300e79d336e9d33df495c973ab8eef",
+    ".setup-agents/playbooks/profiles/energy/rate-plan-setup.md": "0d9916e24362bf570304c84ead8aa34124aa166fee28a99549280d61c017f791",
+    ".setup-agents/playbooks/profiles/revenue/billing-setup.md": "9ce22fab362ab8bf102fa5aec9e839acdcbbc932f796c756ead5dc1ee5fc72d1",
+    ".setup-agents/playbooks/profiles/revenue/payment-processing-setup.md": "3414ff9f533b13a236bbaa6005604a21cd5caf968aeb9ac136ab18c19c3bacc3",
+    ".setup-agents/playbooks/profiles/revenue/discover-revenue-billing-model.md": "eb4a50fa82b2ce2a8d13dc8fafe9b9fbbfddec7aab937b361f8e6f31bd57bc10",
+    ".setup-agents/playbooks/profiles/revenue/test-revenue-billing-payments.md": "b209a7851c4f33de6e58b8f9bd500fe1eb6672d2afb6a9784d3aced8803ad698",
+    ".setup-agents/playbooks/profiles/revenue/deploy-revenue-billing.md": "31a962b5fc793f1cd51ca548d165c5d250d9c9295770c8f5c7d5e12e4d59fb97",
+    ".setup-agents/playbooks/profiles/maps/territory-planning-setup.md": "41c7f3ca56171b526a3e6abf633a0e31983ec0086c19ff06978b56f522692c59",
+    ".setup-agents/playbooks/profiles/maps/route-optimization-setup.md": "c2f9f24a7e17f72f23275f356681ce26809db276563bff6728d339117cebbe60",
+    ".setup-agents/playbooks/profiles/loyalty/loyalty-program-setup.md": "fe35f3e5e0f2fcc98e6896fae0b273e3f46bd6c64030370738f46e8b164cd7cb",
+    ".setup-agents/playbooks/profiles/loyalty/promotions-vouchers-setup.md": "e8eba56d9be30843a405408e30bde603f815cdf8d8484825f57d9c30b16d33a2",
+    ".setup-agents/playbooks/profiles/industries/industries-platform-setup.md": "baa7dde6f87ba75ada228b6b6b1bf93226265ed46a8586f3efaf45b6059c62aa",
+    ".setup-agents/playbooks/profiles/industries/industries-order-management.md": "6f749663e3546502ebb344c9b4098b8ac6c2248401a156e8f014202413e6a89c",
+    "playwright.config.ts": "46d743a2c607bf7680f98fa30498f67214ec583cb8ba12ba97e4d669e16d3f25",
+    "src/utils/salesforce-auth.ts": "04ef7bf42ccae1daa91877558a87a8f28a71ffbccd063107cfb9e98ff5003474",
+    "src/utils/salesforce-api.ts": "b903e4cd2bcb5ce2af048ebf722b9a35935f65ae40916883bd9b5c32180c1e98",
+    "test/e2e/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test/mobile/wdio.conf.ts": "2aa07e9d73c53a47fc35dd43265c171171f0bf63037b7858f5141e0f16f78d6f",
+    "test/mobile/specs/smoke-test.e2e.ts": "28c80b633250dca0d5c4ea7e232807d7680daae70898990763d0d83461af7710",
+    "test/mobile/package.json": "3ca9d4afd21425087cf31893b8f9f63c81b0b8408db5e343ca76e5f8aa26ab9a",
+    "test/mobile/tsconfig.json": "8c71e884efd00f94bb6750d6feae9e1ab4fd8345145f0ea7b70d1d58791c06df",
+    ".codex/sub-agent-protocol.md": "5b32fddc4a77716440e5ffd585221155405e183d25e935089e4daf6d8dbd8e0d",
+    ".setup-agents/skills/sf-deploy/SKILL.md": "98fae60b0b64b5d3d1fad45b6baaeab764a5fec5bac89402a19aa15ea119cc07",
+    ".setup-agents/skills/sf-code-analyzer/SKILL.md": "57af1bcc5d03a003227e221bfaa89daf4909278d195869c701967cb2eef25b7f",
+    ".setup-agents/skills/org-health-assessment/SKILL.md": "d171ecb68a5a696f40733ea1c8b038c52934bdb64e5c39f6d3856fc46df2c687",
+    ".setup-agents/skills/qa-evidence-pack/SKILL.md": "9bf78090bbcfd222f44542abe396a9ed6df3c17ba4b13e617498b9212f22ee5d",
+    ".setup-agents/skills/oclif-plugin/SKILL.md": "3065084060aaeb42b66941ceb0f3d7ed7566b9d3f7ccde7072a77af69db58134",
+    ".setup-agents/skills/prompt-registry/SKILL.md": "e9f7e27473e5dfd05eff43f0c63cf664fba11f15390952fc567b867b929d6d7d",
+    ".setup-agents/skills/workflow-estimate/SKILL.md": "e3796fdd6c35219f98cec4fa7f49b9faec1e055eadfec4739252e133d187c33d",
+    ".setup-agents/skills/project-knowledge-bootstrap/SKILL.md": "78d285111b24a0d8ea5fc8a0730688ae515ba9b7c077c79945f941ad93b8ac61",
+    ".setup-agents/skills/transcription-evidence/SKILL.md": "c766258ad310c820422d8682b0f72b8c1489f512a9de666b6abc8d0a5ffb63f7",
+    ".setup-agents/skills/transcription-evidence/scripts/transcribe.sh": "3dbbf8e488a773e114f4e876e05ac8ccf2b0270595ea8f5ba3cd3a6841080f70",
+    ".setup-agents/playbooks/sprint-plan.md": "93616d2cdfc8d19715be4dd885d1250bf47d7a78952745c0e99d0af22b4871e1",
+    ".setup-agents/playbooks/status-report.md": "5ab62507c71f72f3a24fdac854f3bc37dde7601455e67b68a60f4772429f6fc9",
+    ".setup-agents/playbooks/risk-register.md": "ef279a09550282114e3b155b390a8bb718aac9a2b57997807fd0ace6464d0228",
+    ".setup-agents/playbooks/delivery-metrics.md": "805e5fd2c052ff8043cdec37288285929c1c77975c78ec3f23cc4ccc1a11c3e4",
+    ".setup-agents/playbooks/refine-stories.md": "9f1d3d427df43346697276d9c41a7f1f27b2671e359164fc3e122640ef612f7f",
+    ".setup-agents/playbooks/groom-backlog.md": "19c793bf00733ac2c6158a127b97f6dc53c8098637c9f777f4e287f4928d455f",
+    ".setup-agents/playbooks/update-jira-ticket.md": "c7e9036be106bce9b073fa5d272aa7185e13155f3adfd8c5c66426879d454789",
+    ".setup-agents/playbooks/adr.md": "e400307ddcc0fd18c571d73e3585134c7c31655cc210899ba9d5033d3aad82b6",
+    ".setup-agents/playbooks/architecture-review.md": "635f59aef308dc60593f7acbb4898c28d5eb5cd6c087c346a8014542879f6b39",
+    ".setup-agents/playbooks/scope-assessment.md": "08a05f01eb9249d9cffe0dea0190117eb56d2ae6f4550752548c19b9f4ed60ee",
+    ".setup-agents/playbooks/data-model-design.md": "c3f13f23f1950aaaad0a5f0bc9d3c9fb140a0ca1bcc0fa8e9d7d033f8f67eb9c",
+    ".setup-agents/playbooks/create-apex-class.md": "da840465d6edebfb6a8f5928847d8489375b539d18d1db0656e571f086aa5cdf",
+    ".setup-agents/playbooks/create-trigger.md": "1b75bb22a663b56ab21b963985ad245d7607edda561087070191553274252ac4",
+    ".setup-agents/playbooks/create-lwc.md": "0194a6711d1ef25570a221544512cbf418ea967a5f869369aad9a8ee3cd14688",
+    ".setup-agents/playbooks/declare-story-points.md": "db3bec914c0667b3aced07b296fbd38c10062bc335df50dbc1685f73bab3fed4",
+    ".setup-agents/playbooks/design-review.md": "6f36218994f276a57af202a1fc0d4b28ac93a4d8b6745529cc09ecdacb2d704c",
+    ".setup-agents/playbooks/wireframe.md": "52c79dd5ddc66914a3d365f30a430326a4c2b9a3def92ac45d06bdb0896e37d6",
+    ".setup-agents/playbooks/a11y-audit.md": "4ed79162279cc7609a762dcbe6d837e9cf698cfd34ee8bbdde137c87d73ff8a2",
+    ".setup-agents/playbooks/qa-plan.md": "be48aed84299196fb00b47dd3f645a6f876a5c4bebafe73419de44346100e1a8",
+    ".setup-agents/playbooks/qa-checklist.md": "5882c5265620f3051f0cdd5a2f3a1cbbd2c884266c41b427c8ffa8fa123a5d86",
+    ".setup-agents/playbooks/observable-assertions.md": "fc90fb141dcf3312a94e978244d264e1ed39f05614f1b1fc37268418005c99fc",
+    ".setup-agents/playbooks/regression.md": "1e54c76aba978e2f4c137baff13f8d30b3dbd9bb2c5a1640532002374e7cc168",
+    ".setup-agents/playbooks/smoke-test.md": "75da55503abceca7044220d4663bf7024a3e25644bb1974dd7beb1e480463228",
+    ".setup-agents/playbooks/run-playwright.md": "f117cbf394ccafe8120aa9c96091edddf7c527a551ebeca60ff452376cd24dd7",
+    ".setup-agents/playbooks/generate-test-report.md": "3c6f918b908f5ec99dc85802dde773a326dca5382c97050a4c2fee2bb5f9cade",
+    ".setup-agents/playbooks/release.md": "bf9020ecf75369e79261b0a427d8b4eb0240d5089f4d8e2b2149c2c087eb52e9",
+    ".setup-agents/playbooks/candidate-release.md": "eb267ee7bc80dfb1119484f4f497b8a200292d06457b7189605e38e6ea9c47b4",
+    ".setup-agents/playbooks/validate.md": "a3d9e33d7fa80f4257afe8ef52389f6df2ce7ed1b65d89ba0cd33f95368098ee",
+    ".setup-agents/playbooks/doc-review.md": "00dcfc6191e121bf20e6c981057c341be75dce0c1c601afe15831a0ab2ca750a",
+    ".setup-agents/playbooks/security-review.md": "c97468969e8a122f285d79fc1fa96b5fa628721b467215590f3ed25916981fb9",
+    ".setup-agents/playbooks/threat-model.md": "dc33d2f561c5e455511e76032ce61e8e1df90144907771995e5670143c2ae696",
+    ".setup-agents/playbooks/env-audit.md": "9c8d21573aa5056f8a9c75b608e753ae4b16579fe2052bd90049517f93017a38",
+    ".setup-agents/permissions.md": "e98a56f78f3fe3dcf416f0be4936e4c48bd5507cbc23ccfe605f262a4a0e95bc",
+    ".setup-agents/env-audit.md": "060ecc15c99dd48ffed9b690ebfd7c11f32e9b69e7b8a043e9a403fd62be37c7",
+    ".setup-agents/state/README.md": "3481c08a83a523de48480d4b8cca57609489180e67d6ea285dead050aa9df759",
+    ".setup-agents/OFFLINE.md": "fd5cc7eb916ef735f838536d6454ce8ab2d9be84f84982cbaacd3327240b5a2a",
+    ".generated-prompts/apex.md": "a20992fbc6afe473039774c3e4ffd097a8b4999691c16f71734e9b201dd5ae05",
+    ".generated-prompts/aura.md": "eb24e3f6d1637b559a42f0ea869560c71c2619b09362d70d974504c529462b62",
+    ".generated-prompts/docs.md": "481f3d6807b125ffc5c9d50fa617e38aa075e9dd6dee89fa6093ddee535aad85",
+    ".generated-prompts/flows.md": "c4f7319cfaea0cadc43db3f55b033cb3f54b4076b8c4f69c3f79f21d130efe3b",
+    ".generated-prompts/lwc.md": "6a98ef1e9aca3fc89790ac6057b9121e34c59fae28dff6e6841a79faa6a6eebf",
+    ".generated-prompts/metadata.md": "cbe2a9bf05c51277b9972cfed826a7b6393ae381187640efd6af22db41d2e208",
+    ".generated-prompts/triggers.md": "1c93b1a1210a12c14b5fb342be2014a4e0ddcb9825d027e82d7161f7a8d891b1",
+    ".generated-prompts/visualforce.md": "3a3114afced3f274a4be9690aeea6a065ad497374fc5bb19385016f05685ed08",
+    ".cursor/rules/agent-guidelines.mdc": "605cec3704c38e97d81c7866f81390bb5583bee35d2563811d9ec50c1a0f4156",
+    ".cursor/rules/setup-agents-autonomous.mdc": "bd43bbccd4d42276310266e184a2dff90b504dece07cb61897d9aa01a2f9618f",
+    ".cursor/rules/setup-agents-gate-approval.mdc": "ec067957479e146fade3f1247426d219cdbe04c350e3278fbc2c3675362f946f",
+    ".cursor/rules/sub-agent-protocol.mdc": "3f20b767d227b4719be4074b4ab21017239e83c810e1a45d9a63b684df62a257",
+    ".cursor/rules/salesforce-standards.mdc": "6d9b0bf3da185c69055dbbe18dd72f30f5804927373c29c1b72dc77ce5e00dd7",
+    ".cursor/rules/developer-standards.mdc": "644c6400b0f842987469dc56a5166e57f54db1672181fa47fc1a8a7392c4faad",
+    ".cursor/skills/sf-deploy/SKILL.md": "98fae60b0b64b5d3d1fad45b6baaeab764a5fec5bac89402a19aa15ea119cc07",
+    ".cursor/skills/sf-code-analyzer/SKILL.md": "57af1bcc5d03a003227e221bfaa89daf4909278d195869c701967cb2eef25b7f",
+    ".cursor/skills/prompt-registry/SKILL.md": "e9f7e27473e5dfd05eff43f0c63cf664fba11f15390952fc567b867b929d6d7d",
+    ".cursor/skills/qa-evidence-pack/SKILL.md": "9bf78090bbcfd222f44542abe396a9ed6df3c17ba4b13e617498b9212f22ee5d",
+    ".cursor/skills/doc-sync/SKILL.md": "3210b10f4122cc477cb35c7ee0862388d7763061b51c2fc6e1ce2444820b4381",
+    "CLAUDE.md": "058ba38f4988231b9656a1b0807a9906e84cb486fed0b566732b644b27dd5d5d",
+    "CLAUDE.local.md": "306a34a7a18f5218bdbeb9b6600622afe452f115bbe37867064dabe8e1020e83",
+    ".claude/rules/developer.md": "a9a84d5db3e5095d912fdf57656bb4487440e0e8b3a7f27d799102c0ca412616",
+    ".setup-agents/rules/architect.md": "e4f8d7309c355e96ffbad7b3ff18e026e47c506f128f4974e94f172cf469f79b",
+    ".setup-agents/rules/sa.md": "3d29b820a5c2ddadf6f3e8972d614e47fcd5607c0597871650edbd822bfd0fd8",
+    ".setup-agents/rules/pm.md": "cb515094a4be47a48885020f7d74f44cd4f3871f23f8d91a595d62f6e108fb00",
+    ".setup-agents/rules/ux.md": "faa1a3b01ee4901b6d511d197cf32137dbdce658675cb97046262b69fc97db53",
+    ".setup-agents/rules/qa.md": "8c0a5a0463bd4eba0ba381065e77f8da361a8ceec411ef2d70475424566d4cec",
+    ".setup-agents/rules/release-manager.md": "24bf086ffc5cb042739684e7e24c08d2cf601a384e44d98f1384495763406e12",
+    ".claude/rules/sub-agent-protocol.md": "608117d9885643e7eb06084aa935043b8833e1831e93d43b640902ac2aa9ec1d",
+    ".claude/agents/developer.md": "d9d334b482897bb5ce2f7b786e5669bb39a58ccc28a32dcc856b1372ffdec7c7",
+    ".claude/agents/architect.md": "374e77c23d8255454cf251212a8649dd7c3dfd9c6c41364574c89171e3473c2b",
+    ".claude/agents/sa.md": "c5fd762a150b9d92464ad594d7273ed0d4b8c2997522f5337750f673a959df1d",
+    ".claude/agents/pm.md": "507a0e3fcdfb5fbe0e2b555f563e0623790c1cbd8edb38b903d9d679dfcc19f7",
+    ".claude/agents/ux.md": "b4ccfb92be724d1194873934243ce02e7a41bb2e111876eed0c5c7d98b704eee",
+    ".claude/agents/qa.md": "744caf2a17134808107fb80aa3d6b9bc7e5fbf691f5b8c7ed7d12c2e39a00944",
+    ".claude/agents/release-manager.md": "84b78467accc52015d640639275af7a96647844b59eb4c1a7e27bec274615994",
+    ".setup-agents/skills/story-mapping/SKILL.md": "66ba41674a5326484d0f7fa508b566cf04402a9cf46ab3a86c0a5ccfd36eaf1c",
+    ".setup-agents/skills/story-mapping/scripts/render-pdf.sh": "3021be9e51713547ac236b4ae236bad96d8509745b6afafcb21da863f8537611",
+    ".setup-agents/skills/story-mapping/assets/mermaid-pdf.css": "a56152b9dbb4a60df78134ad9d5a6a4a5a9ca8cf315aa1976e8fe3cc6cb3786b",
+    ".setup-agents/skills/diagram-export/SKILL.md": "beea3ed3fc6c15e3f82d16b9cd10740653bfab95fb683e4b64ca6a68fd1c55a1",
+    ".setup-agents/skills/diagram-export/scripts/export-diagram.sh": "7f1c2a49c9446579a9552c2f1da1e759922584f9dfb5f0ce4e4d0c0c29545d6b",
+    ".setup-agents/skills/diagram-export/examples/erd-grouped.json": "a0ca3d7bfc643d2294570a41f202f7d10d71565ddb42f5de29289e62439cfdc0",
+    ".setup-agents/skills/backlog-sync/SKILL.md": "f36d8960eabd3cb4c7420a821397cf35a6a63c69375e57ae1de7e10639fbf1ee",
+    ".setup-agents/skills/elements-sync/SKILL.md": "48c86a59b8993761a51ed451f25c4922a2467c2a61f7275c9f4c73760180d4fb",
+    ".setup-agents/skills/elements-sync/scripts/push-to-elements.sh": "33d20edbd37a6e84bef4122acc52182889755a2f6e9eb80a78f1f536e2131033",
+    ".setup-agents/skills/refine-story-functionally/SKILL.md": "cdf56f1ad727122884b02bf93c1dfb7be2b6f41cb4d6601e319cc558d0cc0f0f",
+    ".setup-agents/skills/refine-story-technically/SKILL.md": "6a00173f72c066dd5ba4a8f0afa17e09f02ca003304535f5ea6ec26dc0faa422",
+    ".setup-agents/skills/decompose/SKILL.md": "cbab4017386edab26f75683b57e92b44159341d2ceb4970c06127a9eb18b4d9e",
+    ".setup-agents/skills/generate-rom/SKILL.md": "1d45f8b3fd8308bbe499d5673e7ee274b2e62f02dadaa7dda083db587bcf5cb8",
+    ".setup-agents/skills/record-adr/SKILL.md": "68a7b8db9375eb01c1d77c2836c017aa30a61e0bfe012a0ca13ac3714cc901d6",
+    ".claude/rules/doc-sync.md": "de4e03a7ee76900808e4c193e6e14062086de482449c1dacbffd7491010d2529",
+    ".generated-prompts/cicd.md": "d118b4276e79a28b65ebc10853fb7952e0e0c9a25b00f91c7b4e8973a2ef6571",
+    ".generated-prompts/diagrams.md": "6719813c49ca894822e00a1b031e40e6be6529be6c3a1b4a932b02de5cb4b49d",
+    ".generated-prompts/omnistudio.md": "cedba59eff18012a2109fb77e85a4947a75db32570be6897829448222df68dfb",
+    ".generated-prompts/tests.md": "fdbc6a75a23a5b22c9c42b7c78c75a8c784c027a0c21cad2bfef2cd2b157c38a"
+  }
+}

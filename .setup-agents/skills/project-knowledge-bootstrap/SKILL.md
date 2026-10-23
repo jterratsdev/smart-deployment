@@ -69,6 +69,7 @@ ls force-app/main/default/flows/*.flow-meta.xml 2>/dev/null | head -5
 ```
 
 **Rules for inference:**
+
 - If a prefix is consistent across 80%+ of files, record it (e.g., `APP_ClassName`).
 - If test classes use a suffix, record it (e.g., `*Test` vs `*_Test`).
 - If no clear pattern emerges, leave the convention cell **empty** and add a note:
@@ -88,6 +89,7 @@ grep -h "<label>" force-app/main/default/flows/*.flow-meta.xml 2>/dev/null | hea
 ```
 
 **Language detection heuristic:**
+
 - If labels contain accented characters (á, é, ñ, ü) or non-ASCII → likely Spanish/Portuguese/French.
 - If labels are CamelCase English words → English.
 - If mixed → record "Mixed — confirm with user."
@@ -130,12 +132,12 @@ find . -maxdepth 2 -name "runbook*" -o -name "playbook*" | head -5
 
 For each documentation source found, add a row to `doc-index.md`:
 
-| Path | Content | When to read |
-|------|---------|--------------|
-| docs/adr/ | Architecture Decision Records | Before proposing new architecture |
-| docs/deployment/runbook.md | Deploy steps and rollback procedures | Before release phase |
-| README.md | Project overview, setup, and local dev instructions | Onboarding, first task |
-| CHANGELOG.md | Release history and breaking changes | Before versioning decisions |
+| Path                       | Content                                             | When to read                      |
+| -------------------------- | --------------------------------------------------- | --------------------------------- |
+| docs/adr/                  | Architecture Decision Records                       | Before proposing new architecture |
+| docs/deployment/runbook.md | Deploy steps and rollback procedures                | Before release phase              |
+| README.md                  | Project overview, setup, and local dev instructions | Onboarding, first task            |
+| CHANGELOG.md               | Release history and breaking changes                | Before versioning decisions       |
 
 This index is intentionally a separate file so agents can read it in one shot
 without loading the full project-knowledge.md (which contains naming, architecture, etc.).
@@ -159,21 +161,32 @@ head -10 force-app/main/default/classes/<ClassName>.cls
 ```
 
 **Classification rules:**
+
 - **Domain**: class name contains object name OR class doc mentions a specific SObject. Record the object.
 - **Service**: orchestrates cross-object logic, often has "Service" suffix. Record one-line responsibility.
 - **Trigger Handler**: extends/implements trigger handler base. Record which object and trigger.
 - **Test**: has `@isTest` annotation or `_Test`/`Test` suffix. Record what it tests.
 - **Invocable/REST**: `@InvocableMethod`, `@RestResource`, `implements Queueable/Batch/Schedulable`. Record type + purpose.
-- **LWC**: each directory under `lwc/`. Read the `.js-meta.xml` for the target (lightning__RecordPage, etc.).
+- **LWC**: each directory under `lwc/`. Read the `.js-meta.xml` for the target (lightning\_\_RecordPage, etc.).
 - **Utility**: everything else (selectors, factories, helpers, base classes).
 
 Write results to `.setup-agents/class-catalog.md` filling each section table.
 
 ### 8. Populate project-knowledge.md
 
-Fill each section with findings. Use this format:
+`project-knowledge.md` uses the reader-first layout: a one-minute summary at the top, then
+every accepted fact nested under `## Accepted Facts`, each wrapped in its own
+`<!-- setup-agents:block:start id="..." -->` marker. Fill content INSIDE each section's existing
+markers — never remove a marker, never rename a heading, never flatten the layout back to five
+bare `##` sections. `sf setup-agents knowledge refresh --full` already seeds the Diagrams table
+and the derived evidence block; this step only fills the human-judgment sections.
+
+**One-minute summary** (top of file): write the "What this project is", "Products / clouds",
+"Label language", and "Key conventions at a glance" lines once — `knowledge refresh` never
+overwrites a non-placeholder value here.
 
 **Architecture Decisions:**
+
 ```markdown
 - Trigger pattern: [detected pattern or "None — ask before implementing"]
 - Data layer: [detected class/pattern or "None — propose options"]
@@ -181,10 +194,15 @@ Fill each section with findings. Use this format:
 - Sharing model: [with sharing / without sharing defaults detected]
 ```
 
+Record each as a row (Decision | ADR | Summary) once confirmed with the user — link the ADR via
+`sf setup-agents decision add --category architecture ...`.
+
 **Naming Conventions table:**
-Fill the table cells with detected patterns. Leave empty cells for undetected patterns.
+Fill the table cells with detected patterns. Leave empty cells for undetected patterns. This
+table is the readiness gate: `knowledge refresh`'s "unfilled template" check looks here first.
 
 **Label Language:**
+
 ```markdown
 - Labels: [detected language]
 - Descriptions: [detected language]
@@ -192,6 +210,7 @@ Fill the table cells with detected patterns. Leave empty cells for undetected pa
 ```
 
 **Codebase Map:**
+
 ```markdown
 - Entry points: [trigger classes, REST endpoints, schedulables]
 - Service classes: [path pattern]
@@ -201,11 +220,16 @@ Fill the table cells with detected patterns. Leave empty cells for undetected pa
 ```
 
 **Search Hints:**
+
 ```markdown
-- Trigger handlers: force-app/main/default/classes/*Handler.cls
-- Test classes: force-app/main/default/classes/*Test.cls
+- Trigger handlers: force-app/main/default/classes/\*Handler.cls
+- Test classes: force-app/main/default/classes/\*Test.cls
 - [other patterns discovered]
 ```
+
+**Diagrams:** confirm each row `knowledge refresh` seeded (name, what it shows, location,
+last updated) and add any diagram it missed. Reference diagrams by file path or Lucid link —
+never paste a diagram's content into this table.
 
 ## Rules
 

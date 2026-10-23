@@ -1,0 +1,641 @@
+{
+  "archives": [
+    "api67-2026-10-07.tgz",
+    "cgcloud-settings-2026-10-07.tgz",
+    "dependabot-2026-10-07.tgz",
+    "fast-uri-2026-10-07.tgz",
+    "fast-uri-318-2026-10-07.tgz",
+    "gh-252-2026-10-07.tgz",
+    "gh-268-2026-10-07.tgz",
+    "wave-order-2026-10-07.tgz"
+  ],
+  "tasksAdded": [
+    {
+      "id": "SD-API67-LIVE-HARNESS-qa-86c69f",
+      "archive": "api67-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-CGCLOUD-RETAIL-SETTINGS",
+      "archive": "cgcloud-settings-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-CGCLOUD-RETAIL-SETTINGS-developer-fdcd76",
+      "archive": "cgcloud-settings-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-FAST-URI-SECURITY-HOTFIX-qa-b02ad1",
+      "archive": "fast-uri-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-FAST-URI-318-HOTFIX-qa-e1b39e",
+      "archive": "fast-uri-318-2026-10-07.tgz"
+    },
+    {
+      "id": "GH-252-CORRECTION",
+      "archive": "gh-252-2026-10-07.tgz"
+    },
+    {
+      "id": "GH-252-CORRECTION-developer-9d68df",
+      "archive": "gh-252-2026-10-07.tgz"
+    },
+    {
+      "id": "GH-252-CORRECTION-developer-9d68df-retry1",
+      "archive": "gh-252-2026-10-07.tgz"
+    },
+    {
+      "id": "GH-252-CORRECTION-qa-9d68df",
+      "archive": "gh-252-2026-10-07.tgz"
+    },
+    {
+      "id": "GH-252-FINAL-QA",
+      "archive": "gh-252-2026-10-07.tgz"
+    },
+    {
+      "id": "GH-252-FINAL-QA-qa-5b02b5",
+      "archive": "gh-252-2026-10-07.tgz"
+    },
+    {
+      "id": "GH-268-architect-50909d",
+      "archive": "gh-268-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-WAVE-SAFETY-CONTRACTS-architect-8e4903",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-WAVE-SAFETY-CONTRACTS-developer-8e4903",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-WAVE-SAFETY-CONTRACTS-developer-8e4903-retry1",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-WAVE-SAFETY-CONTRACTS-developer-8e4903-retry2",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-WAVE-SAFETY-CONTRACTS-developer-8e4903-retry3",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-CGCLOUD-RETAIL-SETTINGS-developer-1b6c57",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-MATCH-DUP-RULES",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-MATCH-DUP-RULES-architect-52dcd1",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-MATCH-DUP-RULES-developer-52dcd1",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-MATCH-DUP-LIVE-CG-DEMO",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-MATCH-DUP-LIVE-CG-DEMO-qa-93857f",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-MATCH-DUP-STANDARD-RULES",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-MATCH-DUP-STANDARD-RULES-developer-567937",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-METADATA-DOC-AUDIT",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-METADATA-DOC-AUDIT-architect-cfb7d7",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-METADATA-DOC-AUDIT-architect-9cba06",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-METADATA-IDENTITY-P0",
+      "archive": "wave-order-2026-10-07.tgz"
+    },
+    {
+      "id": "SD-METADATA-IDENTITY-P0-developer-c6fdfd",
+      "archive": "wave-order-2026-10-07.tgz"
+    }
+  ],
+  "tasksUpdated": [
+    {
+      "id": "SD-FAST-URI-318-HOTFIX",
+      "archive": "fast-uri-318-2026-10-07.tgz",
+      "previous": "2026-09-30T20:00:55.209Z",
+      "updated": "2026-09-30T20:48:31.197Z"
+    },
+    {
+      "id": "SD-WAVE-SAFETY-CONTRACTS",
+      "archive": "wave-order-2026-10-07.tgz",
+      "previous": "2026-10-01T08:58:52.966Z",
+      "updated": "2026-10-01T09:45:13.328Z"
+    },
+    {
+      "id": "SD-CGCLOUD-RETAIL-SETTINGS",
+      "archive": "wave-order-2026-10-07.tgz",
+      "previous": "2026-10-01T08:30:56.018Z",
+      "updated": "2026-10-02T05:19:07.088Z"
+    }
+  ],
+  "ledgerAdded": {
+    "events.jsonl": 402,
+    "estimates.jsonl": 16,
+    "workflow-runs.jsonl": 69
+  },
+  "filesAdded": [
+    {
+      "path": ".agent-workflow/evidence/SD-API67-LIVE-HARNESS-1790635853120-eec457ee-ff10-45c2-b168-67999844c9c2-report.md",
+      "archive": "api67-2026-10-07.tgz",
+      "sha256": "beec3337b8bda527508254eb47a1096478b0d4929f36637400aca9d7ba68b283"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-API67-LIVE-HARNESS-1790636741205-c731b490-0480-4e55-9be1-799a7ceef865-command.md",
+      "archive": "api67-2026-10-07.tgz",
+      "sha256": "2bb8b6268d346369a91bb49970752593e564a8ce8bbad17c49fc544a4a5a4a31"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-API67-LIVE-HARNESS-1790636309377-6c72fe8c-7df3-409c-9ba3-c092df1f91e5-command.md",
+      "archive": "api67-2026-10-07.tgz",
+      "sha256": "2b9dd80ef0a56008d38a507dccae30c15a9f725bc11492db4bc3acc6e5543313"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-API67-LIVE-HARNESS-1790635859975-ade1d4d3-9d26-47a3-b581-96a60bace1df-command.md",
+      "archive": "api67-2026-10-07.tgz",
+      "sha256": "06412e5909b7688a48dce907dba8937e2ebfaff3855168b5c0ed117b9998ac9d"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-CGCLOUD-RETAIL-SETTINGS-architect-review.md",
+      "archive": "cgcloud-settings-2026-10-07.tgz",
+      "sha256": "5b03c882b3b127617ff254276cc2dec3478c012f0aee24988ea5c315cd82a3c8"
+    },
+    {
+      "path": ".agent-workflow/decisions/SD-CGCLOUD-RETAIL-SETTINGS-1790838254131-decision.md",
+      "archive": "cgcloud-settings-2026-10-07.tgz",
+      "sha256": "e756c5386e8ae67cc0a754cceb9ff7f6fdfbc492e012948ad758620dc4b5da8e"
+    },
+    {
+      "path": ".agent-workflow/decisions/SD-CGCLOUD-RETAIL-SETTINGS-1790838254442-decision.md",
+      "archive": "cgcloud-settings-2026-10-07.tgz",
+      "sha256": "b332d424a760333b6fc65de549916e99e8419bfd6f9b482c8dfc98eeeddebe70"
+    },
+    {
+      "path": ".agent-workflow/decisions/SD-CGCLOUD-RETAIL-SETTINGS-1790843502305-decision.md",
+      "archive": "cgcloud-settings-2026-10-07.tgz",
+      "sha256": "6ae003195bb056b88133fb81c2dd61511c786db63871aad0de144a96b8d315cf"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-FAST-URI-SECURITY-HOTFIX-1790706412901-81fc7c59-ca09-4f78-8002-3c07b746afad-command.md",
+      "archive": "fast-uri-2026-10-07.tgz",
+      "sha256": "260ed95513937adb33a1b179effd76c142d6ddff8dda5802c385594aa1d1f692"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-FAST-URI-SECURITY-HOTFIX-1790705339140-dde00229-fae7-4dff-8558-1df5063c4906-report.md",
+      "archive": "fast-uri-2026-10-07.tgz",
+      "sha256": "e8c8004d3580b10d98a24e347325c705d46107d4cb837f98237abecd9c3858f1"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-FAST-URI-SECURITY-HOTFIX-1790705631909-8172d5d0-ce27-4915-a136-bba0745b2fa6-command.md",
+      "archive": "fast-uri-2026-10-07.tgz",
+      "sha256": "f66ff00f5685bf9610cb50aafd806d4732c46f81e1802b7b2b203ffb45988530"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-FAST-URI-SECURITY-HOTFIX-1790706412901-2baa6a07-c44a-40fb-b8e4-8d01a9b1d183-command.md",
+      "archive": "fast-uri-2026-10-07.tgz",
+      "sha256": "b328d3ed8836fa83c38deb6dec47448a8eb3ce596cfd569d6820a93e2bc64ffc"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-FAST-URI-SECURITY-HOTFIX-1790705339139-cf266d49-90f1-4f8b-9f41-b94692c5896c-command.md",
+      "archive": "fast-uri-2026-10-07.tgz",
+      "sha256": "b5d69ad66d7644d0c1e68d761738c0685a421fd7f99d4dac43ccbe5c2e0b2b1a"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-FAST-URI-SECURITY-HOTFIX-1790705339140-6dc7ea75-0800-4f98-9387-588517fe81f1-command.md",
+      "archive": "fast-uri-2026-10-07.tgz",
+      "sha256": "1cbe7b8b7d7e3789d8a89a6c77a077fcd2bd1c17fbed2b7cf5dc4d9c55834f36"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-FAST-URI-SECURITY-HOTFIX-1790705339139-0bc0327d-88d0-476c-9e6a-532eaae3f968-command.md",
+      "archive": "fast-uri-2026-10-07.tgz",
+      "sha256": "b95c2cfc3bac78d8ddf32fec970efacf017bc3993d24cd94f25d109c5ca45024"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-FAST-URI-318-HOTFIX-qa-review.md",
+      "archive": "fast-uri-318-2026-10-07.tgz",
+      "sha256": "1d4c12e701353f565024f95971dead2c09433ba3c55ddcaddd27305840a02921"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-FAST-URI-318-HOTFIX-1790801287719-de25d6c4-fe82-4bdd-ba6a-d5fd669aa5c3-command.md",
+      "archive": "fast-uri-318-2026-10-07.tgz",
+      "sha256": "dd6f0372ed8e0f8df6ff9af0493e2b2638b1ee0972dcd537c5543422610d9198"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-FAST-URI-318-HOTFIX-1790801305611-e4b7fc92-5b01-44f5-a319-116fd456a189-report.md",
+      "archive": "fast-uri-318-2026-10-07.tgz",
+      "sha256": "25f02b1e5d1bfe94f36f97c27265ce047dea2f5ecc8a3598e826a895c8648d2c"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-FAST-URI-318-HOTFIX-1790801292344-3b6df88d-e495-4534-8a00-29aad2ae7203-command.md",
+      "archive": "fast-uri-318-2026-10-07.tgz",
+      "sha256": "5d658050f4540d3a5e02a5cdeac417e3b3ab9a5334a9d6bc29ca9d34378718a5"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-FAST-URI-318-HOTFIX-1790801300938-bd679ea8-4c72-41c9-a2d4-a1003e750c1a-command.md",
+      "archive": "fast-uri-318-2026-10-07.tgz",
+      "sha256": "9ab65c2c01ab3bc5ed52ab3b4dbbae76d2e18a25db3699cf2318d7d5300c285b"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-FAST-URI-318-HOTFIX-1790801296739-2f5ac482-92c1-4474-80b1-805eae47e72a-command.md",
+      "archive": "fast-uri-318-2026-10-07.tgz",
+      "sha256": "9a3fb24270ce740deb7a69a752897522240bb62c3ffdf208ff839829f214d52b"
+    },
+    {
+      "path": ".agent-workflow/reviews/GH-252-CORRECTION-qa-review.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "dba0d4372ec8ef29e11fc9f3150d9b9cd02f7f64f9dfd1dcabacbc8cca27966a"
+    },
+    {
+      "path": ".agent-workflow/reviews/GH-252-FINAL-QA-developer-review.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "d285094a569849ee95e0e072741fed59be1f9820d8210334da2d34d988743986"
+    },
+    {
+      "path": ".agent-workflow/reviews/GH-252-FINAL-QA-qa-review.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "ffe83bc3705b17dc4aa0274ebbd741189dc4a0991ba88257003f16499cd94295"
+    },
+    {
+      "path": ".agent-workflow/handoffs/GH-252-CORRECTION-qa-to-release_manager.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "bbed20b29473d66d41c4dbd9ec80c1ddbfcf6e39af73644d8eacedf9d92b3539"
+    },
+    {
+      "path": ".agent-workflow/handoffs/GH-252-FINAL-QA-developer-to-qa.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "d124ecd4ae855eb3e36a721fa8d269ad30e1e47d71ac16cea3cf8ea1589c0aba"
+    },
+    {
+      "path": ".agent-workflow/handoffs/GH-252-CORRECTION-developer-to-qa.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "c0fca55e1c2031e51e13500e4798bb22edef63f7d37160ac2517c0cef52dfe6b"
+    },
+    {
+      "path": ".agent-workflow/runs/GH-252-FINAL-QA/qa/wfrun-1790123693887-5b02b5-qa-e2e.sh",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "8a0d85488a191f3567ce674e898d6ef811444f5e6f85efcf0dbdaba78ea5baed"
+    },
+    {
+      "path": ".agent-workflow/runs/GH-252-FINAL-QA/qa/wfrun-1790123693887-5b02b5-qa-e2e-plan.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "f692640e9ba91f2d1fc58a617670a614ca73adda28b8c62b272be7898c3e207c"
+    },
+    {
+      "path": ".agent-workflow/decisions/GH-252-CORRECTION-1790122682049-decision.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "070908c74dd21c6a19dc7a76213cfe0fa6aab23f3aa60dc01b3dceb84a7d85fc"
+    },
+    {
+      "path": ".agent-workflow/evidence/GH-252-FINAL-QA-1790126502379-473963e4-e73a-414b-a537-1f26884ae748-command.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "d50977c66a233222ea6ee79336ccf85d707c10364719aa808c25c1c2c13b6026"
+    },
+    {
+      "path": ".agent-workflow/evidence/GH-252-CORRECTION-1790123525658-975ba877-1474-40fe-84d6-23eb706952c3-command.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "d3412125001802c89fe0b89db5987f87e9a006e3a61f9acf5ca67e2dd27eb8ff"
+    },
+    {
+      "path": ".agent-workflow/evidence/GH-252-CORRECTION-1790123507580-f2b5834d-aee2-4c20-be0a-c14165f3edcf-command.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "6161902f82e517d40d1e3d7eb12abb79bcb606c01ec78673d6a0eab13d6f0de7"
+    },
+    {
+      "path": ".agent-workflow/evidence/GH-252-FINAL-QA-1790125778675-b0fa9b3e-f503-45ed-a191-56dbeaf24d53-command.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "15b86191b739f354a7bffa4bf63bf5c482bd60d3ea1bcf49500de2ff547a4382"
+    },
+    {
+      "path": ".agent-workflow/evidence/GH-252-FINAL-QA-1790125022386-e17b375a-3a39-4783-9cfe-b37b665c172d-log.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "90a88b22c85b6d77ecd47eb8201b5e543852f85838848da4329d3dcb9a0925cb"
+    },
+    {
+      "path": ".agent-workflow/evidence/GH-252-FINAL-QA-1790125028038-7dec80a3-21ba-4bc5-a0a4-e1f31b948c6f-command.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "f5e9100b908da94733f3875f651623b0ccdfe5886bcc5d3f6fa9028479a55bbf"
+    },
+    {
+      "path": ".agent-workflow/evidence/GH-252-FINAL-QA-1790125778675-06b8fa55-7bec-4060-b3dc-0c509ea22bae-file.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "013bbb3988a8742db4011015b26324d57864bf5bd32aa385e33d319589f2518c"
+    },
+    {
+      "path": ".agent-workflow/evidence/GH-252-CORRECTION-1790123530694-e957f15b-f3e5-474c-b448-82b92a549f3e-log.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "aaaaca7283a5024b974784c0e59d847571b0d3016fb10f14f4dad38407093f20"
+    },
+    {
+      "path": ".agent-workflow/evidence/GH-252-FINAL-QA-1790125008831-adb4d69b-7ba9-401a-b0f8-c48c9d0ff505-command.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "sha256": "72305ba37848e486da4163822ac6eb0b3850a9d68bbf11f245147130b67fcb91"
+    },
+    {
+      "path": ".agent-workflow/decisions/GH-268-1790797054117-decision.md",
+      "archive": "gh-268-2026-10-07.tgz",
+      "sha256": "ef0f0ee3d5eaee19693ba1c5cea400355f8c7a7f83be85a63a4219db14e5acf0"
+    },
+    {
+      "path": ".agent-workflow/decisions/GH-268-1790796277402-decision.md",
+      "archive": "gh-268-2026-10-07.tgz",
+      "sha256": "a83f4c6ada82e7a2b7b575c23f0a54cfb5ba23af56c447f59fc2d18d1784835d"
+    },
+    {
+      "path": ".agent-workflow/decisions/GH-268-1790797054509-decision.md",
+      "archive": "gh-268-2026-10-07.tgz",
+      "sha256": "84cc9f70494143d0333ab9698ae5562ce69ebabc0fa6048abdc91408a244c384"
+    },
+    {
+      "path": ".agent-workflow/evidence/GH-268-1790796460587-1e8fa198-6543-4da9-ab5d-e6725a5ab61b-command.md",
+      "archive": "gh-268-2026-10-07.tgz",
+      "sha256": "0c4ad307cdae6e1cb7e43bae9196ef1509a0d9c06afdc16fdece6dd5a94a9292"
+    },
+    {
+      "path": ".agent-workflow/evidence/GH-268-1790797311750-3b0e122d-4b74-4329-9018-3cac52c328a6-report.md",
+      "archive": "gh-268-2026-10-07.tgz",
+      "sha256": "17f53e4c32009cb7b8703f4fd802c66f0153fb761f47f3d5f1cc26332e1ce5e2"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-MATCH-DUP-RULES-developer-review.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "006902afb5e91321b4a0ea967343da88a72992353263917b7cf5826d40b380f3"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-MATCH-DUP-STANDARD-RULES-developer-review.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "91f564ff49bca9dbc946bbf983267ece9bb5e5310e926e8bade0161d754c7e9b"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-MATCH-DUP-STANDARD-RULES-qa-review.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "fa6be218700b3dc503ccd3c46102b9729cfa57de26cbcb7562e1935e82f09819"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-MATCH-DUP-LIVE-CG-DEMO-qa-review.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "a513744ee18d31f6102330a80e81008bc99e1986c117e49fe5127da8dd7ae702"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-MATCH-DUP-RULES-qa-review.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "58666bc1a0349321ebfbec50c09a991173d229fbff190deee3935921d660be70"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-CGCLOUD-RETAIL-SETTINGS-qa-review.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "149affa191db3dff57e61749006102b1be667ce320162e8de580e572a98593ef"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-METADATA-IDENTITY-P0-developer-review.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "dd63fe09f61d45665d2b003638467167a0d00f4cb6524563bc0a0e76dd6a136d"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-CGCLOUD-RETAIL-SETTINGS-developer-review.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "9409a6750671434239a575bf567bf6a897a5e3b9d45724276853d7cbcdbe8250"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-METADATA-DOC-AUDIT-architect-review.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "78f706a608c84fc37b1b0a5cae4b066c1abab46e8b3b31a71b66e3f6b4730b33"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-WAVE-SAFETY-CONTRACTS-qa-review.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "8c2e3cfbc070985fbe76ac36b9334bff3ee09577683d8fb1b458811f6148892f"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-WAVE-SAFETY-CONTRACTS-developer-review.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "ea1cb2b9a01004729014ca25a3aa556e5dae0c33bf2730028f6106dc36aed122"
+    },
+    {
+      "path": ".agent-workflow/handoffs/SD-CGCLOUD-RETAIL-SETTINGS-developer-to-qa.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "866a1e86f58daa5f5a9d07dfcb3ce3e2ca7645a5d5414bcb449e46146756269a"
+    },
+    {
+      "path": ".agent-workflow/handoffs/SD-MATCH-DUP-RULES-developer-to-qa.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "17553bbd0f0d1066150437b0194d0d3c1c9951d6c3b53357675f90d2506d0ab5"
+    },
+    {
+      "path": ".agent-workflow/handoffs/SD-MATCH-DUP-RULES-architect-to-developer.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "f2de089f2273ef930cfcdfdd618a17b550192302dfedd3d1d86555368cead4dd"
+    },
+    {
+      "path": ".agent-workflow/handoffs/SD-WAVE-SAFETY-CONTRACTS-architect-to-developer.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "31b7d309c2c5c872648203212c052dc8d2447efc83d49f1bbaa188a872fca8bc"
+    },
+    {
+      "path": ".agent-workflow/handoffs/SD-WAVE-SAFETY-CONTRACTS-developer-to-qa.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "09b77c62c8314394349bb1a2b4de7a029eec17437b236e27264ae72f12e394d8"
+    },
+    {
+      "path": ".agent-workflow/runs/SD-MATCH-DUP-LIVE-CG-DEMO/qa/wfrun-1791055595615-93857f-qa-e2e.sh",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "8a0d85488a191f3567ce674e898d6ef811444f5e6f85efcf0dbdaba78ea5baed"
+    },
+    {
+      "path": ".agent-workflow/runs/SD-MATCH-DUP-LIVE-CG-DEMO/qa/wfrun-1791055595615-93857f-qa-e2e-plan.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "fc2955804e178abaee9ec93e2a18ecfd9e12d5f027c826a451f9faef5be22edd"
+    },
+    {
+      "path": ".agent-workflow/decisions/SD-METADATA-IDENTITY-P0-1791089370019-decision.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "c3f8cedbfa9c688ea935c6f537f34b9aaae544dbc47fbb56260bd17bcf4c8b1c"
+    },
+    {
+      "path": ".agent-workflow/decisions/SD-CGCLOUD-RETAIL-SETTINGS-1790916894434-decision.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "3fe2d920e5577fdc7c7e74e5a8a2482ef1303d363d7b868d6e89bdb194a49dbd"
+    },
+    {
+      "path": ".agent-workflow/decisions/SD-WAVE-SAFETY-CONTRACTS-1790846178451-decision.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "f2a4c7edc50f1de8f826965cc8b0363a124c1125e6f8920d346657816fca32f3"
+    },
+    {
+      "path": ".agent-workflow/decisions/SD-MATCH-DUP-RULES-1790953337495-decision.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "f046796f715dad381b11250150e53f03e547a253c702a26ef292db52c00ad8d2"
+    },
+    {
+      "path": ".agent-workflow/decisions/SD-MATCH-DUP-LIVE-CG-DEMO-1791055595408-decision.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "76832fe41dc91e4f72325ffb5d6f94ab48340a2bf5e6f5b0a399bf19b8501ca4"
+    },
+    {
+      "path": ".agent-workflow/decisions/SD-MATCH-DUP-STANDARD-RULES-1791059752873-decision.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "755bc3ea01c2f41d5264d369721f44ec641b45189ab81caaab9c85b77b0752f4"
+    },
+    {
+      "path": ".agent-workflow/decisions/SD-WAVE-SAFETY-CONTRACTS-1790846178904-decision.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "cca6ed56fecf3e36ac7d96ec407158dd30bd1862cbaa2001a49f74ab38ef1367"
+    },
+    {
+      "path": ".agent-workflow/decisions/SD-MATCH-DUP-RULES-1790953338069-decision.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "999422c234c842813758a01e92f86530b3e8c7c02ff691168770da9f6c652422"
+    },
+    {
+      "path": ".agent-workflow/decisions/SD-METADATA-DOC-AUDIT-1791066526746-decision.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "73597e4b7550af06f82406ede751e96c042376d8e9a6823c0a1d1d6cb75a76a6"
+    },
+    {
+      "path": ".agent-workflow/decisions/SD-CGCLOUD-RETAIL-SETTINGS-1790916894124-decision.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "647244e0597427b50e72793541f33e14144b57501a99b461040f090ea482ac24"
+    },
+    {
+      "path": ".agent-workflow/decisions/SD-MATCH-DUP-STANDARD-RULES-1791059752524-decision.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "5167e880aaac3d7163c9d59a62ec813dfcade9489e8383e5104aac778e51c56b"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-MATCH-DUP-STANDARD-RULES-1791061247196-9076d904-2406-4d6c-bbc1-1c07c0eae23a-command.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "b3690507a83039750ea8f54edacdad3337255f9820c165d867158b49028e7853"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-METADATA-IDENTITY-P0-1791142818699-5acb92d1-e9be-47f2-8c77-63bfe85d983d-file.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "a2ddcf8c86d916082918ee87c6526478b19a1f193d0f52d5bfbadafa1df51157"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-METADATA-DOC-AUDIT-1791067614609-889bb855-c966-4944-91d1-a66a9d6b9dad-report.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "dfdf8ef0808040872014d73322f56dede7dc006725fa045493f4cd048d15eb28"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-WAVE-SAFETY-CONTRACTS-1790847912662-f81975a6-dffc-4e92-ad39-7d6237ab350d-report.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "7b09563cb76e4c8387698415cddab17b21c4679917e03b46dde05a1d9d47074a"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-MATCH-DUP-RULES-1790955741732-c5da64ef-04be-4a5c-989b-386868296a58-command.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "c491730f8dcfbda17206bf50ef993261775e821de88dcb59e7fe4e290eac8f9a"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-MATCH-DUP-LIVE-CG-DEMO-1791059751607-55821b47-da0b-4c52-9667-2059969afb5a-command.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "8d725228654d2b1152318d87cac45993875aee7bd3e7d07f7c129e66e9ff0e52"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-WAVE-SAFETY-CONTRACTS-1790847849332-45e39627-8f71-414d-95f1-1c8d436b7822-file.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "c5bfe60930f341927cce0b8c9ca824459d68461552abbde6bfaf977f068a0b59"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-CGCLOUD-RETAIL-SETTINGS-1790918346366-0f256aca-7c00-4d1b-8835-cf194bb44bb9-command.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "dd80afedd071c25714f97ca689c4a3617cfc0de2402db2e4c4305402fa3d5326"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-METADATA-IDENTITY-P0-1791142810285-24b65997-7317-4713-850c-626903674ec3-command.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "19ac255b8bea09632f8400cc438686fdb64625a63bc3d7ea51744b56e2b3b542"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-WAVE-SAFETY-CONTRACTS-1790847890119-3a14326c-7fb4-4b0a-af34-37ab8093a378-command.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "bb203522fd5aa4cf62caec44cf69c855a3ea418e5f5d4607a14f2ef985de5ece"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-MATCH-DUP-LIVE-CG-DEMO-1791061248206-a5cff246-c6cb-4690-aee0-7d64bc3406a9-command.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "0d20c34c88fc26aee85acb94fe468eb30dd97b32cbf2765608eaaffae0c01ae4"
+    },
+    {
+      "path": ".agent-workflow/evidence/SD-WAVE-SAFETY-CONTRACTS-1790847849538-e4b83822-6e0f-4b85-afee-8a83399cf597-command.md",
+      "archive": "wave-order-2026-10-07.tgz",
+      "sha256": "dede8fd5534413376f43cecb6845e70671e21f20c754d85bd96b9a750bbc489c"
+    }
+  ],
+  "conflicts": [
+    {
+      "path": ".agent-workflow/reviews/SD-API67-LIVE-HARNESS-qa-review.md",
+      "archive": "api67-2026-10-07.tgz",
+      "reason": "same path, different bytes"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-FAST-URI-SECURITY-HOTFIX-qa-review.md",
+      "archive": "fast-uri-2026-10-07.tgz",
+      "reason": "same path, different bytes"
+    },
+    {
+      "path": ".agent-workflow/reviews/SD-FAST-URI-SECURITY-HOTFIX-developer-review.md",
+      "archive": "fast-uri-2026-10-07.tgz",
+      "reason": "same path, different bytes"
+    },
+    {
+      "path": ".agent-workflow/handoffs/GH-252-qa-release-handoff.md",
+      "archive": "gh-252-2026-10-07.tgz",
+      "reason": "same path, different bytes"
+    },
+    {
+      "path": ".agent-workflow/reviews/GH-268-architect-review.md",
+      "archive": "gh-268-2026-10-07.tgz",
+      "reason": "same path, different bytes"
+    },
+    {
+      "path": ".agent-workflow/reviews/GH-268-qa-review.md",
+      "archive": "gh-268-2026-10-07.tgz",
+      "reason": "same path, different bytes"
+    }
+  ],
+  "policy": "Keep the main task/review unless an archived task has a later updatedAt; preserve same-path conflicts in the named source archive, never overwrite.",
+  "excluded": [
+    {
+      "path": "docs/research/metadata-catalog/expert-review-contract.md",
+      "archive": "cgcloud-settings-2026-10-07.tgz",
+      "reason": "Editorial divergence; main document unchanged pending product decision."
+    },
+    {
+      "path": "src/analysis/metadata-gap-analysis-service.ts",
+      "archive": "wave-order-2026-10-07.tgz",
+      "reason": "Uncommitted product code preserved in archive, not integrated into main."
+    },
+    {
+      "path": "test/unit/analysis/metadata-gap-analysis-service.test.ts",
+      "archive": "wave-order-2026-10-07.tgz",
+      "reason": "Uncommitted product test preserved in archive, not integrated into main."
+    },
+    {
+      "path": "package.json, yarn.lock, npm-shrinkwrap.json",
+      "archive": "fast-uri-318-2026-10-07.tgz",
+      "reason": "Uncommitted product dependency edits preserved in archive, not integrated into main."
+    }
+  ]
+}

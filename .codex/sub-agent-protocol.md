@@ -1,4 +1,4 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.0 -->
 
 # Sub-agent Orchestration Protocol
 
@@ -7,115 +7,55 @@
 
 ## Active Profiles
 
-| Role | Rule File |
-|------|-----------|
-| Developer | `developer-standards.mdc` |
-| Technical Architect | `ta-standards.mdc` |
-| Solution Architect | `sa-standards.mdc` |
-| Business / Solution Analyst | `ba-standards.mdc` |
-| Project Manager | `pm-standards.mdc` |
-| MuleSoft Architect / Developer | `mulesoft-standards.mdc` |
-| UX / UI Designer | `ux-standards.mdc` |
-| Consumer Goods Cloud (CGCloud) | `cgcloud-standards.mdc` |
-| DevOps | `devops-standards.mdc` |
-| QA / Test Automation (Playwright) | `qa-standards.mdc` |
-| CRM Analytics Engineer (CRMA) | `analytics-standards.mdc` |
-| Commerce Cloud (B2B / B2C) | `commerce-standards.mdc` |
-| Data Cloud Architect / Engineer (Data 360) | `data360-standards.mdc` |
-| Admin / Configurator | `admin-standards.mdc` |
-| Marketing Cloud (SFMC) | `sfmc-standards.mdc` |
-| Security / Compliance | `security-standards.mdc` |
-| Sales Cloud | `salescloud-standards.mdc` |
-| Service Cloud | `service-standards.mdc` |
-| CPQ Specialist | `cpq-standards.mdc` |
-| OmniStudio / Vlocity | `omnistudio-standards.mdc` |
-| Field Service (FSL) | `fsl-standards.mdc` |
-| AI / Agentforce Specialist | `ai-standards.mdc` |
-| Slack Developer (Bolt.js) | `slack-standards.mdc` |
-| Tableau / Analytics Cloud | `tableau-standards.mdc` |
-| Experience Cloud Developer | `experience-cloud-standards.mdc` |
-| Release Manager | `release-manager-standards.mdc` |
-| Financial Services Cloud | `fsc-standards.mdc` |
-| Health Cloud | `health-standards.mdc` |
-| Manufacturing Cloud | `manufacturing-standards.mdc` |
-| Communications Cloud | `communications-standards.mdc` |
-| Automotive Cloud | `automotive-standards.mdc` |
-| Education Cloud | `education-standards.mdc` |
-| Net Zero Cloud | `netzero-standards.mdc` |
-| Nonprofit Cloud | `nonprofit-standards.mdc` |
-| Public Sector Solutions | `public-sector-standards.mdc` |
-| Media Cloud | `media-standards.mdc` |
-| Energy & Utilities Cloud | `energy-standards.mdc` |
-| Revenue Cloud | `revenue-standards.mdc` |
-| Salesforce Maps | `maps-standards.mdc` |
-| Loyalty Management | `loyalty-standards.mdc` |
-| Salesforce Industries Cloud (Platform) | `industries-standards.mdc` |
+| Role                                      | Rule File                   |
+| ----------------------------------------- | --------------------------- |
+| Developer                                 | `.codex/developer.md`       |
+| Salesforce Ecosystem Architect            | `.codex/architect.md`       |
+| Salesforce Solution Architect             | `.codex/sa.md`              |
+| Salesforce Ecosystem Project Manager      | `.codex/pm.md`              |
+| Salesforce Ecosystem UX / UI Designer     | `.codex/ux.md`              |
+| Salesforce Ecosystem QA / Test Automation | `.codex/qa.md`              |
+| Salesforce Ecosystem Release Manager      | `.codex/release-manager.md` |
 
 ## Profile Activation Metadata
 
-**At the START of every task, the parent agent MUST evaluate these Activation Signals and route to the correct profile automatically — WITHOUT waiting for the user to name a profile.** Infer the task's domain from its description, match it against the Activation Signals below, and spawn (or adopt) the matching profile. If multiple profiles match, pick the one that owns the task's primary deliverable. Never wait to be told "use profile X". Expected evidence and gates define what the selected profile must produce or review.
+**At the START of every task, the parent agent MUST evaluate these Activation Signals and route to the correct profile automatically — WITHOUT waiting for the user to name a profile.** Infer the task's domain from its description, match it against the Activation Signals below, and proactively spawn the matching available specialist, including when exactly one specialist owns the work. When multiple profiles match because they own different phases or deliverables of the same task, spawning each matching specialist for its own phase is mandatory, not optional — never silently pick one profile and execute the others' phases inline. Pick a single profile only when two or more genuinely compete for the exact same deliverable (ambiguous ownership); in that case pick the closest owner or ask the user to disambiguate. Skipping a specialist's phase and running it inline instead of spawning it is a workflow deviation — disclose it rather than presenting the inline result as delegated work. Inline work is otherwise permitted only for small generalist work with no specialist owner, or after disclosing and recording an unavailable-spawn fallback. Expected evidence and gates define what the selected profile must produce or review.
 
-| Profile | Activation Signals | Expected Evidence | Gates |
-|---------|--------------------|-------------------|-------|
-| Developer | Apex, LWC, metadata, SOQL, DML, test class, or implementation work | unit test result; deployment or validation result; static analysis result | code quality; security; test coverage |
-| Technical Architect | technical architecture, platform governance, or cross-team technical leadership | ADR; architecture diagram; technical spike outcome | architecture; governance |
-| Solution Architect | solution design, cross-cloud integration, or end-to-end solution architecture | solution design document; integration architecture; fit-gap analysis | architecture; feasibility |
-| Business / Solution Analyst | requirements, user story, acceptance criteria, process mapping, or stakeholder clarification | refined story; acceptance criteria; process notes | scope; traceability |
-| Project Manager | roadmap, milestone, release scope, dependency, risk, or stakeholder status | priority decision; release or sprint plan; risk and dependency summary | scope; readiness |
-| MuleSoft Architect / Developer | API-led integration, Mule flow, RAML, OAS, connector, or MUnit work | API contract; MUnit result; integration test result | integration; contract; security |
-| UX / UI Designer | LWC UI, SLDS, accessibility, interaction flow, empty state, or user research work | UI checklist; accessibility result; screenshot or flow review | ux; accessibility |
-| Consumer Goods Cloud (CGCloud) | Consumer Goods Cloud modeler, visit, retail execution, promotion, or cgcloud namespace work | modeler configuration note; domain validation result; test data note | domain; data integrity |
-| DevOps | pipeline, deployment, package, scratch org, CI, environment, or release automation work | pipeline result; deployment validation; rollback note | release; environment; rollback |
-| QA / Test Automation (Playwright) | test strategy, regression, Playwright, acceptance validation, or defect reproduction work | test plan; execution result; defect evidence or trace | qa; regression |
-| CRM Analytics Engineer (CRMA) | CRM Analytics recipe, dataflow, dashboard, SAQL, dataset, or security predicate work | recipe or dataflow validation; dashboard screenshot; security predicate review | analytics; data security |
-| Commerce Cloud (B2B / B2C) | B2B/B2C Commerce storefront, cartridge, pipeline, OCAPI, SCAPI, or Business Manager work | storefront validation; API contract result; commerce smoke test | commerce; performance |
-| Data Cloud Architect / Engineer (Data 360) | Data Cloud stream, DMO, identity resolution, calculated insight, segment, or activation work | data mapping; identity or segment validation; activation result | data quality; privacy |
-| Admin / Configurator | declarative setup, permission set, flow, page layout, object manager, or automation work | configuration note; setup path confirmation; admin validation result | configuration; permissions |
-| Marketing Cloud (SFMC) | Marketing Cloud journey, email, automation, data extension, personalization, or consent work | journey validation; send preview; consent or data extension review | marketing; consent |
-| Security / Compliance | FLS, sharing, secrets, threat model, compliance, privacy, or vulnerability concern | security review; threat model note; scan or permission evidence | security; privacy; compliance |
-| Sales Cloud | Sales Cloud lead, opportunity, forecast, territory, quote, or sales process work | pipeline validation; forecast review; territory assignment check | sales process; forecast accuracy |
-| Service Cloud | Service Cloud case, entitlement, omni-channel, knowledge, console, or service process work | case flow validation; service process note; agent console review | service process; operability |
-| CPQ Specialist | CPQ quote, product rule, price rule, calculator, amendment, renewal, or contract work | quote calculation result; rule validation; pricing scenario review | pricing; contract integrity |
-| OmniStudio / Vlocity | OmniScript, DataRaptor, Integration Procedure, FlexCard, or Industries work | OmniStudio preview; DataRaptor or IP test result; deployment note | industries; integration |
-| Field Service (FSL) | Field Service appointment, scheduling, mobile worker, territory, or optimization work | scheduling validation; mobile flow review; territory model note | field operations; mobile |
-| AI / Agentforce Specialist | Agentforce, prompt, topic, action, grounding, model behavior, or evaluation work | prompt or topic review; eval result; grounding/source review | ai behavior; safety; grounding |
-| Slack Developer (Bolt.js) | Slack app, workflow, channel experience, notification, or human-agent collaboration work | workflow validation; message payload review; collaboration flow note | collaboration; notification |
-| Tableau / Analytics Cloud | Tableau dashboard, datasource, extract, permission, VizQL, or analytics embedding work | dashboard screenshot; datasource validation; permission review | analytics; data access |
-| Experience Cloud Developer | Experience Cloud site, LWR/Aura architecture, guest user security, CMS content, or community deployment work | site deployment confirmation; guest user security review; publish confirmation | security; publish |
-| Release Manager | Production deployment, sandbox promotion, validate/quick-deploy sequencing, or rollback planning | validation job id; deployment confirmation; smoke test results | qa-gate; deploy-approval |
-| Financial Services Cloud | Financial Services Cloud data model, FinServ objects, ARC, household, rollup, referral, or FSC managed package work | FSC object validation; rollup result; ARC or referral flow review | data integrity; compliance; package-safety |
-| Health Cloud | Health Cloud data model, patient records, care plans, clinical data model, or health managed package work | health object validation; care plan review; HIPAA compliance check | data integrity; compliance; package-safety |
-| Manufacturing Cloud | Manufacturing Cloud data model, Sales Agreements, Account-Based Forecasting, Rebate Management, MfgProgram, or manufacturing managed package work | agreement or forecast validation; rebate calculation result; ERP integration review | data integrity; integration; package-safety |
-| Communications Cloud | Communications Cloud data model, Industries CPQ, Vlocity product catalog, order decomposition, orchestration plans, TMF alignment, or vlocity_cmt namespace work | catalog or order validation; orchestration plan result; BSS/OSS integration review | data integrity; integration; package-safety |
-| Automotive Cloud | Automotive Cloud data model, Vehicle lifecycle, VehicleDefinition, Vehicle, DealerPerformance, TestDrive, TradeIn, or automotive managed package work | vehicle data model validation; dealer performance review; DMS integration test result | data integrity; integration; package-safety |
-| Education Cloud | Education Cloud data model, EDA objects, student lifecycle, admissions, course enrollment, program plans, hed__ namespace, or education managed package work | EDA object validation; student lifecycle flow review; FERPA compliance check | data integrity; compliance; package-safety |
-| Net Zero Cloud | Net Zero Cloud data model, carbon accounting, emission sources, StnryAssetEnvrSrc, BldgEnergyIntensity, ESG reporting, sustainability goals, or sustainability cloud work | emission calculation validation; ESG disclosure mapping review; audit trail verification | data integrity; compliance; package-safety |
-| Nonprofit Cloud | Nonprofit Cloud data model, NPSP objects, donations, recurring donations, GAU allocations, program management, gift entry, npsp__ namespace, or nonprofit managed package work | donation pipeline validation; program engagement review; NPSP package safety check | data integrity; compliance; package-safety |
-| Public Sector Solutions | Public Sector Solutions data model, BusinessLicenseApplication, Inspections, RegulatoryTrxnFee, PublicComplaint, permitting, or public sector managed package work | licensing workflow validation; inspection flow review; accessibility compliance check | data integrity; compliance; package-safety |
-| Media Cloud | Media Cloud data model, MediaChannel, MediaPlan, AdSpace, SubscriptionPlan, SubscriberProfile, ad sales, subscription management, or media cloud work | media plan validation; subscription lifecycle review; ad server integration test result | data integrity; integration; package-safety |
-| Energy & Utilities Cloud | Energy & Utilities Cloud data model, ServicePoint, UtilityMeter, UtilityMeterReading, RatePlan, DERProgram, meter data management, or energy cloud work | meter data validation; rate plan calculation review; AMI integration test result | data integrity; integration; package-safety |
-| Revenue Cloud | Revenue Cloud data model, Salesforce Billing, blng__ objects, invoices, payments, billing schedules, subscriptions, revenue recognition, or payment processing work | billing schedule validation; payment gateway test result; invoice generation review | data integrity; financial compliance; package-safety |
-| Salesforce Maps | Salesforce Maps data model, maps__ objects, territory planning, route optimization, live tracking, geofencing, location intelligence, or maps managed package work | territory alignment validation; route optimization result; location data privacy review | data integrity; privacy; package-safety |
-| Loyalty Management | Loyalty Management data model, LoyaltyProgram, LoyaltyProgramMember, TransactionJournal, tiers, promotions, vouchers, earn/redeem rules, or loyalty platform work | program configuration validation; earn/redeem calculation result; fraud detection review | data integrity; financial compliance; package-safety |
-| Salesforce Industries Cloud (Platform) | Industries Cloud platform setup, OmniStudio components (OmniScripts, DataRaptors, Integration Procedures, FlexCards), Industries Order Management, Action Plans, Decision Tables, vlocity_cmt__ or omnistudio__ namespace objects, or cross-vertical Industries platform work | OmniStudio component validation; orchestration plan test result; package compatibility review | data integrity; integration; package-safety |
+| Profile                                   | Activation Signals                                                                                                                                                                                                                                                                                                                              | Expected Evidence                                                                                                                                                        | Gates                                                             |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| Developer                                 | Salesforce ecosystem implementation, source code, defect fix, refactor, or unit test work; declarative setup, permission set, flow, page layout, object manager, or automation work; Salesforce ecosystem dependency, secrets, logging, or application-security implementation concern                                                          | unit test result; build or validation result; static analysis result; configuration note; setup path confirmation; admin validation result                               | code quality; security; test coverage; configuration; permissions |
+| Salesforce Ecosystem Architect            | Salesforce ecosystem architecture decision, ADR, integration pattern, data model, middleware, or cross-cutting concern; Salesforce technical architecture, platform governance, Apex architecture, or org-scale technical leadership; Salesforce ecosystem access control, secrets, threat model, compliance, privacy, or vulnerability concern | ADR or design note; diagram or option comparison; quality attribute assessment; technical spike outcome; security review; threat model note; scan or permission evidence | architecture; security; governance; privacy; compliance           |
+| Salesforce Solution Architect             | Salesforce solution design, business capability mapping, cross-cloud integration, or fit-gap architecture; Salesforce ecosystem requirements, user story, acceptance criteria, process mapping, or stakeholder clarification                                                                                                                    | solution design document; integration architecture; fit-gap analysis; refined story; acceptance criteria; process notes                                                  | architecture; feasibility; scope; traceability                    |
+| Salesforce Ecosystem Project Manager      | Salesforce ecosystem roadmap, milestone, release scope, dependency, risk, or stakeholder status                                                                                                                                                                                                                                                 | priority decision; release or sprint plan; risk and dependency summary                                                                                                   | scope; readiness                                                  |
+| Salesforce Ecosystem UX / UI Designer     | Salesforce ecosystem user interface, design system, accessibility, interaction flow, empty state, or user research work                                                                                                                                                                                                                         | UI checklist; accessibility result; screenshot or flow review                                                                                                            | ux; accessibility                                                 |
+| Salesforce Ecosystem QA / Test Automation | Salesforce ecosystem test strategy, regression, Playwright, acceptance validation, or defect reproduction work                                                                                                                                                                                                                                  | test plan; execution result; defect evidence or trace                                                                                                                    | qa; regression                                                    |
+| Salesforce Ecosystem Release Manager      | production deployment, environment promotion, release validation, monitoring, or rollback planning; Salesforce ecosystem pipeline, deployment, package, scratch org, CI, environment, or release automation work                                                                                                                                | validation evidence; deployment confirmation; smoke test and monitoring results; pipeline result; rollback note                                                          | qa-gate; deploy-approval; release; environment; rollback          |
 
 ## Task-to-Profile Routing
 
-Before doing any work, infer the task type from its description and route to the corresponding profile automatically — do not wait for the user to specify one. Adopt that profile for inline work, or assign it when spawning a sub-agent:
+Before doing any work, infer the task type from its description and route to the corresponding profile automatically — do not wait for the user to specify one. Spawn the matching available specialist executor. A tracked task and its workflow phase owner establish scope and accountability; they are not the subagent that executes the phase. Inline execution is limited to small generalist work without a specialist owner, or a disclosed and recorded unavailable-spawn fallback:
 
-| Task Type | Assigned Role | Rule File |
-|-----------|--------------|-----------|
-| Architecture decisions, ADRs, pattern selection, cross-cutting concerns | **Technical Architect** | `ta-standards.mdc` |
-| Scope analysis, solution design, story templating (OmniStudio/Flow/Experience Cloud) | **Solution Architect** | `sa-standards.mdc` |
-| Apex, LWC, Triggers, SOQL, DML, unit tests | **Developer** | `developer-standards.mdc` |
-| User stories, acceptance criteria, Flow configuration, process documentation | **Business Analyst** | `ba-standards.mdc` |
-| LWC UI components, SLDS styling, accessibility, design tokens | **UX / UI** | `ux-standards.mdc` |
-| CGCloud extension points, Modeler configuration, cgcloud__ namespace | **CGCloud Developer** | `cgcloud-standards.mdc` |
-| Recipes, Dataflows, Datasets, SAQL, Dashboards, security predicates | **Analytics Engineer** | `analytics-standards.mdc` |
-| Data Streams, DMOs, Identity Resolution, Calculated Insights, Segments, Activation | **Data Cloud Engineer** | `data360-standards.mdc` |
-| API design (RAML/OAS), Mule flows, integrations, MUnit tests | **MuleSoft Developer** | `mulesoft-standards.mdc` |
-| Pipelines, deployment validation, scratch orgs, package versioning | **DevOps Engineer** | `devops-standards.mdc` |
-| Playwright tests, Page Objects, accessibility automation, test reports | **QA Engineer** | `qa-standards.mdc` |
+| Task Type                                                                                                               | Assigned Role          | Rule File                   |
+| ----------------------------------------------------------------------------------------------------------------------- | ---------------------- | --------------------------- |
+| Architecture decisions, ADRs, pattern selection, cross-cutting concerns                                                 | **Architect**          | `.codex/architect.md`       |
+| Scope analysis, solution design, user stories, acceptance criteria, story templating (OmniStudio/Flow/Experience Cloud) | **Solution Architect** | `.codex/sa.md`              |
+| Apex, LWC, Triggers, SOQL, DML, unit tests, declarative configuration                                                   | **Developer**          | `.codex/developer.md`       |
+| LWC UI components, SLDS styling, accessibility, design tokens                                                           | **UX / UI**            | `.codex/ux.md`              |
+| Pipelines, deployment validation, scratch orgs, package versioning, release promotion                                   | **Release Manager**    | `.codex/release-manager.md` |
+| Playwright tests, Page Objects, accessibility automation, test reports                                                  | **QA Engineer**        | `.codex/qa.md`              |
+
+## Autonomous Multi-Phase Work — Prefer `workflow run --autonomous`
+
+For work spanning multiple phases (pm→ba→architect→developer→qa→release) that can run
+unattended against acceptance criteria, prefer `sf setup-agents workflow run --story <id>
+--autonomous --gates phase` over manually orchestrating each phase with the Agent/Task tool.
+The command dispatches each delegated phase through the bridge, pauses, and resumes itself
+automatically once that phase's spawn completes — no manual wait, poll, or resume needed.
+
+Reserve manual Agent/Task delegation for single-phase, ad-hoc work (a spike, a targeted
+investigation, a one-off fix) that doesn't need the full workflow lifecycle or its gates.
+
+Run recovery and resume rules: .setup-agents/playbooks/orchestrate-run.md
 
 ## Handover Checklist
 
@@ -127,64 +67,29 @@ Every sub-agent invocation MUST include:
 4. **Profile-specific context:**
 
 - **Developer:** see `.codex/developer.md` (Sub-agent Handover section)
-- **Technical Architect:** see `.codex/ta.md` (Sub-agent Handover section)
-- **Solution Architect:** see `.codex/sa.md` (Sub-agent Handover section)
-- **Business / Solution Analyst:** see `.codex/ba.md` (Sub-agent Handover section)
-- **Project Manager:** see `.codex/pm.md` (Sub-agent Handover section)
-- **MuleSoft Architect / Developer:** see `.codex/mulesoft.md` (Sub-agent Handover section)
-- **UX / UI Designer:** see `.codex/ux.md` (Sub-agent Handover section)
-- **Consumer Goods Cloud (CGCloud):** see `.codex/cgcloud.md` (Sub-agent Handover section)
-- **DevOps:** see `.codex/devops.md` (Sub-agent Handover section)
-- **QA / Test Automation (Playwright):** see `.codex/qa.md` (Sub-agent Handover section)
-- **CRM Analytics Engineer (CRMA):** see `.codex/crma.md` (Sub-agent Handover section)
-- **Commerce Cloud (B2B / B2C):** see `.codex/commerce.md` (Sub-agent Handover section)
-- **Data Cloud Architect / Engineer (Data 360):** see `.codex/data360.md` (Sub-agent Handover section)
-- **Admin / Configurator:** see `.codex/admin.md` (Sub-agent Handover section)
-- **Marketing Cloud (SFMC):** see `.codex/sfmc.md` (Sub-agent Handover section)
-- **Security / Compliance:** see `.codex/security.md` (Sub-agent Handover section)
-- **Sales Cloud:** see `.codex/salescloud.md` (Sub-agent Handover section)
-- **Service Cloud:** see `.codex/service.md` (Sub-agent Handover section)
-- **CPQ Specialist:** see `.codex/cpq.md` (Sub-agent Handover section)
-- **OmniStudio / Vlocity:** see `.codex/omnistudio.md` (Sub-agent Handover section)
-- **Field Service (FSL):** see `.codex/fsl.md` (Sub-agent Handover section)
-- **AI / Agentforce Specialist:** see `.codex/ai.md` (Sub-agent Handover section)
-- **Slack Developer (Bolt.js):** see `.codex/slack.md` (Sub-agent Handover section)
-- **Tableau / Analytics Cloud:** see `.codex/tableau.md` (Sub-agent Handover section)
-- **Experience Cloud Developer:** see `.codex/experience-cloud.md` (Sub-agent Handover section)
-- **Release Manager:** see `.codex/release-manager.md` (Sub-agent Handover section)
-- **Financial Services Cloud:** see `.codex/fsc.md` (Sub-agent Handover section)
-- **Health Cloud:** see `.codex/health.md` (Sub-agent Handover section)
-- **Manufacturing Cloud:** see `.codex/manufacturing.md` (Sub-agent Handover section)
-- **Communications Cloud:** see `.codex/communications.md` (Sub-agent Handover section)
-- **Automotive Cloud:** see `.codex/automotive.md` (Sub-agent Handover section)
-- **Education Cloud:** see `.codex/education.md` (Sub-agent Handover section)
-- **Net Zero Cloud:** see `.codex/netzero.md` (Sub-agent Handover section)
-- **Nonprofit Cloud:** see `.codex/nonprofit.md` (Sub-agent Handover section)
-- **Public Sector Solutions:** see `.codex/public-sector.md` (Sub-agent Handover section)
-- **Media Cloud:** see `.codex/media.md` (Sub-agent Handover section)
-- **Energy & Utilities Cloud:** see `.codex/energy.md` (Sub-agent Handover section)
-- **Revenue Cloud:** see `.codex/revenue.md` (Sub-agent Handover section)
-- **Salesforce Maps:** see `.codex/maps.md` (Sub-agent Handover section)
-- **Loyalty Management:** see `.codex/loyalty.md` (Sub-agent Handover section)
-- **Salesforce Industries Cloud (Platform):** see `.codex/industries.md` (Sub-agent Handover section)
+- **Salesforce Ecosystem Architect:** see `.codex/architect.md` (Sub-agent Handover section)
+- **Salesforce Solution Architect:** see `.codex/sa.md` (Sub-agent Handover section)
+- **Salesforce Ecosystem Project Manager:** see `.codex/pm.md` (Sub-agent Handover section)
+- **Salesforce Ecosystem UX / UI Designer:** see `.codex/ux.md` (Sub-agent Handover section)
+- **Salesforce Ecosystem QA / Test Automation:** see `.codex/qa.md` (Sub-agent Handover section)
+- **Salesforce Ecosystem Release Manager:** see `.codex/release-manager.md` (Sub-agent Handover section)
 
 ## Collaboration Flows
 
 When one profile completes work that feeds into another, follow these handoff chains:
 
-- **PM → BA:** PM defines sprint scope and priorities. BA refines stories with acceptance criteria and personas.
-- **BA → SA:** BA passes refined stories. SA produces scope analysis and solution design grounded in metadata.
-- **SA → TA:** SA hands off solution design. TA validates architecture patterns, ADRs, and Well-Architected compliance.
-- **TA → Developer:** TA hands off agreed patterns, ADR references, and data layer strategy. Developer implements.
-- **TA → UX:** TA defines component boundaries. UX designs within SLDS constraints and produces the LWC Interaction Checklist.
-- **TA → MuleSoft:** TA defines integration points and Named Credentials. MuleSoft implements API-led flows.
+- **PM → SA:** PM defines sprint scope and priorities. SA refines stories with acceptance criteria and personas.
+- **SA → Architect:** SA hands off solution design. Architect validates architecture patterns, ADRs, and Well-Architected compliance.
+- **Architect → Developer:** Architect hands off agreed patterns, ADR references, and data layer strategy. Developer implements.
+- **Architect → UX:** Architect defines component boundaries. UX designs within SLDS constraints and produces the LWC Interaction Checklist.
 - **Developer → QA:** Developer deploys to sandbox and confirms test data. QA writes Playwright tests against the deployed feature.
-- **QA → DevOps:** QA confirms all tests pass. DevOps proceeds with validation and production deployment.
-- **DevOps → PM:** DevOps reports deployment result (pass/fail, duration). PM updates status report and release calendar.
+- **QA → Release Manager:** QA confirms all tests pass. Release Manager proceeds with validation and production deployment.
+- **Release Manager → PM:** Release Manager reports deployment result (pass/fail, duration). PM updates status report and release calendar.
 
 ## Conflict Resolution
 
 When a task could fall under multiple profiles:
+
 - **Architect** takes precedence for design decisions and cross-cutting concerns.
 - **Domain profile** (cgcloud, crma, data360) takes precedence for platform-specific rules.
 - **Developer** handles implementation once design is agreed.
@@ -196,6 +101,7 @@ A single sub-agent cannot reason row-by-row over a large tabular or multi-sectio
 artifact in one pass — it exhausts its time/token budget and returns nothing (a timeout
 with zero output), not a partial file. Before spawning a sub-agent to PRODUCE such a
 deliverable, decompose the work:
+
 - **Threshold:** any deliverable that applies per-row/per-item judgement across more than
   ~50 rows (or spans many sections) — e.g. ERD/object catalogs, story maps, traceability
   matrices, data dictionaries, test-case matrices, large gap analyses.
@@ -206,19 +112,27 @@ deliverable, decompose the work:
   directly from that source instead of delegating open-ended reasoning over every row.
 - **Always validate** the assembled result against the source (row counts, item-by-item)
   and record the count delta as evidence.
-A timeout here is a decomposition failure, not a tooling failure — recover by claiming the
-open task and rebuilding by block, never by re-running the same oversized single spawn.
+  A timeout here is a decomposition failure, not a tooling failure — recover by claiming the
+  open task and rebuilding by block, never by re-running the same oversized single spawn.
 
 ## Branded Document Generation — Tone & Audience Governance (CRITICAL)
 
 When you GENERATE a document destined for the branded PDF/HTML export path
-(`sf setup-agents docs pdf`, or markdown handed to the export routes), the visual
+(`sf setup-agents docs --pdf|--deck`, or markdown handed to the export routes), the visual
 theme is only half the job — you MUST also govern tone, audience, and what content
 is safe to include. This applies to the generating agent, not the rendering code.
+
+When the user asks for a document artifact, you MUST render the completed source with
+`sf setup-agents docs`; do not stop after writing Markdown. Choose exactly one format:
+
+- PDF document: `sf setup-agents docs --pdf --input <source.md> --output <document.pdf> --review <review.json>`.
+- Interactive deck: `sf setup-agents docs --deck --input <source.md> --output <deck.html> --review <review.json>`.
+  Deck output is always HTML. Never use the removed `sf setup-agents docs pdf --deck` syntax.
 
 ### Reusable audience profile (capture once, reuse)
 
 Maintain a reusable audience profile at `.agent-workflow/audience-profile.json` with:
+
 - `audience` — who reads this (e.g. exec committee, technical team, end client).
 - `technicalLevel` — how much jargon the audience understands (e.g. business, mixed, technical).
 - `languageRegister` — language + register (e.g. `es-MX` business, `en-US` formal).
@@ -235,6 +149,7 @@ silently — do not re-interrogate the user each time.
 Before rendering a document marked `variant:"final"` (an external/client-facing deliverable),
 surface a confirmation summary to the user covering ALL FOUR categories and get explicit
 confirmation. Do NOT render the PDF/HTML until the user confirms:
+
 1. **Translated technical jargon** — list every technical term (RFC, VIN, FLS, ETL, Shield, …)
    and its business-language rendering, and confirm the translation.
 2. **Figures, commitments & deadlines** — confirm every number, date, duration, and commitment
@@ -249,26 +164,38 @@ A missing audience profile BLOCKS a `final` render: prompt for the profile first
 rendering unreviewed content. An unconfirmed checkpoint BLOCKS the `final` render. Internal
 (non-final) documents still use the audience profile but do not require the four-category gate.
 
+### Independent document quality review (required before final render)
+
+A final PDF or deck MUST pass the `document-review` phase after authoring/QA and before release.
+The reviewer must be independent from the author and review the exact source digest — an
+ordered sha256 over each file's relative path and content, NOT a plain file checksum. Compute
+it with `sf setup-agents docs digest --input <same input as the render>` and paste its
+`sourceFiles`/`sourceDigest` into the review JSON.
+The report must approve factual grounding, internal consistency, audience/tone, scope and
+decision readiness, and render integrity. Missing, blocking, or stale review evidence BLOCKS
+`sf setup-agents docs`; a polished render is not evidence that its content is correct.
+Pass the approved report explicitly with `--review <review.json>` for every PDF or deck render.
+
 ## Role Rule Injection
 
-Profile rules are **not all loaded by default** in Claude Code and Codex — only `developer` and `architect`
+Profile rules are **not all loaded by default** in Claude Code and Codex — only `developer`, `architect`
 are always imported. When delegating to any other role, read that role's rule file by path and include its
 content in the sub-agent prompt (these on-demand rules live outside the auto-loaded dir, so read them by path):
 
 ```
-# When delegating to BA:
-.codex/ba.md
+# When delegating to Salesforce Solution Architect:
+.codex/sa.md
 
-# When delegating to Data Cloud:
-.codex/data360.md
+# When delegating to Salesforce Ecosystem Project Manager:
+.codex/pm.md
 ```
 
-This applies to: ba, pm, ux, devops, qa, mulesoft, sfmc, service, admin, security, fsl, crma, data360, cgcloud,
-commerce, cpq, omnistudio, ai, slack, tableau.
+This applies to: sa, pm, ux, qa, release-manager.
 
 ## Context Transmission Rule
 
 Sub-agents must NOT be spawned without:
+
 - An explicit role declaration from the list above.
 - The relevant rule file injected via reading `.codex/<id>.md` (if not always-loaded).
 - The active profiles list (copy the Active Profiles table above).
@@ -277,6 +204,7 @@ Sub-agents must NOT be spawned without:
 ## Sub-agent Handoff — Files Written Manifest
 
 Every sub-agent handoff MUST include:
+
 - **Files Written:** list every file path written to the filesystem during this phase.
 - **Decisions Made:** list key architectural or implementation decisions.
 - **TBDs Raised:** list any open questions that block the next phase.

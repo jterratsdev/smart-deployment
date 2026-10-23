@@ -99,8 +99,8 @@ if [ -z "$BACKEND" ]; then
   echo "Install one of: whisper.cpp, insanely-fast-whisper, faster-whisper, openai-whisper" >&2
   echo "Or set TRANSCRIBE_CLOUD_BACKEND=openai|deepgram|assemblyai" >&2
   # Record pending evidence
-  if command -v orchestra >/dev/null 2>&1; then
-    orchestra evidence add --task "$TASK_ID" --role "$ROLE" --type report \
+  if command -v sf >/dev/null 2>&1; then
+    sf setup-agents evidence add --task "$TASK_ID" --role "$ROLE" --type report \
       --summary "transcription-pending: no backend available for $(basename "$FILE")"
   fi
   exit 3
@@ -198,8 +198,8 @@ fi
 FILENAME="$(basename "$FILE")"
 SUMMARY="$(head -c 500 "$TRANSCRIPT_FILE" | tr '\n' ' ')"
 
-if command -v orchestra >/dev/null 2>&1; then
-  orchestra evidence add --task "$TASK_ID" --role "$ROLE" --type report \
+if command -v sf >/dev/null 2>&1; then
+  sf setup-agents evidence add --task "$TASK_ID" --role "$ROLE" --type report \
     --summary "Transcript of $FILENAME: $SUMMARY"
 fi
 

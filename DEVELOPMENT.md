@@ -8,6 +8,7 @@ This project is currently developed as a TypeScript Salesforce CLI plugin with a
 yarn install
 yarn build
 sf plugins link .
+sf smart-deployment --help
 ```
 
 ## Main Validation Commands
@@ -32,7 +33,7 @@ Use only a disposable or explicitly approved non-customer org. The command is in
 ## Working Rules
 
 - Before validating a feature branch, fetch `main` and confirm the branch contains its latest commit; merge `main` if it does not.
-- After any plugin change, run `yarn build`, link the checkout with `sf plugins link . --no-install`, and smoke-test a plugin command before accepting validation.
+- After any plugin change, run `yarn build`, link the checkout with `sf plugins link . --no-install`, and smoke-test `sf smart-deployment --help` before accepting validation.
 - prefer updating the real command surface over adding planning-only artifacts
 - keep runtime state out of git
 - treat `docs/archive/` as historical context only

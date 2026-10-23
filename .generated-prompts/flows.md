@@ -1,4 +1,5 @@
-<!-- setup-agents: 2.0.2 -->
+<!-- setup-agents: 3.23.0 -->
+<!-- setup-agents:block:start id="prompt-register-guidance" version="3.23.0" -->
 
 # Flow Prompts
 
@@ -39,4 +40,5 @@ Note: Flow XML conflicts must be resolved in Flow Builder. This register helps r
 
 ---
 
+<!-- setup-agents:block:end id="prompt-register-guidance" -->
 <!-- Entries below this line are maintained by the agent -->

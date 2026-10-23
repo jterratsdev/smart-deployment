@@ -12,45 +12,43 @@ sf setup-agents offline status --json
 sf setup-agents offline guide --task <id>
 
 # Resume workflow after connectivity restored
-sf setup-agents workflow run --task <id> --resume <run-id>
+sf setup-agents workflow run --story <id> --resume <run-id>
 ```
 
 ## Available Context Sources
 
 ### 1. Local Repository
+
 - Source code, metadata, tests in working directory
 - Git history: `git log --oneline -20`
 - Recent changes: `git diff HEAD~3`
 
 ### 2. Workflow State
+
 - Tasks: `.setup-agents/state/tasks.jsonl`
 - Workflow runs: `.setup-agents/state/workflow-runs.jsonl`
 - Evidence: `.setup-agents/state/evidence.jsonl`
 - Decisions: `.setup-agents/state/decisions.jsonl`
 - Handoffs: `.setup-agents/state/handoffs.jsonl`
 
-### 3. Generated Prompts & Lessons
-- Prompt registry: `.generated-prompts/`
-- Skills: `.setup-agents/skills/`
-- Playbooks: `.setup-agents/playbooks/`
+### 3. Local Guidance
+
+- Generated rules: `.setup-agents/rules/` (when present)
+- Workflow playbooks: `.agent-workflow/playbooks/` (when present)
 
 ### 4. Profile Resources
+
 - developer: rules + capabilities configured
-- ta: rules + capabilities configured
+- architect: rules + capabilities configured
 - sa: rules + capabilities configured
-- ba: rules + capabilities configured
 - pm: rules + capabilities configured
-- mulesoft: rules + capabilities configured
 - ux: rules + capabilities configured
 - cgcloud: rules + capabilities configured
-- devops: rules + capabilities configured
 - qa: rules + capabilities configured
 - crma: rules + capabilities configured
 - commerce: rules + capabilities configured
 - data360: rules + capabilities configured
-- admin: rules + capabilities configured
 - sfmc: rules + capabilities configured
-- security: rules + capabilities configured
 - salescloud: rules + capabilities configured
 - service: rules + capabilities configured
 - cpq: rules + capabilities configured
@@ -78,7 +76,9 @@ sf setup-agents workflow run --task <id> --resume <run-id>
 - industries: rules + capabilities configured
 
 ### 5. Cached Resources
-- Check `.setup-agents/cache/` for previously fetched external docs
+
+- Fetched references: `.setup-agents/references/`
+- Synchronized profile docs: `.setup-agents/docs/`
 
 ## Phase Recovery Procedures
 
@@ -113,6 +113,13 @@ Run test suite locally
 Verify acceptance criteria from task
 Record test results as evidence
 Check for regressions
+
+### document-review
+
+Locate the authored source and intended final output
+Run the document quality review playbook independently from the author
+Verify grounding, consistency, audience/tone, scope, decisions, and sensitive content
+Record an approved review for the exact source digest (`sf setup-agents docs digest`) before rendering
 
 ### release
 

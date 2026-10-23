@@ -1,10 +1,13 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.0 -->
+
 # Validate Deployment
 
 ## Goal
+
 Run a dry-run validation before deploying to production.
 
 ## Steps
+
 1. Execute:
    ```bash
    sf project deploy validate -d force-app --target-org <alias> --test-level RunLocalTests
@@ -14,6 +17,7 @@ Run a dry-run validation before deploying to production.
 4. Record the validation job ID for use in quick deploy.
 
 ## Evidence
+
 ```bash
-sf setup-agents evidence add --task <id> --role devops --type validation --summary "Validate Deployment completed"
+sf setup-agents evidence add --task <id> --role release-manager --type validation --summary "Validate Deployment completed"
 ```

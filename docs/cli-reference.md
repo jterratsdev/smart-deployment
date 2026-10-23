@@ -49,6 +49,14 @@ Behavior:
 - can write analysis reports in JSON or HTML
 - when `--use-ai` is enabled, can apply inferred dependencies and AI priority weighting
 
+## `sf smart-deployment plan explain`
+
+Explain the local dependency graph and wave placement without deploying.
+
+- `--source-path <path>` selects a Salesforce project source path; `--json` returns structured components, edges, unresolved references, provider decisions, and summary counts.
+- `summary.unplacedComponentCount` counts scanned components without an assigned wave. If nonzero, `result.success` is `false` and the human output warns about the unplaced components.
+- A resolved edge means its target was found among locally scanned components. An unresolved edge does not prove the component is absent from the target org; this command does not verify org preexistence.
+
 ## `sf smart-deployment start`
 
 Analyze, build waves, and execute deployment.
@@ -80,6 +88,8 @@ Behavior:
 - `--validate-only` keeps the command in the `start` command family, but stops short of real deployment execution
 - `--destructive` keeps the normal analysis and wave generation path, then deletes components using per-wave `destructiveChanges` manifests in reverse wave order
 - `--rollback-from <ref> --rollback-to <ref>` computes the Git delta between release boundaries, deletes metadata added in the later ref, and restores modified or deleted metadata from the earlier ref using normal deploy waves
+- Field type, formula, and global value set migrations are not automatically planned by `start`. The read-only `assessFieldMigration` domain assessment requires an explicitly observed target field and a complete consumer inventory; it never edits Apex, Flow, or other metadata and is not yet connected to a CLI command. A blocked assessment must not be treated as authorization to delete a field. Back up data and review consumer changes and a separate pre-destructive deployment before attempting a field replacement.
+- Metadata gap source detection recognizes explicit file suffixes and source directories only; unknown suffixes are not inferred as deployable Metadata API types. Known source aliases and manifest names share their registry vendor identity in gap results.
 - release tags are the recommended rollback boundary, for example `--rollback-from v1.2.0 --rollback-to v1.2.1`
 
 Important:
