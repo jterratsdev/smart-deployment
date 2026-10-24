@@ -1,0 +1,64 @@
+(node:60892) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: Cannot find any files matching pattern "ts-node/esm"
+(node:60892) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+
+  classifyOmniStudioChannels
+    ✔ classifies a native OmniDataTransform path as native-metadata (case 1)
+    ✔ classifies a native OmniIntegrationProcedure path as native-metadata (case 2)
+    ✔ classifies a native OmniScript path as native-metadata (case 3)
+    ✔ classifies a native OmniUiCard path as native-metadata (case 4)
+    ✔ classifies a managed DataPack with a concrete managed namespace as managed-datapack (case 6)
+    ✔ blocks an unresolved vlocity folder with no _DataPack.json sibling (case 7)
+    ✔ includes an actionable remedy for an unknown-shape block (case 7)
+    ✔ blocks a native-directory path with a non-registry suffix (case 8)
+    ✔ blocks a managed shape with an unresolved %vlocity_namespace% token and no declared namespace (case 9a)
+    ✔ includes an actionable remedy naming the job file for an identity-unproven block (case 9a)
+    ✔ resolves an unresolved %vlocity_namespace% token via a project-declared job-file namespace (AC-002 amendment)
+    ✔ blocks malformed DataPack JSON as identity-unproven (case 9b)
+    ✔ classifies an SObject-type DataPack whose VlocityRecordSObjectType is a concrete managed field API name
+    ✔ blocks an SObject-type DataPack whose VlocityRecordSObjectType is an unmanaged standard/custom object (no namespace)
+    ✔ F1 negative: blocks an unmanaged Object__c-shaped VlocityRecordSObjectType, never treating "Object" as a namespace
+    ✔ F1 negative: blocks an unresolved token record with no declared namespace even when an unrelated field looks like Status__c
+    ✔ F1 positive: still classifies a genuine vlocity_cmt__OmniScript__c as managed-datapack
+    ✔ blocks both sides of a native/managed channel conflict for the same logical artifact (case 10)
+    ✔ includes an actionable remedy for a channel-conflict block
+    ✔ F2: blocks a DataRaptor/OmniDataTransform conflict for the same name
+    ✔ F2: blocks an IntegrationProcedure/OmniIntegrationProcedure conflict for the same name
+    ✔ F2: blocks an OmniScript/OmniScript conflict for the same name (VBT and native names coincide)
+    ✔ F2: blocks a FlexCard/OmniUiCard conflict for the same name
+    ✔ F2: a DataPack type with no native counterpart (e.g. SObject) never conflicts
+    ✔ N1: blocks a case-differing DataRaptor/OmniDataTransform conflict (managed "d" vs native "D")
+    ✔ produces identical sorted output regardless of input order (case 13 / determinism)
+    ✔ returns no classifications for non-OmniStudio candidate paths
+    ✔ F3: ignores a nested/indented namespace key in vlocity.yaml
+    ✔ F3: still resolves a true root-level namespace key in vlocity.yaml
+    ✔ F4: blocks a DataPack path that escapes projectRoot via .. traversal
+    ✔ F5: blocks an oversized DataPack JSON file as identity-unproven with a clear evidence string
+    ✔ N2: blocks a managed DataPack when the injected realpath resolver throws for the file
+    ✔ N2: blocks a managed DataPack when the injected realpath resolver throws for the project root
+    ✔ N3: blocks an oversized vlocity.yaml so the declared namespace is not honored
+    ✔ N3: never reads a DataPack JSON file beyond its reported stat size (stat-before-read)
+    F4 real-filesystem symlink escape
+      ✔ blocks a DataPack JSON that is a symlink pointing outside projectRoot
+      ✔ still classifies a real (non-symlinked) DataPack JSON inside projectRoot as managed-datapack
+
+  SpecialDeploymentPlanService
+    ✔ plans provider-owned phases and excludes lifecycle-owned metadata from core deploy
+    ✔ keeps Agentforce activation skipped by default
+    ✔ reports AiEvaluationDefinition subjectName values missing from source Agentforce metadata
+    ✔ accepts AiEvaluationDefinition subjectName values found in the target org
+    ✔ accepts a local Bot subject and omits unchanged evaluation definitions
+    ✔ orders evaluation definitions by normalized project-relative path
+    OmniStudio channel classification (AC-001..AC-004)
+      ✔ classifies native-looking OmniStudio paths as native-metadata with no vlocity command (case 5 / AC-001)
+      ✔ never generates an executable VBT job placeholder regardless of input (case 11 / AC-004)
+      ✔ admits no DataPack record into the core metadata manifest (case 12 / AC-002)
+      ✔ skips the OmniStudio phase with no errors when no candidate paths are present (case 14)
+
+
+  47 passing (31ms)
+

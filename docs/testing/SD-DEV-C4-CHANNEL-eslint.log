@@ -1,0 +1,10 @@
+
+/Users/jterrats/dev/smart-deployment/src/deployment/special-deployment-plan.ts
+  136:3  warning  Async method 'plan' has no 'await' expression  @typescript-eslint/require-await
+  161:3  warning  Async method 'plan' has no 'await' expression  @typescript-eslint/require-await
+  181:3  warning  Async method 'plan' has no 'await' expression  @typescript-eslint/require-await
+  252:3  warning  Async method 'plan' has no 'await' expression  @typescript-eslint/require-await
+  388:9  warning  Unexpected `await` inside a loop               no-await-in-loop
+
+✖ 5 problems (0 errors, 5 warnings)
+

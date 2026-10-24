@@ -126,7 +126,7 @@ This block contains observed evidence only. It does not record decisions or conv
 
 - `force-app`
 
-- Source digest: `737efb688395c8b1addfb091dfaa4e691a31d133303425e3959128a25daa1e2f`
+- Source digest: `59958a945c64a70b8ae7b7ddf439e3e8ea4cea061977ae708b453ade2c10f202`
 
 ### Observed Artifact Counts
 
@@ -135,7 +135,7 @@ This block contains observed evidence only. It does not record decisions or conv
 | Apex classes        | 0              |
 | Apex triggers       | 0              |
 | LWC components      | 0              |
-| Documentation files | 128            |
+| Documentation files | 129            |
 
 ### Naming Candidates (observed, not accepted)
 

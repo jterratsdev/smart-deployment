@@ -22,12 +22,12 @@
     ]
   },
   "sourceRoots": ["force-app"],
-  "sourceDigest": "737efb688395c8b1addfb091dfaa4e691a31d133303425e3959128a25daa1e2f",
+  "sourceDigest": "59958a945c64a70b8ae7b7ddf439e3e8ea4cea061977ae708b453ade2c10f202",
   "artifactDigests": {
-    ".setup-agents/project-knowledge.md": "2017141ae4641a1bfc3ada68300eca30b53bfd9d24f9718943442f325ace9200",
+    ".setup-agents/project-knowledge.md": "410aa106402223a21a377448e18e143f159542628a9752f1c9c530c146f69986",
     ".setup-agents/class-catalog.md": "cb80c58153cf3a31632fe01f262be595ac95b72e2438074615d0d0329a4ccb44",
-    ".setup-agents/doc-index.md": "ff59fa0e3fe0cd104b0e0dbd9dd7ddf7f1bfbbcf5ae40d25da2f131a33ff79f4",
-    ".setup-agents/sf-metadata-index.json": "9044c4df6054f9558b23e9485239cc48b0706dcbcd41588f21a64d961b774ec2"
+    ".setup-agents/doc-index.md": "40bcef26dc8776ce62212a77c978cc6b1ebf2a477f4d755588052fee99c7c915",
+    ".setup-agents/sf-metadata-index.json": "d0d872b451bd0970adc0bdabe5e93f044630507303a2257e63dc7b11025f1aef"
   },
   "degradedReasons": []
 }
