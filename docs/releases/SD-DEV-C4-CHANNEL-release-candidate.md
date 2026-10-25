@@ -4,12 +4,16 @@
 
 Author: Salesforce Professional Services (release-manager profile)
 
-Version: 1.0
+Version: 1.2 (yarn.lock integrity fixed; release:contracts now passes)
 
-- Run: wf-1792664256358-7bd912 · Phase: `release` (task `setup-agents-task-1792906427032-ee958cb5`,
-  digest `efd6e1acc707`)
+- Run: wf-1792664256358-7bd912 · Phase: `release`
+  - v1.0 evidence: task `setup-agents-task-1792906427032-ee958cb5`, digest `efd6e1acc707`, HEAD `1876d2f`
+  - v1.1 evidence: task `setup-agents-task-1792915427141-1e7933af`, digest `47d8b52de21b`, HEAD `939b914`
+  - v1.2 evidence (this update): task `setup-agents-task-1792916815279-15399e39`, digest `3fb095eb38d9`, HEAD `ad59d1a`
 - Repo: `@jterrats/smart-deployment` (TypeScript `sf` CLI plugin — **not** a Salesforce org project)
-- Branch: `reconcile/release-candidate` · HEAD: `1876d2f` (feature code landed at `fe1b418`)
+- Branch: `reconcile/release-candidate` · HEAD: `ad59d1a` (feature code at `fe1b418`; npm-audit fix at
+  `5153fcd`; coverage-instrumentation fix at `aeb4097`; release note at `939b914`; yarn.lock integrity
+  fix at `ad59d1a`)
 - Current published tag: `v1.6.3` · `package.json` version: `1.6.4` (not yet bumped for this change set)
 
 ## What changed
@@ -50,24 +54,34 @@ that could never actually execute. After this change:
 This is a stricter, fail-closed gate, not a new capability — plans that previously "succeeded" with
 an unexecutable placeholder command now report a clear blocking error instead.
 
-## Evidence (this phase, HEAD `1876d2f`)
+## Evidence (v1.2, HEAD `ad59d1a`)
 
-| Check                         | Command                                                                                                                                                           | Result                                                                                 |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Build                         | `yarn build`                                                                                                                                                      | ✅ succeeded (wireit, 0 scripts rerun — cached clean)                                  |
-| Full test suite               | `yarn test:only`                                                                                                                                                  | ✅ **1820 passing, 8 pending (pre-existing/unrelated), 0 failing**                     |
-| Release contract check        | `yarn release:contracts` (`scripts/ci/release-contract.mjs`)                                                                                                      | ✅ "Release metadata and protected-main contracts are valid."                          |
-| Semantic-release dry analysis | `yarn release:analyze` (`scripts/ci/semantic-release-analysis.sh` → `scripts/ci/analyze-release.mjs`, commit-analyzer only, no npm/GitHub publish plugins loaded) | ✅ 12 commits since `v1.6.3`; **expected next release: `type=minor`, `version=1.7.0`** |
+| Check                         | Command                                                                             | Result                                                                                                                                                                                                                              |
+| ----------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Build                         | `yarn build`                                                                        | succeeded, exit 0                                                                                                                                                                                                                   |
+| Full test suite               | `yarn test:only`                                                                    | **1820 passing, 8 pending (pre-existing/unrelated), 0 failing**, exit 0                                                                                                                                                             |
+| npm audit (production deps)   | `npm audit --omit=dev --json`                                                       | **0 critical/high** (1 moderate — `fast-copy`, unrelated, outside the release gate's critical/high filter); npm exits 1 whenever any advisory exists (even moderate-only), so exit 1 here does not indicate a critical/high finding |
+| Coverage instrumentation      | real c8 numbers from `yarn test:only` under the ESM loader                          | statements 92.87%, branches 82.61%, functions 94.07%, lines 92.87%                                                                                                                                                                  |
+| Release contract check        | `yarn release:contracts`                                                            | **PASSES** — "Release metadata and protected-main contracts are valid.", exit 0                                                                                                                                                     |
+| Semantic-release dry analysis | `yarn release:analyze` (commit-analyzer only, no npm/GitHub publish plugins loaded) | 16 commits since `v1.6.3`; **expected next release: `type=minor`, `version=1.7.0`**, exit 0                                                                                                                                         |
 
-### Note on the computed next version vs. the `fix(...)` commit
+### `yarn release:contracts` is now fixed
 
-The commit-analyzer result (`minor` → `1.7.0`) is driven by `feat: add OWD propagation barriers`
-(`7037570`) among the 12 commits since `v1.6.3` — semantic-release takes the **highest-ranked**
-type across the whole unreleased range, not just the newest commit. The C4 work itself
-(`fix(sd-dev-c4-channel): classify omnistudio native metadata apart from managed datapacks`,
-`fe1b418`) is a `fix` and would only justify a `patch` bump on its own; it does not change the
-range-wide `minor` result. `package.json` was **not** modified by this phase — the version bump is
-semantic-release's job at actual release time, not release-manager's job here.
+Commit `ad59d1a` (`fix(sd-dev-c4-channel): repair yarn.lock integrity after audit remediation`)
+regenerated `yarn.lock` so the three previously-broken entries (`ip-address@10.2.0`,
+`minipass-flush@^1.0.5`, the multi-range `typescript@4.6.x || ... || 5.6.x` entry) carry
+`resolved`/`integrity` again, and all `resolutions` pins (including
+`**/socks/**/ip-address` and `**/minimatch/brace-expansion`) are now satisfied. Verified directly:
+`yarn release:contracts` exits 0 at HEAD `ad59d1a`. This closes the finding reported in v1.1 of
+this note.
+
+### Note on the coverage threshold
+
+`.nycrc` declares an internal `check-coverage: true` gate at 90% for lines/statements/functions/branches,
+but `yarn test:only` runs with `c8 --check-coverage=false`, so this threshold is not enforced at test
+time. The measured branches figure (82.61%) is below that internal 90% target; lines/statements/functions
+(92.87% / 92.87% / 94.07%) are above it. Whether to raise branch coverage before release, lower the
+`.nycrc` branches target, or accept the gap is a human decision — not something resolved by this phase.
 
 ## Prior-phase evidence referenced (already recorded, not reproduced here)
 
@@ -125,6 +139,13 @@ keeps the docs consistent with the reverted code.
 The following remain for a human to execute (explicit human approval required per
 `AGENTS.md` Action Risk Scale — ⚠️ ASK / 🔒 Human-only tiers):
 
+0. Run `sf setup-agents local --force` to resync the ~50 stale generated scaffold files flagged by
+   the release gate's `setup-health` check (`.cursor/skills/*`, `.generated-prompts/*`,
+   `.setup-agents/playbooks/*`, etc. — embedded 3.16.0 vs. current plugin 3.23.0). This command is
+   human-only and must not be run by an agent session.
+   0b. Decide whether to raise branch coverage (currently 82.61%) to meet `.nycrc`'s internal 90% target,
+   lower that target, or explicitly accept the gap — not enforced today since `yarn test:only` runs
+   with `c8 --check-coverage=false`.
 1. Review and push the `reconcile/release-candidate` branch to the remote.
 2. Open a pull request from `reconcile/release-candidate` to `main`.
 3. Let CI run (install, build, full test suite, lint, release workflow checks) on the PR.
