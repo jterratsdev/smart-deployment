@@ -232,21 +232,27 @@
     "baseline-browser-mapping": "2.10.31",
     "**/jake": "12.10.1",
     "**/filelist": "2.0.2",
-    "**/fast-uri": "3.1.7",
+    "**/fast-uri": "3.1.9",
     "**/csv-parse": "7.0.2",
     "**/form-data": "4.0.6",
     "**/websocket-driver": "0.7.5",
-    "**/socks/**/ip-address": "10.2.0"
+    "**/socks/**/ip-address": "10.2.0",
+    "**/minimatch/brace-expansion": "^5.0.12",
+    "**/zod": "4.6.7"
   },
   "overrides": {
     "jake": "12.10.1",
     "filelist": "2.0.2",
-    "fast-uri": "3.1.7",
+    "fast-uri": "3.1.9",
     "csv-parse": "7.0.2",
     "form-data": "4.0.6",
     "websocket-driver": "0.7.5",
     "socks": {
       "ip-address": "10.2.0"
-    }
+    },
+    "minimatch": {
+      "brace-expansion": "5.0.12"
+    },
+    "zod": "4.6.7"
   }
 }
