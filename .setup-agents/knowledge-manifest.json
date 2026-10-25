@@ -22,12 +22,12 @@
     ]
   },
   "sourceRoots": ["force-app"],
-  "sourceDigest": "59958a945c64a70b8ae7b7ddf439e3e8ea4cea061977ae708b453ade2c10f202",
+  "sourceDigest": "ccc796b0804c5625ec089225e6f795b5078cbb7910c7260a8f6faafb08712a21",
   "artifactDigests": {
-    ".setup-agents/project-knowledge.md": "410aa106402223a21a377448e18e143f159542628a9752f1c9c530c146f69986",
+    ".setup-agents/project-knowledge.md": "54f21ca52cb6a5a7ec4bc23f7f274f35c259d59560ffb6949663a44666e90de3",
     ".setup-agents/class-catalog.md": "cb80c58153cf3a31632fe01f262be595ac95b72e2438074615d0d0329a4ccb44",
-    ".setup-agents/doc-index.md": "40bcef26dc8776ce62212a77c978cc6b1ebf2a477f4d755588052fee99c7c915",
-    ".setup-agents/sf-metadata-index.json": "d0d872b451bd0970adc0bdabe5e93f044630507303a2257e63dc7b11025f1aef"
+    ".setup-agents/doc-index.md": "c2a11a9c988f880e043ad70cd9e333c4b528302658817957748b8ead28188140",
+    ".setup-agents/sf-metadata-index.json": "4fd6911ac6b96b3f422e09469408ca508e3f58b86df15471533c94ca82408825"
   },
   "degradedReasons": []
 }

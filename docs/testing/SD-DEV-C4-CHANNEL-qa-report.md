@@ -3,12 +3,15 @@
 # SD-DEV-C4-CHANNEL — QA Report (OmniStudio channel classifier)
 
 - Author: Salesforce Professional Services (qa profile, independent of implementation)
-- Version: 1.0
-- Run: wf-1792664256358-7bd912 · Formal workflow phase: `security-review` (task
-  `setup-agents-task-1792797661251-05214f87`, status done, verdict PASS-WITH-FINDINGS). No QA phase
-  task exists yet — the run cannot advance past `security-review` to `qa` because of a setup-agents
-  plugin bug (the ba→architect gate approval signature now reads as "forged"). Per instruction, this
-  report is recorded directly as story-level evidence, not through a claimed QA phase task.
+- Version: 1.1 (re-verified against committed HEAD)
+- Run: wf-1792664256358-7bd912 · Workflow phase: `qa` (task `setup-agents-task-1792905115678-4d21b6d2`,
+  digest `e9c3fbfbb26f`), claimed by qa.
+- v1.0 of this report was produced while the run was still formally stuck at `security-review` (a
+  setup-agents plugin bug made the ba→architect gate signature read as "forged"); all v1.0 evidence
+  was recorded directly on the story task since no QA phase task existed yet. The blocker has since
+  been fixed and the code committed at `fe1b418` (identical to what v1.0 validated — only Prettier
+  reformatting from the pre-commit hook). This v1.1 re-verifies every command and the black-box run
+  against HEAD; all results are unchanged.
 - Scope: `src/deployment/omnistudio-channel-classifier.ts` (new),
   `src/deployment/special-deployment-plan.ts` (`OmniStudioVlocityProvider` only),
   `test/unit/deployment/omnistudio-channel-classifier.test.ts` (new),
@@ -25,6 +28,13 @@ No regression: full suite 1820 passing / 0 failing / 8 pending (pre-existing, un
 outside the declared scope changed. Residual risk is exactly what the architecture doc and the
 security re-review already flag as open and unresolved — it does not block this classification-only
 scope, but it does gate any later lifecycle task that would act on `classifications[]`.
+
+**Re-verified against committed HEAD (`fe1b418`):** all commands and the black-box fixture run were
+re-run after the code landed (Prettier-reformatted only, no logic change from what v1.0 validated).
+Results are byte-for-byte equivalent: 47/0 focused, 0 errors/5 pre-existing eslint warnings
+(line numbers shifted only), 1820/0/8 full suite, and the same black-box outcomes (no `vlocity`
+command, no job token, Remedy on every blocked error, core manifest = `ApexClass:AccountService`
+only).
 
 ## Acceptance Criteria Traceability Matrix
 
