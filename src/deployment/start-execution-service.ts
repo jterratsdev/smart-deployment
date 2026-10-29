@@ -1,5 +1,6 @@
 import { CycleRemediationPlanner } from '../dependencies/cycle-remediation-planner.js';
 import type { ManualCheckpoint, ReachedManualCheckpoint } from '../types/manual-checkpoint.js';
+import { WaveValidator } from '../waves/wave-validator.js';
 import { CycleRemediationRunner } from './cycle-remediation-runner.js';
 import { DeploymentContext } from './deployment-context-service.js';
 import { DeploymentRunner } from './deployment-runner.js';
@@ -125,6 +126,19 @@ export class StartExecutionService {
             ...remediationPlan.warnings,
           ].join('\n')
         );
+      }
+
+      const cycleNodes = new Set(remediationPlan.cycles.flatMap((cycle) => cycle.nodes));
+      const nonCycleNodes = [...scanResult.dependencyResult.graph.keys()].filter((nodeId) => !cycleNodes.has(nodeId));
+      if (nonCycleNodes.length > 0) {
+        throw new Error(
+          `Cycle remediation cannot safely compose with non-cycle components: ${nonCycleNodes.sort().join(', ')}`
+        );
+      }
+    } else {
+      const validation = new WaveValidator().validateWaves(orderedWaves, scanResult.dependencyResult.graph);
+      if (!validation.isValid) {
+        throw new Error(['Deployment plan is invalid:', ...validation.errors.map((error) => `- ${error}`)].join('\n'));
       }
     }
 

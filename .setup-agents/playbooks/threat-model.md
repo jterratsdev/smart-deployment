@@ -1,4 +1,4 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.1 -->
 # Threat Model Playbook
 
 ## Goal
@@ -25,5 +25,5 @@ Create or update a STRIDE-based threat model for the feature under review.
 
 ## Evidence
 ```bash
-sf setup-agents evidence add --task <id> --role security --type report --summary "Threat Model Playbook completed"
+sf setup-agents evidence add --task <id> --role architect --type report --summary "Threat Model Playbook completed"
 ```

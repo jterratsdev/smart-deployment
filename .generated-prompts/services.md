@@ -60,6 +60,33 @@
 <!-- Entries below this line are maintained by agents -->
 ````
 
+## FieldMigrationAssessment
+
+- **Created:** 2026-10-09
+- **Updated:** 2026-10-09
+- **Iterations:** 1
+- **Task:** SD-FIELD-MIGRATION-PLAN
+- **Role:** developer
+
+### Key decisions
+
+- Keep field transition classification pure and read-only. An absent target observation or incomplete consumer inventory blocks; known consumers require individually reviewed changes.
+- Distinguish underlying field type, formula expression, and global value set changes without guessing from names or modifying Apex/Flow text.
+- This assessment is not connected to `start` and does not authorize a destructive deployment or attest that the org is reference-free.
+
+### Evidence
+
+- `npx mocha test/unit/analysis/field-migration-assessment.test.ts`
+- `npx eslint src/analysis/field-migration-assessment.ts test/unit/analysis/field-migration-assessment.test.ts`
+
+### Prompt
+
+```
+Introduce a small, pure and fail-closed assessment of an explicitly observed Salesforce CustomField transition and its supplied consumer references. Report deterministic blockers and manual migration phases; never rewrite source files or run destructive deployment. Leave target-org queries, complete reference discovery and executable migrations for separately validated follow-up work.
+```
+
+---
+
 ## PlanExplainService
 
 - **Created:** 2026-05-22

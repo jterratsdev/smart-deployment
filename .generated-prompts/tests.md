@@ -1,5 +1,5 @@
-<!-- setup-agents: 2.0.2 -->
-
+<!-- setup-agents: 3.23.1 -->
+<!-- setup-agents:block:start id="prompt-register-guidance" version="3.23.1" -->
 # Test Prompts
 
 > AI prompt register for Test plans, Playwright specs, Apex test classes, MUnit tests in this project.
@@ -19,37 +19,15 @@
 
 ### Prompt
 ```
-
 <the final prompt that produced or substantially changed this component>
 ```
 ---
-
-## PlanExplainService
-
-- **Created:** 2026-05-22
-- **Updated:** 2026-05-22
-- **Iterations:** 1
-
-### Key decisions
-
-- Added focused unit coverage for dependency placement with transitive blockers, provider-owned decisions, unresolved references, empty plans, and command input passthrough.
-- Used injected service doubles to avoid real project scanning, deployments, provider calls, or remote state.
-
-### Prompt
-
-```
-Create unit tests for PLUGIN-PLAN-EXPLAIN covering dependency placement, provider placement, unresolved references, empty plans, and command acceptance of start dry-run style inputs. Keep tests deterministic and local-only.
-```
-
----
-
 ```
 
 **Substantial change** = new method, new business requirement, pattern change, architectural refactor.
 Minor fixes (typos, formatting, single-line corrections) do NOT update the prompt entry.
 
 ---
-
 ## Usage
 
 When creating tests, the agent reads this file for existing PSG assignments used in
@@ -57,24 +35,30 @@ System.runAs(), fixture patterns, page object model structure, and coverage conv
 
 ---
 
+<!-- setup-agents:block:end id="prompt-register-guidance" -->
 <!-- Entries below this line are maintained by the agent -->
 
 ## DeploymentErrorDiagnostics
+
 - **Created:** 2026-05-22
 - **Updated:** 2026-05-22
 - **Iterations:** 1
 
 ### Key decisions
+
 - Added focused unit coverage for Salesforce deploy diagnostic categories and unknown fallback behavior.
 - Extended existing deployment integration tests to verify parsed failed JSON output includes actionable diagnostics and failed wave state stores formatted remediation hints.
 
 ### Prompt
+
 ```
 
 Create unit tests for Salesforce metadata deploy error diagnostics covering known mappings for missing fields, missing objects, duplicate metadata, permissions, invalid references, source tracking conflicts, and unknown fallback behavior. Verify SF CLI result parsing and failed wave persistence carry actionable diagnostics.
 
 ```
+
 ---
+
 ```
 
 ## PlanningAnalysisCache
@@ -91,7 +75,9 @@ Create unit tests for Salesforce metadata deploy error diagnostics covering know
 ### Prompt
 
 ```
+
 Create focused unit tests for PLUGIN-ANALYSIS-CACHE covering cache hits, metadata/config/package/parser-version invalidation, corrupt cache recovery, disabled mode, and CLI cache flag passthrough. Keep tests local-only with no deployments or provider API calls.
+
 ```
 
 ---
@@ -111,7 +97,10 @@ Create focused unit tests for PLUGIN-ANALYSIS-CACHE covering cache hits, metadat
 ### Prompt
 
 ```
+
 Complete issue 198 by adding a production-like deployment validation harness. Use deterministic command-level fixtures for `sf project deploy start/report/resume`, but keep true Salesforce e2e separate and opt-in against a connected org. Validate persisted state, manifests, remote deployment ids, status polling, resume semantics, and live validate/report behavior without requiring live org access in normal CI.
+
 ```
 
 ---
+```

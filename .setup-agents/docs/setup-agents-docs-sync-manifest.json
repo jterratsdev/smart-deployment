@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "profile": "health",
+      "slug": "atlas.en-us.health_cloud_object_reference.meta",
+      "sourceUrl": "https://developer.salesforce.com/docs/get_document/atlas.en-us.health_cloud_object_reference.meta",
+      "scope": "Health Cloud Objects",
+      "fetchedAt": "2026-10-22T09:38:32.820Z",
+      "contentDigest": "sha256:409e81c16a5ed42f85e711311b2b2046703f373c893bbde8cce563d9f1061c80",
+      "parserVersion": "1",
+      "contamination": "clean",
+      "status": "success",
+      "pages": 6
+    },
+    {
+      "profile": "health",
+      "slug": "atlas.en-us.health_cloud.meta",
+      "sourceUrl": "https://developer.salesforce.com/docs/get_document/atlas.en-us.health_cloud.meta",
+      "scope": "Health Cloud Guide",
+      "fetchedAt": "2026-10-22T09:38:31.244Z",
+      "contentDigest": "sha256:453bde99edcf59c095cbd72e90ec4428f70e0e10d8337a1d671fcbb285e42a56",
+      "parserVersion": "1",
+      "contamination": "clean",
+      "status": "success",
+      "pages": 6
+    }
+  ]
+}

@@ -4,9 +4,155 @@ import path from 'node:path';
 import { expect } from 'chai';
 import { describe, it, afterEach } from 'mocha';
 import { MetadataScannerService } from '../../../src/services/metadata-scanner-service.js';
+import { WaveBuilder } from '../../../src/waves/wave-builder.js';
 
 describe('MetadataScannerService', () => {
   const tempDirectories: string[] = [];
+
+  it('scans local CustomField files with canonical identity and preserves missing field references', async () => {
+    const projectRoot = await createProjectFixture();
+    const objectDir = path.join(projectRoot, 'force-app', 'main', 'default', 'objects', 'Account');
+    const fieldsDir = path.join(objectDir, 'fields');
+    await mkdir(fieldsDir, { recursive: true });
+    await writeFile(
+      path.join(objectDir, 'Account.object-meta.xml'),
+      '<CustomObject><label>Account</label></CustomObject>'
+    );
+    await writeFile(
+      path.join(fieldsDir, 'Local__c.field-meta.xml'),
+      '<CustomField><fullName>Local__c</fullName><type>Text</type></CustomField>'
+    );
+    await writeFile(
+      path.join(projectRoot, 'force-app', 'main', 'default', 'classes', 'AccountQuery.cls'),
+      "public class AccountQuery { public void run() { Database.query('SELECT Local__c FROM Account'); } }"
+    );
+    const result = await new MetadataScannerService().scan({ sourcePath: projectRoot });
+    const field = result.dependencyResult.components.get('CustomField:Account.Local__c');
+
+    expect(field?.filePath).to.equal(path.join(fieldsDir, 'Local__c.field-meta.xml'));
+    expect(result.dependencyResult.graph.get('CustomField:Account.Local__c')).to.deep.equal(
+      new Set(['CustomObject:Account'])
+    );
+    expect(result.dependencyResult.components.has('CustomField:Account.Missing__c')).to.equal(false);
+    expect(result.dependencyResult.graph.get('ApexClass:AccountQuery')).to.include('CustomField:Account.Local__c');
+    const plan = new WaveBuilder({ dependencyEdges: result.dependencyResult.edges }).generateWaves(
+      result.dependencyResult.graph
+    );
+    const objectWave = plan.waves.find((wave) => wave.components.includes('CustomObject:Account'))?.number ?? 0;
+    const fieldWave = plan.waves.find((wave) => wave.components.includes('CustomField:Account.Local__c'))?.number ?? 0;
+    const classWave = plan.waves.find((wave) => wave.components.includes('ApexClass:AccountQuery'))?.number ?? 0;
+    expect(fieldWave).to.be.greaterThan(objectWave);
+    expect(classWave).to.be.greaterThan(fieldWave);
+  });
+
+  it('scans a field on a standard object without inventing a local CustomObject', async () => {
+    const projectRoot = await createProjectFixture();
+    const fieldsDir = path.join(projectRoot, 'force-app', 'main', 'default', 'objects', 'Account', 'fields');
+    await mkdir(fieldsDir, { recursive: true });
+    await writeFile(
+      path.join(fieldsDir, 'Local__c.field-meta.xml'),
+      '<CustomField><fullName>Local__c</fullName></CustomField>'
+    );
+
+    const result = await new MetadataScannerService().scan({ sourcePath: projectRoot });
+
+    expect(result.dependencyResult.components.has('CustomField:Account.Local__c')).to.equal(true);
+    expect(result.dependencyResult.components.has('CustomObject:Account')).to.equal(false);
+    expect(result.dependencyResult.graph.get('CustomField:Account.Local__c')).to.deep.equal(new Set());
+  });
+
+  it('honors .forceignore for field files', async () => {
+    const projectRoot = await createProjectFixture();
+    const fieldsDir = path.join(projectRoot, 'force-app', 'main', 'default', 'objects', 'Account', 'fields');
+    await mkdir(fieldsDir, { recursive: true });
+    await writeFile(path.join(projectRoot, '.forceignore'), '**/fields/Excluded__c.field-meta.xml\n');
+    await writeFile(
+      path.join(fieldsDir, 'Excluded__c.field-meta.xml'),
+      '<CustomField><fullName>Excluded__c</fullName></CustomField>'
+    );
+
+    const result = await new MetadataScannerService().scan({ sourcePath: projectRoot });
+
+    expect(result.dependencyResult.components.has('CustomField:Account.Excluded__c')).to.equal(false);
+  });
+
+  it('does not depend on an object excluded by .forceignore', async () => {
+    const projectRoot = await createProjectFixture();
+    const objectDir = path.join(projectRoot, 'force-app', 'main', 'default', 'objects', 'Account');
+    const fieldsDir = path.join(objectDir, 'fields');
+    await mkdir(fieldsDir, { recursive: true });
+    await writeFile(path.join(projectRoot, '.forceignore'), '**/Account.object-meta.xml\n');
+    await writeFile(
+      path.join(objectDir, 'Account.object-meta.xml'),
+      '<CustomObject><label>Account</label></CustomObject>'
+    );
+    await writeFile(
+      path.join(fieldsDir, 'Local__c.field-meta.xml'),
+      '<CustomField><fullName>Local__c</fullName></CustomField>'
+    );
+
+    const result = await new MetadataScannerService().scan({ sourcePath: projectRoot });
+
+    expect(result.dependencyResult.components.has('CustomObject:Account')).to.equal(false);
+    expect(result.dependencyResult.graph.get('CustomField:Account.Local__c')).to.deep.equal(new Set());
+  });
+
+  it('rejects a CustomField whose XML identity differs from its file name', async () => {
+    const projectRoot = await createProjectFixture();
+    const fieldsDir = path.join(projectRoot, 'force-app', 'main', 'default', 'objects', 'Account', 'fields');
+    await mkdir(fieldsDir, { recursive: true });
+    await writeFile(
+      path.join(fieldsDir, 'Expected__c.field-meta.xml'),
+      '<CustomField><fullName>Wrong__c</fullName></CustomField>'
+    );
+    const result = await new MetadataScannerService().scan({ sourcePath: projectRoot });
+
+    expect(result.errors.some((error) => error.includes('CustomField fullName does not match file name'))).to.equal(
+      true
+    );
+    expect(result.dependencyResult.components.has('CustomField:Account.Expected__c')).to.equal(false);
+  });
+
+  it('reports invalid CustomField XML without adding a node', async () => {
+    const projectRoot = await createProjectFixture();
+    const fieldsDir = path.join(projectRoot, 'force-app', 'main', 'default', 'objects', 'Account', 'fields');
+    await mkdir(fieldsDir, { recursive: true });
+    await writeFile(path.join(fieldsDir, 'Broken__c.field-meta.xml'), '<CustomField><fullName>Broken__c</CustomField>');
+
+    const result = await new MetadataScannerService().scan({ sourcePath: projectRoot });
+
+    expect(result.errors.some((error) => error.includes('Invalid XML'))).to.equal(true);
+    expect(result.dependencyResult.components.has('CustomField:Account.Broken__c')).to.equal(false);
+  });
+
+  it('blocks object activation that depends on a later-stage FlexiPage', async () => {
+    const projectRoot = await createProjectFixture();
+    const baseDir = path.join(projectRoot, 'force-app', 'main', 'default');
+    const objectDir = path.join(baseDir, 'objects', 'Invoice__c');
+    const pagesDir = path.join(baseDir, 'flexipages');
+    await mkdir(objectDir, { recursive: true });
+    await mkdir(pagesDir, { recursive: true });
+    await writeFile(
+      path.join(objectDir, 'Invoice__c.object-meta.xml'),
+      `<CustomObject>
+      <actionOverrides><actionName>View</actionName><content>Invoice_Page</content><type>Flexipage</type></actionOverrides>
+      <label>Invoice</label><pluralLabel>Invoices</pluralLabel>
+    </CustomObject>`
+    );
+    await writeFile(
+      path.join(pagesDir, 'Invoice_Page.flexipage-meta.xml'),
+      `<FlexiPage>
+      <masterLabel>Invoice Page</masterLabel><sobjectType>Invoice__c</sobjectType><type>RecordPage</type>
+    </FlexiPage>`
+    );
+
+    const result = await new MetadataScannerService().scan({ sourcePath: projectRoot });
+    expect(result.dependencyResult.components.has('FlexiPage:Invoice_Page')).to.equal(true);
+    expect(result.dependencyResult.graph.get('CustomObject:Invoice__c')).to.include('FlexiPage:Invoice_Page');
+    expect(() =>
+      new WaveBuilder({ dependencyEdges: result.dependencyResult.edges }).generateWaves(result.dependencyResult.graph)
+    ).to.throw('Deployment-order conflict: CustomObject:Invoice__c');
+  });
 
   async function createProjectFixture(): Promise<string> {
     const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'metadata-scanner-service-'));

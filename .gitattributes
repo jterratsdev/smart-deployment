@@ -9,3 +9,17 @@
 *.xml text eol=lf
 *.sh text eol=lf
 yarn.lock text eol=lf
+
+.setup-agents/state/*.jsonl merge=union
+
+# >>> setup-agents (managed) >>>
+# Append-only setup-agents state logs — union-merge so two branches that both appended
+# lines never leave raw conflict markers behind in tracked JSONL readers parse line-by-line.
+.setup-agents/state/evidence.jsonl merge=union
+.setup-agents/state/handoffs.jsonl merge=union
+.setup-agents/state/lesson-records.jsonl merge=union
+.setup-agents/state/lessons-operational.jsonl merge=union
+.setup-agents/state/lessons.jsonl merge=union
+.setup-agents/state/estimates.jsonl merge=union
+.setup-agents/state/effort-estimates.jsonl merge=union
+# <<< setup-agents (managed) <<<

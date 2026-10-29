@@ -1,4 +1,4 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.1 -->
 # Observable Assertions — QA Evidence Guide
 
 ## Goal
@@ -12,12 +12,15 @@ Every test must assert at least one user-facing or system-state outcome.
 
 ### Web / Playwright
 ```typescript
-// ❌ Wrong — asserts element exists, not what the user sees
-await expect(page.locator('.success-msg')).toBeVisible();
+// ❌ Wrong — a class-chain locator tied to DOM structure, and asserts existence not content
+await expect(page.locator('.slds-notify.slds-notify_toast')).toBeVisible();
 
-// ✅ Correct — asserts the actual content shown to the user
-await expect(page.locator('.success-msg')).toHaveText('Record saved successfully');
+// ✅ Correct — role-first locator (inspected via codegen, cited below), asserts actual content
+// Inspected: npx playwright codegen <url> — toast renders role="status" with the message as its name.
+await expect(page.getByRole('status', { name: 'Record saved successfully' })).toBeVisible();
 ```
+- Locator priority: see the QA Automation rule — `getByRole()` first, then `getByLabel()`/`getByText()`,
+  then `getByTestId()`; CSS/XPath/class-chain only as a documented last resort.
 - After a form submit: assert the confirmation message text or navigation URL.
 - After a button click: assert the resulting page state, not just that the click succeeded.
 - On error paths: assert the error message text shown to the user.

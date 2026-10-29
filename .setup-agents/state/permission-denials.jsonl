@@ -1,0 +1,10 @@
+{"ts":"2026-10-23T20:54:24.975Z","toolName":"Bash","agentType":"architect","cwd":"/Users/jterrats/dev/smart-deployment","runId":null,"phase":null}
+{"ts":"2026-10-23T20:56:22.772Z","toolName":"Bash","agentType":"architect","cwd":"/Users/jterrats/dev/smart-deployment","runId":null,"phase":null}
+{"ts":"2026-10-23T21:43:57.923Z","toolName":"Bash","cwd":"/Users/jterrats/dev/smart-deployment","runId":"wf-1792664256358-7bd912","phase":"developer"}
+{"ts":"2026-10-23T23:02:41.194Z","toolName":"Bash","agentType":"developer","cwd":"/Users/jterrats/dev/smart-deployment","runId":"wf-1792664256358-7bd912","phase":"developer"}
+{"ts":"2026-10-23T23:10:53.936Z","toolName":"Bash","agentType":"developer","cwd":"/Users/jterrats/dev/smart-deployment","runId":"wf-1792664256358-7bd912","phase":"developer"}
+{"ts":"2026-10-23T23:14:52.644Z","toolName":"Bash","agentType":"developer","cwd":"/Users/jterrats/dev/smart-deployment","runId":"wf-1792664256358-7bd912","phase":"developer"}
+{"ts":"2026-10-25T06:25:05.445Z","toolName":"Bash","agentType":"developer","cwd":"/Users/jterrats/dev/smart-deployment","runId":"wf-1792664256358-7bd912","phase":"developer"}
+{"ts":"2026-10-25T06:29:12.638Z","toolName":"Bash","agentType":"developer","cwd":"/Users/jterrats/dev/smart-deployment","runId":"wf-1792664256358-7bd912","phase":"developer"}
+{"ts":"2026-10-25T06:31:08.047Z","toolName":"Write","agentType":"developer","cwd":"/Users/jterrats/dev/smart-deployment","runId":"wf-1792664256358-7bd912","phase":"developer"}
+{"ts":"2026-10-29T01:16:53.300Z","toolName":"Bash","agentType":"release-manager","cwd":"/Users/jterrats/dev/smart-deployment","runId":"wf-1792664256358-7bd912","phase":"release"}

@@ -1,4 +1,4 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.1 -->
 # Candidate Release
 
 ## Goal
@@ -15,5 +15,5 @@ Tag the current commit as a release candidate.
 
 ## Evidence
 ```bash
-sf setup-agents evidence add --task <id> --role devops --type command --summary "Candidate Release completed"
+sf setup-agents evidence add --task <id> --role release-manager --type command --summary "Candidate Release completed"
 ```

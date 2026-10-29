@@ -1,4 +1,4 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.1 -->
 # Validate Deployment
 
 ## Goal
@@ -15,5 +15,5 @@ Run a dry-run validation before deploying to production.
 
 ## Evidence
 ```bash
-sf setup-agents evidence add --task <id> --role devops --type validation --summary "Validate Deployment completed"
+sf setup-agents evidence add --task <id> --role release-manager --type validation --summary "Validate Deployment completed"
 ```

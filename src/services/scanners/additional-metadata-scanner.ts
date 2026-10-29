@@ -26,6 +26,11 @@ type BundleScanner = {
 
 const SIMPLE_FILE_SCANNERS: SimpleFileScanner[] = [
   {
+    type: 'CustomLabels',
+    pattern: '**/labels/CustomLabels.labels-meta.xml',
+    suffix: '.labels-meta.xml',
+  },
+  {
     type: 'GenAiFunction',
     pattern: '**/genAiFunctions/**/*.genAiFunction-meta.xml',
     suffix: '.genAiFunction-meta.xml',

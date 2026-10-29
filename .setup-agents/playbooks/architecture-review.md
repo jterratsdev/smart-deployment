@@ -1,4 +1,4 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.1 -->
 # Architecture Review
 
 ## Goal
@@ -9,8 +9,8 @@ Before closing this phase, read `.setup-agents/config.json` and identify which p
 ```bash
 cat .setup-agents/config.json | grep -A20 '"profiles"'
 ```
-The implementor is the first active profile that is NOT `pm`, `ba`, `architect`, `qa`, or `devops`.
-Common values: `cgcloud`, `admin`, `service`, `commerce`, `crma`, `developer`, etc.
+The implementor is the first active profile that is NOT `pm`, `sa`, `architect`, `qa`, or `release-manager`.
+Common values: `cgcloud`, `developer`, `service`, `commerce`, `crma`, etc.
 Include the resolved profile in the handoff summary so the pipeline creates the task with the correct role.
 
 ## Checklist

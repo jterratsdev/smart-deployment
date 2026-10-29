@@ -1,4 +1,5 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.1 -->
+<!-- setup-agents:block:start id="prompt-register-guidance" version="3.23.1" -->
 # Aura Component Prompts
 
 > AI prompt register for Aura components (.cmp / .app) in this project.
@@ -35,4 +36,5 @@ event patterns and controller conventions.
 
 ---
 
+<!-- setup-agents:block:end id="prompt-register-guidance" -->
 <!-- Entries below this line are maintained by the agent -->

@@ -1,4 +1,4 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.1 -->
 # Environment Variable Audit
 
 ## Goal
@@ -27,5 +27,5 @@ This playbook is referenced by the security-review phase. Any new environment va
 
 ## Evidence
 ```bash
-sf setup-agents evidence add --task <id> --role security --type report --summary "Environment Variable Audit completed"
+sf setup-agents evidence add --task <id> --role architect --type report --summary "Environment Variable Audit completed"
 ```

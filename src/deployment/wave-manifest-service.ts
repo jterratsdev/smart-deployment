@@ -26,6 +26,9 @@ export class WaveManifestService {
   }
 
   public async generateDestructiveManifest(params: WaveManifestParams): Promise<DestructiveWaveManifestResult> {
+    if (params.components.some((nodeId) => params.componentMap.get(nodeId)?.type === 'CustomLabels')) {
+      throw new Error('CustomLabels container cannot be used in a destructive manifest');
+    }
     const manifestDir = await this.ensureManifestDir(params.baseDir);
     const waveName = `wave-${String(params.waveNumber).padStart(3, '0')}`;
     const packagePath = path.join(manifestDir, `${waveName}-package.xml`);
@@ -70,7 +73,7 @@ export class WaveManifestService {
       if (!grouped.has(component.type)) {
         grouped.set(component.type, new Set());
       }
-      grouped.get(component.type)!.add(component.name);
+      grouped.get(component.type)!.add(component.type === 'CustomLabels' ? '*' : component.name);
     }
 
     return [...grouped.entries()]

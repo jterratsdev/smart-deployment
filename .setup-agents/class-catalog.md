@@ -1,46 +1,21 @@
 # Class Catalog
 
-Categorized index of all Apex classes, triggers, and LWC components.
-Agents read this to locate the right file without scanning the full tree.
+Complete deterministic catalog from source roots: `force-app`.
 
-## Domain Classes
+## Apex Classes (0)
 
-<!-- Classes that encapsulate business logic for a specific object -->
-| Class | Object | Purpose |
-|-------|--------|---------|
+| Class | Observed type | Path |
+|-------|---------------|------|
 
-## Service Classes
 
-<!-- Classes that orchestrate cross-object operations or integrations -->
-| Class | Responsibility |
-|-------|---------------|
+## Triggers (0)
 
-## Trigger Handlers
+| Trigger | Object | Path |
+|---------|--------|------|
 
-<!-- One trigger per object → handler mapping -->
-| Trigger | Object | Handler |
-|---------|--------|---------|
 
-## Test Classes
+## LWC Components (0)
 
-<!-- Test → what it validates -->
-| Test Class | Tests |
-|-----------|-------|
+| Component | Files | Path |
+|-----------|-------|------|
 
-## Invocable & REST
-
-<!-- InvocableMethod, REST endpoints, Queueable, Batch, Schedulable -->
-| Class | Type | Purpose |
-|-------|------|---------|
-
-## LWC Components
-
-<!-- Lightning Web Components -->
-| Component | Purpose |
-|-----------|---------|
-
-## Utilities
-
-<!-- Shared helpers, selectors, factories, base classes -->
-| Class | Purpose |
-|-------|---------|

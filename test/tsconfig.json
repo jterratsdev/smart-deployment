@@ -1,6 +1,7 @@
 {
   "extends": "@salesforce/dev-config/tsconfig-test-strict-esm",
   "include": ["./**/*.ts"],
+  "exclude": ["./mobile/**"],
   "compilerOptions": {
     "skipLibCheck": true,
     "types": ["node", "mocha", "@cucumber/cucumber"]

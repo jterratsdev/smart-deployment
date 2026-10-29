@@ -4,7 +4,7 @@ import {
   type ProjectAnalysisMessages,
 } from '../analysis/project-analysis-service.js';
 import type { ScanResult } from '../services/metadata-scanner-service.js';
-import type { Wave } from '../waves/wave-builder.js';
+import type { DeploymentOrderConflict, Wave } from '../waves/wave-builder.js';
 import type { CommitScopeOptions, CommitScopeSummary } from './commit-scope-service.js';
 
 export type DeploymentAIContext = ProjectAnalysisAIContext;
@@ -17,6 +17,7 @@ export type DeploymentContext = {
   aiContext?: DeploymentAIContext;
   commitScope?: CommitScopeSummary;
   messages: DeploymentContextMessages;
+  stageConflicts?: DeploymentOrderConflict[];
 };
 
 export type DeploymentContextBuildOptions = {
@@ -25,6 +26,7 @@ export type DeploymentContextBuildOptions = {
   orgType?: string;
   industry?: string;
   commitScope?: CommitScopeOptions;
+  explainStageConflicts?: boolean;
 };
 
 type DeploymentContextServiceDependencies = ConstructorParameters<typeof ProjectAnalysisService>[0];
@@ -44,6 +46,7 @@ export class DeploymentContextService {
       aiContext: analysis.aiContext,
       commitScope: analysis.commitScope,
       messages: analysis.messages,
+      stageConflicts: analysis.stageConflicts,
     };
   }
 }

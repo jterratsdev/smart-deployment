@@ -1,4 +1,4 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.1 -->
 # Release
 
 ## Goal
@@ -22,5 +22,5 @@ Deploy validated changes to the target environment.
 
 ## Evidence
 ```bash
-sf setup-agents evidence add --task <id> --role devops --type command --summary "Release completed"
+sf setup-agents evidence add --task <id> --role release-manager --type command --summary "Release completed"
 ```

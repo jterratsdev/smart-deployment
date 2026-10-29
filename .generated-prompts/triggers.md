@@ -1,4 +1,5 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.1 -->
+<!-- setup-agents:block:start id="prompt-register-guidance" version="3.23.1" -->
 # Apex Trigger Prompts
 
 > AI prompt register for Apex triggers (.trigger) and their handler classes in this project.
@@ -37,4 +38,5 @@ Each entry covers both the trigger and its handler class.
 
 ---
 
+<!-- setup-agents:block:end id="prompt-register-guidance" -->
 <!-- Entries below this line are maintained by the agent -->

@@ -1,1 +1,10 @@
-{}
+{
+  "health/atlas.en-us.health_cloud.meta": {
+    "syncedAt": "2026-10-22T09:38:31.244Z",
+    "pages": 6
+  },
+  "health/atlas.en-us.health_cloud_object_reference.meta": {
+    "syncedAt": "2026-10-22T09:38:32.820Z",
+    "pages": 6
+  }
+}

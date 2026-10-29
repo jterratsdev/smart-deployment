@@ -4,6 +4,7 @@ import { promisify } from 'node:util';
 import { glob } from 'glob';
 import { MetadataScannerService } from '../services/metadata-scanner-service.js';
 import type { AiEvaluationDefinition, MetadataComponent } from '../types/metadata.js';
+import { classifyOmniStudioChannels, type OmniStudioChannelClassification } from './omnistudio-channel-classifier.js';
 import {
   SfCliSpecialDeploymentTargetLookup,
   type SpecialDeploymentTargetLookup,
@@ -36,6 +37,7 @@ export type SpecialDeploymentPhase = {
   skipReason?: string;
   errors?: string[];
   warnings?: string[];
+  classifications?: OmniStudioChannelClassification[];
 };
 
 export type SpecialDeploymentPlan = {
@@ -264,30 +266,42 @@ class CommunityPublishProvider implements SpecialDeploymentProvider {
 }
 
 class OmniStudioVlocityProvider implements SpecialDeploymentProvider {
-  private readonly omniPathPattern =
-    /(?:^|\/)(vlocity|omnistudio|omniScripts|dataRaptors|integrationProcedures|flexCards)(?:\/|$)/iu;
-
   public async plan(context: ProviderContext): Promise<SpecialDeploymentPhase> {
-    const changedPaths = context.changedPaths.filter((filePath) => this.omniPathPattern.test(filePath)).sort();
+    const classifications = await classifyOmniStudioChannels({
+      projectRoot: context.projectRoot,
+      changedPaths: context.changedPaths,
+    });
+
+    const managed = classifications.filter((entry) => entry.channel === 'managed-datapack').sort(byPath);
+    const native = classifications.filter((entry) => entry.channel === 'native-metadata').sort(byPath);
+    const blocked = classifications.filter((entry) => entry.channel === 'blocked').sort(byPath);
+
+    const warnings: string[] = [];
+    if (native.length > 0) {
+      warnings.push(
+        `Classified ${native.length} OmniStudio path(s) as native-metadata; excluded from the managed DataPack channel. Native deploy enablement is out of scope.`
+      );
+    }
 
     return {
       kind: 'omnistudio-vlocity',
-      label: 'Optional phase: OmniStudio managed-package DataPacks',
-      components: [...new Set(changedPaths.map((filePath) => firstPathSegment(filePath)))].sort(),
-      changedPaths,
-      commands:
-        changedPaths.length > 0
-          ? [
-              {
-                tool: 'vlocity',
-                args: ['packDeploy', '--job', '<generated-vlocity-job.yaml>'],
-                reason: 'Deploy managed-package OmniStudio DataPacks outside Salesforce core metadata deploy.',
-              },
-            ]
-          : [],
-      skipped: changedPaths.length === 0,
+      label: 'Optional phase: OmniStudio managed DataPack classification (import deferred)',
+      components: [...new Set(managed.map((entry) => entry.artifactKey).filter(isDefined))].sort(),
+      changedPaths: managed.map((entry) => entry.path),
+      commands: [],
+      skipped: classifications.length === 0,
       skipReason:
-        changedPaths.length === 0 ? 'No changed OmniStudio managed-package/DataPack paths detected.' : undefined,
+        classifications.length === 0
+          ? 'No OmniStudio candidate paths detected.'
+          : 'Managed DataPack import is deferred to a separately scoped lifecycle task with target evidence; this phase only classifies.',
+      errors: blocked.map(
+        (entry) =>
+          `${entry.path}: ${entry.reason} — ${entry.evidence.join(' ')}${
+            entry.remedy ? ` Remedy: ${entry.remedy}` : ''
+          }`
+      ),
+      warnings: warnings.length > 0 ? warnings : undefined,
+      classifications,
     };
   }
 }
@@ -340,8 +354,12 @@ function projectRelativePath(projectRoot: string, filePath: string): string {
   );
 }
 
-function firstPathSegment(filePath: string): string {
-  return normalizePath(filePath).split('/')[0] ?? filePath;
+function byPath(left: OmniStudioChannelClassification, right: OmniStudioChannelClassification): number {
+  return left.path.localeCompare(right.path);
+}
+
+function isDefined<T>(value: T | undefined): value is T {
+  return value !== undefined;
 }
 
 function withTargetOrg(args: string[], context: ProviderContext): string[] {

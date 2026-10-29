@@ -706,5 +706,2388 @@
     "status": "pending",
     "createdAt": "2026-08-08T00:47:26.325Z",
     "updatedAt": "2026-08-08T00:47:26.325Z"
+  },
+  {
+    "id": "SD-RC-RECONCILE",
+    "title": "Reconcile deployment changes onto main",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Apply still-relevant smart deployment, resume, deterministic Agentforce metadata, validation, and reporting changes onto current origin/main and validate a release candidate",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src", "test", "docs", "scripts", "package.json"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-09-01T22:34:00.751Z",
+    "updatedAt": "2026-09-01T22:55:32.010Z",
+    "blockedReason": "release_manager requested block: The RC cannot be published safely as 1.5.0: package.json/npm-shrinkwrap are unchanged at 1.5.0, v1.5.0 points to a predecessor, npm 1.5.0 is already published, and the workflow's duplicate-version guard will fail or skip publication depending on entry path."
+  },
+  {
+    "id": "SD-RC-RECONCILE-developer-c60a10",
+    "title": "[DEVELOPER] SD-RC-RECONCILE",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-01T22:34:12.424Z",
+    "updatedAt": "2026-09-01T22:42:40.113Z"
+  },
+  {
+    "id": "SD-RC-RECONCILE-developer-c60a10-retry1",
+    "title": "[DEVELOPER] SD-RC-RECONCILE (retry 1)",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-01T22:42:40.047Z",
+    "updatedAt": "2026-09-01T22:42:40.047Z"
+  },
+  {
+    "id": "SD-RC-FINALIZE",
+    "title": "Finalize Agentforce release candidate",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Fix JSON target-org logging, align the repository Salesforce API version to 67.0, run release validation, and produce an approved release candidate without publishing",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/commands/validate.ts", "test/unit/commands/validate.test.ts", "sfdx-project.json"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-10T22:25:34.693Z",
+    "updatedAt": "2026-09-10T23:35:04.171Z",
+    "blockedReason": "release_manager requested block: NO-GO for merge-ready RC: npm runtime audit has 1 high and 4 moderate vulnerabilities; semantic-release calculates 1.6.0 but publish-npm.yml does not invoke it and defaults manual bump to 1.5.1; requested fixes remain uncommitted so branch HEAD omits them; package repository URL disagrees with the actual public remote."
+  },
+  {
+    "id": "SD-RC-FINALIZE-developer-0dbe98",
+    "title": "[DEVELOPER] SD-RC-FINALIZE",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-10T22:25:35.331Z",
+    "updatedAt": "2026-09-10T22:30:21.797Z"
+  },
+  {
+    "id": "SD-RC-FINALIZE-developer-0dbe98-retry1",
+    "title": "[DEVELOPER] SD-RC-FINALIZE (retry 1)",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-10T22:30:21.732Z",
+    "updatedAt": "2026-09-10T22:30:21.732Z"
+  },
+  {
+    "id": "SD-RC-REMEDIATE",
+    "title": "Remediate release candidate blockers",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "goal": "Resolve runtime audit findings, establish one 1.6.0-compatible release authority, correct repository metadata, integrate the accepted RC fixes, and produce a merge-ready release candidate without publishing",
+    "assumptions": [],
+    "risks": [],
+    "paths": [
+      "package.json",
+      "npm-shrinkwrap.json",
+      "yarn.lock",
+      ".github/workflows/publish-npm.yml",
+      ".releaserc.json"
+    ],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-10T22:46:40.434Z",
+    "updatedAt": "2026-09-10T23:34:52.417Z",
+    "blockedReason": ""
+  },
+  {
+    "id": "SD-RC-REMEDIATE-developer-9af105",
+    "title": "[DEVELOPER] SD-RC-REMEDIATE",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-10T22:46:41.040Z",
+    "updatedAt": "2026-09-10T22:55:07.687Z"
+  },
+  {
+    "id": "SD-RC-REMEDIATE-developer-9af105-retry1",
+    "title": "[DEVELOPER] SD-RC-REMEDIATE (retry 1)",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-10T22:55:07.557Z",
+    "updatedAt": "2026-09-10T22:55:07.557Z"
+  },
+  {
+    "id": "SD-RC-PR-MERGE",
+    "title": "Open and merge Agentforce release candidate",
+    "ownerRole": "release_manager",
+    "dependencies": [],
+    "goal": "Remove operational artifacts from the reviewed RC diff, open the pull request, wait for required checks, and merge with admin override only if checks pass",
+    "assumptions": [],
+    "risks": [],
+    "paths": [
+      ".github/workflows",
+      "pacakge.json",
+      "npm-shrinkwrap.json",
+      "yarn.lock",
+      "sfdx-project.json",
+      "src",
+      "test"
+    ],
+    "workflow": {
+      "requiredRoles": ["release_manager"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-11T03:57:48.173Z",
+    "updatedAt": "2026-09-11T03:57:48.173Z"
+  },
+  {
+    "id": "SD-RC-PR-MERGE-release-2238a7",
+    "title": "[RELEASE] SD-RC-PR-MERGE",
+    "ownerRole": "release_manager",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["release_manager"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-11T03:57:48.802Z",
+    "updatedAt": "2026-09-11T03:57:48.949Z"
+  },
+  {
+    "id": "SD-RELEASE-URL-HOTFIX",
+    "title": "Fix canonical release repository URL",
+    "ownerRole": "release_manager",
+    "dependencies": [],
+    "goal": "Align package metadata with the canonical jterratsdev GitHub repository, verify semantic-release, merge the hotfix, and confirm publication of 1.6.0",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["package.json"],
+    "workflow": {
+      "requiredRoles": ["release_manager"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-17T21:50:26.069Z",
+    "updatedAt": "2026-09-17T22:08:54.880Z"
+  },
+  {
+    "id": "SD-RELEASE-URL-HOTFIX-release-a19421",
+    "title": "[RELEASE] SD-RELEASE-URL-HOTFIX",
+    "ownerRole": "release_manager",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["release_manager"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-17T21:50:26.655Z",
+    "updatedAt": "2026-09-17T21:50:26.806Z"
+  },
+  {
+    "id": "SD-ROADMAP-ISSUES",
+    "title": "Create post-1.6 roadmap backlog",
+    "ownerRole": "product_owner",
+    "dependencies": [],
+    "goal": "Create a structured versioned GitHub roadmap from release hardening through stable provider contracts without duplicating existing work",
+    "acceptanceCriteria": [
+      "The master roadmap issue contains links to all five version milestones and every child issue URL",
+      "Each child issue body contains Scope, Non-goals, Acceptance criteria, Test strategy, Dependencies, and Estimate sections",
+      "The roadmap references closed issue #221 and no new issue repeats its completed planning scope"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["GitHub issues"],
+    "workflow": {
+      "requiredRoles": ["product_owner"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-22T04:22:53.276Z",
+    "updatedAt": "2026-09-22T04:24:58.377Z"
+  },
+  {
+    "id": "SD-ROADMAP-ISSUES-po-99e550",
+    "title": "[PO] SD-ROADMAP-ISSUES",
+    "ownerRole": "product_owner",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["product_owner"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-22T04:22:53.901Z",
+    "updatedAt": "2026-09-22T04:22:53.901Z"
+  },
+  {
+    "id": "GH-253",
+    "title": "Align required PR checks runners and branch rules",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "backlogItem": "https://github.com/jterratsdev/smart-deployment/issues/253",
+    "goal": "Make normal pull requests emit every main-ruleset check without admin bypass and prevent workflow/ruleset drift",
+    "acceptanceCriteria": [
+      "A pull request triggers Linux unit tests and a status context named nuts",
+      "The SonarQube Analyze job starts on a GitHub-hosted runner instead of remaining queued for a self-hosted runner",
+      "An automated check compares required main-ruleset contexts with workflow job contexts and fails with actionable drift output",
+      "A fixture pull request can satisfy the protected-main checks without administrator bypass"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": [".github/workflows", "scripts", "test"],
+    "workflow": {
+      "requiredRoles": ["developer", "qa", "release_manager"],
+      "phaseSequence": ["developer", "qa", "release"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-22T05:44:20.250Z",
+    "updatedAt": "2026-09-22T07:14:57.213Z",
+    "blockedReason": "Developer corrections complete and handed to QA; real fixture PR remains intentionally unexecuted because this correction request forbids commit, push, or PR creation.",
+    "qaGate": {
+      "plan": "Re-run focused CI contract tests, changed-workflow actionlint, deterministic contract and negative probes, build/unit/NUT regression, then evaluate fixture PR readiness without creating a PR absent explicit authorization.",
+      "executionStatus": "passed"
+    }
+  },
+  {
+    "id": "GH-253-developer-7c9781",
+    "title": "[DEVELOPER] GH-253",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-22T05:44:20.872Z",
+    "updatedAt": "2026-09-22T05:44:20.872Z"
+  },
+  {
+    "id": "GH-253-developer-7c9781-retry1",
+    "title": "[DEVELOPER] GH-253 (retry 1)",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-22T06:03:29.583Z",
+    "updatedAt": "2026-09-22T06:03:29.583Z"
+  },
+  {
+    "id": "GH-253-qa-7c9781",
+    "title": "[QA] GH-253",
+    "ownerRole": "qa",
+    "dependencies": ["GH-253-developer-7c9781"],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-22T06:03:29.652Z",
+    "updatedAt": "2026-09-22T06:03:29.652Z"
+  },
+  {
+    "id": "GH-253-developer-7c9781-retry2",
+    "title": "[DEVELOPER] GH-253 (retry 2)",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-22T06:04:00.571Z",
+    "updatedAt": "2026-09-22T06:04:00.571Z"
+  },
+  {
+    "id": "GH-253-qa-7c9781-retry1",
+    "title": "[QA] GH-253 (retry 1)",
+    "ownerRole": "qa",
+    "dependencies": ["GH-253-developer-7c9781"],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-22T06:04:00.641Z",
+    "updatedAt": "2026-09-22T06:04:00.641Z"
+  },
+  {
+    "id": "GH-252",
+    "title": "Add release and clean-install contract tests",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "backlogItem": "https://github.com/jterratsdev/smart-deployment/issues/252",
+    "goal": "Detect release configuration regressions and prove a packed plugin installs cleanly in an isolated Salesforce CLI environment before publication",
+    "acceptanceCriteria": [
+      "CI fails before release when package repository metadata does not match the canonical GitHub repository",
+      "CI fails when configured semantic-release plugins attempt to commit or push directly to protected main",
+      "An isolated Salesforce CLI installation of the dry-run tarball reports the package version and discovers validate and ci-publish commands",
+      "Documentation explains unsigned plugin confirmation and npm min-release-age behavior without changing global npm policy"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": [".github/workflows", ".releaserc.json", "package.json", "scripts", "test", "docs"],
+    "workflow": {
+      "requiredRoles": ["developer", "qa", "release_manager"],
+      "phaseSequence": ["developer", "qa", "release"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-22T16:55:33.507Z",
+    "updatedAt": "2026-09-23T01:38:56.380Z",
+    "blockedReason": "Definitive QA approved; awaiting commit, PR checks, and release-manager merge review.",
+    "qaGate": {
+      "plan": "Verify release metadata and protected-main contracts, analyzer current/synthetic histories, clean tarball installation, lock structural integrity and stability, workflow/actionlint/shellcheck, build/unit/NUT, audit, and act clean-checkout path.",
+      "executionStatus": "passed"
+    }
+  },
+  {
+    "id": "GH-252-developer-33a629",
+    "title": "[DEVELOPER] GH-252",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-22T16:55:34.272Z",
+    "updatedAt": "2026-09-22T16:55:34.272Z"
+  },
+  {
+    "id": "SD-CG-DEMO-LINK-E2E",
+    "title": "Validate linked plugin end to end against cg-demo",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "goal": "Link the clean origin/main checkout into Salesforce CLI and validate real plugin discovery, planning, deployment, remote status, and cleanup against cg-demo",
+    "acceptanceCriteria": [
+      "Salesforce CLI loads the plugin from a clean local origin/main checkout",
+      "Linked validate and dry-run commands succeed against cg-demo without fixtures",
+      "A uniquely named temporary metadata component deploys through smart-deployment start and is observable in cg-demo",
+      "Temporary org metadata and local test artifacts are removed after validation"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src", "test", "scripts"],
+    "workflow": {
+      "requiredRoles": ["qa", "release_manager"],
+      "phaseSequence": ["qa", "release"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-23T16:17:23.727Z",
+    "updatedAt": "2026-09-23T16:21:53.210Z",
+    "qaGate": {
+      "plan": "Link clean origin/main, validate plugin discovery, run validate and dry-run against cg-demo, deploy unique Apex metadata through smart-deployment start, verify via Tooling API and execute anonymous Apex, delete metadata, confirm absence, and restore npm plugin 1.6.2.",
+      "executionStatus": "passed"
+    }
+  },
+  {
+    "id": "SD-CG-DEMO-LINK-E2E-qa-03a590",
+    "title": "[QA] SD-CG-DEMO-LINK-E2E",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-23T16:17:25.119Z",
+    "updatedAt": "2026-09-23T16:17:25.119Z"
+  },
+  {
+    "id": "SD-API67-LIVE-HARNESS",
+    "title": "Certify API 67 and add reusable live-org harness",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Remove false API 67 compatibility warnings and preserve the successful linked-plugin cg-demo validation as an opt-in reversible harness",
+    "acceptanceCriteria": [
+      "API 67 is the single recommended and maximum tested API version",
+      "API 67 metadata validation emits no newer-than-tested warning while API 68 still does",
+      "An opt-in live harness links a clean plugin, validates, dry-runs, deploys and executes uniquely named Apex metadata, cleans it in all paths, and restores the prior plugin",
+      "Normal CI and tests require no org credentials",
+      "Unit test asserts API 67 produces zero newer-than-tested warnings and API 68 produces exactly one such warning"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": [
+      "src/constants/api-version.ts",
+      "src/validators/xml-metadata-validator.ts",
+      "test",
+      "scripts",
+      "package.json",
+      "docs"
+    ],
+    "workflow": {
+      "requiredRoles": ["developer", "qa", "release_manager"],
+      "phaseSequence": ["developer", "qa", "release"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-28T18:45:11.263Z",
+    "updatedAt": "2026-09-29T22:00:50.497Z",
+    "blockedReason": "QA approved; awaiting updated PR checks and release-manager review.",
+    "qaGate": {
+      "plan": "Run API-version unit matrix, harness static safety tests, build/unit/NUT, shellcheck, linked-plugin cg-demo smoke with deploy/execute/cleanup, and verify plugin/org restoration.",
+      "executionStatus": "passed"
+    }
+  },
+  {
+    "id": "SD-API67-LIVE-HARNESS-developer-678f63",
+    "title": "[DEVELOPER] SD-API67-LIVE-HARNESS",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-28T18:45:13.012Z",
+    "updatedAt": "2026-09-28T18:45:13.012Z"
+  },
+  {
+    "id": "SD-FAST-URI-SECURITY-HOTFIX",
+    "title": "Remediate fast-uri runtime advisories",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Restore release readiness by upgrading fast-uri to 3.1.7 and repairing deterministic Yarn/npm lock integrity exposed by clean installs",
+    "acceptanceCriteria": [
+      "npm audit --omit=dev reports zero vulnerabilities",
+      "Yarn frozen install and npm clean install preserve lockfiles",
+      "Unit, build, NUT, clean-install and release checks pass before merge",
+      "Hash comparison asserts package.json, yarn.lock and npm-shrinkwrap.json remain unchanged after a frozen Yarn install followed by npm ci --dry-run",
+      "Release contract validates every Yarn entry has complete resolved and integrity metadata and required resolutions select exact versions"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["package.json", "yarn.lock", "npm-shrinkwrap.json"],
+    "workflow": {
+      "requiredRoles": ["developer", "qa", "release_manager"],
+      "phaseSequence": ["developer", "qa", "release"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-28T23:30:37.205Z",
+    "updatedAt": "2026-09-29T22:00:50.472Z",
+    "blockedReason": "release_manager requested block: Technical review found no code, dependency, audit, lock-churn, install, or CI blockers at PR #267 head 9342f39; merge is technically warranted and directly remediates failed publish run 36497952623. However, the mandatory Orchestra release-readiness gate is red and reports missing readiness.backlogItem, scope, assumptions, risks, testStrategy; qa-release.qaEvidence and realProduct classification; business-analyst and architect QA cross-reviews; and developer-to-QA handoff.",
+    "qaGate": {
+      "plan": "Verify exact fast-uri 3.1.7 in package resolutions and both locks, zero runtime audit vulnerabilities, stable sequential lock hashes, build/unit/NUT/clean-install and live PR checks.",
+      "executionStatus": "passed"
+    },
+    "backlogItem": "Post-merge remediation for failed publish run 36497952623",
+    "scope": "Patch the vulnerable runtime fast-uri resolution and exact Yarn/npm lock entries only; restore the blocked semantic-release publication.",
+    "testStrategy": "Compare exact three-file diff; run isolated Yarn frozen and npm ci installs; assert 3.1.7 and zero runtime audit findings; run release contracts, build, unit, NUT, packed clean install and live PR checks."
+  },
+  {
+    "id": "SD-FAST-URI-SECURITY-HOTFIX-developer-bf6140",
+    "title": "[DEVELOPER] SD-FAST-URI-SECURITY-HOTFIX",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-28T23:30:37.961Z",
+    "updatedAt": "2026-09-28T23:30:37.961Z"
+  },
+  {
+    "id": "SD-OWD-SHARING-BARRIER-ISSUE",
+    "title": "Register OWD propagation barrier bug",
+    "ownerRole": "product_owner",
+    "dependencies": [],
+    "goal": "Capture the reproduced Case OWD eventual-consistency failure and define implementable acceptance criteria for dependent SharingRules",
+    "acceptanceCriteria": [
+      "Issue records the exact two-stage reproduction and distinguishes InternalSharingModel from ExternalSharingModel",
+      "Issue requires isolated CustomObject deployment, polling barrier, dependent SharingRules deployment, timeout/resume semantics, and cleanup-safe E2E coverage"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["GitHub issue"],
+    "workflow": {
+      "requiredRoles": ["product_owner"],
+      "phaseSequence": ["po"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-30T17:22:35.943Z",
+    "updatedAt": "2026-09-30T17:24:31.383Z",
+    "blockedReason": "GitHub returned 403 for issue creation via GraphQL and REST: Enterprise Managed User cannot access this content. Requires an allowed GitHub identity."
+  },
+  {
+    "id": "SD-OWD-SHARING-BARRIER-ISSUE-po-af7992",
+    "title": "[PO] SD-OWD-SHARING-BARRIER-ISSUE",
+    "ownerRole": "product_owner",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["product_owner"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-30T17:22:37.583Z",
+    "updatedAt": "2026-09-30T17:22:37.742Z"
+  },
+  {
+    "id": "GH-268",
+    "title": "Add OWD propagation barrier before dependent SharingRules",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "backlogItem": "https://github.com/jterratsdev/smart-deployment/issues/268",
+    "goal": "Detect OWD transitions, isolate dependent SharingRules, wait for effective InternalSharingModel, and resume safely after propagation timeout",
+    "acceptanceCriteria": [
+      "Semantic diff reports sharingModel and externalSharingModel transitions independently",
+      "SharingRules files are discovered with hard dependencies on their object and referenced local principals",
+      "Execution deploys an OWD-changing object separately and observes expected InternalSharingModel before dependent SharingRules",
+      "ExternalSharingModel alone never satisfies the barrier",
+      "Timeout persists a resumable postcondition and resume rechecks it without redeploying the completed OWD phase",
+      "Auth/network unknown remains distinct from missing principals and propagation timeout",
+      "Human and JSON reports expose stable sanitized postcondition status",
+      "Deterministic tests and an opt-in disposable-org E2E cover delayed internal propagation"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/deployment", "src/services/scanners", "src/parsers", "src/types", "test", "docs"],
+    "workflow": {
+      "requiredRoles": ["developer", "qa", "release_manager"],
+      "phaseSequence": ["developer", "qa", "release"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-09-30T17:55:52.354Z",
+    "updatedAt": "2026-10-10T23:30:35.655Z",
+    "blockedReason": "qa requested changes: Authorized cg-demo isolated live OWD probe passed and cleanup independently verified. Existing Case unchanged. This tests Salesforce OWD propagation and the query/poller with direct sf deploys, not smart-deployment start/resume, delayed timeout or checkpoint continuation. Full GH-268 end-to-end acceptance remains unproven.",
+    "qaGate": {
+      "plan": "Adversarial review of planner/query/poller/cursor/resume/reporting; stub failure-path tests; full build/unit/NUT/E2E/integration/performance; guarded live harness fail-closed; no cg-demo mutation.",
+      "executionStatus": "pending"
+    }
+  },
+  {
+    "id": "GH-268-developer-5374db",
+    "title": "[DEVELOPER] GH-268",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-30T17:55:53.080Z",
+    "updatedAt": "2026-09-30T17:55:53.080Z"
+  },
+  {
+    "id": "GH-268-developer-5374db-retry1",
+    "title": "[DEVELOPER] GH-268 (retry 1)",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "canceled",
+    "createdAt": "2026-09-30T18:22:44.941Z",
+    "updatedAt": "2026-09-30T18:22:45.015Z"
+  },
+  {
+    "id": "GH-268-developer-df0fd2",
+    "title": "[DEVELOPER] GH-268",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-30T18:26:57.846Z",
+    "updatedAt": "2026-09-30T18:26:57.846Z"
+  },
+  {
+    "id": "SD-FAST-URI-318-HOTFIX",
+    "title": "Independent QA for fast-uri 3.1.8 hotfix",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Independently verify only fast-uri 3.1.7 to 3.1.8 three-file nine-line diff; registry integrity; isolated npm ci and audit zero; Yarn frozen install with hash stability and no warning; both package managers select 3.1.8; build, 1733 unit tests, NUT42, clean-install evidence; release contracts; and no unrelated churn. Record QA evidence and approve or block. No source edits, commit, push, PR, merge, tag, or publish.",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["package.json", "npm-shrinkwrap.json", "yarn.lock"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-09-30T20:42:04.197Z",
+    "updatedAt": "2026-09-30T20:48:31.197Z",
+    "blockedReason": "qa requested block: Release contract failed 1/10 with 29 yarn.lock integrity/resolution findings. Literal Yarn no-warning requirement is not met because frozen install/list emit existing mixed-lockfile/resolution/peer/workspace warnings. Full npm audit reports 24 dev/tooling vulnerabilities; only npm audit --omit=dev is zero. The hotfix-specific diff, registry SRI, npm/Yarn fast-uri@3.1.8 selection, hash stability, build, 1733 unit tests, 42 NUTs, and packed clean install all pass."
+  },
+  {
+    "id": "SD-FAST-URI-318-HOTFIX-developer-67bb3d",
+    "title": "[DEVELOPER] SD-FAST-URI-318-HOTFIX",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-30T20:00:41.422Z",
+    "updatedAt": "2026-09-30T20:00:41.422Z"
+  },
+  {
+    "id": "SD-MATCH-DUP-ARCH",
+    "title": "Design MatchingRules and DuplicateRule deployment support",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "goal": "Define the correct product architecture for discovering, ordering, validating, deploying and resuming MatchingRules and DuplicateRule safely",
+    "acceptanceCriteria": [
+      "Architecture confirms canonical vendor identities and source formats for API 67",
+      "Architecture defines explicit object, field and matching-rule dependency contracts",
+      "Architecture defines activation, propagation, failure and resume semantics without broadening command hotspots",
+      "Architecture provides delivery slices, file ownership, tests, live-org evidence and migration risks"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/analysis", "src/parsers", "src/services/scanners", "src/deployment", "src/types", "test", "docs"],
+    "workflow": {
+      "requiredRoles": ["architect"],
+      "phaseSequence": ["architect"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-30T23:45:07.124Z",
+    "updatedAt": "2026-09-30T23:45:07.124Z"
+  },
+  {
+    "id": "SD-MATCH-DUP-ARCH-architect-17ae1e",
+    "title": "[ARCHITECT] SD-MATCH-DUP-ARCH",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-30T23:45:07.886Z",
+    "updatedAt": "2026-09-30T23:45:08.053Z"
+  },
+  {
+    "id": "SD-SETUP-AGENTS-PRODUCT-PACKS",
+    "title": "Add modular Salesforce product packs",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "goal": "Provide reusable core and product-specific setup-agents packs with deterministic selective activation across Salesforce products, and consume them safely from smart-deployment",
+    "acceptanceCriteria": [
+      "A versioned registry defines core and product packs, signals, confidence and owned skills without duplicating product rules",
+      "Detection activates only relevant packs from namespaces, source metadata and explicit configuration with deterministic explanations",
+      "Ambiguous signals remain advisory and explicit overrides are supported",
+      "Generated runtime output loads core plus selected packs and normal operation does not load every product",
+      "Contracts cover Core, Agentforce, CGCloud, Field Service, CPQ/Billing, Maps, Data Cloud, Experience Cloud and OmniStudio",
+      "smart-deployment consumes the plugin contract without becoming a second source of product truth"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["/Users/jterrats/dev/setup-agents", ".setup-agents", ".codex"],
+    "workflow": {
+      "requiredRoles": ["architect", "developer", "qa", "release_manager"],
+      "phaseSequence": ["architect", "developer", "qa", "release"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-09-30T23:46:39.283Z",
+    "updatedAt": "2026-10-01T06:24:26.747Z",
+    "blockedReason": "Direction rejected: setup-agents profiles remain explicit expert personas; automatic product-pack detection will not be implemented. Replaced by SD-PRODUCT-METADATA-AUDIT."
+  },
+  {
+    "id": "SD-SETUP-AGENTS-PRODUCT-PACKS-architect-847e6b",
+    "title": "[ARCHITECT] SD-SETUP-AGENTS-PRODUCT-PACKS",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-30T23:46:40.476Z",
+    "updatedAt": "2026-09-30T23:46:40.476Z"
+  },
+  {
+    "id": "SD-PRODUCT-METADATA-AUDIT",
+    "title": "Audit metadata support and ordering by Salesforce product",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "goal": "Use setup-agents product experts to validate smart-deployment metadata identities, source formats, dependencies, execution ordering and lifecycle against authoritative documentation",
+    "acceptanceCriteria": [
+      "Every catalog cluster receives an expert review using the applicable setup-agents product profiles",
+      "Each finding identifies vendor type, deployment channel, source format, dependencies, order, lifecycle, confidence and sources",
+      "Conflicts across product profiles are resolved by canonical catalog key and documented ownership",
+      "Findings become a prioritized implementation backlog with deterministic and live-org test requirements"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": [
+      "docs/research/metadata-catalog",
+      "src/analysis/metadata-capability-definitions.ts",
+      "src/constants/deployment-order.ts"
+    ],
+    "workflow": {
+      "requiredRoles": ["architect", "product_owner", "qa"],
+      "phaseSequence": ["architect", "po", "qa"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-01T06:24:27.365Z",
+    "updatedAt": "2026-10-01T08:58:34.058Z",
+    "blockedReason": "architect requested changes: All clusters expose missing metadata, but the cross-cutting blocker is wave semantics: DEPLOYMENT_ORDER only sorts inside eligible waves; unknown priority 99, circular fallback, channel-blind planning, lossy persisted edges, non-graph-aware merging, and separate special phases make broad type additions unsafe."
+  },
+  {
+    "id": "SD-PRODUCT-METADATA-AUDIT-architect-4796d9",
+    "title": "[ARCHITECT] SD-PRODUCT-METADATA-AUDIT",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-01T06:24:28.017Z",
+    "updatedAt": "2026-10-01T06:24:28.017Z"
+  },
+  {
+    "id": "SD-PRODUCT-METADATA-AUDIT-architect-572a41",
+    "title": "[ARCHITECT] SD-PRODUCT-METADATA-AUDIT",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-01T06:25:27.142Z",
+    "updatedAt": "2026-10-01T06:25:27.142Z"
+  },
+  {
+    "id": "SD-WAVE-SAFETY-CONTRACTS",
+    "title": "Add fail-closed wave planning contracts",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "goal": "Make deployment order an executable partial-order contract with fail-closed unknowns, explicit wave boundaries and hard-cycle blocking",
+    "acceptanceCriteria": [
+      "A focused test proves independent metadata types with different order stages are emitted in separate waves",
+      "A focused test proves an unknown metadata type is rejected from executable wave planning",
+      "A focused test proves hard cycles remain unplaced and never appear in an executable fallback wave",
+      "Focused tests prove explicit isolated stages survive wave generation and cannot be merged",
+      "Build, lint and all touched tests complete successfully",
+      "Run a focused test that asserts independent metadata types from different stages produce separate waves",
+      "Run a focused test that asserts unknown metadata types are rejected from executable planning",
+      "Run a focused test that asserts hard cycles produce zero executable waves and remain in unplacedComponents",
+      "Run focused merger tests that assert different-stage and dependency-connected waves are not merged",
+      "Run yarn compile, yarn lint and yarn test:only with successful exit codes"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": [
+      "src/constants/deployment-order.ts",
+      "src/waves",
+      "src/deployment",
+      "src/types",
+      "test/unit/constants",
+      "test/unit/waves",
+      "test/unit/deployment"
+    ],
+    "workflow": {
+      "requiredRoles": ["architect", "developer", "qa"],
+      "phaseSequence": ["architect", "developer", "qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-01T09:16:18.039Z",
+    "updatedAt": "2026-10-01T09:45:13.328Z"
+  },
+  {
+    "id": "SD-PRODUCT-SETTINGS-SCANNER",
+    "title": "Add registry-driven product settings scanning",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Discover exact product settings identities and emit safe metadata nodes without generic Settings collapse",
+    "acceptanceCriteria": [
+      "RetailExecutionSettings and other approved settings resolve from exact source and XML identity",
+      "Settings emit separate readiness barriers before dependent product metadata",
+      "Unproven settings remain catalog-only and cannot execute"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/services/scanners", "src/analysis", "src/types", "test/unit/services", "test/unit/analysis"],
+    "workflow": {
+      "requiredRoles": ["developer", "qa"],
+      "phaseSequence": ["developer", "qa"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-01T08:58:53.177Z",
+    "updatedAt": "2026-10-01T08:58:53.177Z"
+  },
+  {
+    "id": "SD-C1-RULE-WAVE-SUPPORT",
+    "title": "Add CRM rule and security wave support",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Add typed dependencies and lifecycle sequences for MatchingRules, DuplicateRule, assignment, response, escalation, workflow and sharing metadata",
+    "acceptanceCriteria": [
+      "Parser edges place referenced schema, principals, templates and matching rules before dependents",
+      "OWD and active-rule readiness barriers isolate dependent rule deployment",
+      "Resume rechecks barriers without replaying completed prerequisite waves"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/parsers", "src/services/scanners", "src/waves", "src/deployment", "test"],
+    "workflow": {
+      "requiredRoles": ["developer", "qa"],
+      "phaseSequence": ["developer", "qa"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-01T08:58:53.352Z",
+    "updatedAt": "2026-10-01T08:58:53.352Z"
+  },
+  {
+    "id": "SD-PRODUCT-LIFECYCLE-CLASSIFIERS",
+    "title": "Classify native, managed and provider artifacts",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "goal": "Prevent OmniStudio, Data Cloud, Tableau, CPQ, SFMC, CGCloud, Communications and other product artifacts from crossing deployment channels",
+    "acceptanceCriteria": [
+      "Every artifact has exactly one evidence-backed deployment channel or is blocked as ambiguous",
+      "Managed data and provider artifacts never enter Salesforce Metadata API manifests",
+      "Provider phases expose durable operation identity, verification, resume and rollback classification"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/analysis", "src/deployment", "src/types", "test", "docs"],
+    "workflow": {
+      "requiredRoles": ["architect", "developer", "qa"],
+      "phaseSequence": ["architect", "developer", "qa"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-01T08:58:53.537Z",
+    "updatedAt": "2026-10-01T08:58:53.537Z"
+  },
+  {
+    "id": "SD-WORKTREE-CLEANUP",
+    "title": "Audit and remove disposable worktrees",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Remove only verified disposable Git worktrees and stale temporary registrations without losing local or unique branch work",
+    "assumptions": [],
+    "risks": [],
+    "paths": [".git/worktrees", "/Users/jterrats/dev/smart-deployment-*"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-05T22:04:49.697Z",
+    "updatedAt": "2026-10-07T18:28:02.634Z"
+  },
+  {
+    "id": "SD-WORKTREE-CLEANUP-developer-3f50df",
+    "title": "[DEVELOPER] SD-WORKTREE-CLEANUP",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-05T22:05:07.571Z",
+    "updatedAt": "2026-10-05T22:05:07.747Z"
+  },
+  {
+    "id": "SD-WORKTREE-RECONCILE",
+    "title": "Reconcile archived worktree operational history",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "acceptanceCriteria": [
+      "Preserve primary newer task states and reviews; import only missing archived artifacts and history with provenance and no duplicate IDs; document unresolved conflicting files; validate ledger integrity and archive recovery without product code or release changes"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": [".agent-workflow", "docs/research/metadata-catalog"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-08T06:42:24.881Z",
+    "updatedAt": "2026-10-08T06:47:47.825Z"
+  },
+  {
+    "id": "SD-WORKTREE-RECONCILE-developer-dc110e",
+    "title": "[DEVELOPER] SD-WORKTREE-RECONCILE",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-08T06:42:44.017Z",
+    "updatedAt": "2026-10-08T06:42:44.377Z"
+  },
+  {
+    "id": "SD-API67-LIVE-HARNESS-qa-86c69f",
+    "title": "[QA] SD-API67-LIVE-HARNESS",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-28T22:46:13.694Z",
+    "updatedAt": "2026-09-28T22:46:13.853Z"
+  },
+  {
+    "id": "SD-CGCLOUD-RETAIL-SETTINGS",
+    "title": "Support CGCloud RetailExecutionSettings metadata",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Implement documentation-backed discovery, capability reporting and early settings-stage ordering for RetailExecutionSettings without conflating CGCloud package data",
+    "acceptanceCriteria": [
+      "Run a scanner test that discovers only settings/RetailExecution.settings-meta.xml as RetailExecutionSettings:RetailExecution",
+      "Run a capability registry test that resolves RetailExecutionSettings with minimum API 47.0, C6 ownership and partial lifecycle evidence",
+      "Run a wave test that places RetailExecutionSettings before independent CustomObject and Apex components",
+      "Run negative tests that do not classify StockRotationSettings, Modeler, Mobile Sync or cgcloud records as executable metadata",
+      "Run yarn compile, yarn lint and yarn test:only successfully"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": [
+      "src/services/scanners",
+      "src/types/metadata.ts",
+      "src/analysis/metadata-capability-definitions.ts",
+      "src/constants/deployment-order.ts",
+      "test/unit/services",
+      "test/unit/analysis",
+      "test/unit/constants"
+    ],
+    "workflow": {
+      "requiredRoles": ["developer", "qa"],
+      "phaseSequence": ["developer", "qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-02T04:54:53.270Z",
+    "updatedAt": "2026-10-02T05:19:07.088Z"
+  },
+  {
+    "id": "SD-CGCLOUD-RETAIL-SETTINGS-developer-fdcd76",
+    "title": "[DEVELOPER] SD-CGCLOUD-RETAIL-SETTINGS",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-01T07:04:14.358Z",
+    "updatedAt": "2026-10-01T07:04:14.358Z"
+  },
+  {
+    "id": "SD-FAST-URI-SECURITY-HOTFIX-qa-b02ad1",
+    "title": "[QA] SD-FAST-URI-SECURITY-HOTFIX",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-29T18:01:30.593Z",
+    "updatedAt": "2026-09-29T18:01:30.751Z"
+  },
+  {
+    "id": "SD-FAST-URI-318-HOTFIX-qa-e1b39e",
+    "title": "[QA] SD-FAST-URI-318-HOTFIX",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-30T20:42:21.358Z",
+    "updatedAt": "2026-09-30T20:42:21.537Z"
+  },
+  {
+    "id": "GH-252-CORRECTION",
+    "title": "Correct release contracts after QA",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "acceptanceCriteria": [
+      "Git-write detection safely tokenizes static shell strings and detects commit or push through exec, builtin, command, env, assignments, absolute paths, parentheses, and brace groups without false positives for status, log, diff, or prose.",
+      "yarn.lock is cleanly regenerated with Node 24 and Yarn 1; ip-address@10.2.0 resolves exactly to 10.2.0 with valid resolved and integrity fields; npm-shrinkwrap remains consistent.",
+      "Release-contract CI deterministically validates every versioned Yarn entry has version, resolved, and integrity and that package.json resolutions select the required versions.",
+      "All QA probes, focused tests, actionlint, shellcheck, build, unit tests, NUTs, analyzer, clean install, and warranted act checks pass with lock hashes preserved across sequential checks."
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": [
+      "scripts/ci",
+      "test/ci",
+      ".github/workflows/test.yml",
+      "package.json",
+      "yarn.lock",
+      "npm-shrinkwrap.json"
+    ],
+    "workflow": {
+      "requiredRoles": ["developer", "qa"],
+      "phaseSequence": ["developer", "qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-23T00:17:46.131Z",
+    "updatedAt": "2026-09-23T00:33:04.613Z",
+    "testStrategy": "Sequentially validate npm shrinkwrap, regenerate Yarn last, then run only frozen/read-only lanes while asserting package/yarn/shrinkwrap hashes remain stable.",
+    "qaGate": {
+      "plan": "Run QA probes and table-driven release contract tests, structural lock validation, Node 24/Yarn 1 frozen install, build/unit/NUT/analyzer/clean-install, actionlint, shellcheck, hash checks, and act when available.",
+      "executionStatus": "passed",
+      "deferredRationale": "act could not pull the configured private jterrats-act-runner:yarn image; actionlint and all direct workflow commands passed.",
+      "deferredOwner": "qa"
+    }
+  },
+  {
+    "id": "GH-252-CORRECTION-developer-9d68df",
+    "title": "[DEVELOPER] GH-252-CORRECTION",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-23T00:18:01.959Z",
+    "updatedAt": "2026-09-23T00:32:32.689Z"
+  },
+  {
+    "id": "GH-252-CORRECTION-developer-9d68df-retry1",
+    "title": "[DEVELOPER] GH-252-CORRECTION (retry 1)",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-09-23T00:32:32.523Z",
+    "updatedAt": "2026-09-23T00:32:32.523Z"
+  },
+  {
+    "id": "GH-252-CORRECTION-qa-9d68df",
+    "title": "[QA] GH-252-CORRECTION",
+    "ownerRole": "qa",
+    "dependencies": ["GH-252-CORRECTION-developer-9d68df"],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-23T00:32:32.698Z",
+    "updatedAt": "2026-09-23T00:32:32.841Z"
+  },
+  {
+    "id": "GH-252-FINAL-QA",
+    "title": "Final independent QA for GH-252",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Independently re-test the corrected GH-252 release contracts and produce a current release authorization verdict without product edits or release side effects",
+    "assumptions": [],
+    "risks": [],
+    "paths": [
+      "scripts/ci",
+      "test/ci",
+      ".github/workflows/test.yml",
+      "package.json",
+      "yarn.lock",
+      "npm-shrinkwrap.json",
+      ".agent-workflow/handoffs/GH-252-qa-release-handoff.md"
+    ],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-09-23T00:34:29.480Z",
+    "updatedAt": "2026-09-23T00:57:38.561Z",
+    "blockedReason": "Final QA found two release blockers: required-check-contexts lacks dependency installation for analyzer tests, and feat!: synthetic history mismatches configured commit analyzer.",
+    "testStrategy": "Independent local and public-derived Node 24/Yarn 1 act validation with hashes sampled after each mutating-risk lane.",
+    "qaGate": {
+      "plan": "Re-test direct Git forms and benign controls; structurally parse Yarn; verify exact ip-address metadata and no invalid-entry warning; preserve lock hashes through sequential focused/static/build/unit/NUT/analyzer/clean-install/act checks; verify no publication side effects and host policy immutability.",
+      "executionStatus": "failed"
+    }
+  },
+  {
+    "id": "GH-252-FINAL-QA-qa-5b02b5",
+    "title": "[QA] GH-252-FINAL-QA",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-23T00:34:53.947Z",
+    "updatedAt": "2026-09-23T00:34:54.115Z"
+  },
+  {
+    "id": "GH-268-architect-50909d",
+    "title": "[ARCHITECT] GH-268",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-09-30T19:37:34.415Z",
+    "updatedAt": "2026-09-30T19:37:34.578Z"
+  },
+  {
+    "id": "SD-WAVE-SAFETY-CONTRACTS-architect-8e4903",
+    "title": "[ARCHITECT] SD-WAVE-SAFETY-CONTRACTS",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-01T09:16:18.676Z",
+    "updatedAt": "2026-10-01T09:16:18.826Z"
+  },
+  {
+    "id": "SD-WAVE-SAFETY-CONTRACTS-developer-8e4903",
+    "title": "[DEVELOPER] SD-WAVE-SAFETY-CONTRACTS",
+    "ownerRole": "developer",
+    "dependencies": ["SD-WAVE-SAFETY-CONTRACTS-architect-8e4903"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-01T09:16:18.834Z",
+    "updatedAt": "2026-10-01T09:16:18.834Z"
+  },
+  {
+    "id": "SD-WAVE-SAFETY-CONTRACTS-developer-8e4903-retry1",
+    "title": "[DEVELOPER] SD-WAVE-SAFETY-CONTRACTS (retry 1)",
+    "ownerRole": "developer",
+    "dependencies": ["SD-WAVE-SAFETY-CONTRACTS-architect-8e4903"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-01T09:44:10.140Z",
+    "updatedAt": "2026-10-01T09:44:10.140Z"
+  },
+  {
+    "id": "SD-WAVE-SAFETY-CONTRACTS-developer-8e4903-retry2",
+    "title": "[DEVELOPER] SD-WAVE-SAFETY-CONTRACTS (retry 2)",
+    "ownerRole": "developer",
+    "dependencies": ["SD-WAVE-SAFETY-CONTRACTS-architect-8e4903"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-01T09:44:20.939Z",
+    "updatedAt": "2026-10-01T09:44:20.939Z"
+  },
+  {
+    "id": "SD-WAVE-SAFETY-CONTRACTS-developer-8e4903-retry3",
+    "title": "[DEVELOPER] SD-WAVE-SAFETY-CONTRACTS (retry 3)",
+    "ownerRole": "developer",
+    "dependencies": ["SD-WAVE-SAFETY-CONTRACTS-architect-8e4903"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-01T09:44:50.580Z",
+    "updatedAt": "2026-10-01T09:44:50.580Z"
+  },
+  {
+    "id": "SD-CGCLOUD-RETAIL-SETTINGS-developer-1b6c57",
+    "title": "[DEVELOPER] SD-CGCLOUD-RETAIL-SETTINGS",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-02T04:54:54.344Z",
+    "updatedAt": "2026-10-02T04:54:54.344Z"
+  },
+  {
+    "id": "SD-MATCH-DUP-RULES",
+    "title": "Support MatchingRules and DuplicateRule deployment sequencing",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Discover and parse MatchingRules and DuplicateRule metadata, emit typed object/field/matching-rule dependencies, sequence waves with resumable readiness approval, and render safe manifests/destructive behavior",
+    "acceptanceCriteria": [
+      "Run parser/scanner tests that produce canonical MatchingRules and DuplicateRule nodes with typed object, field and matching-rule dependencies",
+      "Run wave tests that assert CustomObject and CustomField precede MatchingRules and DuplicateRule follows MatchingRules",
+      "Run execution tests that assert active matching rules with dependent duplicate rules pause at a resumable readiness checkpoint before DuplicateRule deployment",
+      "Run manifest tests for exact MatchingRules and DuplicateRule transport identities and destructive guards",
+      "Run yarn compile, yarn lint and yarn test:only successfully"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": [
+      "src/parsers",
+      "src/services/scanners",
+      "src/types",
+      "src/constants",
+      "src/deployment",
+      "src/analysis",
+      "test/unit"
+    ],
+    "workflow": {
+      "requiredRoles": ["architect", "developer", "qa"],
+      "phaseSequence": ["architect", "developer", "qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-02T15:02:16.992Z",
+    "updatedAt": "2026-10-02T15:42:22.675Z"
+  },
+  {
+    "id": "SD-MATCH-DUP-RULES-architect-52dcd1",
+    "title": "[ARCHITECT] SD-MATCH-DUP-RULES",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-02T15:02:17.780Z",
+    "updatedAt": "2026-10-02T15:02:17.957Z"
+  },
+  {
+    "id": "SD-MATCH-DUP-RULES-developer-52dcd1",
+    "title": "[DEVELOPER] SD-MATCH-DUP-RULES",
+    "ownerRole": "developer",
+    "dependencies": ["SD-MATCH-DUP-RULES-architect-52dcd1"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-02T15:02:17.968Z",
+    "updatedAt": "2026-10-02T15:02:17.968Z"
+  },
+  {
+    "id": "SD-MATCH-DUP-LIVE-CG-DEMO",
+    "title": "Validate matching and duplicate rules against cg-demo",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Collect read-only live-org evidence for MatchingRules and DuplicateRule retrieval and local analysis against cg-demo, then gate any mutation on explicit approval",
+    "acceptanceCriteria": [
+      "Confirm cg-demo connectivity and API 67 metadata type availability without exposing credentials",
+      "List and retrieve MatchingRules and DuplicateRule metadata read-only into an OS temporary project",
+      "Analyze retrieved metadata with the plugin and record discovered components, dependencies and waves",
+      "Do not mutate cg-demo without explicit user confirmation that it is an approved non-production org"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/parsers", "src/services/scanners", "src/deployment", "test/e2e", "docs/research"],
+    "workflow": {
+      "requiredRoles": ["developer"],
+      "phaseSequence": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-03T19:26:34.438Z",
+    "updatedAt": "2026-10-03T21:00:48.621Z",
+    "blockedReason": "qa requested changes: Live regression exposed a standard-rule retrieval contract gap: empty MatchingRules containers must not be modeled as local definitions."
+  },
+  {
+    "id": "SD-MATCH-DUP-LIVE-CG-DEMO-qa-93857f",
+    "title": "[QA] SD-MATCH-DUP-LIVE-CG-DEMO",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-03T19:26:35.690Z",
+    "updatedAt": "2026-10-03T19:26:35.878Z"
+  },
+  {
+    "id": "SD-MATCH-DUP-STANDARD-RULES",
+    "title": "Handle non-retrievable standard matching rules",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Ignore empty MatchingRules containers retrieved for Salesforce standard rules while preserving fail-closed validation for missing names in non-empty local containers",
+    "acceptanceCriteria": [
+      "Scanner omits an empty MatchingRules container",
+      "A standard DuplicateRule reference without a local matching container remains target-owned and does not create a false dependency",
+      "A missing rule in a non-empty local container remains a hard error",
+      "Full cg-demo snapshot analysis advances past the standard matching-rule contract"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/services/scanners/data-quality-rule-scanner.ts", "test/unit/services"],
+    "workflow": {
+      "requiredRoles": ["developer", "qa"],
+      "phaseSequence": ["developer", "qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-03T20:35:52.072Z",
+    "updatedAt": "2026-10-03T21:00:47.790Z"
+  },
+  {
+    "id": "SD-MATCH-DUP-STANDARD-RULES-developer-567937",
+    "title": "[DEVELOPER] SD-MATCH-DUP-STANDARD-RULES",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-03T20:35:52.777Z",
+    "updatedAt": "2026-10-03T20:35:52.777Z"
+  },
+  {
+    "id": "SD-METADATA-DOC-AUDIT",
+    "title": "Validate metadata gap catalog against official documentation",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "goal": "Configure project-scoped Salesforce documentation access and audit the 190 cg-demo gap types against Salesforce Developers and Trailhead",
+    "acceptanceCriteria": [
+      "Run a configuration validation that proves the project OpenCode config matches the published schema",
+      "Run an architect audit that classifies each gap as canonical Metadata API, source child/alias, provider-owned, unsupported lifecycle, or false-positive suffix",
+      "Cite Salesforce Developers or Trailhead evidence for every accepted canonical classification",
+      "Produce prioritized scanner registry corrections and metadata implementation backlog without editing runtime behavior"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["opencode.json", ".opencode/agent", "docs/research/metadata-catalog", "src/analysis"],
+    "workflow": {
+      "requiredRoles": ["architect"],
+      "phaseSequence": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-03T22:28:46.342Z",
+    "updatedAt": "2026-10-03T22:46:55.027Z"
+  },
+  {
+    "id": "SD-METADATA-DOC-AUDIT-architect-cfb7d7",
+    "title": "[ARCHITECT] SD-METADATA-DOC-AUDIT",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-03T22:28:47.005Z",
+    "updatedAt": "2026-10-03T22:28:47.153Z"
+  },
+  {
+    "id": "SD-METADATA-DOC-AUDIT-architect-9cba06",
+    "title": "[ARCHITECT] SD-METADATA-DOC-AUDIT",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-03T22:30:40.525Z",
+    "updatedAt": "2026-10-03T22:30:40.686Z"
+  },
+  {
+    "id": "SD-METADATA-IDENTITY-P0",
+    "title": "Normalize metadata gap identities",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Use explicit canonical source and manifest identities in metadata gap reporting, avoiding generic suffix false positives and alias duplicates",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/analysis", "test/unit/analysis"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-04T04:49:12.428Z",
+    "updatedAt": "2026-10-04T04:49:12.428Z"
+  },
+  {
+    "id": "SD-METADATA-IDENTITY-P0-developer-c6fdfd",
+    "title": "[DEVELOPER] SD-METADATA-IDENTITY-P0",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-04T04:49:29.927Z",
+    "updatedAt": "2026-10-04T04:49:30.079Z"
+  },
+  {
+    "id": "SD-WORKTREE-COLLISION-AUDIT",
+    "title": "Audit archived review collisions and GH-252 authorization",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "acceptanceCriteria": [
+      "Compare six conflicting archived artifacts to current records and chronological task events; distinguish historical evidence from current authorization; record a source-backed disposition without overwriting records or changing product code"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": [".agent-workflow"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-08T16:12:02.761Z",
+    "updatedAt": "2026-10-08T16:13:17.481Z"
+  },
+  {
+    "id": "SD-WORKTREE-COLLISION-AUDIT-developer-dac07d",
+    "title": "[DEVELOPER] SD-WORKTREE-COLLISION-AUDIT",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-08T16:12:18.224Z",
+    "updatedAt": "2026-10-08T16:12:18.464Z"
+  },
+  {
+    "id": "SD-CUSTOM-LABELS-CONTAINER",
+    "title": "Discover and deploy CustomLabels container",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "acceptanceCriteria": [
+      "Discover only canonical labels/CustomLabels.labels-meta.xml as one CustomLabels container node; produce a valid whole-file deployment manifest without individual label members; reject similarly named files; verify focused tests and build"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": [
+      "src/services/scanners",
+      "src/scanner/metadata-format-scanner.ts",
+      "src/deployment/wave-manifest-service.ts",
+      "test/unit"
+    ],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-08T16:29:16.689Z",
+    "updatedAt": "2026-10-08T16:36:10.147Z"
+  },
+  {
+    "id": "SD-CUSTOM-LABELS-CONTAINER-developer-a57487",
+    "title": "[DEVELOPER] SD-CUSTOM-LABELS-CONTAINER",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-08T16:29:29.703Z",
+    "updatedAt": "2026-10-08T16:29:29.937Z"
+  },
+  {
+    "id": "SD-WAVE-ORDER-P0-RECONCILE",
+    "title": "Reconcile archived P0 wave ordering correction",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Compare archived wave-order P0 fix with current wave planner, integrate only applicable fail-closed ordering changes, and validate focused and full tests",
+    "acceptanceCriteria": [
+      "Independent metadata stages cannot share an executable wave when ordered stages differ",
+      "Unknown types and hard dependency cycles never enter executable fallback waves",
+      "Wave merger preserves stage and dependency boundaries with regression tests",
+      "Focused tests, compilation, lint and full unit suite complete or blockers recorded"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/waves", "test/unit/waves", "src/deployment"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-08T18:35:06.768Z",
+    "updatedAt": "2026-10-08T18:43:26.645Z"
+  },
+  {
+    "id": "SD-WAVE-ORDER-P0-RECONCILE-developer-e3af5f",
+    "title": "[DEVELOPER] SD-WAVE-ORDER-P0-RECONCILE",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-08T18:35:19.878Z",
+    "updatedAt": "2026-10-08T18:35:20.131Z"
+  },
+  {
+    "id": "SD-RC-CODE-PUSH",
+    "title": "Review and push local RC code changes",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Review local Custom Labels and wave safety changes, exclude operational artifacts and unrelated dependency updates, synchronize remote RC and push reviewed code only without release",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src", "test", ".gitignore", "npm-shrinkwrap.json", "yarn.lock"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-08T21:48:16.748Z",
+    "updatedAt": "2026-10-08T23:05:16.350Z",
+    "testStrategy": "Run TypeScript test compilation, focused regressions, lint and diff checks after synchronization",
+    "acceptanceCriteria": [
+      "Push only reviewed Custom Labels and wave-order source and regression tests to origin/reconcile/release-candidate",
+      "Preserve unrelated local workflow records, ignore rules, lockfiles and untracked data without staging them",
+      "Synchronize the one incoming remote commit without losing local changes and verify compilation, tests and staged diff",
+      "Do not merge, tag, publish or deploy"
+    ],
+    "blockedReason": "External blocker: origin/reconcile/release-candidate no longer exists (git ls-remote --heads origin, 2026-10-08). Local 1d77607 remains unpushed. Need user choice to recreate this branch or target a different branch; do not infer destination.",
+    "architectureApproval": {
+      "userApproved": true
+    }
+  },
+  {
+    "id": "SD-RC-CODE-PUSH-developer-dc92f6",
+    "title": "[DEVELOPER] SD-RC-CODE-PUSH",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-08T21:48:32.556Z",
+    "updatedAt": "2026-10-08T21:48:32.852Z"
+  },
+  {
+    "id": "SD-LINK-PLUGIN-LOCAL",
+    "title": "Link smart deployment plugin locally",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Link this workspace's compiled smart-deployment plugin into local sf CLI without reinstalling dependencies or modifying project files",
+    "acceptanceCriteria": [
+      "Verify sf uses a link to this repository and the smart-deployment help command loads",
+      "Preserve worktree changes and do not publish, deploy or push"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["package.json", "lib"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-09T05:19:57.130Z",
+    "updatedAt": "2026-10-09T05:19:57.130Z"
+  },
+  {
+    "id": "SD-LINK-PLUGIN-LOCAL-developer-e18dfe",
+    "title": "[DEVELOPER] SD-LINK-PLUGIN-LOCAL",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-09T05:21:48.105Z",
+    "updatedAt": "2026-10-09T05:21:48.333Z"
+  },
+  {
+    "id": "SD-VERSION-MANIFEST-AUDIT",
+    "title": "Explain local plugin version mismatch",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Determine why published 1.6.x tags retain package manifest version 1.5.0 and whether manually setting 1.6.2 is safe",
+    "acceptanceCriteria": [
+      "Verify versions in tagged sources and npm registry and identify release mechanism",
+      "Explain safe version action without publishing or editing unrelated locks"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["package.json", "npm-shrinkwrap.json", ".releaserc*", ".github/workflows"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-09T05:45:09.549Z",
+    "updatedAt": "2026-10-09T05:46:05.495Z",
+    "blockedReason": "developer requested changes: Confirmed source/tag versions 1.5.0 while npm versions 1.6.2 and latest 1.6.3. Updating package.json to 1.6.2 would identify current unreleased code as an already-published version and require reconciling dirty npm-shrinkwrap.json. Need user decision on desired source/versioning policy before changing files."
+  },
+  {
+    "id": "SD-VERSION-MANIFEST-AUDIT-developer-ba0ec3",
+    "title": "[DEVELOPER] SD-VERSION-MANIFEST-AUDIT",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-09T05:45:33.879Z",
+    "updatedAt": "2026-10-09T05:45:34.108Z"
+  },
+  {
+    "id": "SD-RC-MERGE-MAIN-VERSION",
+    "title": "Merge main into RC and align manifests",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Merge current origin/main into reconcile/release-candidate and align package and shrinkwrap root version to 1.6.3 while preserving unrelated dirty worktree changes",
+    "acceptanceCriteria": [
+      "Merge current origin/main into local RC without dropping existing local changes",
+      "Set package.json and root npm-shrinkwrap versions to 1.6.3 without including unrelated lockfile churn",
+      "Run build and relevant tests and inspect merged diff; do not push, tag, publish or deploy",
+      "After plugin changes run build and sf plugins link then verify a plugin command loads",
+      "Verify feature branch contains current remote main at validation time"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["package.json", "npm-shrinkwrap.json", "src", "test"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-09T05:55:53.612Z",
+    "updatedAt": "2026-10-09T06:06:10.364Z",
+    "blockedReason": "developer requested changes: Local merge and CLI load checks pass, but checkout retains uncommitted npm-shrinkwrap.json and yarn.lock with thousands of transitive changes, including downgrades relative to HEAD. They are intentionally preserved, not integrated or release-ready. Ignored oclif.manifest.json remains stale at 1.5.0 and causes a nonfatal CLI warning; Orchestra workspace health is unhealthy due to missing artifacts from older SD-RC-RECONCILE events."
+  },
+  {
+    "id": "SD-RC-MERGE-MAIN-VERSION-developer-111e9a",
+    "title": "[DEVELOPER] SD-RC-MERGE-MAIN-VERSION",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-09T05:56:13.954Z",
+    "updatedAt": "2026-10-09T05:56:14.355Z"
+  },
+  {
+    "id": "SD-ROOT-HELP",
+    "title": "Enable smart-deployment root help",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Make sf smart-deployment --help display the available commands and preserve existing subcommand behavior",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/commands", "test/e2e", "DEVELOPMENT.md"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-09T07:57:18.145Z",
+    "updatedAt": "2026-10-09T07:57:18.145Z"
+  },
+  {
+    "id": "SD-ROOT-HELP-developer-9a998f",
+    "title": "[DEVELOPER] SD-ROOT-HELP",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-09T07:57:38.148Z",
+    "updatedAt": "2026-10-09T07:57:38.397Z"
+  },
+  {
+    "id": "SD-LOCAL-164",
+    "title": "Set local plugin version to 1.6.4",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Set source package version to 1.6.4 and relink local sf plugin without modifying existing dirty lockfiles or publishing",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["package.json"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "in_progress",
+    "createdAt": "2026-10-09T16:00:31.411Z",
+    "updatedAt": "2026-10-09T18:42:58.164Z",
+    "blockedReason": ""
+  },
+  {
+    "id": "SD-LOCAL-164-developer-2489c9",
+    "title": "[DEVELOPER] SD-LOCAL-164",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-09T16:00:42.663Z",
+    "updatedAt": "2026-10-09T16:00:42.921Z"
+  },
+  {
+    "id": "SD-LOCK-RECONCILE-164",
+    "title": "Reconcile 1.6.4 dependency locks",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Reconcile dirty npm and Yarn lockfiles with current main and package 1.6.4, preserving local changes as evidence and verifying installs and release contracts without publication",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["package.json", "npm-shrinkwrap.json", "yarn.lock"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-09T19:00:14.805Z",
+    "updatedAt": "2026-10-09T19:08:34.747Z",
+    "blockedReason": "developer requested block: The untouched checkout's dirty npm-shrinkwrap.json and yarn.lock fail release:contracts (malformed Yarn entries, stale 3.1.6 fast-uri, root devDependency mismatch); 535 npm package-path versions differ from HEAD. An isolated minimal 1.6.4/3.1.8 candidate passed contracts, frozen Yarn, npm ci, production audit zero, build and tests, but adopting it would replace substantial pre-existing lockfile changes and raise the manifest fast-uri pin from 3.1.7 to 3.1.8. The 3.1.7 candidate fails current production audit."
+  },
+  {
+    "id": "SD-LOCK-RECONCILE-164-developer-ee1e41",
+    "title": "[DEVELOPER] SD-LOCK-RECONCILE-164",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-09T19:00:36.679Z",
+    "updatedAt": "2026-10-09T19:00:37.367Z"
+  },
+  {
+    "id": "SD-DESTRUCTIVE-FIELD-AUDIT",
+    "title": "Audit destructive field type transitions",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "goal": "Determine whether deployment ordering handles changing a CustomField from picklist to formula, inspect the supplied CI failure when accessible, and explain safe destructive sequencing without deploying",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/analysis", "src/deployment", "src/waves", "test"],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-09T21:44:32.050Z",
+    "updatedAt": "2026-10-09T21:45:33.255Z",
+    "blockedReason": "architect requested block: Automatic destructive-before-create sequencing for CustomField type or global value-set migrations is absent. Normal start never plans pre-destructive operations and explicit --destructive uses post-destructive changes; rollback-only two-phase delete/restore does not cover forward migrations. Linked external job bypasses plugin and validates --source-dir force-app without the PR's separate preDestructiveChanges.xml, producing two observed field errors. Deleting fields can lose data and break dependent flows/rules; org-specific prerequisites and exact rollback must be verified."
+  },
+  {
+    "id": "SD-DESTRUCTIVE-FIELD-AUDIT-architect-ddf981",
+    "title": "[ARCHITECT] SD-DESTRUCTIVE-FIELD-AUDIT",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-09T21:44:45.417Z",
+    "updatedAt": "2026-10-09T21:44:45.654Z"
+  },
+  {
+    "id": "SD-FIELD-MIGRATION-PLAN",
+    "title": "Plan safe custom field migrations",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Provide a read-only fail-closed migration assessment for CustomField type and value-set changes with explicit reference evidence and manual gates; never rewrite Apex or Flow or delete metadata automatically",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/analysis", "src/deployment", "src/commands", "test/unit", "docs"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-09T22:01:55.378Z",
+    "updatedAt": "2026-10-09T22:05:58.437Z",
+    "blockedReason": "developer requested block: Read-only assessment and regression tests are implemented, but this does not yet fulfill executable safe migration management: there is no target-org field observation, exhaustive consumer inventory, typed Apex/Flow transformation, deploy validation, or persisted pre-destructive checkpoint. The assessment's completeness input is supplied by caller and must not be trusted as proof on its own. Existing repo health remains unhealthy from unrelated missing historical artifacts; dirty dependency locks remain unreconciled."
+  },
+  {
+    "id": "SD-FIELD-MIGRATION-PLAN-developer-d164c3",
+    "title": "[DEVELOPER] SD-FIELD-MIGRATION-PLAN",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-09T22:02:06.549Z",
+    "updatedAt": "2026-10-09T22:02:06.785Z"
+  },
+  {
+    "id": "SD-FIELD-MIGRATION-OBSERVE",
+    "title": "Observe target fields and references",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Add read-only target-org CustomField observation and conservative source consumer discovery to migration assessment, distinguishing unknown inventory from verified completeness; do not delete or rewrite metadata",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/analysis", "src/deployment", "test/unit", "docs"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-10T05:24:40.759Z",
+    "updatedAt": "2026-10-10T05:24:40.759Z"
+  },
+  {
+    "id": "SD-FIELD-MIGRATION-OBSERVE-developer-810a65",
+    "title": "[DEVELOPER] SD-FIELD-MIGRATION-OBSERVE",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-10T06:00:06.439Z",
+    "updatedAt": "2026-10-10T06:00:06.673Z"
+  },
+  {
+    "id": "GH-268-developer-81751c",
+    "title": "[DEVELOPER] GH-268",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-11T10:02:03.082Z",
+    "updatedAt": "2026-10-11T10:02:03.082Z"
+  },
+  {
+    "id": "SD-SCOPE-GAPS-AUDIT",
+    "title": "Audit reported smart-deployment scope and ordering gaps",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "goal": "Compare reported failures in linked 1.5.0 against current checkout and identify confirmed regressions, missing evidence, and safe remediation slices without deploying or altering lockfiles",
+    "acceptanceCriteria": [
+      "Verify each of four deployment gaps against current implementation and focused tests with explicit uncertainty for absent fixtures",
+      "Verify prior Custom Labels, accented path, destructive Aura, root help and manifest claims separately",
+      "Record prioritized findings and reproduction requirements without modifying production org or lockfiles"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/deployment", "src/services", "src/analysis", "src/parsers", "src/commands", "test", "docs"],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-11T10:03:37.709Z",
+    "updatedAt": "2026-10-11T10:06:29.355Z",
+    "blockedReason": "architect requested changes: Current 1.6.4 local link is not proven safe for supplied 1.5.0 deployment scenarios. Confirmed code gaps: merge commit diff-tree omission, package.xml rejected by JSON scope parser, dropped deletions, non-fail-closed unmatched changed metadata, guessed Apex test fallback, missing object actionOverride -> FlexiPage edge; shell command interpolation in SfCliIntegration adds argument-safety risk. Suspected false Failed needs original redacted sf JSON and exit code to distinguish CLI failure from parser failure. CustomLabels and root help implemented in current checkout, not validated against reported client source. Accent impact path still relies on quoted git name-status without -z. Do not deploy/release until reproducible fixtures and code fixes."
+  },
+  {
+    "id": "SD-SCOPE-GAPS-AUDIT-architect-2b13be",
+    "title": "[ARCHITECT] SD-SCOPE-GAPS-AUDIT",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-11T10:03:57.308Z",
+    "updatedAt": "2026-10-11T10:03:57.563Z"
+  },
+  {
+    "id": "SD-SCOPE-LIVE-CG-DEMO",
+    "title": "Verify scoped plugin behavior on isolated cg-demo fixture",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "goal": "Run bounded, isolated SD_* fixture against cg-demo to observe current linked plugin scoping and result behavior without touching existing metadata",
+    "acceptanceCriteria": [
+      "Preflight connected cg-demo, linked plugin, and absence of the exact SD_* fixture before mutation",
+      "Run validate-only first, capture scope plan and actual deployed metadata for a temporary SD_* fixture, and distinguish product behavior from forced or mocked outcomes",
+      "Delete only verified owned SD_* fixture metadata, independently verify cleanup, and retain artifacts if cleanup cannot be verified",
+      "Do not edit existing metadata, Case, dependency lockfiles, or release artifacts"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["test/e2e", "docs"],
+    "workflow": {
+      "requiredRoles": ["qa"],
+      "phaseSequence": ["qa"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-11T20:57:21.089Z",
+    "updatedAt": "2026-10-11T20:57:21.089Z"
+  },
+  {
+    "id": "SD-SCOPE-LIVE-CG-DEMO-qa-c4c8c4",
+    "title": "[QA] SD-SCOPE-LIVE-CG-DEMO",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-11T20:57:45.054Z",
+    "updatedAt": "2026-10-11T20:57:45.354Z"
+  },
+  {
+    "id": "SD-CROSS-PROJECT-DEPENDENCY-AUDIT",
+    "title": "Audit Salesforce metadata dependencies across local projects",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "goal": "Read-only analyze Salesforce project metadata in ~/dev to identify real dependency edges, unclassified metadata and unresolved target-org preexistence assumptions; independently challenge findings with subagents",
+    "acceptanceCriteria": [
+      "Inventory Salesforce projects and select representative metadata cohorts without copying secrets or project source into this repository",
+      "Compare extracted dependencies and wave placements to source references, classifying local, external-org, uncertain and unsupported edges",
+      "Have independent reviewers challenge representative findings and record reproducible evidence, limitations, and prioritized gaps"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": ["docs/research/metadata-catalog", "test"],
+    "workflow": {
+      "requiredRoles": ["architect"],
+      "phaseSequence": ["architect"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-11T21:02:19.328Z",
+    "updatedAt": "2026-10-11T21:12:42.570Z",
+    "blockedReason": "architect requested changes: Independent read-only reviews and local verifier confirm local Flow apex_action produces untyped reference and wave=0 despite local Apex class; 104/158 cdf-sf-org components wave=0 with result.success=true. gdm-experience object actionOverride FlexiPage ref not emitted; Network->CustomSite works but picassoSite digital experience config not scanned; CustomField/ValidationRule/Role refs have no individual nodes in CTM sample. No Salesforce target org preexistence checked; unresolved graph edges include parser false positives and external candidates, so no hard dependency inference or release approval."
+  },
+  {
+    "id": "SD-CROSS-PROJECT-DEPENDENCY-AUDIT-architect-43a9d6",
+    "title": "[ARCHITECT] SD-CROSS-PROJECT-DEPENDENCY-AUDIT",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-11T21:02:36.159Z",
+    "updatedAt": "2026-10-11T21:02:36.401Z"
+  },
+  {
+    "id": "SD-FLOW-WAVE-IDENTITY-FIX",
+    "title": "Resolve typed Flow dependencies and report unplaced plan nodes",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Emit canonical Flow Apex/subflow dependency IDs; make plan explain report failure for unplaced components; add deterministic regressions without deployment or changes to external projects",
+    "assumptions": [],
+    "risks": [],
+    "paths": [
+      "src/services/scanners/automation-ai-metadata-scanner.ts",
+      "src/deployment/plan-explain-service.ts",
+      "test/unit"
+    ],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-12T06:23:03.853Z",
+    "updatedAt": "2026-10-12T06:26:23.462Z",
+    "blockedReason": "developer requested changes: Scoped typed Flow edges and explicit unplaced count are tested, but the real CDF sample still has 104 unplaced nodes, mostly from parser false positives or unverified external references. JSON result.success=false while sf CLI envelope status=0; this correction is not sufficient for executable safe waves or release. No target-org preexistence was checked."
+  },
+  {
+    "id": "SD-FLOW-WAVE-IDENTITY-FIX-developer-8222b1",
+    "title": "[DEVELOPER] SD-FLOW-WAVE-IDENTITY-FIX",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-12T06:23:18.744Z",
+    "updatedAt": "2026-10-12T06:23:18.999Z"
+  },
+  {
+    "id": "SD-APEX-FALSE-EDGE-FIX",
+    "title": "Remove spurious Apex dependency edges",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Reduce proven false ApexClass dependency edges from local variables and platform symbols without dropping real local class references; verify with deterministic tests and read-only CDF plan",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/parsers/apex-class-dependencies.ts", "src/parsers/apex-class-symbols.ts", "test/unit/parsers"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-12T06:54:57.559Z",
+    "updatedAt": "2026-10-12T07:00:02.902Z",
+    "blockedReason": "developer requested changes: Apex parser regressions and source-level measurement pass; nonetheless 103/158 scanned CDF components remain unplaced, especially because individual CustomField nodes are not represented, and some Apex unresolved references may be legitimate external classes. No target-org preexistence or safe deployment proof; source regex is conservative but cannot resolve lexical scoping comprehensively."
+  },
+  {
+    "id": "SD-APEX-FALSE-EDGE-FIX-developer-39a972",
+    "title": "[DEVELOPER] SD-APEX-FALSE-EDGE-FIX",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-12T06:55:13.552Z",
+    "updatedAt": "2026-10-12T06:55:13.837Z"
+  },
+  {
+    "id": "SD-LOCAL-GRAPH-GAPS",
+    "title": "Resolve audited local metadata graph gaps",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Address audited local CustomField, object FlexiPage, Experience metadata and unresolved-reference classification gaps with deterministic tests; leave org preexistence unknown without verification and never deploy",
+    "assumptions": [],
+    "risks": [],
+    "paths": [
+      "src/services/scanners",
+      "src/dependencies",
+      "src/deployment",
+      "src/parsers",
+      "test",
+      "docs/research/metadata-catalog"
+    ],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-13T03:39:20.383Z",
+    "updatedAt": "2026-10-16T19:07:04.117Z",
+    "blockedReason": "developer requested changes: ActionOverrides Flexipage references now emit canonical edges with 18 focused tests passing. Real CDF plan rejects CustomObject:cgcloud__Tour__c -> FlexiPage:CDF_Tour_Record_Page because stage 1 cannot depend on stage 6. This is intentional fail-closed detection, not deployable sequencing. Experience metadata, other missing nodes and org preexistence remain unverified."
+  },
+  {
+    "id": "SD-LOCAL-GRAPH-GAPS-developer-4e4e16",
+    "title": "[DEVELOPER] SD-LOCAL-GRAPH-GAPS",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-13T03:49:51.496Z",
+    "updatedAt": "2026-10-13T03:49:51.795Z"
+  },
+  {
+    "id": "SD-OBJECT-FLEXIPAGE-ACTIVATION-PLAN",
+    "title": "Design staged object FlexiPage activation",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "goal": "Design and validate a read-only staged plan for CustomObject creation without Flexipage actionOverrides, FlexiPage deployment, and final override activation; define source isolation, manifest ownership, target-org checks, checkpoints and resume fail-closed; do not deploy or mutate source",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/deployment", "src/waves", "src/types", "test/unit/deployment", "docs/research/metadata-catalog"],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-18T06:52:24.795Z",
+    "updatedAt": "2026-10-20T20:25:59.815Z",
+    "blockedReason": "architect requested changes: Partial CustomObject deployment omission semantics and reliable effective actionOverride verification remain unproven. Research documented candidate readMetadata/retrieve paths and reported discrepancies; isolated before/after QA fixtures and independent review are still missing. Maintain stage conflict and prohibit executor integration."
+  },
+  {
+    "id": "SD-OBJECT-FLEXIPAGE-ACTIVATION-PLAN-architect-61b138",
+    "title": "[ARCHITECT] SD-OBJECT-FLEXIPAGE-ACTIVATION-PLAN",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-18T06:52:38.290Z",
+    "updatedAt": "2026-10-18T06:52:38.550Z"
+  },
+  {
+    "id": "SD-FLEXIPAGE-CG-DEMO-PROBE",
+    "title": "Isolated FlexiPage override probe on cg-demo",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Test partial CustomObject actionOverrides behavior on cg-demo with a new uniquely named disposable custom object and FlexiPage only; snapshot and verify before/after, clean up owned fixture only; never touch existing or standard objects",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["test/e2e", "docs/research/metadata-catalog"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-20T20:28:36.103Z",
+    "updatedAt": "2026-10-20T20:37:38.237Z",
+    "blockedReason": "qa requested changes: Isolated cg-demo custom-object omission test passed and fixture cleanup independently verified; however standard-object omission semantics, effective UI override behavior, unrelated settings, activation overlay, and staged executor/resume are not covered. Initial invalid fixture attempts failed safely and were cleaned up."
+  },
+  {
+    "id": "SD-FLEXIPAGE-CG-DEMO-PROBE-qa-6ea1cf",
+    "title": "[QA] SD-FLEXIPAGE-CG-DEMO-PROBE",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-20T20:28:51.653Z",
+    "updatedAt": "2026-10-20T20:28:51.942Z"
+  },
+  {
+    "id": "SD-FLEXIPAGE-CG-DEMO-ACCOUNT",
+    "title": "Verify partial Account override deploy on cg-demo",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "With explicit user approval for Account, safely evaluate partial standard CustomObject actionOverrides omission on cg-demo: capture full baseline, verify restoration path and independent state, only then deploy bounded change and restore; stop without mutation if preflight cannot guarantee recovery",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["test/e2e", "docs/research/metadata-catalog"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-21T01:10:01.936Z",
+    "updatedAt": "2026-10-21T01:12:19.746Z",
+    "blockedReason": "qa requested block: Read-only Account preflight obtained baseline and identified active Large/Small View overrides, but no verified safe rollback for the large standard-object XML; ordinary Tooling ActionOverride not supported. No Account mutation performed."
+  },
+  {
+    "id": "SD-FLEXIPAGE-CG-DEMO-ACCOUNT-qa-f468a4",
+    "title": "[QA] SD-FLEXIPAGE-CG-DEMO-ACCOUNT",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-21T01:10:15.841Z",
+    "updatedAt": "2026-10-21T01:10:16.139Z"
+  },
+  {
+    "id": "SD-ACCOUNT-OMISSION-DEMO-EXPERIMENT",
+    "title": "Probe Account override omission in disposable cg-demo",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "goal": "On user-approved disposable cg-demo only, verify a minimal Account CustomObject deployment omitting actionOverrides preserves Large/Small View override and unrelated metadata; capture fresh baseline, validate-only first, compare fresh poststate and restore only if needed; no other orgs or objects",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["docs/research/metadata-catalog/object-flexipage-activation-plan.md", ".smart-deployment"],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-21T05:13:11.337Z",
+    "updatedAt": "2026-10-21T05:13:11.337Z"
+  },
+  {
+    "id": "SD-ACCOUNT-OMISSION-DEMO-EXPERIMENT-qa-88ec7d",
+    "title": "[QA] SD-ACCOUNT-OMISSION-DEMO-EXPERIMENT",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-21T05:13:26.676Z",
+    "updatedAt": "2026-10-21T05:13:26.969Z"
+  },
+  {
+    "id": "SD-ACCOUNT-CHANGED-OVERLAY-DEMO",
+    "title": "Probe changed Account overlay on disposable cg-demo",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "goal": "With user's disposable cg-demo authorization, test one reversible Account setting change in a minimal CustomObject payload omitting actionOverrides; dry-run first, verify target org and before/after full Account metadata plus REST overrides, restore original setting and verify; do not deploy other metadata",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["docs/research/metadata-catalog", ".smart-deployment"],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-21T05:50:38.041Z",
+    "updatedAt": "2026-10-21T05:57:12.859Z"
+  },
+  {
+    "id": "SD-ACCOUNT-CHANGED-OVERLAY-DEMO-qa-961386",
+    "title": "[QA] SD-ACCOUNT-CHANGED-OVERLAY-DEMO",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-21T05:50:52.889Z",
+    "updatedAt": "2026-10-21T05:50:53.219Z"
+  },
+  {
+    "id": "SD-FLEXIPAGE-ISOLATED-ACTIVATION",
+    "title": "Verify isolated FlexiPage activation overlay on cg-demo",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "On user-approved disposable cg-demo, verify newly created isolated object then record page then minimal View Large/Small activation payload, compare before/after retrieved metadata and REST describe, clean up only positively identified owned fixture; no existing objects, other orgs, executor integration or release",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["test/e2e", "docs/research/metadata-catalog"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-21T05:58:49.798Z",
+    "updatedAt": "2026-10-21T06:08:55.746Z",
+    "testStrategy": "Opt-in disposable-org E2E with unique names, explicit approval guard and independent Tooling API cleanup checks; dry-run before mutation",
+    "acceptanceCriteria": [
+      "Confirm cg-demo org ID and absence of unique object/page identities before mutation; stop on ambiguous ownership",
+      "Run validate-only for foundation, page and minimal activation before each actual deployment; verify target state between stages",
+      "Retrieve object before and after activation; assert only expected Large/Small View Flexipage overrides were added and unrelated metadata retained; compare REST describe page IDs",
+      "Delete only owned fixture components and independently verify both absent; retain cleanup evidence on any failure",
+      "Document command IDs, observed results and limitations including effective UI behavior; do not enable staged executor"
+    ],
+    "blockedReason": "qa requested block: three checkOnly activation overlays failed before mutation on newly created custom object (label and then deploymentStatus required); no activation deployed. All three temporary object/page fixtures independently absent after cleanup. Need evidence-backed complete minimum custom-object payload and before/after REST + metadata comparison before executor or UI claims."
+  },
+  {
+    "id": "SD-FLEXIPAGE-ISOLATED-ACTIVATION-qa-dd6261",
+    "title": "[QA] SD-FLEXIPAGE-ISOLATED-ACTIVATION",
+    "ownerRole": "qa",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["qa"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-21T05:59:07.778Z",
+    "updatedAt": "2026-10-21T05:59:08.082Z"
+  },
+  {
+    "id": "SD-DEV-PROJECT-PLAN-INVENTORY",
+    "title": "Inventory deployment plans across dev projects",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "goal": "Read-only inventory Salesforce projects under ~/dev, run local smart-deployment plan explain for each eligible project, classify unknown and unresolved dependency causes with representative evidence, and prioritize follow-up planning without deploying or changing external projects",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["docs/research/metadata-catalog"],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-21T20:19:25.136Z",
+    "updatedAt": "2026-10-21T20:19:30.463Z",
+    "testStrategy": "Read-only CLI inventory and plans; inspect generated outputs and representative source references; document command/error and count methods",
+    "acceptanceCriteria": [
+      "List all accessible direct ~/dev Salesforce projects with sfdx-project.json and record exclusions/non-Salesforce roots",
+      "Generate non-mutating plan explain JSON for each eligible project using this checkout, capture command success separately from result.success",
+      "Count components, waves and unplaced/unknown references per project; classify local resolvable, probable external, unsupported, ambiguous and stage conflict with representative IDs",
+      "Produce a prioritized dependency investigation plan with owners/slices and deterministic verification signals, without claiming target-org preexistence",
+      "Do not deploy, write external project files, alter existing worktree changes, or include secrets in evidence"
+    ]
+  },
+  {
+    "id": "SD-DEV-PROJECT-PLAN-INVENTORY-architect-31feb3",
+    "title": "[ARCHITECT] SD-DEV-PROJECT-PLAN-INVENTORY",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-21T20:19:50.084Z",
+    "updatedAt": "2026-10-21T20:19:50.354Z"
+  },
+  {
+    "id": "SD-TOUR-PAGE-PLAN-REPORT",
+    "title": "Diagnose Tour page plan failure",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "goal": "Read-only reproduce and explain cgcloud__Tour__c to CDF_Tour_Record_Page plan conflict and record a bounded dependency remediation report without deploying or editing CDF source",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["docs/research/metadata-catalog", "src/services/scanners", "src/waves"],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-22T00:56:36.046Z",
+    "updatedAt": "2026-10-22T00:58:39.581Z",
+    "acceptanceCriteria": [
+      "Reproduce plan failure and distinguish source dependency from actual graph cycle",
+      "Trace both object override and page object references to source and scanner",
+      "Explain why removing edge or stage priority tweak is unsafe and identify staged activation requirement",
+      "Report read-only evidence and next test/implementation gates without deploying"
+    ]
+  },
+  {
+    "id": "SD-TOUR-PAGE-PLAN-REPORT-architect-9488b1",
+    "title": "[ARCHITECT] SD-TOUR-PAGE-PLAN-REPORT",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-22T00:56:53.876Z",
+    "updatedAt": "2026-10-22T00:56:54.218Z"
+  },
+  {
+    "id": "SD-FLEXIPAGE-STAGED-FIX",
+    "title": "Implement safe staged FlexiPage activation planning",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Correct CustomObject to FlexiPage stage conflict with executable safe phased foundation/page/activation and fail-closed verification/resume; never drop real edge or deploy CDF",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["src/deployment", "src/waves", "src/types", "test", "docs/research/metadata-catalog"],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "blocked",
+    "createdAt": "2026-10-22T04:49:02.957Z",
+    "updatedAt": "2026-10-22T05:07:53.835Z",
+    "acceptanceCriteria": [
+      "Tour and other object/page references retain their source dependency and report safe staged operations rather than a false deployable wave",
+      "Foundation uses isolated object source without premature page override, page deploys after verified object, activation occurs after verified page with independent override observation",
+      "Execution and resume bind overlays, source and org state to durable fingerprint, avoid replay after unknown result, fail closed on drift and preserve unrelated overrides",
+      "Deterministic tests and independent QA validate new/existing object, shared page, missing page, interrupted runs, UI observation limitations; no CDF deploy"
+    ],
+    "blockedReason": "developer requested changes: Advisory plan and resume guard retain fail-closed behavior, 49 focused tests pass, and page source drift changes the fingerprint. However no durable per-run generated files, target observer, remote job reconciliation, executable runner path, or independent end-to-end QA. Tour plan is not resolved for deployment; other 2502 unresolved CDF references remain unverified."
+  },
+  {
+    "id": "SD-FLEXIPAGE-STAGED-FIX-developer-ec541e",
+    "title": "[DEVELOPER] SD-FLEXIPAGE-STAGED-FIX",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-22T04:49:19.820Z",
+    "updatedAt": "2026-10-22T04:49:20.090Z"
+  },
+  {
+    "id": "SD-METADATA-UNKNOWN-SQUADS",
+    "title": "Coordinate metadata unknown mapping squads",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "goal": "Coordinate seven read-only architect reviews by canonical C1-C7 metadata cluster, correlate actual plan unknowns with vendor/source/channel mappings, and produce an evidence-ranked dependency investigation backlog without deploying or editing external projects",
+    "assumptions": [],
+    "risks": [],
+    "paths": ["docs/research/metadata-catalog"],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-22T08:48:16.945Z",
+    "updatedAt": "2026-10-22T08:48:26.710Z",
+    "acceptanceCriteria": [
+      "Each C1-C7 squad reviews only its canonical candidate rows and reports exact vendor identity, source ownership, channel, dependency/barrier semantics and confidence with evidence",
+      "Use the ~/dev project inventory as demand signal; distinguish local unresolved, verified external, target-org unknown, unsupported format and parser false positive without silently equating them",
+      "Cross-cluster references have one canonical owner and explicit handoff, with conflicts escalated to integration architect",
+      "Produce prioritized P0/P1/P2 mapping backlog with acceptance tests and no executable support claims without deterministic and relevant live evidence",
+      "Read-only external projects, no org deployment, no edits to current blocked staged executor"
+    ]
+  },
+  {
+    "id": "SD-METADATA-UNKNOWN-SQUADS-architect-46428c",
+    "title": "[ARCHITECT] SD-METADATA-UNKNOWN-SQUADS",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-22T08:49:18.483Z",
+    "updatedAt": "2026-10-22T08:49:18.764Z"
+  },
+  {
+    "id": "SD-METADATA-UNKNOWN-SQUADS-architect-12e1b2",
+    "title": "[ARCHITECT] SD-METADATA-UNKNOWN-SQUADS",
+    "ownerRole": "architect",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["architect"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-22T09:06:57.895Z",
+    "updatedAt": "2026-10-22T09:06:57.895Z"
+  },
+  {
+    "id": "SD-SETUP-AGENTS-CONTROL-PLANE",
+    "title": "Replace Orchestra bootstrap with setup-agents",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "goal": "Retire mandatory Orchestra runtime instructions and make sf setup-agents the sole AI-native development control plane, preserving engineering rules and historical evidence",
+    "acceptanceCriteria": [
+      "AGENTS.md directs new work to sf setup-agents and no longer requires Orchestra",
+      "ORCHESTRA.md no longer instructs agents to use Orchestra",
+      "Historical .agent-workflow artifacts and unrelated dirty files are preserved",
+      "Validate remaining active runtime instructions and diff; no deploy, push, or publication"
+    ],
+    "assumptions": [],
+    "risks": [],
+    "paths": [
+      "AGENTS.md",
+      "ORCHESTRA.md",
+      "rules/testing-discipline.mdc",
+      "rules/delivery-quality-gates.mdc",
+      "rules/ai-assisted-development.mdc"
+    ],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "pending",
+    "createdAt": "2026-10-22T09:35:22.122Z",
+    "updatedAt": "2026-10-22T09:36:07.953Z",
+    "scope": "Migrate active root and canonical rule references only; preserve historical Orchestra artifacts and generated setup-agents integration documentation"
+  },
+  {
+    "id": "SD-SETUP-AGENTS-CONTROL-PLANE-developer-29e2ce",
+    "title": "[DEVELOPER] SD-SETUP-AGENTS-CONTROL-PLANE",
+    "ownerRole": "developer",
+    "dependencies": [],
+    "workflow": {
+      "requiredRoles": ["developer"]
+    },
+    "status": "done",
+    "createdAt": "2026-10-22T09:35:37.014Z",
+    "updatedAt": "2026-10-22T09:35:37.284Z"
   }
 ]

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "pluginVersion": "3.23.1",
+  "setupLevel": "full",
+  "scope": {
+    "kind": "repository-full",
+    "include": [
+      "force-app",
+      "repository documentation"
+    ],
+    "exclude": [
+      ".claude",
+      ".git",
+      ".nyc_output",
+      ".setup-agents/generated",
+      ".setup-agents/references",
+      ".sfdx",
+      ".vscode-test",
+      ".wireit",
+      "build",
+      "coverage",
+      "dist",
+      "lib",
+      "node_modules"
+    ]
+  },
+  "sourceRoots": [
+    "force-app"
+  ],
+  "sourceDigest": "091d34a5f182cb235060aa18972ff10b972f9e4fa7c09c06b0fdb566d692ddd6",
+  "artifactDigests": {
+    ".setup-agents/project-knowledge.md": "7eb3e40409b3e8f565bd19b8c07b3d20339b8aa786d1991dc974eb1ee9d13dcb",
+    ".setup-agents/class-catalog.md": "cb80c58153cf3a31632fe01f262be595ac95b72e2438074615d0d0329a4ccb44",
+    ".setup-agents/doc-index.md": "41e9a81ef08e27bcf5ca804ace039f0cbc5701743e0d3d3fc0707edaf773380a",
+    ".setup-agents/sf-metadata-index.json": "e1eba3a3fd55fc36fe2344e04b9fd9aa595970303ef3641893039bc6b38c1905"
+  },
+  "degradedReasons": []
+}
