@@ -94,7 +94,7 @@
     "test": "wireit",
     "test:clean-install": "bash scripts/ci/clean-install-test.sh",
     "test:live-org": "bash scripts/live-org-linked-e2e.sh",
-    "test:nuts": "nyc mocha \"**/*.nut.ts\" --slow 4500 --timeout 600000 --parallel",
+    "test:nuts": "c8 --check-coverage=false mocha \"**/*.nut.ts\" --slow 4500 --timeout 600000 --parallel",
     "test:only": "wireit",
     "test:bdd": "node --loader ts-node/esm --no-warnings=ExperimentalWarning node_modules/@cucumber/cucumber/bin/cucumber.js",
     "test:e2e": "mocha test/e2e/**/*.e2e.test.ts",
