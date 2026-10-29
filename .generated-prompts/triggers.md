@@ -1,6 +1,5 @@
-<!-- setup-agents: 3.23.0 -->
-<!-- setup-agents:block:start id="prompt-register-guidance" version="3.23.0" -->
-
+<!-- setup-agents: 3.23.1 -->
+<!-- setup-agents:block:start id="prompt-register-guidance" version="3.23.1" -->
 # Apex Trigger Prompts
 
 > AI prompt register for Apex triggers (.trigger) and their handler classes in this project.
@@ -20,7 +19,6 @@
 
 ### Prompt
 ```
-
 <the final prompt that produced or substantially changed this component>
 ```
 ---
@@ -30,11 +28,9 @@
 Minor fixes (typos, formatting, single-line corrections) do NOT update the prompt entry.
 
 ---
-
 ## Usage
 
 When creating a new trigger+handler pair, the agent reads this file to:
-
 - Verify no trigger already exists for that object (one trigger per object rule).
 - Read existing handler patterns (Kevin O'Hara, delegation style, service class names).
 

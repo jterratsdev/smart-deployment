@@ -1,6 +1,5 @@
-<!-- setup-agents: 3.23.0 -->
-<!-- setup-agents:block:start id="prompt-register-guidance" version="3.23.0" -->
-
+<!-- setup-agents: 3.23.1 -->
+<!-- setup-agents:block:start id="prompt-register-guidance" version="3.23.1" -->
 # Metadata Configuration Prompts
 
 > AI prompt register for CustomObjects, CustomFields, ValidationRules, PermissionSets, CMDT, Platform Events, FlexiPages, NamedCredentials in this project.
@@ -20,7 +19,6 @@
 
 ### Prompt
 ```
-
 <the final prompt that produced or substantially changed this component>
 ```
 ---
@@ -30,7 +28,6 @@
 Minor fixes (typos, formatting, single-line corrections) do NOT update the prompt entry.
 
 ---
-
 ## Usage
 
 When creating declarative metadata, the agent reads this file for existing field naming

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pluginVersion": "3.23.0",
+  "pluginVersion": "3.23.1",
   "profiles": [
     "ai",
     "architect",
@@ -39,7 +39,12 @@
     "tableau",
     "ux"
   ],
-  "tools": ["claude", "codex"],
+  "tools": [
+    "claude",
+    "codex",
+    "cursor",
+    "vscode"
+  ],
   "artifacts": [
     {
       "id": "permissions",
@@ -55,6 +60,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/permissions.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/permissions.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/permissions.md",
           "loading": "pointer"
         }
@@ -76,6 +91,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -95,6 +120,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -114,6 +149,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -133,6 +178,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -152,6 +207,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -171,6 +236,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -190,6 +265,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -209,6 +294,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -228,6 +323,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -247,6 +352,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -266,6 +381,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -285,6 +410,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -304,6 +439,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -323,6 +468,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -342,6 +497,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -361,6 +526,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -380,6 +555,45 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
+        }
+      ]
+    },
+    {
+      "id": "playbook:grounding-probe.md",
+      "kind": "playbook",
+      "path": ".setup-agents/playbooks/grounding-probe.md",
+      "owner": "setup-agents",
+      "source": "playbook-generator",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": "AGENTS.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": "CLAUDE.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -399,6 +613,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -418,6 +642,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -437,6 +671,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -456,6 +700,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -475,6 +729,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -494,6 +758,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -513,6 +787,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -532,6 +816,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -551,6 +845,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -570,6 +874,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -589,6 +903,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -608,6 +932,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -627,6 +961,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -646,6 +990,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -665,6 +1019,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -684,6 +1048,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -703,6 +1077,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -722,6 +1106,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -741,6 +1135,16 @@
           "tool": "claude",
           "path": "CLAUDE.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/agent-guidelines.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -770,6 +1174,16 @@
           "tool": "claude",
           "path": ".claude/agents/architect.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/architect-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -853,6 +1267,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -999,6 +1423,16 @@
           "tool": "claude",
           "path": ".claude/agents/pm.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/pm-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1028,6 +1462,16 @@
           "tool": "claude",
           "path": ".claude/agents/qa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/qa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1048,6 +1492,16 @@
           "tool": "claude",
           "path": ".claude/agents/release-manager.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/release-manager-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1077,6 +1531,16 @@
           "tool": "claude",
           "path": ".claude/agents/sa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/sa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1142,6 +1606,16 @@
           "tool": "claude",
           "path": ".claude/agents/ux.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/ux-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1173,6 +1647,36 @@
       "adapters": []
     },
     {
+      "id": "profile-workflow:architect:access-design.md",
+      "kind": "profile-workflow",
+      "path": ".setup-agents/playbooks/profiles/architect/access-design.md",
+      "owner": "setup-agents",
+      "source": "profile:architect:workflows",
+      "profileId": "architect",
+      "adapters": [
+        {
+          "tool": "codex",
+          "path": ".codex/architect.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "claude",
+          "path": ".claude/agents/architect.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/architect-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
+        }
+      ]
+    },
+    {
       "id": "profile-workflow:architect:adr.md",
       "kind": "profile-workflow",
       "path": ".setup-agents/playbooks/profiles/architect/adr.md",
@@ -1189,6 +1693,16 @@
           "tool": "claude",
           "path": ".claude/agents/architect.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/architect-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1209,6 +1723,16 @@
           "tool": "claude",
           "path": ".claude/agents/architect.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/architect-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1229,6 +1753,16 @@
           "tool": "claude",
           "path": ".claude/agents/architect.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/architect-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1249,6 +1783,16 @@
           "tool": "claude",
           "path": ".claude/agents/architect.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/architect-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1269,6 +1813,16 @@
           "tool": "claude",
           "path": ".claude/agents/architect.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/architect-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1289,6 +1843,16 @@
           "tool": "claude",
           "path": ".claude/agents/architect.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/architect-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1309,6 +1873,16 @@
           "tool": "claude",
           "path": ".claude/agents/architect.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/architect-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1626,6 +2200,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1646,6 +2230,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1666,6 +2260,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1686,6 +2290,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1706,6 +2320,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1726,6 +2350,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1746,6 +2380,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1766,6 +2410,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1786,6 +2440,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1806,6 +2470,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1826,6 +2500,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1846,6 +2530,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1866,6 +2560,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -1886,6 +2590,16 @@
           "tool": "claude",
           "path": ".claude/agents/developer.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/developer-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2284,6 +2998,16 @@
           "tool": "claude",
           "path": ".claude/agents/pm.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/pm-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2304,6 +3028,16 @@
           "tool": "claude",
           "path": ".claude/agents/pm.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/pm-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2324,6 +3058,16 @@
           "tool": "claude",
           "path": ".claude/agents/pm.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/pm-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2344,6 +3088,16 @@
           "tool": "claude",
           "path": ".claude/agents/pm.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/pm-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2382,6 +3136,16 @@
           "tool": "claude",
           "path": ".claude/agents/qa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/qa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2402,6 +3166,16 @@
           "tool": "claude",
           "path": ".claude/agents/qa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/qa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2422,6 +3196,16 @@
           "tool": "claude",
           "path": ".claude/agents/qa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/qa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2442,6 +3226,16 @@
           "tool": "claude",
           "path": ".claude/agents/qa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/qa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2462,6 +3256,16 @@
           "tool": "claude",
           "path": ".claude/agents/release-manager.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/release-manager-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2482,6 +3286,16 @@
           "tool": "claude",
           "path": ".claude/agents/release-manager.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/release-manager-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2502,6 +3316,16 @@
           "tool": "claude",
           "path": ".claude/agents/release-manager.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/release-manager-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2522,6 +3346,16 @@
           "tool": "claude",
           "path": ".claude/agents/release-manager.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/release-manager-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2542,6 +3376,16 @@
           "tool": "claude",
           "path": ".claude/agents/release-manager.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/release-manager-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2562,6 +3406,16 @@
           "tool": "claude",
           "path": ".claude/agents/release-manager.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/release-manager-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2627,6 +3481,16 @@
           "tool": "claude",
           "path": ".claude/agents/sa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/sa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2647,6 +3511,16 @@
           "tool": "claude",
           "path": ".claude/agents/sa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/sa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2667,6 +3541,16 @@
           "tool": "claude",
           "path": ".claude/agents/sa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/sa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2687,6 +3571,16 @@
           "tool": "claude",
           "path": ".claude/agents/sa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/sa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2707,6 +3601,16 @@
           "tool": "claude",
           "path": ".claude/agents/sa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/sa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2727,6 +3631,16 @@
           "tool": "claude",
           "path": ".claude/agents/sa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/sa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2747,6 +3661,16 @@
           "tool": "claude",
           "path": ".claude/agents/sa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/sa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2767,6 +3691,16 @@
           "tool": "claude",
           "path": ".claude/agents/sa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/sa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -2787,6 +3721,16 @@
           "tool": "claude",
           "path": ".claude/agents/sa.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/sa-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -3023,6 +3967,16 @@
           "tool": "claude",
           "path": ".claude/agents/ux.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/ux-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -3043,6 +3997,16 @@
           "tool": "claude",
           "path": ".claude/agents/ux.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/ux-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -3063,6 +4027,16 @@
           "tool": "claude",
           "path": ".claude/agents/ux.md",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".cursor/rules/ux-standards.mdc",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".github/copilot-instructions.md",
+          "loading": "inline"
         }
       ]
     },
@@ -3080,6 +4054,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/project-knowledge.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/project-knowledge.md",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/project-knowledge.md",
           "loading": "pointer"
         }
@@ -3101,6 +4085,16 @@
           "tool": "claude",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
         }
       ]
     },
@@ -3118,6 +4112,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
         }
@@ -3139,6 +4143,16 @@
           "tool": "claude",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
         }
       ]
     },
@@ -3156,6 +4170,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
         }
@@ -3177,6 +4201,16 @@
           "tool": "claude",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
         }
       ]
     },
@@ -3194,6 +4228,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
         }
@@ -3215,6 +4259,16 @@
           "tool": "claude",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
         }
       ]
     },
@@ -3232,6 +4286,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
         }
@@ -3253,6 +4317,16 @@
           "tool": "claude",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
         }
       ]
     },
@@ -3270,6 +4344,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
         }
@@ -3291,6 +4375,16 @@
           "tool": "claude",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
         }
       ]
     },
@@ -3308,6 +4402,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
         }
@@ -3329,6 +4433,16 @@
           "tool": "claude",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
         }
       ]
     },
@@ -3346,6 +4460,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
         }
@@ -3367,6 +4491,16 @@
           "tool": "claude",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
         }
       ]
     },
@@ -3384,6 +4518,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
         }
@@ -3405,6 +4549,16 @@
           "tool": "claude",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
         }
       ]
     },
@@ -3422,6 +4576,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
         }
@@ -3443,6 +4607,16 @@
           "tool": "claude",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
         }
       ]
     },
@@ -3460,6 +4634,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
         }
@@ -3481,6 +4665,16 @@
           "tool": "claude",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
         }
       ]
     },
@@ -3498,6 +4692,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
         }
@@ -3519,6 +4723,16 @@
           "tool": "claude",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
         }
       ]
     },
@@ -3536,6 +4750,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
         }
@@ -3557,6 +4781,16 @@
           "tool": "claude",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
         }
       ]
     },
@@ -3574,6 +4808,16 @@
         },
         {
           "tool": "claude",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
         }
@@ -3595,323 +4839,333 @@
           "tool": "claude",
           "path": ".setup-agents/skills/",
           "loading": "pointer"
+        },
+        {
+          "tool": "cursor",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
+        },
+        {
+          "tool": "vscode",
+          "path": ".setup-agents/skills/",
+          "loading": "pointer"
         }
       ]
     }
   ],
   "contentHashes": {
-    ".setup-agents/sf-skills/INDEX-developer.md": "46e5ffe2a670ec7a25da60f0c03e98d0c64b5cf6ba395d05a00ff144fcf571f5",
-    ".setup-agents/sf-skills/INDEX-architect.md": "a16db72479f20553be098d5a5343be190546a947739531e300fb42f2b8186a6b",
-    ".setup-agents/sf-skills/INDEX-sa.md": "3908088988548be3b4af6603814bd5ce97fa9e961967c4d2096a88e68744b8ba",
-    ".setup-agents/sf-skills/INDEX-ux.md": "219c09c1a4bb3c8d6cf37b2520f8d37eaeaa7fd4075108e1d86a9b5ae706c0c6",
-    ".setup-agents/sf-skills/INDEX-qa.md": "a669c4c50dd5d38a3288024184a46ba70e9e94a119369e8967c4e7f37b1ce25c",
-    ".setup-agents/sf-skills/INDEX-release-manager.md": "cd7db5655394b6df4f09019a2da6ef8173ae7c5932ad3a89a2e563a9b517e103",
-    "AGENTS.md": "47e03c8b920f32e4bb00481c49b915134085fbc1ec09fb6498bea93e28b7a686",
-    ".codex/developer.md": "18ab73cec390872cb3fdee45c62c6f4c5a74fbfe75d55a8eb60fdbe2e32363d9",
-    ".codex/architect.md": "ad7aa4e47d812f22ff2fc78f17c6f9c7342c5c9c297dc25bfc572fae19d9647e",
-    ".codex/sa.md": "3f56cc14989c60a0abe7a7fc9d2c58827cbceb7456c0a39c238f68b173308525",
-    ".codex/pm.md": "6ac9d09635ae713df98889aea7e8e344c1e17f7d3d4066e1a81acb7f363eec5a",
-    ".codex/ux.md": "9c3219c20f418d45fbe7b4c2c8964c9aa460a4aeb7d993868d1e1a8a6168e4a2",
-    ".codex/qa.md": "721bf873d8b15dd6e6e0a07d862c67b97f1a1dad7135db2eeb302be528778661",
-    ".codex/release-manager.md": "94dc171265aee0b5e0def17c7b5c9d58a0995006db81c58a34c0295aa68ad3c5",
-    ".github/copilot-instructions.md": "6da82e5a80b11d9fa8791f56d4df666dd9562de5cbdaf4ae8453a6d3ae9532e3",
+    ".setup-agents/sf-skills/INDEX-developer.md": "bacabba574201bcf0029a17fada33d34ec8a3c94b6fd5e7e8ca2cd4249c60ecc",
+    ".setup-agents/sf-skills/INDEX-architect.md": "b07d465275d52c7b92d8836e4e31418118d5cdc5f6b83c7a7d35f21cced3c170",
+    ".setup-agents/sf-skills/INDEX-sa.md": "caa12b0ac080fabc239871a2d9a7f5d037b7b98ba1421281c754e7f2ef20aa5c",
+    ".setup-agents/sf-skills/INDEX-ux.md": "93fa6b34428b22f8f8291c67a732f688af7b75185e18272ffc28f27fb6c05203",
+    ".setup-agents/sf-skills/INDEX-qa.md": "b831be446cd748fa9e4f99c9d0a3d78fab9b9b67027723a5cebc88bbd3790484",
+    ".setup-agents/sf-skills/INDEX-release-manager.md": "d75e73826edc8f21dabd60f177a7a98efad3ec26ff24605f07033eb7f663c9e0",
+    "AGENTS.md": "f9acd1688f392f7d4fcfb621ed30b7eacffeb5fd985a05884792e05053ae013d",
+    ".codex/developer.md": "d02ea39ede3e7009d3b0bf47b82a5340246829c61561804ba818db85cf6aa67f",
+    ".codex/architect.md": "ed799d778608bb89aa3340893217f053116d57fb809abce3b7394992bd9e77b6",
+    ".codex/sa.md": "6d5869acbec46f8689d8d0487b2b5410200914d8323665070cc9bf3930cc0066",
+    ".codex/pm.md": "7086a744d24ddc01be90955348675eba67063050c8f1f7e1ed33b2d759d5f0bc",
+    ".codex/ux.md": "04b7e09d007b7442355d25de72ac54168ac7a4998b95ab92b9d370730b910639",
+    ".codex/qa.md": "048b3f0446e5d0c095fb91f24e14abfcb89e22d7583912146b5d7451586d2bc9",
+    ".codex/release-manager.md": "ddb779e7caa65500b39d164486f9b44ac7c98e3a323937a4dca4e8bb5cdf1846",
+    ".github/copilot-instructions.md": "a4c83aaeaab8f0497e6fecac13649f857a25927d0e11793730cf7774035537ba",
     ".vscode/extensions.json": "ab7388e97d8fa8c7ae2c81759ac9c4adcd37df6bd42a9792d7d5cb3b59dfcc17",
-    ".setup-agents/profiles/developer/rule.md": "d411b3de5c07d623956174671d3c0255f2de07deae0e674d3f95a56ec160eb14",
-    ".setup-agents/profiles/architect/rule.md": "41c2b2dfcaf1ad9e2c2505c5b45a5a87f35219a9fcb6060423a58998fa974ba4",
-    ".setup-agents/profiles/sa/rule.md": "019c80d768d0e1d975a3f749847afcd7380cdb0dd444b4aadd57f01d32a8159b",
-    ".setup-agents/profiles/pm/rule.md": "3cadcb07766f634341bfa2550424d1e9eb089d34c91cbfcec3e795bc08d5e98d",
+    ".setup-agents/profiles/developer/rule.md": "9d1dc0c2dbf121f9ac6d79a08124f3ecf93e0e5240101dcb661a396f61ab5714",
+    ".setup-agents/profiles/architect/rule.md": "0a5d5edc52f1d9bdef5976a5182c14a8f907b7ab4a38af9084b78155ea01bdca",
+    ".setup-agents/profiles/sa/rule.md": "0842abe60580e1e5877171e3c461b98bf58bd22fe9e7f6251b1c0bf94fdfbe93",
+    ".setup-agents/profiles/pm/rule.md": "37053f9959ec72ec46b9fcaaafa90ca51f3f2a2a4eab4e7f7d26e06b85cce2b2",
     ".setup-agents/profiles/mulesoft/rule.md": "fcd5a2ff1948364831611097a1a9eca6f519e10b9bf5bc1281ea082ab581a4a2",
-    ".setup-agents/profiles/ux/rule.md": "59fef5166b597a86f9cffa482339874c3c2d9faa449195cc87df0824ca4a06b4",
-    ".setup-agents/profiles/cgcloud/rule.md": "9b29a98ced15d01b383a912812b3a458287590206fcde7920e28f42a85493454",
-    ".setup-agents/profiles/qa/rule.md": "f305ba2e364a19cf03b56472c24c620f1a96ed3019e1e0576f342c033bb03690",
-    ".setup-agents/profiles/crma/rule.md": "a868b3f7ade22ea8c8c8b44dd210f6a42636553b97bfdee8f6079cf2a9e4d0e4",
-    ".setup-agents/profiles/commerce/rule.md": "3391ceceec8380dd0cba80582eb3162ade8ba0b3eb85471a1f6220f80232a729",
-    ".setup-agents/profiles/data360/rule.md": "e9cd3d96ce598e493d702f073f80099979757c9bf1c8b41b2338ce6b02b58ab3",
-    ".setup-agents/profiles/sfmc/rule.md": "eeb3725e5ea66b1c822e5fb110e76001fd0ae90e729047b999618c5f7b6f89ba",
-    ".setup-agents/profiles/salescloud/rule.md": "a222123b259c38423aeff3bd4818bbdd83d8bf9e6114cc4546224408423a242d",
-    ".setup-agents/profiles/service/rule.md": "a215b20bb2bac605a0ffa431cf7afe76f30909bc7081b0aaa59f79ad394bd057",
-    ".setup-agents/profiles/cpq/rule.md": "7aa33bb3a5de11fd74a20eb030423db979776e9532b9cce49ed997289f55decc",
-    ".setup-agents/profiles/omnistudio/rule.md": "39dc3d6996f5682811b32ab04eec201d4824cfd6577ceff3c6b37f736b271ab6",
-    ".setup-agents/profiles/fsl/rule.md": "b627f951e695f5a688d61c9dc7445b97c3fb261098c5a7f29f299bc6edbbb445",
-    ".setup-agents/profiles/ai/rule.md": "4ce797712b8a46c1ca70cb8686b1dc55b8703bc1fa900c729dd1fd0fe7b485e4",
-    ".setup-agents/profiles/slack/rule.md": "2f578df2006022e7e225532d48d423382d5c93a265b4a17b86eca642fbce8868",
-    ".setup-agents/profiles/tableau/rule.md": "8a2e5cacc143a209250abd9b6a1ce849f5379c9cd3c2ddf742c5cf8aa76c5686",
-    ".setup-agents/profiles/experience-cloud/rule.md": "3be498ebca9b3b3d41a191861b795783d36848ce38e4f55d61d28c74f2905908",
-    ".setup-agents/profiles/release-manager/rule.md": "5ba779414208f65889cefcfd78df1ae1fdfa36fde14ffef7e4ff4edaddd6f270",
-    ".setup-agents/profiles/fsc/rule.md": "79263e423c5e44bc52ac6199cfb2d6ba36ab3e711a29a5c3aace1ac0e2181175",
-    ".setup-agents/profiles/health/rule.md": "08e7460b6439a79b56f70309ad07e97da2bbcaa24a5ae674f65ae4fe976c1596",
-    ".setup-agents/profiles/manufacturing/rule.md": "75c782e321ff2cd24cb57a8c63dbc4b14580b4c56c8b5be4728280229e5cdfc6",
-    ".setup-agents/profiles/communications/rule.md": "036b9c5af13dcc3dc6bce297a25bc10d9e3caf4c42af85457e899632e6f277a7",
-    ".setup-agents/profiles/automotive/rule.md": "80f5869da877c887f4ec74325534bd9290c8c70d418b517c2a0d9135422ee86b",
-    ".setup-agents/profiles/education/rule.md": "df5b1e54daee4da79159ae322b9bc6054822a9d03bc58576085a5e1837c7b7f9",
-    ".setup-agents/profiles/netzero/rule.md": "a68206d9540c73f894135932aeb8c8e629e9ffb494d47fd3195ec04327a02fba",
-    ".setup-agents/profiles/nonprofit/rule.md": "853e98f94dea52f2482b0417d787b356150813356c428d5180d26f206065acbd",
-    ".setup-agents/profiles/public-sector/rule.md": "968955864eb68ce5fe6121269524d48e45d56ffe48ca6185c9521069275915d8",
-    ".setup-agents/profiles/media/rule.md": "f68d2dfdd5abb70fbf668925312c06341e4f9f40194ac6bab7a2570ae89e1a23",
-    ".setup-agents/profiles/energy/rule.md": "c6b087f2a5dc74e25be642131bfc8db76f69b4f6bc7277954016d4ad675f6bf9",
-    ".setup-agents/profiles/revenue/rule.md": "fbf06abf01c8f62031a0c4f3d51d59314708d4339e33423ec0cc0994507c8198",
-    ".setup-agents/profiles/maps/rule.md": "39dab864bdefb050c7e17200ccc7fa03384b1adbcad37e3b9636349bb8835e46",
-    ".setup-agents/profiles/loyalty/rule.md": "ac12c5e1d94e5cace244fa1aa229763cb4b68e5b4f3030df06db128e169f8f15",
-    ".setup-agents/profiles/industries/rule.md": "9d3baaad276e4f0e908319da13bdfdfedb3ff66bb9e69b01a730ffecdd68162b",
+    ".setup-agents/profiles/ux/rule.md": "987ee160c376080c7f436ad32c033d62b19a1896fcdae527ed4d58c4902e586e",
+    ".setup-agents/profiles/cgcloud/rule.md": "b3e5522c916fb014f9c23356878b79eaaed7b83a3cc3cf355f12e47ae8c85275",
+    ".setup-agents/profiles/qa/rule.md": "5877f2e70da84796eb2ebb74004c32db08ad598823d991cba7c891e637c4ed9c",
+    ".setup-agents/profiles/crma/rule.md": "c67a35637c21a7f7fd844c0af2ddab40d42b437cac47ed230060a5153713d9cc",
+    ".setup-agents/profiles/commerce/rule.md": "1ac9dd6a332e4af0769b105cbe62f78b92dacb4545d808e7f5f00ac38eb6280a",
+    ".setup-agents/profiles/data360/rule.md": "91dd56209ba13bdbf2a21f0ee6d67373d798526528e7f87d4fab6ad3261cf13e",
+    ".setup-agents/profiles/sfmc/rule.md": "38c3d9093128a8904c86f19975cf7defd24a533da1c0fdbbda34d2bbff07dd7c",
+    ".setup-agents/profiles/salescloud/rule.md": "3da421dc99e2ada53716a948637c5455a90acbef62076257b7be1374ebdf9489",
+    ".setup-agents/profiles/service/rule.md": "174bb06bf328a024f00a8a1141d76c6ea1dcdcb3341b7b53c7aa8dc5926445f7",
+    ".setup-agents/profiles/cpq/rule.md": "3e92cde7482f617031a6d6a0a0477f8a950fb630402fd35b5550fd5a28a8d7b3",
+    ".setup-agents/profiles/omnistudio/rule.md": "0a365127af1f9624af919753382d35012032c9a68b5a75a1f358027446131044",
+    ".setup-agents/profiles/fsl/rule.md": "fc8ad49e7cf7418163c8cb5d9737c0c05b2693552df79fcb52931e5bf16cb843",
+    ".setup-agents/profiles/ai/rule.md": "baeb5bb16cebc6afed67b2dd3160d5b310ec18631d651874165c629055acc808",
+    ".setup-agents/profiles/slack/rule.md": "77b304d86512a9d7f6379e18a526f4510d2c5427799dd4e53a370436b640d3af",
+    ".setup-agents/profiles/tableau/rule.md": "779cd428a33332e290c9da85122e6e790dc9e536e6c349306a75a2d962063226",
+    ".setup-agents/profiles/experience-cloud/rule.md": "d0aa7c024b878c538c35c5540c9cb26da0f5cd618889f31cf45c911f731fcfd5",
+    ".setup-agents/profiles/release-manager/rule.md": "b66723cb2345d23f953ae6102d677091e52fe94ecdd05a565d8fb6b79c478011",
+    ".setup-agents/profiles/fsc/rule.md": "3ac7d80144fcc0e0f41329e7e16eebdfa79d20b1fea868176b5191e296eded8e",
+    ".setup-agents/profiles/health/rule.md": "0771cf3162903307743af0ed686ff3d8e71eecc26733110455cce65f371b2df0",
+    ".setup-agents/profiles/manufacturing/rule.md": "e652b79996ac8855b4a98f72f3df81febe4e00b5aceee0a52a3965a888bc5da6",
+    ".setup-agents/profiles/communications/rule.md": "37b50ef6be7aa3e08c8cc6b14e22f2b293fa0c06d87ebfb7511469a83a5cd54c",
+    ".setup-agents/profiles/automotive/rule.md": "a577ce99b83c2e496974c3641ed2fe2659c850c81df36c4ef345808ce6184f95",
+    ".setup-agents/profiles/education/rule.md": "17b9089dc63d324be13d057b8723fae522a6f04f52ec4751cad75b3fb4f845b9",
+    ".setup-agents/profiles/netzero/rule.md": "78cccfee72f93da9f04dcf9d1329c11b732c4cf02d2eeea5f047aa19e499c8b7",
+    ".setup-agents/profiles/nonprofit/rule.md": "5522d6df5c1e8d4d9a8da46fda9c786fd2fb96d5fc25b4e86fec28efef345a07",
+    ".setup-agents/profiles/public-sector/rule.md": "c19ae24773596013f393bec864d5819f89af7354c1a7fa0e61d786d7a52ec337",
+    ".setup-agents/profiles/media/rule.md": "2e92cfe98f5e398c5afabc9ddfd6943cd3d7e4b60d43cee3cc6b5192ffdad9ff",
+    ".setup-agents/profiles/energy/rule.md": "966a8bfc7b584452dc8417d7aed4b8aabb71647b30be2518b7d599f869bc2e50",
+    ".setup-agents/profiles/revenue/rule.md": "d4c090741ec827ddabe5b1895c5a4ad79cfdaa5a35a243554ad5f1023cc81b6c",
+    ".setup-agents/profiles/maps/rule.md": "4869074743bff27cc850c2cf08d62e2d68908df1b84c03560a3a1a62835f5ab0",
+    ".setup-agents/profiles/loyalty/rule.md": "04f677840f5463c80adcb82f63ef279af7fac33e2566903049f5cf9dbe99c0d3",
+    ".setup-agents/profiles/industries/rule.md": "4b154adfd3aeadc8c33a3fbee727b8da3899acd7225c4ef7d2514aea06ede1ae",
     ".setup-agents/skills/audience-tailored-report/SKILL.md": "7eb2ccc7a37fe57f511c9da8687a5f83b7c14480e4a922e819c470e002ceea6e",
-    ".setup-agents/skills/mobile-appium-testing/SKILL.md": "b4fb30ca62e16d8753344a329e8e311c227cab338c91733d9c4de45acb093591",
-    ".setup-agents/skills/doc-sync/SKILL.md": "744c5ace522a40bb806b307849e89a4cf0fc578ffa4742f7ae056727009f1e4e",
-    ".codex/doc-sync.md": "1baf220d5368b3722dcfdfa0269fac958053db5247dc25d86edbece4128f3c93",
-    ".github/skills/doc-sync.md": "744c5ace522a40bb806b307849e89a4cf0fc578ffa4742f7ae056727009f1e4e",
-    ".setup-agents/playbooks/orchestrate-run.md": "6714dc60fbb0492f4efd34cac73245e8f3db433833a31512f8007f51d0ab6537",
-    ".setup-agents/playbooks/contract-test.md": "874671ef01b18ef1abeac1858f99891f47cc5cbe143094e7c14352da0177ab7b",
-    ".setup-agents/playbooks/performance-test.md": "f94d926f3527d016788bb4007b80927f2da2d1c76bdf875107f7b598558074fe",
-    ".setup-agents/playbooks/flaky-test-triage.md": "3ca55aaeec62c3d5552ab3ddc289567d886815dda7a79ec24529dbd692cda3c7",
-    ".setup-agents/playbooks/profiles/developer/create-flow.md": "426e805ea52d4a9b39a2833996a3c2f10e8cc02421d894ac93f9cede7cca964e",
-    ".setup-agents/playbooks/profiles/developer/create-validation-rule.md": "6fa8a4a3384cd4eea6d1924533c23f8d0a3d9e83dfa2134e712600862ea92409",
-    ".setup-agents/playbooks/profiles/developer/permission-set-setup.md": "1034bb62527334f1d1c2ab61c3ca1380a25e9d5a7b6a54319ac4dc3274b3bc9e",
-    ".setup-agents/playbooks/profiles/developer/create-record-navigation.md": "20faca8fe2fd304840d8be4c2414b6e10f430849e73ec80ce9d3aeaf1b35b4ac",
-    ".setup-agents/playbooks/profiles/developer/destructive-deploy.md": "e842da47bf7a9733ef062232d36a2406db2454bb031cd8485f6d7f3cdb97aea8",
-    ".setup-agents/playbooks/profiles/developer/close-phase.md": "01592a3b6d87d80b8b2cd4450c9a30b8bcaf81d7e8cd36ecbf6f4e7e6de44c23",
-    ".setup-agents/playbooks/profiles/developer/review-release-264-api-contracts.md": "883f7c8ecf804181457f73fbe933710a7a1eba231d56a4e939b2177e1f220325",
-    ".setup-agents/playbooks/profiles/developer/review-release-264-lifecycle.md": "1dfb0ead32f55b6dceb39591cf20d6b5d383a2de965d2b3b534976a5445eec7b",
-    ".setup-agents/playbooks/profiles/developer/review-release-264-label-translations.md": "e536ba54a3cd0717390b937e53d20a60fbaf2b21556fdb131890a966b04d4481",
-    ".setup-agents/playbooks/profiles/developer/run-apex-integration-test.md": "ae40e41e503976dad0836e4592b39936edf9a8fa52f025a476cce5ed28ceae24",
-    ".setup-agents/playbooks/profiles/developer/design-large-data-volume-processing.md": "3a0604f4ddffe36a9101dc2eccc4b4751ecffd084af86434055ab801e99d3799",
-    ".setup-agents/playbooks/profiles/developer/create-apex-class.md": "e85762497eb0894230b5e1bbdb6c9959aba747514c0fc717b3611aec8d34eca0",
-    ".setup-agents/playbooks/profiles/developer/create-lwc.md": "8bbbbbf40595a95fb53ad3cef64ed2909903601f5d8c2b7985a9246b8c3b7524",
-    ".setup-agents/playbooks/profiles/developer/create-trigger.md": "05eabdd9cff3a7ad7a62e309706076cce92f72f2c0f1151b249dec8fbe7f2f17",
-    ".setup-agents/playbooks/profiles/architect/adr.md": "28cb30e81d48d52b032f5b3bb9bfefc076dc0898185ba836183db2fc70292b33",
-    ".setup-agents/playbooks/profiles/architect/architecture-review.md": "75432a4b503dbb2efb8fddcc84d72fdf7bbdf1015456fa4b50a8def904e093f5",
-    ".setup-agents/playbooks/profiles/architect/data-model-design.md": "e9b734b58fb4bcb1fe902200213dfdf3781bcb06ba23f6b420ccadea43460835",
-    ".setup-agents/playbooks/profiles/architect/threat-model.md": "19391e0030330cd770042e0911e4f5b31b3ab439e06d66e4177f79046c816c52",
-    ".setup-agents/playbooks/profiles/architect/security-review.md": "9abb9bd686c6b885c0d5e5831619cfd0295b3b06b9a6dc0f806c6f91c454ffce",
-    ".setup-agents/playbooks/profiles/architect/review-release-264-lifecycle.md": "1dfb0ead32f55b6dceb39591cf20d6b5d383a2de965d2b3b534976a5445eec7b",
-    ".setup-agents/playbooks/profiles/architect/close-phase.md": "86b1514cc98748088a95006b05de60ae17be1df5ab25010afd16fca996ce5bf6",
-    ".setup-agents/playbooks/profiles/sa/input-analysis.md": "f0a6214aec989bf937f8104ab95f43d763608429bdffe79e13350953d16f7a0d",
-    ".setup-agents/playbooks/profiles/sa/flow-analysis.md": "924340b9219795f2ae011ff18b5eb73d817b62fe578237fd916fe82de2e03092",
-    ".setup-agents/playbooks/profiles/sa/refinement-analysis.md": "ed1dc72aff0bf71eb3460ac089a199cab9d6ccd5ee6513932bb7519fb8371a01",
-    ".setup-agents/playbooks/profiles/sa/scope-analysis.md": "5c4adf440c23427a136a09bf275473f707513bda046f8cb90d86e944f0f1cc86",
-    ".setup-agents/playbooks/profiles/sa/solution-design.md": "26aa2731fe1bbc3745bc084d9de00027fd77ecfd2d69ee2492c813d6b3413120",
-    ".setup-agents/playbooks/profiles/sa/story-templating.md": "dbfdebda2a6e247ffeaba915330ecea470fc20d6e92d1ebb5e445d4c01b37b3d",
-    ".setup-agents/playbooks/profiles/sa/test-case-generation.md": "beec288c6f1a304fca4a4470f637629e1e332c414a93ead4f290e573f7d01ab5",
-    ".setup-agents/playbooks/profiles/sa/refine-stories.md": "3933df5ec7333f4fbd9559e954db6737466a2cd4281d43e5934da7f84138638e",
-    ".setup-agents/playbooks/profiles/sa/groom-backlog.md": "aee4a86cbff7636c334e4499d5bcdd9328ce6cc4a6d9932ccd821a91700e83d8",
-    ".setup-agents/playbooks/profiles/pm/sprint-plan.md": "3e22a0e885e36937c7335c53d254f219c4a470ecdfe850bf8e77d7bc18a17f0e",
-    ".setup-agents/playbooks/profiles/pm/status-report.md": "8f64f44da7f49322b1c887c674ef2e26b38f43550c90fcb041897211d7025eef",
-    ".setup-agents/playbooks/profiles/pm/risk-register.md": "96a72a3705477e772a0ad0315582269dee9bd344ba9e14a805c1290d86c0207b",
-    ".setup-agents/playbooks/profiles/pm/delivery-metrics.md": "416eded5d2432b19fd3c858a369554b2a33ffac537229403e955570a3a90c4b3",
+    ".setup-agents/skills/mobile-appium-testing/SKILL.md": "16c7381c0446a3f93957ab89c09dc54084311d7c2d5d0165ccd41dc44578418b",
+    ".setup-agents/skills/doc-sync/SKILL.md": "e061679e86a7f3ff387468ac710d8b906bb5f357e92ca7534454a8de42f06ba2",
+    ".codex/doc-sync.md": "c6b38c1289f93b46ddc6c1dcc5d5dba1805eefbc952d1769d0fc395b06b4a4d1",
+    ".github/skills/doc-sync.md": "e061679e86a7f3ff387468ac710d8b906bb5f357e92ca7534454a8de42f06ba2",
+    ".setup-agents/playbooks/orchestrate-run.md": "0bc52b5b3eec99d4676ee9310883b4377c7df540538ae6967c23545f63038f6e",
+    ".setup-agents/playbooks/contract-test.md": "077f1dbfc3b658c9503c122adb42458b5c8d5d026a6549a02cc41ec19befa6ca",
+    ".setup-agents/playbooks/performance-test.md": "26c5928911848d43abcc7f4a0f3a1448e90a3d1ad63331d75f6848d43797679a",
+    ".setup-agents/playbooks/flaky-test-triage.md": "2199e73769d39bebebdd250e51b21085f296204c03bec042df9f82b7c23f429f",
+    ".setup-agents/playbooks/profiles/developer/create-flow.md": "7558704d8a9e66b6209ec944ff75736db732fef0f7c6d1e63c399e09693bdd56",
+    ".setup-agents/playbooks/profiles/developer/create-validation-rule.md": "5fb41e9dcda0a30a91e9afce0d5fefedc461b07212ff4217ff4c627ca51b99df",
+    ".setup-agents/playbooks/profiles/developer/permission-set-setup.md": "56552607655e1d125d2a6a83737b33bff013ece78eabb7d5785c61c9b88ca4bd",
+    ".setup-agents/playbooks/profiles/developer/create-record-navigation.md": "f18cbe13e34f69ca24edecb6d9a4d04eb0bd7b660a3e2f253829f2b524278265",
+    ".setup-agents/playbooks/profiles/developer/destructive-deploy.md": "c41402b1dcb5cde2be696c9e218c5a01740ffeb10eb569b65818ed5327ee7ed0",
+    ".setup-agents/playbooks/profiles/developer/close-phase.md": "94ba6048e6c6bcb6cbfbbbe281838a05d4447e488778a0c0c6ac989efd400070",
+    ".setup-agents/playbooks/profiles/developer/review-release-264-api-contracts.md": "d07386edb99b73d3c51dcbad623d22d754c3e1d8457f8d5c5e7a74c13fd33ca4",
+    ".setup-agents/playbooks/profiles/developer/review-release-264-lifecycle.md": "867a738f5511316da6e0c6c68ff863a7b820583f494528d54a393cc1183677e2",
+    ".setup-agents/playbooks/profiles/developer/review-release-264-label-translations.md": "e2a6621a6f92b5b56c0d394cc8a142842559551ae6e1050a34b3771745150f68",
+    ".setup-agents/playbooks/profiles/developer/run-apex-integration-test.md": "40a96b79559a43d2730f9b36c81f0a129ca43a8ced8abee861c317006c865842",
+    ".setup-agents/playbooks/profiles/developer/design-large-data-volume-processing.md": "d8447fc5c38937968738d7ddd52ac840047ba326b2877438374e0b9a3b69034c",
+    ".setup-agents/playbooks/profiles/developer/create-apex-class.md": "cd77f5ba1f6673787825a3973139aaeff4873fd7e7f5641080d7e58933064207",
+    ".setup-agents/playbooks/profiles/developer/create-lwc.md": "ff67a68e69b75c0509b41a020949ae4c87d32779eb33058af0de7c1bbbc16eb0",
+    ".setup-agents/playbooks/profiles/developer/create-trigger.md": "3a73034217ab949ae2f221971cead3bd2f29db15ffb774553d7f26682e50d1bc",
+    ".setup-agents/playbooks/profiles/architect/adr.md": "aa5770c3836fc33411466548ecc88284626e43651b1668ae40edfe109c470032",
+    ".setup-agents/playbooks/profiles/architect/architecture-review.md": "47905368c61c5ed981fff07ad339bd589f1bf5cd8e8b2b721eb8ff74786b4dd0",
+    ".setup-agents/playbooks/profiles/architect/data-model-design.md": "6515394d122e87e0c4cec3714e80ef0a7f2644a4ab2a759c4a37156827dee890",
+    ".setup-agents/playbooks/profiles/architect/threat-model.md": "0dafb89446d00592e8fd28a47d8936bb0c428f7e1c45fe14ef0b7bf958d4a908",
+    ".setup-agents/playbooks/profiles/architect/security-review.md": "d7f249a8d667d99f67528961d11dee51ee590f4bd057b80a0a4c8aa3aab86256",
+    ".setup-agents/playbooks/profiles/architect/review-release-264-lifecycle.md": "867a738f5511316da6e0c6c68ff863a7b820583f494528d54a393cc1183677e2",
+    ".setup-agents/playbooks/profiles/architect/close-phase.md": "1ae1a323152ad5fe1d918e1a640b800481f4e9b01d2ae9c8cc6fcd932757c6b8",
+    ".setup-agents/playbooks/profiles/sa/input-analysis.md": "898bd5ca1cbdb25287b1411c5ffcd1f049579f783495f77f674a4d9e57b26d5d",
+    ".setup-agents/playbooks/profiles/sa/flow-analysis.md": "5349bbc2343fbfd1fe0f70f390d7c68670301706eb8e7d474e433ef076ef5b42",
+    ".setup-agents/playbooks/profiles/sa/refinement-analysis.md": "5fead92757655573e0ab5a85fbc994447351de47ebd2938988c884734b574d8a",
+    ".setup-agents/playbooks/profiles/sa/scope-analysis.md": "368c840bfee75c4ead3ea454739c6fd4d0e43496309415efb106668b8813dc0b",
+    ".setup-agents/playbooks/profiles/sa/solution-design.md": "d35f5831a08f91df2950df81379d7ca1768046c7e7e355a8d95037a3e56f9a83",
+    ".setup-agents/playbooks/profiles/sa/story-templating.md": "a39be6cbad7295187f7edf155925dffd68126bc1b18d3ccb517ad4266010c56c",
+    ".setup-agents/playbooks/profiles/sa/test-case-generation.md": "9b74d6382e6b6e139c18e00cd94377fbf2a8a1b84afd40e1a46bca545738720e",
+    ".setup-agents/playbooks/profiles/sa/refine-stories.md": "3ce5e77f47772ffcef751b4a74663e35752e8fb81b9bdf28f11a668a1c049920",
+    ".setup-agents/playbooks/profiles/sa/groom-backlog.md": "abe16c50305dc6f17bf70ca8b8aca4a6e25ed924e87d67ae34834979a3b1d32e",
+    ".setup-agents/playbooks/profiles/pm/sprint-plan.md": "5a414110578d719a4fc37044b3626f141ee4646422d2acb60814f34a4fe9a00d",
+    ".setup-agents/playbooks/profiles/pm/status-report.md": "e9b823933fd2ad3eda71b42858c79ce7f36ef15ff7d90905da659f0b9bfd6531",
+    ".setup-agents/playbooks/profiles/pm/risk-register.md": "b8f607628612154e963f9d75e2cb3e563bd62fa00dd96bc4db4d6cf761b09b60",
+    ".setup-agents/playbooks/profiles/pm/delivery-metrics.md": "87755de73cf0d42f8841dc3214c7a2139238fdb06d87f7be845ecea730c8adeb",
     ".setup-agents/playbooks/profiles/mulesoft/design-mule-api.md": "31df4ba45b67b12ce5152de8c419a22c7097d177b0654551a861a9da5258f26c",
     ".setup-agents/playbooks/profiles/mulesoft/implement-mule-flow.md": "236eac26454c4eb42e7464e53a0d661fa7291a36b62daf0321b51ab9bb87e87e",
     ".setup-agents/playbooks/profiles/mulesoft/deploy-mule-app.md": "c1fc566fdabcf70f425b940f548a70568d9b659d249aceead6862d802b2c3f1e",
-    ".setup-agents/playbooks/profiles/ux/close-phase.md": "ac6cb53afe9c4ec908c6e2e4e83c67f4df0685546a15b69323d8e168e53003d2",
-    ".setup-agents/playbooks/profiles/ux/ux-audit.md": "6adf15d1698d758362668e4b86d4194ca6e5e140c19bca99350697ce33eb6b1a",
-    ".setup-agents/playbooks/profiles/ux/design-handoff.md": "36037e1944922f5920c9ba1530d7d8818a304b7dd518d7407cec116754b46f09",
-    ".setup-agents/playbooks/profiles/cgcloud/test-cgcloud-mobile.md": "a72d12379af38b709814446bac7eec2eae2be44318440627bae545a61f3e4ed8",
-    ".setup-agents/playbooks/profiles/cgcloud/discover-cgcloud-retail-execution.md": "92e7489e3f2a3b1357afcda4f0e432164fcb0dc3beac6eefd25ff4d80afaffc5",
-    ".setup-agents/playbooks/profiles/cgcloud/design-cgcloud-mobile-ux.md": "5337a4cbf11fdad99c50e086cb9fc3af82aea1a70e5adb857b9a913b0106c987",
-    ".setup-agents/playbooks/profiles/cgcloud/deploy-cgcloud.md": "04c2ccf6c065bab2aaeb30d0fd4cb927b19098687fc3a418a7bec4f60c12c588",
-    ".setup-agents/playbooks/profiles/cgcloud/setup-cgcloud-sandbox.md": "42083ec41158baabbf076be9ab24bc892edddac0fbc3e84debed30d28de4f8f9",
-    ".setup-agents/playbooks/profiles/cgcloud/discover-cgcloud-modeler.md": "8b44d0ec160f9aeb95545f7e2976b2fd043f4aa51857d7ca8842496d9415dbdd",
-    ".setup-agents/playbooks/profiles/cgcloud/discover-cgcloud-mobile-sync.md": "3afd24a0949eb92c54048d8949e66ec8f5b6956ccba03134c94d04e9247cf6cc",
-    ".setup-agents/playbooks/profiles/cgcloud/build-and-release-cgcloud-modeler.md": "cc498c8e61983af8b52d140bec367b0d64bd75c4c2c3aa1cc06521bd9547337f",
-    ".setup-agents/playbooks/profiles/qa/close-phase.md": "c5b1954494cd0876b5e24aa7df193ee0045bf1d8ed458084bbd15901ad8f7110",
-    ".setup-agents/playbooks/profiles/qa/test-plan.md": "efe0a08546dcf9439335945f23b0c6c58926d5d822399246edad1a611c0884e4",
-    ".setup-agents/playbooks/profiles/qa/run-playwright.md": "cbee906ba6966c3e22427e0d0ead7b9fe0bdb7810dc674afdc1a741815e39359",
-    ".setup-agents/playbooks/profiles/qa/generate-test-report.md": "1e659945d078a561433ee1ef3b101b3d1d5f99011131472032e19db885b1aa0c",
-    ".setup-agents/playbooks/profiles/crma/deploy-analytics.md": "be82317b649d0cf35809015a1feed862609fda18d249452236e82ca2b8950de9",
-    ".setup-agents/playbooks/profiles/crma/discover-crma-scope.md": "3ea049a5faa3257c03544e502078298f56dda9866b19e292686f0fa0c79867e6",
-    ".setup-agents/playbooks/profiles/crma/test-crma-analytics.md": "8a1d7ef306577281749e949b80d65be080be25745f896ae8561ff6fc295aed94",
-    ".setup-agents/playbooks/profiles/crma/create-recipe.md": "b6a1286e3b06d76737213578127bd17379a416fce379f538ab494130d8135e3a",
-    ".setup-agents/playbooks/profiles/crma/create-dashboard.md": "685dac9983a39d84cc7a6a0071f24bd837fd04828c994aeb9e141bab1e2b2d4f",
-    ".setup-agents/playbooks/profiles/commerce/create-sfra-controller.md": "56e9da75a7c4a8476bb56201842db08b7821f1c4aafaa354b6b75dd41403e49a",
-    ".setup-agents/playbooks/profiles/commerce/configure-b2b-checkout.md": "0c98b79dbcea85617f38536eb88a40881437322cd2c31277571126d947e237d4",
-    ".setup-agents/playbooks/profiles/commerce/cartridge-overlay.md": "94628462a1200bd0bdba4d8d90387d7abc7105d958feb51ef00e6763cd0a645e",
-    ".setup-agents/playbooks/profiles/commerce/discover-commerce-storefront.md": "5e614d8790333ded2f569614c8ca1543d7712a026311e85cb2c397a3a17e360a",
-    ".setup-agents/playbooks/profiles/commerce/test-commerce-storefront.md": "4caf3e90fa6f40333c7fe5815f9a2cd90ab5302a04da4d4659286c4f5263127d",
-    ".setup-agents/playbooks/profiles/commerce/deploy-commerce.md": "5c51a9b5a732a03bf5c53f291cce8e373ccbedc43879aaa0a4495a60fd2e58a4",
-    ".setup-agents/playbooks/profiles/data360/discover-data360-scope.md": "7d0885a39b4a928b380765d26f076e63d9e5b83e1dd1ecd7fc2f2d43a02da4c8",
-    ".setup-agents/playbooks/profiles/data360/deploy-data360.md": "453d605fe87113c411140118950b7366d55cd5286418e29fc8a17f51288d4d55",
-    ".setup-agents/playbooks/profiles/data360/setup-data-stream.md": "b03630d476e228a583530c3faabc88acee7421b9e1a602b700dace0b59d9a827",
-    ".setup-agents/playbooks/profiles/data360/validate-identity-resolution.md": "d6f55b580514c202839ac6de57dbe6eae71e612616be786573ac2f213120aecc",
-    ".setup-agents/playbooks/profiles/sfmc/create-cloudpage.md": "650d3dfc86f3b3388678a79447e05c50dd8426e603779611b81cc2cd8d35f229",
-    ".setup-agents/playbooks/profiles/sfmc/build-journey.md": "942f839537f41093546e021612c6c822ea9aeed7ae6f5daa0dd3ba35a9d25bf8",
-    ".setup-agents/playbooks/profiles/sfmc/data-extension-query.md": "da9916757b57876bd6bb944af1dff953f511995a091eda293c62bdd7d80c0268",
-    ".setup-agents/playbooks/profiles/sfmc/discover-sfmc-account-model.md": "e4d0b8ae8b9fa55e4d2b889030c26006972fa95755dd62f9909014a938deb2c2",
-    ".setup-agents/playbooks/profiles/sfmc/test-sfmc-email-send.md": "e90f84482159bfa95025436358d296b2ebed2abf24db84cc5f550921951de40f",
-    ".setup-agents/playbooks/profiles/sfmc/deploy-sfmc-assets.md": "fc8b325bd2e3791a962e576469f8d1bef4f6da18c2516a6c0fe44104f4f57c1b",
-    ".setup-agents/playbooks/profiles/salescloud/discover-salescloud-sales-process.md": "faf0202426a6dafb4b1bdefb46914b509179ef64c9807a53ba784f0bdb0beae0",
-    ".setup-agents/playbooks/profiles/salescloud/opportunity-forecast-setup.md": "0b43fefdd04694bf40c106b2b406139460af4cffafe810dd367fa7cd5e6ff58c",
-    ".setup-agents/playbooks/profiles/salescloud/test-salescloud-opportunity-forecast.md": "1a3ecb69d1eacd6eb3203bf05e765d9c9aa86b74f5cc4e91a4b2e1c4c82cfb30",
-    ".setup-agents/playbooks/profiles/salescloud/deploy-salescloud.md": "435f8c39479e7a52ad29ced06acaa2ac09c4e078163ba3514c10bc535ee8e8e3",
-    ".setup-agents/playbooks/profiles/service/case-lifecycle-setup.md": "c6df7b7f92a4cbae6e31656594b96ac9bbc3857d3633f740b4490f9bf2d234aa",
-    ".setup-agents/playbooks/profiles/service/knowledge-base-structure.md": "3c593351b1d235ce19b5e8320006f324855cd96365abd4d432fcc4d2aa62470a",
-    ".setup-agents/playbooks/profiles/service/omni-channel-configuration.md": "7a415f1ae9d73626d7f4b8e2f9d8376d5c41ec2db38c7abe66e7953d6ea9359e",
-    ".setup-agents/playbooks/profiles/service/discover-service-support-model.md": "7481dcd547562b21b756e786876a1305b2db9bacc8fa217d49cc9e013986526a",
-    ".setup-agents/playbooks/profiles/service/test-service-case-lifecycle.md": "6ef9c45ba5e1ced47484974980f10d031c350934ea566fe5b144f9e6ef7551c8",
-    ".setup-agents/playbooks/profiles/service/deploy-service.md": "4632c736fe98e6ea39b84bdb1174ca5aa4876a5437ceeab92e45222a167d7358",
-    ".setup-agents/playbooks/profiles/cpq/product-bundle-setup.md": "d488707d14d97f5ca9e82dacab0e8abd16f952bfad9e3e3e8e01acf3cef23fcc",
-    ".setup-agents/playbooks/profiles/cpq/pricing-rule.md": "a898fc63a67fe01210211e036e72b95a1bae1b3780fdc0c971ee79d2e122e530",
-    ".setup-agents/playbooks/profiles/cpq/approval-chain.md": "68a8371572cb3cdf5ac245e8d78396c54119315861be3d1d7a5e1f993bda729a",
-    ".setup-agents/playbooks/profiles/cpq/discover-cpq-quote-to-cash.md": "b37f3803c387e56ccf679ed0073c5b9ef7a634a1f672521650ae51f2e197953c",
-    ".setup-agents/playbooks/profiles/cpq/test-cpq-quote-configuration.md": "2ee45aaf70abdec424b86f05754410fe865d7fca5ca336fcceeeadd22795466d",
-    ".setup-agents/playbooks/profiles/cpq/deploy-cpq.md": "3cb3740eb173320d7b8452ccf963aad6658e501f351e7229c26cd46108946dad",
-    ".setup-agents/playbooks/profiles/omnistudio/create-omniscript.md": "792f94dac844d3f6dd8d000542c599f707b8de6a50c6078bdf9320c66f28823e",
-    ".setup-agents/playbooks/profiles/omnistudio/build-integration-procedure.md": "766e3ecaaa9c9ef042d370445cca3ef63fa7aa0a089ab294e74e370cac6f912b",
-    ".setup-agents/playbooks/profiles/omnistudio/design-flexcard.md": "2efc8e0920a00d9ebfa62c061e1b3ced80a3664b4a8e8a80c3fbe5697fae8135",
-    ".setup-agents/playbooks/profiles/fsl/work-order-setup.md": "7689ab3eb113195aa41093535fa7c11c3694f041a0c918bfb5399fb93fe61c5f",
-    ".setup-agents/playbooks/profiles/fsl/scheduling-policy.md": "096a9b20df30d62ee3924e50453483e4564d15df61d4e9f9c9efb8f799c5a085",
-    ".setup-agents/playbooks/profiles/fsl/mobile-configuration.md": "76c5bcfee728f7e311311b33ee8f9438fc687690b1668d778a96e29865b406a6",
-    ".setup-agents/playbooks/profiles/fsl/discover-fsl-managed-package.md": "bc3df4427db8ab1e1756b043aaf2ecc6457d12d008d2bb8d2db869debce7def0",
-    ".setup-agents/playbooks/profiles/fsl/test-fsl-scheduling-optimization.md": "fe91ab3abcd20c87aef9d433615ca457ed72be633d406c843ef9e6a33db094df",
-    ".setup-agents/playbooks/profiles/fsl/deploy-fsl.md": "b24135b3b592c234a53db1470dfefde9f9b28ced6ad2f590ba12e947f1bbbdb3",
-    ".setup-agents/playbooks/profiles/ai/create-agent.md": "ddfda6f6e60c1289eae03112cf4cb3a6ed4f7ead66e7f3433e6c3825ad2ca70a",
-    ".setup-agents/playbooks/profiles/ai/test-agent.md": "3194961f8ad4ef2cd2d57d57db1f9118644b1a97bf4ccb72e17cad3188e46edf",
-    ".setup-agents/playbooks/profiles/ai/deploy-agent.md": "7efbebe80fc491ac052e6ff77d8cd02999becc615d8baaa4174f012d9a77b87b",
-    ".setup-agents/playbooks/profiles/slack/create-bolt-app.md": "2b4d0971ab1f84895574bbea92dc2b7d58506020e24d5fa7f03523ae229eaf0e",
-    ".setup-agents/playbooks/profiles/slack/add-slash-command.md": "b1dbb972affe1f729b017d977d2ae8ee3e38426fe2c558aadd67b78b3381fc88",
-    ".setup-agents/playbooks/profiles/slack/deploy-slack-app.md": "3152a36d0f92e8c131a121a2af5c4eed836cec75a1126dd46dc6bb4795f5be07",
-    ".setup-agents/playbooks/profiles/tableau/connect-data.md": "2c8d0f29636b2e7e210b0b614cbd82d73d42e291076a4daf4286fcdf0ee88233",
-    ".setup-agents/playbooks/profiles/tableau/publish-workbook.md": "bab36b8f5fb4a405f9f721660073cb294a44ed09db18121949af7f27c56a2727",
-    ".setup-agents/playbooks/profiles/tableau/embed-analytics.md": "b3b922f7bc17bc365daefcb2733bf03aa8f537f742b6ed20ec60115326a2844f",
-    ".setup-agents/playbooks/profiles/tableau/discover-tableau-analytics.md": "2c06b67ec72cb5aba3833c0fc05dccf0e8e2479524b54adbc611d351ca2ac3ed",
-    ".setup-agents/playbooks/profiles/tableau/test-tableau-analytics.md": "d879ff0b0f1feac3fddbf0ac76ef53c429c5196ebfdd595e6a3c225cc45c2dcb",
-    ".setup-agents/playbooks/profiles/experience-cloud/experience-cloud-dev.md": "7137463b01d074aa383d8f189a729e177bd5734853c5ff78be2f202a3674c56e",
-    ".setup-agents/playbooks/profiles/experience-cloud/discover-experience-cloud-scope.md": "dbe7a008d8f33c10c47be384ba29f4e512b668aaf9723badd195e6904fa809c5",
-    ".setup-agents/playbooks/profiles/experience-cloud/test-experience-cloud-site.md": "33831910b8c845f0e88c6469c6c3f95174545847c81babda230744d5f0bf537e",
-    ".setup-agents/playbooks/profiles/experience-cloud/deploy-experience-cloud.md": "d02507d9e1f9fabe8549d26a49c3d0a03119e22c2af5b8e622550c6a27d1d89c",
-    ".setup-agents/playbooks/profiles/experience-cloud/guest-user-security.md": "f72d96d45735d613b2dab76dfd45ed1f5af4f58065581bfd7e5f13fa2f19876c",
-    ".setup-agents/playbooks/profiles/experience-cloud/experience-cloud-security-review.md": "1b35ec6d663c826f944951c1207c9f216cf677add59dd11cc1726958eec4afda",
-    ".setup-agents/playbooks/profiles/experience-cloud/experience-cloud-access-model.md": "66906cd111df3de002c548de4079d61b452cf0177c2ee1b8ce429aeffef0ba35",
-    ".setup-agents/playbooks/profiles/release-manager/close-phase.md": "50356df002bca21b31d48a77f745d3977e0f8cfd6d23196223e09e59ff413794",
-    ".setup-agents/playbooks/profiles/release-manager/release-checklist.md": "0a21ca102f6eec04f593b1cc41a364833d5a8d5712c118ea0aad519b2ce84ed5",
-    ".setup-agents/playbooks/profiles/release-manager/environment-refresh.md": "3c25810730125e6543556130ad22e091824d462d0a30d06d0b905507cc641476",
-    ".setup-agents/playbooks/profiles/release-manager/release.md": "ee71700b150521285d3428f8ac9e70e94cd5b59253859fdd127b5b887d3da120",
-    ".setup-agents/playbooks/profiles/release-manager/pr-review.md": "f8f0f4463a6124b2905e2a87b41b432a5d051af020d6d739f1b78b3cd228e6d4",
-    ".setup-agents/playbooks/profiles/release-manager/pipeline-design.md": "0553f199f18fe442025f6007e8118a96428b6a379c1cf33787db8ec91044e366",
-    ".setup-agents/playbooks/profiles/fsc/financial-account-setup.md": "e1c9986acfbc5d3e7f845cbebcd26dd16c1e236b9030f14e27dacc4b5821f60e",
-    ".setup-agents/playbooks/profiles/fsc/arc-configuration.md": "b174a254461b5e6259f113e3a5ff57bf4333df5fb220f829e5d50cee803b7223",
-    ".setup-agents/playbooks/profiles/fsc/referral-management.md": "83d8ce41e5965758cfdf9e4dcae8bdd2b31e865b6c89d18430b4b2bd502d00a1",
-    ".setup-agents/playbooks/profiles/fsc/discover-fsc-data-model.md": "259a67f8d3ee66e707fc09e8321728fe46c8546471e529634c539044b7b72d1e",
-    ".setup-agents/playbooks/profiles/fsc/test-fsc-household-sharing.md": "9e83ba69396239ff841cfedb4925af433a1919282b5af68e1ed84c07b2281f62",
-    ".setup-agents/playbooks/profiles/fsc/deploy-fsc.md": "79f5a74fc3bea0ec60f64a33123c24e0d49a8495549ad92466d8edfb712ea185",
-    ".setup-agents/playbooks/profiles/health/care-plan-setup.md": "970a294252af0133445619a04b9fa6e3948ae085412fc976943404cb9d10b6c9",
-    ".setup-agents/playbooks/profiles/health/ehr-integration-setup.md": "a7e07cb591c082ea394fd269ed96cd232765c802b47f39dd97f0f56121fbb5f0",
-    ".setup-agents/playbooks/profiles/manufacturing/sales-agreement-setup.md": "de9685b565b13409685d6dc32cdb97b5bb51ae47afc5fbbfd187dac5408aefbf",
-    ".setup-agents/playbooks/profiles/manufacturing/rebate-program-setup.md": "435b0f0724e1a475774f3629ef71825c55061b7c4975b2cb40f4238e30ac00e4",
-    ".setup-agents/playbooks/profiles/communications/product-catalog-setup.md": "1349dfac9ba539d2b3a3a997fef656c229762793df627745b9a0937e5bf29a06",
-    ".setup-agents/playbooks/profiles/communications/order-orchestration-setup.md": "41497a23c8fd3bb63687f5efe6fe38dd60037d6b2f5b8a7c30e99d5341478eff",
-    ".setup-agents/playbooks/profiles/automotive/vehicle-lifecycle-setup.md": "1bc4e18fedbbf60dd3cb89d03dce5a30c99eb2b845f6c4ead8b6546dc4f3279f",
-    ".setup-agents/playbooks/profiles/automotive/dealer-management-setup.md": "a745430f529f456a61ab1f33fa9107c02af0cd9360428dc8ac11bea15e740649",
-    ".setup-agents/playbooks/profiles/education/student-lifecycle-setup.md": "f3757a405d463d25e71092cba172c643471079711fc9b77703a098eb06871534",
-    ".setup-agents/playbooks/profiles/education/academic-operations-setup.md": "40acad2600978c269788a682c5810552654a922ae61d8a4d9c39d1f2da1a1c7d",
-    ".setup-agents/playbooks/profiles/netzero/carbon-accounting-setup.md": "c37be2ce60e4f8b5d956fd0b6285d359eecba5efc5140f3ca18538baf1e20698",
-    ".setup-agents/playbooks/profiles/netzero/esg-reporting-setup.md": "0cead5b51093f7f92d11218ee726518f8fb306d6b9048a5222ce69ecd8227a8d",
-    ".setup-agents/playbooks/profiles/nonprofit/fundraising-setup.md": "7e922aeec8dc93648c64ae102951f7824a231bd3e30ff7dd5b842433fceeb1ef",
-    ".setup-agents/playbooks/profiles/nonprofit/program-management-setup.md": "6807a0045053301e340da323d6955fb8dc0afa1686517bd29869f25560251084",
-    ".setup-agents/playbooks/profiles/public-sector/licensing-permitting-setup.md": "b628da52ecd3cb727bd2a6cc28c4f4a5a32a86e0eed1a3cc11f01035c68fe2d2",
-    ".setup-agents/playbooks/profiles/public-sector/inspection-management-setup.md": "53dd1850551dc905ce15e44a5738167585c9439b5eb11011de5ce871839ed602",
-    ".setup-agents/playbooks/profiles/media/ad-sales-setup.md": "de66a74469108d0574b7a733387b0620e5ce92688fd3af8fdd99a2b3064b9002",
-    ".setup-agents/playbooks/profiles/media/subscription-management-setup.md": "777d995073fc6f20c4355141d9cca8a0602ed0cf1f994a9bed8eebb330720c55",
-    ".setup-agents/playbooks/profiles/energy/meter-data-setup.md": "db09d3ff920eaca4fe0a3f5bf4e3eac7fd300e79d336e9d33df495c973ab8eef",
-    ".setup-agents/playbooks/profiles/energy/rate-plan-setup.md": "0d9916e24362bf570304c84ead8aa34124aa166fee28a99549280d61c017f791",
-    ".setup-agents/playbooks/profiles/revenue/billing-setup.md": "9ce22fab362ab8bf102fa5aec9e839acdcbbc932f796c756ead5dc1ee5fc72d1",
-    ".setup-agents/playbooks/profiles/revenue/payment-processing-setup.md": "3414ff9f533b13a236bbaa6005604a21cd5caf968aeb9ac136ab18c19c3bacc3",
-    ".setup-agents/playbooks/profiles/revenue/discover-revenue-billing-model.md": "eb4a50fa82b2ce2a8d13dc8fafe9b9fbbfddec7aab937b361f8e6f31bd57bc10",
-    ".setup-agents/playbooks/profiles/revenue/test-revenue-billing-payments.md": "b209a7851c4f33de6e58b8f9bd500fe1eb6672d2afb6a9784d3aced8803ad698",
-    ".setup-agents/playbooks/profiles/revenue/deploy-revenue-billing.md": "31a962b5fc793f1cd51ca548d165c5d250d9c9295770c8f5c7d5e12e4d59fb97",
-    ".setup-agents/playbooks/profiles/maps/territory-planning-setup.md": "41c7f3ca56171b526a3e6abf633a0e31983ec0086c19ff06978b56f522692c59",
-    ".setup-agents/playbooks/profiles/maps/route-optimization-setup.md": "c2f9f24a7e17f72f23275f356681ce26809db276563bff6728d339117cebbe60",
-    ".setup-agents/playbooks/profiles/loyalty/loyalty-program-setup.md": "fe35f3e5e0f2fcc98e6896fae0b273e3f46bd6c64030370738f46e8b164cd7cb",
-    ".setup-agents/playbooks/profiles/loyalty/promotions-vouchers-setup.md": "e8eba56d9be30843a405408e30bde603f815cdf8d8484825f57d9c30b16d33a2",
-    ".setup-agents/playbooks/profiles/industries/industries-platform-setup.md": "baa7dde6f87ba75ada228b6b6b1bf93226265ed46a8586f3efaf45b6059c62aa",
-    ".setup-agents/playbooks/profiles/industries/industries-order-management.md": "6f749663e3546502ebb344c9b4098b8ac6c2248401a156e8f014202413e6a89c",
+    ".setup-agents/playbooks/profiles/ux/close-phase.md": "b4eb850d17db19021491dbe2ff2b0e6f2578f0f9955747a934e069ef9e7f6c9f",
+    ".setup-agents/playbooks/profiles/ux/ux-audit.md": "0d8a18c78ba539b8c4429b257d9ccd348d55e5b3cbfa19caab05c4b520b06b44",
+    ".setup-agents/playbooks/profiles/ux/design-handoff.md": "516ac75dca8ca454deaba698aa4c18ca9258f6a462c6d53a1f54161710bc017a",
+    ".setup-agents/playbooks/profiles/cgcloud/test-cgcloud-mobile.md": "1887625c234c3207ed0c40f5d62caa6c0b7af227e2cc33093c36cf4374061646",
+    ".setup-agents/playbooks/profiles/cgcloud/discover-cgcloud-retail-execution.md": "a0c8f01d3f950ad3b64fc4b4238f5cda1e12fd4f983fcb2176256dac2db9710d",
+    ".setup-agents/playbooks/profiles/cgcloud/design-cgcloud-mobile-ux.md": "9c81b24cfd62e5763626f3d56d757d392389f05dd71a0fa8e5823cf98de6567e",
+    ".setup-agents/playbooks/profiles/cgcloud/deploy-cgcloud.md": "27cf5003a09dd763c01aae87f81ee4bfea1618338e0072ff3929536ac1244d72",
+    ".setup-agents/playbooks/profiles/cgcloud/setup-cgcloud-sandbox.md": "27857de21f3ec4f1f3ac81a3530b7d79df8ff0c79e91592823c4b35b56b5239d",
+    ".setup-agents/playbooks/profiles/cgcloud/discover-cgcloud-modeler.md": "b18f14766c1f757199e1f2ae58d496db317385a8fdcefaba16058c14cd4af20b",
+    ".setup-agents/playbooks/profiles/cgcloud/discover-cgcloud-mobile-sync.md": "9667b109544f095c9e5fc130f3631752386ce2918d7bb6a7161cd3e9ba5ef20c",
+    ".setup-agents/playbooks/profiles/cgcloud/build-and-release-cgcloud-modeler.md": "05f0df3995d6908ca4ca3f0bfd60960134b2ac937586cd789b893920afb2305b",
+    ".setup-agents/playbooks/profiles/qa/close-phase.md": "c38264db3eaf477af0c2441268dfd729bb5145d817fb39ee9128f51a81f427c2",
+    ".setup-agents/playbooks/profiles/qa/test-plan.md": "4dcb5097b2db029272ea6133b60fa29e9dbf6fe669b02deb93389f832c726cfc",
+    ".setup-agents/playbooks/profiles/qa/run-playwright.md": "179d1c119482a8a374e508a3f031bf7ff09c6db68250286aa2811aa88b2d6917",
+    ".setup-agents/playbooks/profiles/qa/generate-test-report.md": "e08259c1a0b14e98b32ca36ca20d55bc7243f749bc5e9b6cba3dadae6da8b49f",
+    ".setup-agents/playbooks/profiles/crma/deploy-analytics.md": "c66a1d78172197a0d3d07786bd1b7e9cae23c80e4295b070f924b53546792d4f",
+    ".setup-agents/playbooks/profiles/crma/discover-crma-scope.md": "440d9f7a1fbca9e16a327d07a68484d274456f806ba71325794fbe87de6a6f26",
+    ".setup-agents/playbooks/profiles/crma/test-crma-analytics.md": "e6516f52678594e37a37a51d1e50882a52270df28e6b9e12b5c7adbdce65f98a",
+    ".setup-agents/playbooks/profiles/crma/create-recipe.md": "f16b34d58189f07d6c04e7b8a75597a76d9c193b1c1ba9f257ce1e61916a93e5",
+    ".setup-agents/playbooks/profiles/crma/create-dashboard.md": "6e35a7807bba57eb9e4523b5f1cf5a8284899642bd834978fd8e0a8652b330b1",
+    ".setup-agents/playbooks/profiles/commerce/create-sfra-controller.md": "918ad520c6759f5e6fd2832947991898d632eac9e0db58302ff45c8a69b0af21",
+    ".setup-agents/playbooks/profiles/commerce/configure-b2b-checkout.md": "e0e2a9cba56a5776d40732c162355c699331d1a3349b99ae8f4b53968311d377",
+    ".setup-agents/playbooks/profiles/commerce/cartridge-overlay.md": "bb7c0f67cbdfc4baab28a234c3e7583b1079012a47f984248cea234bf6b36d1d",
+    ".setup-agents/playbooks/profiles/commerce/discover-commerce-storefront.md": "b02fe5f58bc36b13d7c9c4123b166e70ef291e57c47e7f1dda6df9caef90b5d5",
+    ".setup-agents/playbooks/profiles/commerce/test-commerce-storefront.md": "d1ccc4adca62e06944a7664a42a83a60fbedf6cf14dc8d64703916dfb53b06fb",
+    ".setup-agents/playbooks/profiles/commerce/deploy-commerce.md": "490bd4500e327ab28e4a129f4fe213e50440f378d68e88291bbcb000549228e2",
+    ".setup-agents/playbooks/profiles/data360/discover-data360-scope.md": "f59070b2b934b852e93c70b8267a946e6b4c983382c11c4707bd6b491a09c35a",
+    ".setup-agents/playbooks/profiles/data360/deploy-data360.md": "bfbfcfc81db3d38ec3d5f352a7b8f53a3e8969a9bf53d7a8e73529352ca6f138",
+    ".setup-agents/playbooks/profiles/data360/setup-data-stream.md": "a6df03f791820bdcb530380502bb19a5d53d33c662fd1241532de475de5f855e",
+    ".setup-agents/playbooks/profiles/data360/validate-identity-resolution.md": "7c28ec8dddd5cb38b7b8029a03641c68c7f00d55f0f92f8ad80b07b3abf54f2a",
+    ".setup-agents/playbooks/profiles/sfmc/create-cloudpage.md": "b24d500c7288ce7c3f08e9b7d3dfeff6968407067b4f5daff783dc94720a2335",
+    ".setup-agents/playbooks/profiles/sfmc/build-journey.md": "74af2442c4720e70a9cf6137731cbb62af69309b81e8db714b24cca830bb8adf",
+    ".setup-agents/playbooks/profiles/sfmc/data-extension-query.md": "538afc44352ae7daca4dbd023563d2fcd9d5c634dc32f7698ad4dae480da3808",
+    ".setup-agents/playbooks/profiles/sfmc/discover-sfmc-account-model.md": "0e7a0b6a2b9ab68e7ee0e622f42e589d673cfc8ddf2f2ac4358c0025caf5ddbe",
+    ".setup-agents/playbooks/profiles/sfmc/test-sfmc-email-send.md": "4a48639a72012b62de4173c5e24802df1375c02070dc6405a54856349c81d3f6",
+    ".setup-agents/playbooks/profiles/sfmc/deploy-sfmc-assets.md": "6a66d5c0baeebc29a718bd3e1b655abaadea914b69429dacd7ce52bcc09361f3",
+    ".setup-agents/playbooks/profiles/salescloud/discover-salescloud-sales-process.md": "8c7f034c74add6d5b1181697910412799110c120e5f50b0ee8c9513ffa813927",
+    ".setup-agents/playbooks/profiles/salescloud/opportunity-forecast-setup.md": "acecdb34df39f002f59da96ec59ee7b77e021d72b2faf64f08c9d1e104f296d6",
+    ".setup-agents/playbooks/profiles/salescloud/test-salescloud-opportunity-forecast.md": "154004c1e23aac08e435c610e766551c27ce0361e29cc3a18af78f09b27044a0",
+    ".setup-agents/playbooks/profiles/salescloud/deploy-salescloud.md": "7bd5f8522c6cf7ad6111830524b2ae3475f0ba85dfa34d1cadfcfab5e46a0eda",
+    ".setup-agents/playbooks/profiles/service/case-lifecycle-setup.md": "dd5e263e28731f95e5c0a8513b4bf6726e1ffec63efcdef2c87f47002a859321",
+    ".setup-agents/playbooks/profiles/service/knowledge-base-structure.md": "fd1804de3a1f0c1f5a51b3240a9899c75ca808dcc837921c97c705302d6fd317",
+    ".setup-agents/playbooks/profiles/service/omni-channel-configuration.md": "29b402d4c6698ab36a7565377cd06dd5170655be4fc17c3e44c4271ac904787e",
+    ".setup-agents/playbooks/profiles/service/discover-service-support-model.md": "de51693bfcebacfbb4ffad6ac8dbe9d929f60037437e225e3b134563e36164bd",
+    ".setup-agents/playbooks/profiles/service/test-service-case-lifecycle.md": "1f20a55f99f2cef44694abc838ca769056c9b7cf45a3655f72ebf840db90cbcb",
+    ".setup-agents/playbooks/profiles/service/deploy-service.md": "ee8d67ac5e035dca31fbfc3de99e932033dd70dce5f283cfec3a2a07657e45d8",
+    ".setup-agents/playbooks/profiles/cpq/product-bundle-setup.md": "6c4db150b6c6c92babe64540d679c6bfa9be3ea375d7ee8400dbf71cddf636c8",
+    ".setup-agents/playbooks/profiles/cpq/pricing-rule.md": "d87ab9dd883258e4d89980e1961c214fce53724b45c23654c3cd1c89561a73dd",
+    ".setup-agents/playbooks/profiles/cpq/approval-chain.md": "2b372d9f87189669655ad36beae41c47016255c3cefcf2b6ba22bc6b94d2135b",
+    ".setup-agents/playbooks/profiles/cpq/discover-cpq-quote-to-cash.md": "c75d4a4d844f2287468403b1f9592865f9581457e638cd0972b9b539871439bb",
+    ".setup-agents/playbooks/profiles/cpq/test-cpq-quote-configuration.md": "f93a500fd5385ec412228b00763ec7957f535ec60383b864aad54698ecb8dd4e",
+    ".setup-agents/playbooks/profiles/cpq/deploy-cpq.md": "a5003289d5f61b301ec541f3c76a982699aed3ac3f62bcd6b90af14b49146cac",
+    ".setup-agents/playbooks/profiles/omnistudio/create-omniscript.md": "142b63a82e65a1cc6f3ac88ba86bcdf47442259fba8b00c1408f40c944a8e4f4",
+    ".setup-agents/playbooks/profiles/omnistudio/build-integration-procedure.md": "d4c3d411d476b68d29b3bdce2e298b017bfa4e261b149ef54b40a70fb00c74c5",
+    ".setup-agents/playbooks/profiles/omnistudio/design-flexcard.md": "554ec765bded9636a5292e67910a540c63b8183fe82520361f502142a901db41",
+    ".setup-agents/playbooks/profiles/fsl/work-order-setup.md": "23bbee7a4f60f6ad648d83079b4eae55aec869c80a826d00dbd6c43e44dab1e6",
+    ".setup-agents/playbooks/profiles/fsl/scheduling-policy.md": "a1b6b7274c971f73af6fcda86aa6463ea69fd15f017a45fc2aad301a9330bd6f",
+    ".setup-agents/playbooks/profiles/fsl/mobile-configuration.md": "a04752fd7333929714b34dabcd0125aa5dec3e66816c26f3664a4714d83ee31a",
+    ".setup-agents/playbooks/profiles/fsl/discover-fsl-managed-package.md": "fa2037a6b2a89183ac4e43b0aeb6020440901c9881edd8c7c9d031be9c00b1e2",
+    ".setup-agents/playbooks/profiles/fsl/test-fsl-scheduling-optimization.md": "1933375406aefeb087e1106dddfe0b3751968b30cf052e4ef43373ea37f6ecf7",
+    ".setup-agents/playbooks/profiles/fsl/deploy-fsl.md": "8f0f46960028998976e56a1ea4eceffcc62a76e151ebc017fe9d33e1abf0d42c",
+    ".setup-agents/playbooks/profiles/ai/create-agent.md": "be4153600e482ae23092da384077baf364022555514739a4a7deaed1e6194cb2",
+    ".setup-agents/playbooks/profiles/ai/test-agent.md": "014bf0e6b319e2e2099e67700921521a35e6db3cbb3e220850e844bcfb904018",
+    ".setup-agents/playbooks/profiles/ai/deploy-agent.md": "ae46a68a1cbad5e76ae52a3199b8f0cb9222bdb91ffea3381d11c3209e880b5f",
+    ".setup-agents/playbooks/profiles/slack/create-bolt-app.md": "c6bfd2fe096900378e4f3ef217103fb8987c3912f860ab457be204dc922e4ea5",
+    ".setup-agents/playbooks/profiles/slack/add-slash-command.md": "ca944fca328656dbe3a739b8a7bc57f838d492488deb77ec90f8cab6f8ae7247",
+    ".setup-agents/playbooks/profiles/slack/deploy-slack-app.md": "9db0ca5917e50fc1141f5f3559044c364c24bf5b27d64c31617a417b3430a079",
+    ".setup-agents/playbooks/profiles/tableau/connect-data.md": "ed611fb13b40a53ebe55ca4a746c71ee85554bec80c52a05335b084f47d9cb66",
+    ".setup-agents/playbooks/profiles/tableau/publish-workbook.md": "fe2c9afba159ea1e0d8d3cc1d18540dce1773c2900357342ce452ba152d219e2",
+    ".setup-agents/playbooks/profiles/tableau/embed-analytics.md": "e964f79b03018d307c829da2b6b6ae3dc3a41f3c1acaa56c88e4be59be326f2e",
+    ".setup-agents/playbooks/profiles/tableau/discover-tableau-analytics.md": "49d2ba63680e969ef5adb7353772e1b36a307aebd1b11e288cb6821af342656b",
+    ".setup-agents/playbooks/profiles/tableau/test-tableau-analytics.md": "396615701c1054f3bf1c228fac71b9d6753f050c3fb9268398728fba40fa73fe",
+    ".setup-agents/playbooks/profiles/experience-cloud/experience-cloud-dev.md": "07b3cbe2f1ed88e6ca363168ee33f64fc9cd90da55063cbf6a664efbbdac8b81",
+    ".setup-agents/playbooks/profiles/experience-cloud/discover-experience-cloud-scope.md": "cfb42ae29e279ecbb5b55f6fdd9e93b2ee4a60301ff4f75fc23fae8d01d230df",
+    ".setup-agents/playbooks/profiles/experience-cloud/test-experience-cloud-site.md": "b1fb8ca8d4bada9d2a573ca38646cf3262099dc415b322976b6b537d041fc17a",
+    ".setup-agents/playbooks/profiles/experience-cloud/deploy-experience-cloud.md": "ec860b627cec7252d6411472de4bfeed8c379c8a2ba3d97436029f624cd0b057",
+    ".setup-agents/playbooks/profiles/experience-cloud/guest-user-security.md": "036164b51d53723c5d6b03e389e9baa8dc96986957242dc1e8477b79a2074126",
+    ".setup-agents/playbooks/profiles/experience-cloud/experience-cloud-security-review.md": "a096f35d53c9022cf0bff799854684d5f601eccc949bcbf9316c0969f0a108c1",
+    ".setup-agents/playbooks/profiles/experience-cloud/experience-cloud-access-model.md": "761c3e719e4f41854dcbece4bff42e8f3b28a200488b2118bbee64544e3d23f7",
+    ".setup-agents/playbooks/profiles/release-manager/close-phase.md": "a17e3b85951b6f9eca5beaddd72459f35107f63d56bc1e23b7857b90764ff594",
+    ".setup-agents/playbooks/profiles/release-manager/release-checklist.md": "7beee3672b39b10b8a14d3efa5ad6637e3ac05e64a5efae01f345a61e76451de",
+    ".setup-agents/playbooks/profiles/release-manager/environment-refresh.md": "57a9c605853ab60d730db4cbe59430a50457d4c27a4893293bbc1f204992acaa",
+    ".setup-agents/playbooks/profiles/release-manager/release.md": "a0c461d917e8c5b6678eaf3f9abb53888c8d32e3db74c225e5fc31e27c677c86",
+    ".setup-agents/playbooks/profiles/release-manager/pr-review.md": "e70a4272765ed8aa9d347765e9f069a1be7ef23a0148f4ab02d1404865f15eb3",
+    ".setup-agents/playbooks/profiles/release-manager/pipeline-design.md": "9e5ab50f68209633b0fa559f77391c449b0acc8119902c7de86d4abf50332b49",
+    ".setup-agents/playbooks/profiles/fsc/financial-account-setup.md": "d2d374ca4131f77f1f8afd7544400fa6a0f5e39b43050f6588131065db8dd3f0",
+    ".setup-agents/playbooks/profiles/fsc/arc-configuration.md": "8c21698db55d51d1855755e41c9fc8f3c4874ed6d84d174a75e2a10e9fad8943",
+    ".setup-agents/playbooks/profiles/fsc/referral-management.md": "113a080d731c2bc32c0c54c6984d5302fbafaae53b9019a55712e7e5da63c1ab",
+    ".setup-agents/playbooks/profiles/fsc/discover-fsc-data-model.md": "94ba6440433c603b2c88ebb35e3948ce71fa51ae885a25ce7184e77f7d9a15c8",
+    ".setup-agents/playbooks/profiles/fsc/test-fsc-household-sharing.md": "3c0f70842b46170862f89819f0db07d5e06b2e9e7a9ddec815d826a5c128cdb4",
+    ".setup-agents/playbooks/profiles/fsc/deploy-fsc.md": "243f75f0479a81d883fba12ef8b47984e41a70367ba3e7f06fc318d96e62408d",
+    ".setup-agents/playbooks/profiles/health/care-plan-setup.md": "d2fda7989c38d28a566fb1d92c2c497b8aa0d4d0c2bb36d6d763b38a029976c5",
+    ".setup-agents/playbooks/profiles/health/ehr-integration-setup.md": "119c99166d64b860a659df2117f20bc7d1d93fa753f985aa92606a2919601905",
+    ".setup-agents/playbooks/profiles/manufacturing/sales-agreement-setup.md": "c7f4188764b0fa23d21abfa8ae4ff54bc65d7de5574f98d8aad39f2bb73a0396",
+    ".setup-agents/playbooks/profiles/manufacturing/rebate-program-setup.md": "58717e683271e4d506953be59520234cad31ec26e5a635987c7041078c9d303b",
+    ".setup-agents/playbooks/profiles/communications/product-catalog-setup.md": "549f88d68a57d8e0002b3d5a55cbdb95f36881c5577c268e2530093ce9b527fc",
+    ".setup-agents/playbooks/profiles/communications/order-orchestration-setup.md": "8418fc668e8871a9918d66674bc1ac07a01c6422ec70e9ae657885154c9f8672",
+    ".setup-agents/playbooks/profiles/automotive/vehicle-lifecycle-setup.md": "6ffa8bf4cf8e3a0aafaf0240bb450c5b6a9a8ad15a892dfac120e82f8263b1d0",
+    ".setup-agents/playbooks/profiles/automotive/dealer-management-setup.md": "60fed98ef4d5438d090ab18c74ace356f8cce81f40db847d404fcebaf02d438e",
+    ".setup-agents/playbooks/profiles/education/student-lifecycle-setup.md": "f4831f8163043b8e93be5ab61bbd2a5da507d4bf45e80d4db490b4077b401d0e",
+    ".setup-agents/playbooks/profiles/education/academic-operations-setup.md": "c0460e83f29619040f0a68f2724dbdf0ff672777e2fa3ca0a91d6061f75c9068",
+    ".setup-agents/playbooks/profiles/netzero/carbon-accounting-setup.md": "833271de88da10fca9480eb04073f95a663e3eea7c912a5d9936210b3e28b1be",
+    ".setup-agents/playbooks/profiles/netzero/esg-reporting-setup.md": "f2f99d9aa65693ef3d35307a071b87cb40625ff1c0099f8eda439973d20eb23f",
+    ".setup-agents/playbooks/profiles/nonprofit/fundraising-setup.md": "5e42ba2c346f2b2abbebf28fc9820b5484a8c8dbd2423947d66834b221d216d1",
+    ".setup-agents/playbooks/profiles/nonprofit/program-management-setup.md": "d164c957e810fae37ffa98b50b35527981fe4e8ca50025bfb4d3e9c3c538d54e",
+    ".setup-agents/playbooks/profiles/public-sector/licensing-permitting-setup.md": "4894a3ed7c9312efb11ede05e3597959b3cb2c2182fc469ae80b7d99c330729a",
+    ".setup-agents/playbooks/profiles/public-sector/inspection-management-setup.md": "a9df8321c41bb0880526ff612cc0efe96e5aee70e7d1be5b09adbaa0846863af",
+    ".setup-agents/playbooks/profiles/media/ad-sales-setup.md": "c31eedcd9dd6a5350acdce41e40a1f0c69c61768b99312cb0f7ad3627d67965b",
+    ".setup-agents/playbooks/profiles/media/subscription-management-setup.md": "3f5e26430bd30736bb612797f4a5de1ee8e0c01e68d54db894cc691d0ca74f05",
+    ".setup-agents/playbooks/profiles/energy/meter-data-setup.md": "9074f7fd8c0b3cea632fc1c5add77ec0cd85482f999fca417062a003d9702dcf",
+    ".setup-agents/playbooks/profiles/energy/rate-plan-setup.md": "da42b3f2b802f5c060d63e660ea2f1e2f1e6fb50985945919b9a3f9cdc4e2157",
+    ".setup-agents/playbooks/profiles/revenue/billing-setup.md": "d54ba8eef57af5c685270ca5f43de1038495f364c46db101e0765355fd9392e0",
+    ".setup-agents/playbooks/profiles/revenue/payment-processing-setup.md": "8169ee177c5c27b5499774e05f2f0251322b05b5bd96269867b6d79300a45703",
+    ".setup-agents/playbooks/profiles/revenue/discover-revenue-billing-model.md": "f70c5db076d13bee82aa8e4525a0392e25c4659bbcc8791ef82dae3f26aba749",
+    ".setup-agents/playbooks/profiles/revenue/test-revenue-billing-payments.md": "9b9ba772c45e31b654457b7dbdf5e1068fbe41496c5ef51852a4115a78d8e966",
+    ".setup-agents/playbooks/profiles/revenue/deploy-revenue-billing.md": "d75400d682d7440d9b7970c03a619577de56d0cbf361495c4ccf592bf013bda1",
+    ".setup-agents/playbooks/profiles/maps/territory-planning-setup.md": "ca697fc0d6eeabf675d2306b3cf8f4e7c2dcc290dadbab0eb2bafd2ea5e06ffb",
+    ".setup-agents/playbooks/profiles/maps/route-optimization-setup.md": "1611000f99cd91f75cdb48dd1e63f0b4502e08918cace5a71d7d3f99b5fb04fc",
+    ".setup-agents/playbooks/profiles/loyalty/loyalty-program-setup.md": "4a6cd4d88738e48b21eed4dbf3be2dc51b59455778c3c2375d5a4237f6d78ce2",
+    ".setup-agents/playbooks/profiles/loyalty/promotions-vouchers-setup.md": "37c4306df18a7abbcfb4526aad5f23c1b42a3c66a76f244ddb1e2a673cd228ac",
+    ".setup-agents/playbooks/profiles/industries/industries-platform-setup.md": "e038bdd3c068b7e23ecbfde1a1528053d7cd70aa4ae688148dc2357f7ce5f1ba",
+    ".setup-agents/playbooks/profiles/industries/industries-order-management.md": "4b0632f91dcb7052ef3cb92d517ba24f96835bf317d63ce3bbcdcaf34508a1d6",
     "playwright.config.ts": "46d743a2c607bf7680f98fa30498f67214ec583cb8ba12ba97e4d669e16d3f25",
     "src/utils/salesforce-auth.ts": "04ef7bf42ccae1daa91877558a87a8f28a71ffbccd063107cfb9e98ff5003474",
     "src/utils/salesforce-api.ts": "b903e4cd2bcb5ce2af048ebf722b9a35935f65ae40916883bd9b5c32180c1e98",
     "test/e2e/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "test/mobile/wdio.conf.ts": "2aa07e9d73c53a47fc35dd43265c171171f0bf63037b7858f5141e0f16f78d6f",
-    "test/mobile/specs/smoke-test.e2e.ts": "28c80b633250dca0d5c4ea7e232807d7680daae70898990763d0d83461af7710",
+    "test/mobile/specs/smoke-test.e2e.ts": "ee924f203e4fa5cbf7e862a5e984971f4745693247ff851fb54d5e2027269944",
     "test/mobile/package.json": "3ca9d4afd21425087cf31893b8f9f63c81b0b8408db5e343ca76e5f8aa26ab9a",
     "test/mobile/tsconfig.json": "8c71e884efd00f94bb6750d6feae9e1ab4fd8345145f0ea7b70d1d58791c06df",
-    ".codex/sub-agent-protocol.md": "5b32fddc4a77716440e5ffd585221155405e183d25e935089e4daf6d8dbd8e0d",
+    ".codex/sub-agent-protocol.md": "49efdc252d811949819931d343be3a5a81d6f8722d7272c7dfea98cb94277782",
     ".setup-agents/skills/sf-deploy/SKILL.md": "98fae60b0b64b5d3d1fad45b6baaeab764a5fec5bac89402a19aa15ea119cc07",
     ".setup-agents/skills/sf-code-analyzer/SKILL.md": "57af1bcc5d03a003227e221bfaa89daf4909278d195869c701967cb2eef25b7f",
     ".setup-agents/skills/org-health-assessment/SKILL.md": "d171ecb68a5a696f40733ea1c8b038c52934bdb64e5c39f6d3856fc46df2c687",
-    ".setup-agents/skills/qa-evidence-pack/SKILL.md": "9bf78090bbcfd222f44542abe396a9ed6df3c17ba4b13e617498b9212f22ee5d",
+    ".setup-agents/skills/qa-evidence-pack/SKILL.md": "ecb9e3048e610757097f6f161e9a0bacfb0d11a081a123d62f15dfac6436c384",
     ".setup-agents/skills/oclif-plugin/SKILL.md": "3065084060aaeb42b66941ceb0f3d7ed7566b9d3f7ccde7072a77af69db58134",
     ".setup-agents/skills/prompt-registry/SKILL.md": "e9f7e27473e5dfd05eff43f0c63cf664fba11f15390952fc567b867b929d6d7d",
     ".setup-agents/skills/workflow-estimate/SKILL.md": "e3796fdd6c35219f98cec4fa7f49b9faec1e055eadfec4739252e133d187c33d",
     ".setup-agents/skills/project-knowledge-bootstrap/SKILL.md": "78d285111b24a0d8ea5fc8a0730688ae515ba9b7c077c79945f941ad93b8ac61",
     ".setup-agents/skills/transcription-evidence/SKILL.md": "c766258ad310c820422d8682b0f72b8c1489f512a9de666b6abc8d0a5ffb63f7",
     ".setup-agents/skills/transcription-evidence/scripts/transcribe.sh": "3dbbf8e488a773e114f4e876e05ac8ccf2b0270595ea8f5ba3cd3a6841080f70",
-    ".setup-agents/playbooks/sprint-plan.md": "93616d2cdfc8d19715be4dd885d1250bf47d7a78952745c0e99d0af22b4871e1",
-    ".setup-agents/playbooks/status-report.md": "5ab62507c71f72f3a24fdac854f3bc37dde7601455e67b68a60f4772429f6fc9",
-    ".setup-agents/playbooks/risk-register.md": "ef279a09550282114e3b155b390a8bb718aac9a2b57997807fd0ace6464d0228",
-    ".setup-agents/playbooks/delivery-metrics.md": "805e5fd2c052ff8043cdec37288285929c1c77975c78ec3f23cc4ccc1a11c3e4",
-    ".setup-agents/playbooks/refine-stories.md": "9f1d3d427df43346697276d9c41a7f1f27b2671e359164fc3e122640ef612f7f",
-    ".setup-agents/playbooks/groom-backlog.md": "19c793bf00733ac2c6158a127b97f6dc53c8098637c9f777f4e287f4928d455f",
-    ".setup-agents/playbooks/update-jira-ticket.md": "c7e9036be106bce9b073fa5d272aa7185e13155f3adfd8c5c66426879d454789",
-    ".setup-agents/playbooks/adr.md": "e400307ddcc0fd18c571d73e3585134c7c31655cc210899ba9d5033d3aad82b6",
-    ".setup-agents/playbooks/architecture-review.md": "635f59aef308dc60593f7acbb4898c28d5eb5cd6c087c346a8014542879f6b39",
-    ".setup-agents/playbooks/scope-assessment.md": "08a05f01eb9249d9cffe0dea0190117eb56d2ae6f4550752548c19b9f4ed60ee",
-    ".setup-agents/playbooks/data-model-design.md": "c3f13f23f1950aaaad0a5f0bc9d3c9fb140a0ca1bcc0fa8e9d7d033f8f67eb9c",
-    ".setup-agents/playbooks/create-apex-class.md": "da840465d6edebfb6a8f5928847d8489375b539d18d1db0656e571f086aa5cdf",
-    ".setup-agents/playbooks/create-trigger.md": "1b75bb22a663b56ab21b963985ad245d7607edda561087070191553274252ac4",
-    ".setup-agents/playbooks/create-lwc.md": "0194a6711d1ef25570a221544512cbf418ea967a5f869369aad9a8ee3cd14688",
-    ".setup-agents/playbooks/declare-story-points.md": "db3bec914c0667b3aced07b296fbd38c10062bc335df50dbc1685f73bab3fed4",
-    ".setup-agents/playbooks/design-review.md": "6f36218994f276a57af202a1fc0d4b28ac93a4d8b6745529cc09ecdacb2d704c",
-    ".setup-agents/playbooks/wireframe.md": "52c79dd5ddc66914a3d365f30a430326a4c2b9a3def92ac45d06bdb0896e37d6",
-    ".setup-agents/playbooks/a11y-audit.md": "4ed79162279cc7609a762dcbe6d837e9cf698cfd34ee8bbdde137c87d73ff8a2",
-    ".setup-agents/playbooks/qa-plan.md": "be48aed84299196fb00b47dd3f645a6f876a5c4bebafe73419de44346100e1a8",
-    ".setup-agents/playbooks/qa-checklist.md": "5882c5265620f3051f0cdd5a2f3a1cbbd2c884266c41b427c8ffa8fa123a5d86",
-    ".setup-agents/playbooks/observable-assertions.md": "fc90fb141dcf3312a94e978244d264e1ed39f05614f1b1fc37268418005c99fc",
-    ".setup-agents/playbooks/regression.md": "1e54c76aba978e2f4c137baff13f8d30b3dbd9bb2c5a1640532002374e7cc168",
-    ".setup-agents/playbooks/smoke-test.md": "75da55503abceca7044220d4663bf7024a3e25644bb1974dd7beb1e480463228",
-    ".setup-agents/playbooks/run-playwright.md": "f117cbf394ccafe8120aa9c96091edddf7c527a551ebeca60ff452376cd24dd7",
-    ".setup-agents/playbooks/generate-test-report.md": "3c6f918b908f5ec99dc85802dde773a326dca5382c97050a4c2fee2bb5f9cade",
-    ".setup-agents/playbooks/release.md": "bf9020ecf75369e79261b0a427d8b4eb0240d5089f4d8e2b2149c2c087eb52e9",
-    ".setup-agents/playbooks/candidate-release.md": "eb267ee7bc80dfb1119484f4f497b8a200292d06457b7189605e38e6ea9c47b4",
-    ".setup-agents/playbooks/validate.md": "a3d9e33d7fa80f4257afe8ef52389f6df2ce7ed1b65d89ba0cd33f95368098ee",
-    ".setup-agents/playbooks/doc-review.md": "00dcfc6191e121bf20e6c981057c341be75dce0c1c601afe15831a0ab2ca750a",
-    ".setup-agents/playbooks/security-review.md": "c97468969e8a122f285d79fc1fa96b5fa628721b467215590f3ed25916981fb9",
-    ".setup-agents/playbooks/threat-model.md": "dc33d2f561c5e455511e76032ce61e8e1df90144907771995e5670143c2ae696",
-    ".setup-agents/playbooks/env-audit.md": "9c8d21573aa5056f8a9c75b608e753ae4b16579fe2052bd90049517f93017a38",
-    ".setup-agents/permissions.md": "e98a56f78f3fe3dcf416f0be4936e4c48bd5507cbc23ccfe605f262a4a0e95bc",
-    ".setup-agents/env-audit.md": "060ecc15c99dd48ffed9b690ebfd7c11f32e9b69e7b8a043e9a403fd62be37c7",
+    ".setup-agents/playbooks/sprint-plan.md": "e896eff521225e9d6b7e7c750f5f5baf9ef017c8dee0f692b5078706da7cf519",
+    ".setup-agents/playbooks/status-report.md": "6c55f6bacf07dbcfd195a7ae0d954afd78b8659b4ef6ea6a8c135b375de42168",
+    ".setup-agents/playbooks/risk-register.md": "900faf7ce849ac56f2acf1f0504fba1ce426f7581b3454e520c571678e2f6c6f",
+    ".setup-agents/playbooks/delivery-metrics.md": "417969b5d01117d193e3933d491833b7374ae4c418a71099ee4a6ab4adb29660",
+    ".setup-agents/playbooks/refine-stories.md": "f8cc8a1737f0e535d55f14a1eac5d865083cc563a2f57840ee0cb69b345a7413",
+    ".setup-agents/playbooks/groom-backlog.md": "f57defd42fdc157388c43cead6f84ec53ef7b6cd782c0258584a4dd76228f3a4",
+    ".setup-agents/playbooks/update-jira-ticket.md": "a20fb772a0560c0fa76647291b29ac052dc38c8a4f0f5d38f545ac531c028084",
+    ".setup-agents/playbooks/adr.md": "311746faf824698e004a13be665006ed04443eef8d4e143946bea7badf4df6c8",
+    ".setup-agents/playbooks/architecture-review.md": "eb05f0ed2b684961930af4ad7892c3a18c78b4400c28ea17f9fef63f0107dc30",
+    ".setup-agents/playbooks/scope-assessment.md": "28fd4b1d070c77576193de232ae775599de20252a1f84286c1a78a739089fd15",
+    ".setup-agents/playbooks/data-model-design.md": "7978fa042cc580eb886f7ab2ef8eb089b1c0b1c871f6b1ef28100c7754641d26",
+    ".setup-agents/playbooks/create-apex-class.md": "3298aa4b846bbbdd6e245d3337169a86bff57cf2ddc6cc826d624568fc100f51",
+    ".setup-agents/playbooks/create-trigger.md": "af02c840594dfaaf093b7aafa06b74e075834e26b3d06d6af8821abb639c3175",
+    ".setup-agents/playbooks/create-lwc.md": "f5026a784b92da08c3de3a08127c0477b357ee753fd6c44c9ff9d5201359d68b",
+    ".setup-agents/playbooks/declare-story-points.md": "fd2153637b7b6f73a6e3da9f6eb9e117ca952e63d59b76237993173cb29687dc",
+    ".setup-agents/playbooks/design-review.md": "f2b35cd5cb912a1481b5af0bfe7ee66d21ddcf00bedfb02056e942ed5b6bff51",
+    ".setup-agents/playbooks/wireframe.md": "f56989c198faceb9bc1c57b5c0404b3b391cdeaddfcf613d99e346ada7479327",
+    ".setup-agents/playbooks/a11y-audit.md": "679fba015c5f0790fb6ae7e03fb0f12dec97ea921cb42e47cf16269b9e6a54bd",
+    ".setup-agents/playbooks/qa-plan.md": "151c54f2d61514f719be46746c94b47b55e34b989680727303df743d1bb16d12",
+    ".setup-agents/playbooks/qa-checklist.md": "d594bbf8eadc8c6451d57312228dc3ab81c9848b9cb36ec0ea771a6aa51d1137",
+    ".setup-agents/playbooks/observable-assertions.md": "d7020b74403517e7c75ffaea9394d8768266f86256b36b4f858cc685d334fa51",
+    ".setup-agents/playbooks/regression.md": "62c0db40e538e59d52dee166d7647c01d0c30f224288a56ee0e25df7c49502b3",
+    ".setup-agents/playbooks/smoke-test.md": "34121e52a048d204c4ac93ff73abb3991091a7af9a3de0fe2aab3a47cb51d153",
+    ".setup-agents/playbooks/run-playwright.md": "044d7ac4e0a12c33f51efe63042d5a4212c104ef661c04c5c84085bbc866dca5",
+    ".setup-agents/playbooks/generate-test-report.md": "fe030d5e6fddb459a6b117f1df46bf38fa6b9256db704133db581fa07d7fb469",
+    ".setup-agents/playbooks/release.md": "679a41ae3996ee6bb2784896f53bff684b70ac2fc17b22cc86ad122ddff78daf",
+    ".setup-agents/playbooks/candidate-release.md": "d2e181bd199c12865cad2f4abbdb8fc619b49ff370660932a27fbd8d56289511",
+    ".setup-agents/playbooks/validate.md": "210f96a1cc45e1656016abe16e0a1481b517c1e521f593c66eaff150dff9e7c6",
+    ".setup-agents/playbooks/doc-review.md": "c17dd47467204745e8cc08f446941234661fb9e601a844a304457baadc7a3323",
+    ".setup-agents/playbooks/security-review.md": "e4382534036d76a6f31721fdb52293f07941f95f7f8c76c26c64f0ff92af7177",
+    ".setup-agents/playbooks/threat-model.md": "c6715701d1ce841580e45910cbe8a61fe8cd50c277575d333ffa5d89b88daa66",
+    ".setup-agents/playbooks/env-audit.md": "9564528dbc1b89a5c4fcc5f395628e123a33317c4ae09b205bff93d81c149f23",
+    ".setup-agents/permissions.md": "3afb563bef735cff23fc6b6426e63415640039961fdb344d3256fa74096d1e6e",
+    ".setup-agents/env-audit.md": "293c04be6e6ad76feecb03cf80f387111e0fdd3ea7903e627c954bde5a853719",
     ".setup-agents/state/README.md": "3481c08a83a523de48480d4b8cca57609489180e67d6ea285dead050aa9df759",
     ".setup-agents/OFFLINE.md": "fd5cc7eb916ef735f838536d6454ce8ab2d9be84f84982cbaacd3327240b5a2a",
-    ".generated-prompts/apex.md": "a20992fbc6afe473039774c3e4ffd097a8b4999691c16f71734e9b201dd5ae05",
-    ".generated-prompts/aura.md": "eb24e3f6d1637b559a42f0ea869560c71c2619b09362d70d974504c529462b62",
-    ".generated-prompts/docs.md": "481f3d6807b125ffc5c9d50fa617e38aa075e9dd6dee89fa6093ddee535aad85",
-    ".generated-prompts/flows.md": "c4f7319cfaea0cadc43db3f55b033cb3f54b4076b8c4f69c3f79f21d130efe3b",
-    ".generated-prompts/lwc.md": "6a98ef1e9aca3fc89790ac6057b9121e34c59fae28dff6e6841a79faa6a6eebf",
-    ".generated-prompts/metadata.md": "cbe2a9bf05c51277b9972cfed826a7b6393ae381187640efd6af22db41d2e208",
-    ".generated-prompts/triggers.md": "1c93b1a1210a12c14b5fb342be2014a4e0ddcb9825d027e82d7161f7a8d891b1",
-    ".generated-prompts/visualforce.md": "3a3114afced3f274a4be9690aeea6a065ad497374fc5bb19385016f05685ed08",
-    ".cursor/rules/agent-guidelines.mdc": "605cec3704c38e97d81c7866f81390bb5583bee35d2563811d9ec50c1a0f4156",
-    ".cursor/rules/setup-agents-autonomous.mdc": "bd43bbccd4d42276310266e184a2dff90b504dece07cb61897d9aa01a2f9618f",
-    ".cursor/rules/setup-agents-gate-approval.mdc": "ec067957479e146fade3f1247426d219cdbe04c350e3278fbc2c3675362f946f",
-    ".cursor/rules/sub-agent-protocol.mdc": "3f20b767d227b4719be4074b4ab21017239e83c810e1a45d9a63b684df62a257",
-    ".cursor/rules/salesforce-standards.mdc": "6d9b0bf3da185c69055dbbe18dd72f30f5804927373c29c1b72dc77ce5e00dd7",
-    ".cursor/rules/developer-standards.mdc": "644c6400b0f842987469dc56a5166e57f54db1672181fa47fc1a8a7392c4faad",
+    ".generated-prompts/apex.md": "4ec55082c37d1704ae51dc93e3c6f9a804b9cf190ab3810c436bf78e953348ba",
+    ".generated-prompts/aura.md": "c1acab85a661ec4f9e4620ebdbef18063ba3b5a2d8e8679baeabeab0348d3614",
+    ".generated-prompts/docs.md": "2ae7768734b1cb54f521a88edabe166cf7c2e536e2c195fe2d07a72c6a45d7c8",
+    ".generated-prompts/flows.md": "96e9cd744e5198d03d2181643ed1439583c227f032e1b88996c5a4bcdfd7209a",
+    ".generated-prompts/lwc.md": "d4e5e65d492a56d4d80d3cd20fc1d273547d0e46cba5dd19bbda16ed13ff8906",
+    ".generated-prompts/metadata.md": "e74ed20521fd46569b7215ae1298b82c2e560433de099b296511a3e74713a805",
+    ".generated-prompts/triggers.md": "44645f4829bf330d9947655da8702bd27432b1861cf0ae264e8c3394c4eb37dd",
+    ".generated-prompts/visualforce.md": "ba80b5961d5e44a0e592a2396bc7932421525868a06bba2804d793f842a15531",
+    ".cursor/rules/agent-guidelines.mdc": "371c20949c7470db1bdcb2a19353dc9c4b624f8a4e7b84149569385c7a0c0739",
+    ".cursor/rules/setup-agents-autonomous.mdc": "ef631c1e8624be4c393b597d8b555121f538367add18e35a14fc8d4f17734d66",
+    ".cursor/rules/setup-agents-gate-approval.mdc": "876cd7ec2b9e8c9a36b3dacd8d5a4fd19992e20e33908a26d0a4e69d79c456b7",
+    ".cursor/rules/sub-agent-protocol.mdc": "7fdebf0f722cdb4f76377e16e57b6b60f6a708766a9d3c4e5468ef6e54521ca4",
+    ".cursor/rules/salesforce-standards.mdc": "d5eaa47df2c685e6cef016b36a36f9108ab4c3d5eaf17fee4d3af5bb48fd8fff",
+    ".cursor/rules/developer-standards.mdc": "b145582a0ad4d4895e61cea62cf8a289da757849ed5b58f11ffb26b82d5c63f5",
     ".cursor/skills/sf-deploy/SKILL.md": "98fae60b0b64b5d3d1fad45b6baaeab764a5fec5bac89402a19aa15ea119cc07",
     ".cursor/skills/sf-code-analyzer/SKILL.md": "57af1bcc5d03a003227e221bfaa89daf4909278d195869c701967cb2eef25b7f",
     ".cursor/skills/prompt-registry/SKILL.md": "e9f7e27473e5dfd05eff43f0c63cf664fba11f15390952fc567b867b929d6d7d",
-    ".cursor/skills/qa-evidence-pack/SKILL.md": "9bf78090bbcfd222f44542abe396a9ed6df3c17ba4b13e617498b9212f22ee5d",
-    ".cursor/skills/doc-sync/SKILL.md": "3210b10f4122cc477cb35c7ee0862388d7763061b51c2fc6e1ce2444820b4381",
-    "CLAUDE.md": "058ba38f4988231b9656a1b0807a9906e84cb486fed0b566732b644b27dd5d5d",
-    "CLAUDE.local.md": "306a34a7a18f5218bdbeb9b6600622afe452f115bbe37867064dabe8e1020e83",
-    ".claude/rules/developer.md": "a9a84d5db3e5095d912fdf57656bb4487440e0e8b3a7f27d799102c0ca412616",
-    ".setup-agents/rules/architect.md": "e4f8d7309c355e96ffbad7b3ff18e026e47c506f128f4974e94f172cf469f79b",
-    ".setup-agents/rules/sa.md": "3d29b820a5c2ddadf6f3e8972d614e47fcd5607c0597871650edbd822bfd0fd8",
-    ".setup-agents/rules/pm.md": "cb515094a4be47a48885020f7d74f44cd4f3871f23f8d91a595d62f6e108fb00",
-    ".setup-agents/rules/ux.md": "faa1a3b01ee4901b6d511d197cf32137dbdce658675cb97046262b69fc97db53",
-    ".setup-agents/rules/qa.md": "8c0a5a0463bd4eba0ba381065e77f8da361a8ceec411ef2d70475424566d4cec",
-    ".setup-agents/rules/release-manager.md": "24bf086ffc5cb042739684e7e24c08d2cf601a384e44d98f1384495763406e12",
-    ".claude/rules/sub-agent-protocol.md": "608117d9885643e7eb06084aa935043b8833e1831e93d43b640902ac2aa9ec1d",
-    ".claude/agents/developer.md": "d9d334b482897bb5ce2f7b786e5669bb39a58ccc28a32dcc856b1372ffdec7c7",
-    ".claude/agents/architect.md": "374e77c23d8255454cf251212a8649dd7c3dfd9c6c41364574c89171e3473c2b",
-    ".claude/agents/sa.md": "c5fd762a150b9d92464ad594d7273ed0d4b8c2997522f5337750f673a959df1d",
-    ".claude/agents/pm.md": "507a0e3fcdfb5fbe0e2b555f563e0623790c1cbd8edb38b903d9d679dfcc19f7",
-    ".claude/agents/ux.md": "b4ccfb92be724d1194873934243ce02e7a41bb2e111876eed0c5c7d98b704eee",
-    ".claude/agents/qa.md": "744caf2a17134808107fb80aa3d6b9bc7e5fbf691f5b8c7ed7d12c2e39a00944",
-    ".claude/agents/release-manager.md": "84b78467accc52015d640639275af7a96647844b59eb4c1a7e27bec274615994",
+    ".cursor/skills/qa-evidence-pack/SKILL.md": "ecb9e3048e610757097f6f161e9a0bacfb0d11a081a123d62f15dfac6436c384",
+    ".cursor/skills/doc-sync/SKILL.md": "e061679e86a7f3ff387468ac710d8b906bb5f357e92ca7534454a8de42f06ba2",
+    "CLAUDE.md": "1b4717eaa7bc079beaf0a06a78f00a54cdc7041cd78694b50636a6bbab537d9c",
+    "CLAUDE.local.md": "92efbc9db8c794e29d3a15490c9dde7bdbb0c659eddf054ac4cebf27fcc05893",
+    ".claude/rules/developer.md": "cdc31c17e9754489624830882c40015bc5dcf752501b556b511dd43733895038",
+    ".setup-agents/rules/architect.md": "f26377ce2a0711dc4f6c16c5c159c1ec48eb7bc22249c0e40c4cfa982c1245b3",
+    ".setup-agents/rules/sa.md": "92463245031e5b264e3ccba8f8377084e7697fdf850ab0be7b6ad9164a691539",
+    ".setup-agents/rules/pm.md": "2fe6edc91989b81aee38896fd10901362a34c69364f0a0d72c37bd84ac79dcd2",
+    ".setup-agents/rules/ux.md": "b172e06b4c49b7dedbda4d9bde546698c411aa82e66585237446660e3f21ebe6",
+    ".setup-agents/rules/qa.md": "a72d083e2f654752394bf6b900ab3d357addc7c5dc7d3c88c140945572893dff",
+    ".setup-agents/rules/release-manager.md": "ddc655a237ff9af81481e658cb77530d7bdd8264aa680c3ce2d71dec47c0ffdc",
+    ".claude/rules/sub-agent-protocol.md": "5cfa0b31cc35eb4efd6dea173ee31dc7f0f4156f8d0143f164919517fcdf6a5b",
+    ".claude/agents/developer.md": "da60be5f5456865ff030058910ed16a7ba79d71e6304a587612e6b24a1191207",
+    ".claude/agents/architect.md": "5b22b974e783aaa6c270124f53adce5ce77f1d76086fe83c1b08b9291e7f182a",
+    ".claude/agents/sa.md": "4ccb8e882d33e323a0dd7e5934a022357822275c6e058c9d5ba359b7459e8f3b",
+    ".claude/agents/pm.md": "711a992a56354c17b290837c4a2326c8f1f92b4ba71409eb5a7a4db4a8f9e85a",
+    ".claude/agents/ux.md": "e3c9a07be22403e24f278a17ae2cf5c18afde8e7f277658d120da56d2ad748cf",
+    ".claude/agents/qa.md": "acf0e806ea5af6113e356b9fd09cb2fc7c41c6c0cdc5bc2629ce37783d9840c4",
+    ".claude/agents/release-manager.md": "6c3bee278cb446e2e3f832ab69efa8eb686ba2a7e4f2220da428477732478af5",
     ".setup-agents/skills/story-mapping/SKILL.md": "66ba41674a5326484d0f7fa508b566cf04402a9cf46ab3a86c0a5ccfd36eaf1c",
     ".setup-agents/skills/story-mapping/scripts/render-pdf.sh": "3021be9e51713547ac236b4ae236bad96d8509745b6afafcb21da863f8537611",
     ".setup-agents/skills/story-mapping/assets/mermaid-pdf.css": "a56152b9dbb4a60df78134ad9d5a6a4a5a9ca8cf315aa1976e8fe3cc6cb3786b",
@@ -3926,10 +5180,29 @@
     ".setup-agents/skills/decompose/SKILL.md": "cbab4017386edab26f75683b57e92b44159341d2ceb4970c06127a9eb18b4d9e",
     ".setup-agents/skills/generate-rom/SKILL.md": "1d45f8b3fd8308bbe499d5673e7ee274b2e62f02dadaa7dda083db587bcf5cb8",
     ".setup-agents/skills/record-adr/SKILL.md": "68a7b8db9375eb01c1d77c2836c017aa30a61e0bfe012a0ca13ac3714cc901d6",
-    ".claude/rules/doc-sync.md": "de4e03a7ee76900808e4c193e6e14062086de482449c1dacbffd7491010d2529",
-    ".generated-prompts/cicd.md": "d118b4276e79a28b65ebc10853fb7952e0e0c9a25b00f91c7b4e8973a2ef6571",
-    ".generated-prompts/diagrams.md": "6719813c49ca894822e00a1b031e40e6be6529be6c3a1b4a932b02de5cb4b49d",
-    ".generated-prompts/omnistudio.md": "cedba59eff18012a2109fb77e85a4947a75db32570be6897829448222df68dfb",
-    ".generated-prompts/tests.md": "fdbc6a75a23a5b22c9c42b7c78c75a8c784c027a0c21cad2bfef2cd2b157c38a"
+    ".claude/rules/doc-sync.md": "c4ea1cc878825873575d37ad6efdc46554f7ff9fe7ec6c805be8a13bf661163d",
+    ".generated-prompts/cicd.md": "091e87496af2aa8d1caa23d33d61e5956b515eb3e5301afe2d51e0929de0d231",
+    ".generated-prompts/diagrams.md": "aff8ad54928803311083e886de0ad649efca9aa2da78b7cf374d6191d8a8d21a",
+    ".generated-prompts/omnistudio.md": "4a9d4a26a09dd92bb27bc246ddd23811a3784038ab41633eb7a229afa12d7931",
+    ".generated-prompts/tests.md": "3ee4c3e88313490cb9709ab5bf41cb026d989ded27060ca5e4b53454f47f902e",
+    ".cursor/rules/architect-standards.mdc": "cfa271d4ed2fbea07a12e2bd2df70d0fd54e51e1b73573fc4d0315bea346e49c",
+    ".cursor/rules/sa-standards.mdc": "b4b62692d9ff86f3ec9da7870f281c9efe0d31b3edb382242d2892e8449dd926",
+    ".cursor/rules/pm-standards.mdc": "5a60ae8ae56fd47cc5e79b21c5842cccfdd19f7b8a1427b5875bc88332213342",
+    ".cursor/rules/ux-standards.mdc": "b7684361d89df7f7a586e6dc31b57cffc0047ba5d15b1128a59917db99bfcb22",
+    ".cursor/rules/qa-standards.mdc": "793bf034a209bf27583c3ed3682ca1f3dd3a2fc2fc9fe2c963b026b9b4ac3ea4",
+    ".cursor/rules/release-manager-standards.mdc": "bfb2b6443ca53ccf6b20087f27a41e8f691a0e03f45f93ad51008445e6b608bd",
+    ".cursor/skills/story-mapping/SKILL.md": "66ba41674a5326484d0f7fa508b566cf04402a9cf46ab3a86c0a5ccfd36eaf1c",
+    ".cursor/skills/story-mapping/scripts/render-pdf.sh": "3021be9e51713547ac236b4ae236bad96d8509745b6afafcb21da863f8537611",
+    ".cursor/skills/story-mapping/assets/mermaid-pdf.css": "a56152b9dbb4a60df78134ad9d5a6a4a5a9ca8cf315aa1976e8fe3cc6cb3786b",
+    ".cursor/skills/diagram-export/SKILL.md": "beea3ed3fc6c15e3f82d16b9cd10740653bfab95fb683e4b64ca6a68fd1c55a1",
+    ".cursor/skills/diagram-export/scripts/export-diagram.sh": "7f1c2a49c9446579a9552c2f1da1e759922584f9dfb5f0ce4e4d0c0c29545d6b",
+    ".cursor/skills/diagram-export/examples/erd-grouped.json": "a0ca3d7bfc643d2294570a41f202f7d10d71565ddb42f5de29289e62439cfdc0",
+    ".cursor/skills/backlog-sync/SKILL.md": "f36d8960eabd3cb4c7420a821397cf35a6a63c69375e57ae1de7e10639fbf1ee",
+    ".cursor/skills/elements-sync/SKILL.md": "48c86a59b8993761a51ed451f25c4922a2467c2a61f7275c9f4c73760180d4fb",
+    ".cursor/skills/elements-sync/scripts/push-to-elements.sh": "33d20edbd37a6e84bef4122acc52182889755a2f6e9eb80a78f1f536e2131033",
+    ".setup-agents/references/lucid-shape-catalog.md": "a0ea545aafa8b8e1ed470b1f1a8df9a564caf63bc54b4d99a26e8cd511fee648",
+    ".setup-agents/references/diagram-theme.defaults.json": "0cb00b3b255b2d05140b9c8ccdc94d515660a72beb7b62e502fee0d74e5f831c",
+    ".setup-agents/playbooks/grounding-probe.md": "aa3d453b5e5ee629d5ab368b007caf9a2c972f7789053a624edd19a4e5487528",
+    ".setup-agents/playbooks/profiles/architect/access-design.md": "4fb9da1b2f1f52d443b3bce337ae79b8fd17c8b12a707babb68342d007c27e53"
   }
 }

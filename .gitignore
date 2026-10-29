@@ -170,20 +170,7 @@ node_modules
 /.setup-agents/sf-skills/**
 /.setup-agents/skills/**
 
-# >>> setup-agents (managed) >>>
-# Regenerable / heavy / per-user setup-agents artifacts — safe to delete and re-generate.
 # Authored state (state/, config.json, project-knowledge.md, insights/) is intentionally NOT ignored.
-# rules/, skills/, sf-skills/, playbooks/, and profiles/ are NOT ignored by default, but ARE added
-# below as proprietary generated files in customer-repository mode (see the heading below).
-.setup-agents/references/
-.setup-agents/sf-metadata-index.json
-.setup-agents/chat-history/
-.setup-agents/chat-debug.jsonl
-.setup-agents/chat-permission-audit.jsonl
-.setup-agents/tmp/
-*.user-backup-*
-
-# Proprietary setup-agents generated files (customer repository policy).
 /.claude/agents/ai.md
 /.claude/agents/architect.md
 /.claude/agents/automotive.md
@@ -303,7 +290,196 @@ node_modules
 /.setup-agents/sf-skills/**
 /.setup-agents/skills/**
 /CLAUDE.local.md
+
+# >>> setup-agents (managed) >>>
+# Regenerable / heavy / per-user setup-agents artifacts — safe to delete and re-generate.
+# The shared state/ record (tasks, evidence, decisions, reviews, workflow-runs, handoffs,
+# clarifications, lessons, estimates, sprints), config.json, project-knowledge.md, and insights/
+# stay tracked so the team shares them. A few state/ files are per-person/per-machine runtime
+# state, not part of that shared record, and are ignored individually below.
+# rules/, skills/, sf-skills/, playbooks/, and profiles/ are NOT ignored by default, but ARE added
+# below as proprietary generated files in customer-repository mode (see the heading below).
+.setup-agents/references/
+.setup-agents/sf-metadata-index.json
+.setup-agents/chat-history/
+.setup-agents/chat-debug.jsonl
+.setup-agents/chat-permission-audit.jsonl
+.setup-agents/tmp/
+*.user-backup-*
+.setup-agents/state/gate-approvals.jsonl
+.setup-agents/state/spawn-sessions.jsonl
+.setup-agents/state/permission-denials.jsonl
+.setup-agents/state/phase-context/
+.setup-agents/state/*.bak
+
+# Proprietary setup-agents generated files (customer repository policy).
+/.claude/agents/ai.md
+/.claude/agents/architect.md
+/.claude/agents/automotive.md
+/.claude/agents/cgcloud.md
+/.claude/agents/commerce.md
+/.claude/agents/communications.md
+/.claude/agents/cpq.md
+/.claude/agents/crma.md
+/.claude/agents/data360.md
+/.claude/agents/developer.md
+/.claude/agents/education.md
+/.claude/agents/energy.md
+/.claude/agents/experience-cloud.md
+/.claude/agents/fsc.md
+/.claude/agents/fsl.md
+/.claude/agents/health.md
+/.claude/agents/industries.md
+/.claude/agents/loyalty.md
+/.claude/agents/manufacturing.md
+/.claude/agents/maps.md
+/.claude/agents/media.md
+/.claude/agents/netzero.md
+/.claude/agents/nonprofit.md
+/.claude/agents/omnistudio.md
+/.claude/agents/pm.md
+/.claude/agents/public-sector.md
+/.claude/agents/qa.md
+/.claude/agents/release-manager.md
+/.claude/agents/revenue.md
+/.claude/agents/sa.md
+/.claude/agents/salescloud.md
+/.claude/agents/service.md
+/.claude/agents/sfmc.md
+/.claude/agents/slack.md
+/.claude/agents/tableau.md
+/.claude/agents/ux.md
+/.claude/rules/ai.md
+/.claude/rules/architect.md
+/.claude/rules/automotive.md
+/.claude/rules/cgcloud.md
+/.claude/rules/commerce.md
+/.claude/rules/communications.md
+/.claude/rules/cpq.md
+/.claude/rules/crma.md
+/.claude/rules/data360.md
+/.claude/rules/developer.md
+/.claude/rules/doc-sync.md
+/.claude/rules/education.md
+/.claude/rules/energy.md
+/.claude/rules/experience-cloud.md
+/.claude/rules/fsc.md
+/.claude/rules/fsl.md
+/.claude/rules/health.md
+/.claude/rules/industries.md
+/.claude/rules/loyalty.md
+/.claude/rules/manufacturing.md
+/.claude/rules/maps.md
+/.claude/rules/media.md
+/.claude/rules/netzero.md
+/.claude/rules/nonprofit.md
+/.claude/rules/omnistudio.md
+/.claude/rules/pm.md
+/.claude/rules/public-sector.md
+/.claude/rules/qa.md
+/.claude/rules/release-manager.md
+/.claude/rules/revenue.md
+/.claude/rules/sa.md
+/.claude/rules/salescloud.md
+/.claude/rules/service.md
+/.claude/rules/sfmc.md
+/.claude/rules/slack.md
+/.claude/rules/sub-agent-protocol.md
+/.claude/rules/tableau.md
+/.claude/rules/ux.md
+/.claude/settings.local.json
+/.codex/ai.md
+/.codex/architect.md
+/.codex/automotive.md
+/.codex/cgcloud.md
+/.codex/commerce.md
+/.codex/communications.md
+/.codex/cpq.md
+/.codex/crma.md
+/.codex/data360.md
+/.codex/developer.md
+/.codex/education.md
+/.codex/energy.md
+/.codex/experience-cloud.md
+/.codex/fsc.md
+/.codex/fsl.md
+/.codex/health.md
+/.codex/industries.md
+/.codex/loyalty.md
+/.codex/manufacturing.md
+/.codex/maps.md
+/.codex/media.md
+/.codex/netzero.md
+/.codex/nonprofit.md
+/.codex/omnistudio.md
+/.codex/pm.md
+/.codex/public-sector.md
+/.codex/qa.md
+/.codex/release-manager.md
+/.codex/revenue.md
+/.codex/sa.md
+/.codex/salescloud.md
+/.codex/service.md
+/.codex/sfmc.md
+/.codex/slack.md
+/.codex/sub-agent-protocol.md
+/.codex/tableau.md
+/.codex/ux.md
+/.cursor/rules/agent-guidelines.mdc
+/.cursor/rules/ai-standards.mdc
+/.cursor/rules/analytics-standards.mdc
+/.cursor/rules/architect-standards.mdc
+/.cursor/rules/automotive-standards.mdc
+/.cursor/rules/cgcloud-standards.mdc
+/.cursor/rules/commerce-standards.mdc
+/.cursor/rules/communications-standards.mdc
+/.cursor/rules/cpq-standards.mdc
+/.cursor/rules/data360-standards.mdc
+/.cursor/rules/developer-standards.mdc
+/.cursor/rules/education-standards.mdc
+/.cursor/rules/energy-standards.mdc
+/.cursor/rules/experience-cloud-standards.mdc
+/.cursor/rules/fsc-standards.mdc
+/.cursor/rules/fsl-standards.mdc
+/.cursor/rules/health-standards.mdc
+/.cursor/rules/industries-standards.mdc
+/.cursor/rules/loyalty-standards.mdc
+/.cursor/rules/manufacturing-standards.mdc
+/.cursor/rules/maps-standards.mdc
+/.cursor/rules/media-standards.mdc
+/.cursor/rules/netzero-standards.mdc
+/.cursor/rules/nonprofit-standards.mdc
+/.cursor/rules/omnistudio-standards.mdc
+/.cursor/rules/pm-standards.mdc
+/.cursor/rules/public-sector-standards.mdc
+/.cursor/rules/qa-standards.mdc
+/.cursor/rules/release-manager-standards.mdc
+/.cursor/rules/revenue-standards.mdc
+/.cursor/rules/sa-standards.mdc
+/.cursor/rules/salescloud-standards.mdc
+/.cursor/rules/salesforce-standards.mdc
+/.cursor/rules/service-standards.mdc
+/.cursor/rules/setup-agents-autonomous.mdc
+/.cursor/rules/sfmc-standards.mdc
+/.cursor/rules/slack-standards.mdc
+/.cursor/rules/sub-agent-protocol.mdc
+/.cursor/rules/tableau-standards.mdc
+/.cursor/rules/ux-standards.mdc
+/.setup-agents/hooks/**
+/.setup-agents/playbooks/**
+/.setup-agents/profiles/**
+/.setup-agents/rules/**
+/.setup-agents/sf-skills/**
+/.setup-agents/skills/**
+/CLAUDE.local.md
 # <<< setup-agents (managed) <<<
 
-# setup-agents QA scaffolds pending Playwright/wdio setup (not part of the plugin)
-qa-scaffolds/
+# setup-agents QA scaffolds kept at generated paths for setup-health; excluded from build/lint/test
+/playwright.config.ts
+/src/utils/salesforce-api.ts
+/src/utils/salesforce-auth.ts
+/test/mobile/
+
+# setup-agents generated skills (regenerable via sf setup-agents local)
+/.cursor/skills/
+/.github/skills/

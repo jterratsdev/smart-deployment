@@ -18,13 +18,11 @@ sf setup-agents workflow run --story <id> --resume <run-id>
 ## Available Context Sources
 
 ### 1. Local Repository
-
 - Source code, metadata, tests in working directory
 - Git history: `git log --oneline -20`
 - Recent changes: `git diff HEAD~3`
 
 ### 2. Workflow State
-
 - Tasks: `.setup-agents/state/tasks.jsonl`
 - Workflow runs: `.setup-agents/state/workflow-runs.jsonl`
 - Evidence: `.setup-agents/state/evidence.jsonl`
@@ -32,12 +30,10 @@ sf setup-agents workflow run --story <id> --resume <run-id>
 - Handoffs: `.setup-agents/state/handoffs.jsonl`
 
 ### 3. Local Guidance
-
 - Generated rules: `.setup-agents/rules/` (when present)
 - Workflow playbooks: `.agent-workflow/playbooks/` (when present)
 
 ### 4. Profile Resources
-
 - developer: rules + capabilities configured
 - architect: rules + capabilities configured
 - sa: rules + capabilities configured
@@ -76,7 +72,6 @@ sf setup-agents workflow run --story <id> --resume <run-id>
 - industries: rules + capabilities configured
 
 ### 5. Cached Resources
-
 - Fetched references: `.setup-agents/references/`
 - Synchronized profile docs: `.setup-agents/docs/`
 

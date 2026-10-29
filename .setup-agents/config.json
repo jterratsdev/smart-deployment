@@ -39,7 +39,10 @@
     "loyalty",
     "industries"
   ],
-  "tools": ["codex", "claude"],
+  "tools": [
+    "codex",
+    "claude"
+  ],
   "orchestration": {
     "enabled": true,
     "engine": "native",

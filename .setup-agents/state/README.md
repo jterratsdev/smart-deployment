@@ -15,13 +15,7 @@ Files use JSON Lines so agents can append entries without rewriting the full his
 Each line should be a JSON object with these common fields:
 
 ```json
-{
-  "id": "local-<timestamp>",
-  "task": "optional-task-id",
-  "role": "developer",
-  "summary": "short summary",
-  "createdAt": "2026-05-06T00:00:00.000Z"
-}
+{"id":"local-<timestamp>","task":"optional-task-id","role":"developer","summary":"short summary","createdAt":"2026-05-06T00:00:00.000Z"}
 ```
 
 Tools may add type-specific fields, but they should preserve the common fields above.

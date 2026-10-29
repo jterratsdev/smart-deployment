@@ -2,136 +2,153 @@
 
 Deterministic repository documentation inventory. Generated/reference trees and node_modules are excluded.
 
-| Path                                                                                                | Content                                                             | When to read                                     |
-| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------ |
-| `.cursor/skills/data360-code-extension-generate/references/README.md`                               | data360-code-extension-generate Skill                               | For project context and documented behavior      |
-| `.cursor/skills/dx-apexguru-scan/examples/README.md`                                                | Examples — dx-apexguru-scan                                         | For project context and documented behavior      |
-| `.cursor/skills/dx-code-analyzer-run/examples/README.md`                                            | Examples Directory                                                  | For project context and documented behavior      |
-| `.cursor/skills/dx-org-analyze/README.md`                                                           | dx-org-analyze                                                      | For project context and documented behavior      |
-| `.cursor/skills/dx-org-analyze/tests/README.md`                                                     | dx-org-analyze Tests                                                | For project context and documented behavior      |
-| `.cursor/skills/dx-org-manage/examples/README.md`                                                   | Examples Directory                                                  | For project context and documented behavior      |
-| `.cursor/skills/platform-apex-logs-debug/README.md`                                                 | platform-apex-logs-debug                                            | For project context and documented behavior      |
-| `.cursor/skills/platform-apex-test-run/README.md`                                                   | platform-apex-test-run                                              | For project context and documented behavior      |
-| `.cursor/skills/platform-data-and-tooling-api-context-get/examples/README.md`                       | Salesforce Data + Tooling API - Section-Specific Loading Examples   | For project context and documented behavior      |
-| `.cursor/skills/platform-data-manage/README.md`                                                     | platform-data-manage                                                | For project context and documented behavior      |
-| `.cursor/skills/platform-docs-get/README.md`                                                        | platform-docs-get                                                   | For project context and documented behavior      |
-| `.cursor/skills/platform-metadata-api-context-get/examples/README.md`                               | Salesforce Metadata API - Section-Specific Loading Examples         | For project context and documented behavior      |
-| `.cursor/skills/platform-metadata-api-context-get/README.md`                                        | Salesforce Metadata API Skill                                       | For project context and documented behavior      |
-| `.cursor/skills/platform-metadata-deploy/README.md`                                                 | platform-metadata-deploy                                            | For project context and documented behavior      |
-| `.cursor/skills/platform-soql-query/README.md`                                                      | platform-soql-query                                                 | For project context and documented behavior      |
-| `.setup-agents/docs/automotive/automotive_cloud.index.md`                                           | Index: Automotive Cloud Guide                                       | For project context and documented behavior      |
-| `.setup-agents/docs/automotive/automotive_cloud.md`                                                 | Automotive Cloud Guide                                              | For project context and documented behavior      |
-| `.setup-agents/docs/commerce/b2b_b2c_comm_dev.index.md`                                             | Index: B2B/B2C Commerce Developer Guide                             | For project context and documented behavior      |
-| `.setup-agents/docs/commerce/b2b_b2c_comm_dev.md`                                                   | B2B/B2C Commerce Developer Guide                                    | For project context and documented behavior      |
-| `.setup-agents/docs/cpq/cpq_dev_api.index.md`                                                       | Index: CPQ Developer Guide                                          | For project context and documented behavior      |
-| `.setup-agents/docs/cpq/cpq_dev_api.md`                                                             | CPQ Developer Guide                                                 | For project context and documented behavior      |
-| `.setup-agents/docs/crma/bi_dev_guide_ext_data.index.md`                                            | Index: CRM Analytics Developer Guide                                | For project context and documented behavior      |
-| `.setup-agents/docs/crma/bi_dev_guide_ext_data.md`                                                  | CRM Analytics Developer Guide                                       | For project context and documented behavior      |
-| `.setup-agents/docs/fsc/financial_services_cloud_object_reference.index.md`                         | Index: FSC Object Reference                                         | For project context and documented behavior      |
-| `.setup-agents/docs/fsc/financial_services_cloud_object_reference.md`                               | FSC Object Reference                                                | For project context and documented behavior      |
-| `.setup-agents/docs/health/health_cloud_object_reference.index.md`                                  | Index: Health Cloud Objects                                         | For project context and documented behavior      |
-| `.setup-agents/docs/health/health_cloud_object_reference.md`                                        | Health Cloud Objects                                                | For project context and documented behavior      |
-| `.setup-agents/docs/health/health_cloud.index.md`                                                   | Index: Health Cloud Guide                                           | For project context and documented behavior      |
-| `.setup-agents/docs/health/health_cloud.md`                                                         | Health Cloud Guide                                                  | For project context and documented behavior      |
-| `.setup-agents/docs/loyalty/loyalty.index.md`                                                       | Index: Loyalty Management Guide                                     | For project context and documented behavior      |
-| `.setup-agents/docs/loyalty/loyalty.md`                                                             | Loyalty Management Guide                                            | For project context and documented behavior      |
-| `.setup-agents/docs/nonprofit/nonprofit_cloud.index.md`                                             | Index: Nonprofit Cloud Guide                                        | For project context and documented behavior      |
-| `.setup-agents/docs/nonprofit/nonprofit_cloud.md`                                                   | Nonprofit Cloud Guide                                               | For project context and documented behavior      |
-| `.setup-agents/open-orchestra/README.md`                                                            | Open Orchestra Integration                                          | For project context and documented behavior      |
-| `.setup-agents/sf-skills/agentforce-architecture-analyze/README.md`                                 | agentforce-architecture-analyze                                     | For project context and documented behavior      |
-| `.setup-agents/sf-skills/agentforce-d360-analyze/README.md`                                         | agentforce-d360-analyze                                             | For project context and documented behavior      |
-| `.setup-agents/sf-skills/agentforce-generate/assets/agents/README.md`                               | Complete Agent Templates                                            | For project context and documented behavior      |
-| `.setup-agents/sf-skills/agentforce-generate/assets/patterns/README.md`                             | Agent Script Patterns                                               | For project context and documented behavior      |
-| `.setup-agents/sf-skills/agentforce-generate/README.md`                                             | Agentforce Development Skill                                        | For project context and documented behavior      |
-| `.setup-agents/sf-skills/consumer-goods-promotion-bo-api-deploy/assets/set-comment-value/README.md` | preset: `set-comment-value`                                         | For project context and documented behavior      |
-| `.setup-agents/sf-skills/data360-code-extension-generate/references/README.md`                      | data360-code-extension-generate Skill                               | For project context and documented behavior      |
-| `.setup-agents/sf-skills/data360-schema-get/references/README.md`                                   | data360-schema-get Skill                                            | For project context and documented behavior      |
-| `.setup-agents/sf-skills/design-systems-slds-apply/assets/README.md`                                | SLDS Metadata                                                       | For project context and documented behavior      |
-| `.setup-agents/sf-skills/design-systems-slds-apply/references/README.md`                            | Bundled Guidance Index                                              | For project context and documented behavior      |
-| `.setup-agents/sf-skills/dx-apexguru-scan/examples/README.md`                                       | Examples — dx-apexguru-scan                                         | For project context and documented behavior      |
-| `.setup-agents/sf-skills/dx-code-analyzer-run/examples/README.md`                                   | Examples Directory                                                  | For project context and documented behavior      |
-| `.setup-agents/sf-skills/dx-org-analyze/README.md`                                                  | dx-org-analyze                                                      | For project context and documented behavior      |
-| `.setup-agents/sf-skills/dx-org-analyze/tests/README.md`                                            | dx-org-analyze Tests                                                | For project context and documented behavior      |
-| `.setup-agents/sf-skills/dx-org-manage/examples/README.md`                                          | Examples Directory                                                  | For project context and documented behavior      |
-| `.setup-agents/sf-skills/experience-lwc-generate/README.md`                                         | experience-lwc-generate                                             | For project context and documented behavior      |
-| `.setup-agents/sf-skills/external-diagram-mermaid-generate/README.md`                               | external-diagram-mermaid-generate                                   | For project context and documented behavior      |
-| `.setup-agents/sf-skills/external-diagram-mermaid-generate/scripts/README.md`                       | Mermaid Preview Server                                              | For project context and documented behavior      |
-| `.setup-agents/sf-skills/integration-connectivity-connected-app-configure/README.md`                | integration-connectivity-connected-app-configure                    | For project context and documented behavior      |
-| `.setup-agents/sf-skills/integration-connectivity-generate/README.md`                               | integration-connectivity-generate                                   | For project context and documented behavior      |
-| `.setup-agents/sf-skills/integration-connectivity-generate/scripts/README.md`                       | integration-connectivity-generate Helper Scripts                    | For project context and documented behavior      |
-| `.setup-agents/sf-skills/omnistudio-callable-apex-generate/README.md`                               | omnistudio-callable-apex-generate                                   | For project context and documented behavior      |
-| `.setup-agents/sf-skills/omnistudio-datapacks-deploy/README.md`                                     | omnistudio-datapacks-deploy                                         | For project context and documented behavior      |
-| `.setup-agents/sf-skills/omnistudio-epc-catalog-generate/README.md`                                 | omnistudio-epc-catalog-generate                                     | For project context and documented behavior      |
-| `.setup-agents/sf-skills/platform-apex-logs-debug/README.md`                                        | platform-apex-logs-debug                                            | For project context and documented behavior      |
-| `.setup-agents/sf-skills/platform-apex-test-run/README.md`                                          | platform-apex-test-run                                              | For project context and documented behavior      |
-| `.setup-agents/sf-skills/platform-data-and-tooling-api-context-get/examples/README.md`              | Salesforce Data + Tooling API - Section-Specific Loading Examples   | For project context and documented behavior      |
-| `.setup-agents/sf-skills/platform-data-manage/README.md`                                            | platform-data-manage                                                | For project context and documented behavior      |
-| `.setup-agents/sf-skills/platform-docs-get/README.md`                                               | platform-docs-get                                                   | For project context and documented behavior      |
-| `.setup-agents/sf-skills/platform-metadata-api-context-get/examples/README.md`                      | Salesforce Metadata API - Section-Specific Loading Examples         | For project context and documented behavior      |
-| `.setup-agents/sf-skills/platform-metadata-api-context-get/README.md`                               | Salesforce Metadata API Skill                                       | For project context and documented behavior      |
-| `.setup-agents/sf-skills/platform-metadata-deploy/README.md`                                        | platform-metadata-deploy                                            | For project context and documented behavior      |
-| `.setup-agents/sf-skills/platform-soql-query/README.md`                                             | platform-soql-query                                                 | For project context and documented behavior      |
-| `.setup-agents/sf-skills/sales-agentforce-pipeline-management-configure/scripts/README.md`          | Scripts for Pipeline Management Configuration                       | For project context and documented behavior      |
-| `.setup-agents/sf-skills/service-helpagent-coordinate/README.md`                                    | service-helpagent-coordinate                                        | For project context and documented behavior      |
-| `.setup-agents/state/README.md`                                                                     | Setup Agents Local State                                            | For project context and documented behavior      |
-| `CONTRIBUTING.md`                                                                                   | Contributing                                                        | Before contributing changes                      |
-| `docs/ai-configuration.md`                                                                          | AI Configuration                                                    | For project context and documented behavior      |
-| `docs/architecture/ADR-001-CI-CD-WAVE-CHECKPOINTS.md`                                               | ADR-001: CI/CD-Agnostic Manual Wave Checkpoints                     | When reviewing historical architecture rationale |
-| `docs/architecture/ARCHITECTURE.md`                                                                 | 🏗️ Smart Deployment Plugin Architecture                             | For project context and documented behavior      |
-| `docs/architecture/c4-omnistudio-channel-classification.md`                                         | C4: OmniStudio Native vs Managed DataPack Channel Classification    | For project context and documented behavior      |
-| `docs/architecture/CLI_ARCHITECTURE.md`                                                             | CLI Architecture: Validate & Deploy                                 | For project context and documented behavior      |
-| `docs/architecture/METADATA_EXTENSIBILITY.md`                                                       | Metadata Type Extensibility                                         | For project context and documented behavior      |
-| `docs/architecture/PROJECT_AGNOSTIC_DESIGN.md`                                                      | 🏗️ Project-Agnostic Design                                          | For project context and documented behavior      |
-| `docs/archive/AI_AUTO_APPLY.md`                                                                     | 🤖 AI Auto-Apply Mode                                               | For project context and documented behavior      |
-| `docs/archive/CI_CD_DEPLOYMENT.md`                                                                  | 🚀 CI/CD Deployment Guide                                           | For project context and documented behavior      |
-| `docs/archive/CI_CD_OPTIMIZATION.md`                                                                | CI/CD Optimization Strategy                                         | For project context and documented behavior      |
-| `docs/archive/ERROR_HANDLING_STATUS.md`                                                             | 🛡️ Error Handling - Estado de Implementación                        | For project context and documented behavior      |
-| `docs/archive/guides/AGENTFORCE_INTEGRATION.md`                                                     | 🤖 Agentforce Integration                                           | For project context and documented behavior      |
-| `docs/archive/README.md`                                                                            | Archived Documentation                                              | For project context and documented behavior      |
-| `docs/archive/TESTING_SUMMARY.md`                                                                   | 🧪 Testing Infrastructure - Summary                                 | For project context and documented behavior      |
-| `docs/archive/TODO_MAPPING.md`                                                                      | 📋 TODO to User Story Mapping                                       | For project context and documented behavior      |
-| `docs/archive/USER_STORIES.md`                                                                      | 📋 User Stories - Smart Deployment Plugin                           | For project context and documented behavior      |
-| `docs/ci-runner-policy.md`                                                                          | CI Runner Policy                                                    | For project context and documented behavior      |
-| `docs/CIRCULAR_DEPENDENCY_REMEDIATION_SPEC.md`                                                      | Circular Dependency Remediation                                     | For project context and documented behavior      |
-| `docs/cli-reference.md`                                                                             | CLI Reference                                                       | For project context and documented behavior      |
-| `docs/ERROR_CATALOG.md`                                                                             | 🛡️ Error Catalog - US-077                                           | For project context and documented behavior      |
-| `docs/ERROR_HANDLING_INTEGRATION.md`                                                                | 🛡️ Error Handling Integration Guide                                 | For project context and documented behavior      |
-| `docs/guides/ACCEPTANCE_CRITERIA_TESTING.md`                                                        | 🎯 Acceptance Criteria Testing Guide                                | For project context and documented behavior      |
-| `docs/guides/AGENTFORCE_TOKEN_LIMITS.md`                                                            | Agentforce Token Limits & Batching Strategy                         | For project context and documented behavior      |
-| `docs/guides/GITHUB_SETUP.md`                                                                       | ⚙️ GitHub Repository Setup                                          | For project context and documented behavior      |
-| `docs/guides/MEMORY_VS_API_COSTS.md`                                                                | Memory vs API Costs Trade-off                                       | For project context and documented behavior      |
-| `docs/guides/SELF_LEARNING_ANALYZER.md`                                                             | 🧠 Self-Learning Dependency Analyzer                                | For project context and documented behavior      |
-| `docs/ISSUE_IMPLEMENTATION_MATRIX.md`                                                               | Issue Implementation Matrix                                         | For project context and documented behavior      |
-| `docs/known-limitations.md`                                                                         | Known Limitations                                                   | For project context and documented behavior      |
-| `docs/methodology/ERROR_DRIVEN_DEVELOPMENT.md`                                                      | ⚠️ Error-Driven Development (EDD)                                   | For project context and documented behavior      |
-| `docs/methodology/TESTING_STRATEGY.md`                                                              | 🧪 Testing Strategy - TDD & BDD                                     | For project context and documented behavior      |
-| `docs/owd-sharing-barrier.md`                                                                       | OWD Sharing Barrier                                                 | For project context and documented behavior      |
-| `docs/PARSER_SAFETY.md`                                                                             | Parser Safety & Forward Compatibility                               | For project context and documented behavior      |
-| `docs/proposals/SF_SMART_DEPLOYMENT_PLUGIN_PROPOSAL.md`                                             | SF Smart Deployment Plugin - Proposal                               | For project context and documented behavior      |
-| `docs/README.md`                                                                                    | Documentation Index                                                 | For project context and documented behavior      |
-| `docs/refactor-epics.md`                                                                            | Refactor Epics                                                      | For project context and documented behavior      |
-| `docs/release-candidate-checklist.md`                                                               | Release Candidate Checklist                                         | For project context and documented behavior      |
-| `docs/release-workflow.md`                                                                          | Release Workflow                                                    | For project context and documented behavior      |
-| `docs/releases/SD-DEV-C4-CHANNEL-release-candidate.md`                                              | SD-DEV-C4-CHANNEL — Release Candidate Note                          | For project context and documented behavior      |
-| `docs/required-checks.md`                                                                           | Required Check Contract                                             | For project context and documented behavior      |
-| `docs/research/DATACLOUD_RETRIEVE_VALIDATION.md`                                                    | Data Cloud Retrieve Validation                                      | For project context and documented behavior      |
-| `docs/research/metadata-catalog/c1-core-crm-channels.md`                                            | C1 Core CRM and Channels Metadata Catalog Research                  | For project context and documented behavior      |
-| `docs/research/metadata-catalog/c2-data-analytics-ai.md`                                            | C2 Data, Analytics, and AI Metadata Catalog Research                | For project context and documented behavior      |
-| `docs/research/metadata-catalog/c3-commerce-marketing-revenue.md`                                   | C3 Commerce, Marketing, and Revenue Metadata Catalog Research       | For project context and documented behavior      |
-| `docs/research/metadata-catalog/c4-integration-industries.md`                                       | C4 Integration and Industries Platform Metadata Catalog Research    | For project context and documented behavior      |
-| `docs/research/metadata-catalog/c5-regulated-social-sectors.md`                                     | C5 Regulated and Social Sectors Metadata Catalog Research           | For project context and documented behavior      |
-| `docs/research/metadata-catalog/c6-industrial-asset-location.md`                                    | C6 Industrial, Asset, and Location Metadata Catalog Research        | For project context and documented behavior      |
-| `docs/research/metadata-catalog/c7-communications-media.md`                                         | C7 Communications and Media Metadata Catalog Research               | For project context and documented behavior      |
-| `docs/research/metadata-catalog/expert-review-contract.md`                                          | Product Expert Metadata Review Contract                             | For project context and documented behavior      |
-| `docs/research/metadata-catalog/object-flexipage-activation-plan.md`                                | Staged CustomObject FlexiPage Activation                            | For project context and documented behavior      |
-| `docs/research/metadata-catalog/qa-review.md`                                                       | Metadata Catalog QA Review                                          | For project context and documented behavior      |
-| `docs/research/metadata-catalog/README.md`                                                          | Salesforce Metadata Catalog Research                                | For project context and documented behavior      |
-| `docs/research/metadata-catalog/unknown-validation-handoff.md`                                      | Metadata unknown validation handoff                                 | For project context and documented behavior      |
-| `docs/research/metadata-catalog/wave-gap-review.md`                                                 | Metadata Wave Gap Review                                            | For project context and documented behavior      |
-| `docs/reviews/SD-DEV-C4-CHANNEL-security-review.md`                                                 | SD-DEV-C4-CHANNEL — Security Review (OmniStudio channel classifier) | For project context and documented behavior      |
-| `docs/site-content-workflow.md`                                                                     | Public Site Content Workflow                                        | For project context and documented behavior      |
-| `docs/technical-refactor-backlog.md`                                                                | Technical Refactor Backlog                                          | For project context and documented behavior      |
-| `docs/testing/SD-DEV-C4-CHANNEL-qa-report.md`                                                       | SD-DEV-C4-CHANNEL — QA Report (OmniStudio channel classifier)       | For project context and documented behavior      |
-| `README.md`                                                                                         | Smart Deployment                                                    | For project context and documented behavior      |
-| `scripts/README.md`                                                                                 | 📜 Scripts                                                          | For project context and documented behavior      |
-| `src/types/salesforce/README.md`                                                                    | Salesforce Metadata Type Models                                     | For project context and documented behavior      |
+| Path | Content | When to read |
+|------|---------|--------------|
+| `.cursor/skills/agentforce-architecture-analyze/README.md` | agentforce-architecture-analyze | For project context and documented behavior |
+| `.cursor/skills/agentforce-d360-analyze/README.md` | agentforce-d360-analyze | For project context and documented behavior |
+| `.cursor/skills/agentforce-generate/assets/agents/README.md` | Complete Agent Templates | For project context and documented behavior |
+| `.cursor/skills/agentforce-generate/assets/patterns/README.md` | Agent Script Patterns | For project context and documented behavior |
+| `.cursor/skills/agentforce-generate/README.md` | Agentforce Development Skill | For project context and documented behavior |
+| `.cursor/skills/consumer-goods-promotion-bo-api-deploy/assets/set-comment-value/README.md` | preset: `set-comment-value` | For project context and documented behavior |
+| `.cursor/skills/data360-code-extension-generate/references/README.md` | data360-code-extension-generate Skill | For project context and documented behavior |
+| `.cursor/skills/data360-schema-get/references/README.md` | data360-schema-get Skill | For project context and documented behavior |
+| `.cursor/skills/design-systems-slds-apply/assets/README.md` | SLDS Metadata | For project context and documented behavior |
+| `.cursor/skills/design-systems-slds-apply/references/README.md` | Bundled Guidance Index | For project context and documented behavior |
+| `.cursor/skills/dx-apexguru-scan/examples/README.md` | Examples — dx-apexguru-scan | For project context and documented behavior |
+| `.cursor/skills/dx-code-analyzer-run/examples/README.md` | Examples Directory | For project context and documented behavior |
+| `.cursor/skills/dx-org-analyze/README.md` | dx-org-analyze | For project context and documented behavior |
+| `.cursor/skills/dx-org-analyze/tests/README.md` | dx-org-analyze Tests | For project context and documented behavior |
+| `.cursor/skills/dx-org-manage/examples/README.md` | Examples Directory | For project context and documented behavior |
+| `.cursor/skills/experience-lwc-generate/README.md` | experience-lwc-generate | For project context and documented behavior |
+| `.cursor/skills/external-diagram-mermaid-generate/README.md` | external-diagram-mermaid-generate | For project context and documented behavior |
+| `.cursor/skills/external-diagram-mermaid-generate/scripts/README.md` | Mermaid Preview Server | For project context and documented behavior |
+| `.cursor/skills/omnistudio-callable-apex-generate/README.md` | omnistudio-callable-apex-generate | For project context and documented behavior |
+| `.cursor/skills/omnistudio-datapacks-deploy/README.md` | omnistudio-datapacks-deploy | For project context and documented behavior |
+| `.cursor/skills/omnistudio-epc-catalog-generate/README.md` | omnistudio-epc-catalog-generate | For project context and documented behavior |
+| `.cursor/skills/platform-apex-logs-debug/README.md` | platform-apex-logs-debug | For project context and documented behavior |
+| `.cursor/skills/platform-apex-test-run/README.md` | platform-apex-test-run | For project context and documented behavior |
+| `.cursor/skills/platform-data-and-tooling-api-context-get/examples/README.md` | Salesforce Data + Tooling API - Section-Specific Loading Examples | For project context and documented behavior |
+| `.cursor/skills/platform-data-manage/README.md` | platform-data-manage | For project context and documented behavior |
+| `.cursor/skills/platform-docs-get/README.md` | platform-docs-get | For project context and documented behavior |
+| `.cursor/skills/platform-metadata-api-context-get/examples/README.md` | Salesforce Metadata API - Section-Specific Loading Examples | For project context and documented behavior |
+| `.cursor/skills/platform-metadata-api-context-get/README.md` | Salesforce Metadata API Skill | For project context and documented behavior |
+| `.cursor/skills/platform-metadata-deploy/README.md` | platform-metadata-deploy | For project context and documented behavior |
+| `.cursor/skills/platform-soql-query/README.md` | platform-soql-query | For project context and documented behavior |
+| `.cursor/skills/sales-agentforce-pipeline-management-configure/scripts/README.md` | Scripts for Pipeline Management Configuration | For project context and documented behavior |
+| `.cursor/skills/service-helpagent-coordinate/README.md` | service-helpagent-coordinate | For project context and documented behavior |
+| `.setup-agents/docs/automotive/automotive_cloud.index.md` | Index: Automotive Cloud Guide | For project context and documented behavior |
+| `.setup-agents/docs/automotive/automotive_cloud.md` | Automotive Cloud Guide | For project context and documented behavior |
+| `.setup-agents/docs/commerce/b2b_b2c_comm_dev.index.md` | Index: B2B/B2C Commerce Developer Guide | For project context and documented behavior |
+| `.setup-agents/docs/commerce/b2b_b2c_comm_dev.md` | B2B/B2C Commerce Developer Guide | For project context and documented behavior |
+| `.setup-agents/docs/cpq/cpq_dev_api.index.md` | Index: CPQ Developer Guide | For project context and documented behavior |
+| `.setup-agents/docs/cpq/cpq_dev_api.md` | CPQ Developer Guide | For project context and documented behavior |
+| `.setup-agents/docs/crma/bi_dev_guide_ext_data.index.md` | Index: CRM Analytics Developer Guide | For project context and documented behavior |
+| `.setup-agents/docs/crma/bi_dev_guide_ext_data.md` | CRM Analytics Developer Guide | For project context and documented behavior |
+| `.setup-agents/docs/fsc/financial_services_cloud_object_reference.index.md` | Index: FSC Object Reference | For project context and documented behavior |
+| `.setup-agents/docs/fsc/financial_services_cloud_object_reference.md` | FSC Object Reference | For project context and documented behavior |
+| `.setup-agents/docs/health/health_cloud_object_reference.index.md` | Index: Health Cloud Objects | For project context and documented behavior |
+| `.setup-agents/docs/health/health_cloud_object_reference.md` | Health Cloud Objects | For project context and documented behavior |
+| `.setup-agents/docs/health/health_cloud.index.md` | Index: Health Cloud Guide | For project context and documented behavior |
+| `.setup-agents/docs/health/health_cloud.md` | Health Cloud Guide | For project context and documented behavior |
+| `.setup-agents/docs/loyalty/loyalty.index.md` | Index: Loyalty Management Guide | For project context and documented behavior |
+| `.setup-agents/docs/loyalty/loyalty.md` | Loyalty Management Guide | For project context and documented behavior |
+| `.setup-agents/docs/nonprofit/nonprofit_cloud.index.md` | Index: Nonprofit Cloud Guide | For project context and documented behavior |
+| `.setup-agents/docs/nonprofit/nonprofit_cloud.md` | Nonprofit Cloud Guide | For project context and documented behavior |
+| `.setup-agents/open-orchestra/README.md` | Open Orchestra Integration | For project context and documented behavior |
+| `.setup-agents/sf-skills/agentforce-architecture-analyze/README.md` | agentforce-architecture-analyze | For project context and documented behavior |
+| `.setup-agents/sf-skills/agentforce-d360-analyze/README.md` | agentforce-d360-analyze | For project context and documented behavior |
+| `.setup-agents/sf-skills/agentforce-generate/assets/agents/README.md` | Complete Agent Templates | For project context and documented behavior |
+| `.setup-agents/sf-skills/agentforce-generate/assets/patterns/README.md` | Agent Script Patterns | For project context and documented behavior |
+| `.setup-agents/sf-skills/agentforce-generate/README.md` | Agentforce Development Skill | For project context and documented behavior |
+| `.setup-agents/sf-skills/consumer-goods-promotion-bo-api-deploy/assets/set-comment-value/README.md` | preset: `set-comment-value` | For project context and documented behavior |
+| `.setup-agents/sf-skills/data360-code-extension-generate/references/README.md` | data360-code-extension-generate Skill | For project context and documented behavior |
+| `.setup-agents/sf-skills/data360-schema-get/references/README.md` | data360-schema-get Skill | For project context and documented behavior |
+| `.setup-agents/sf-skills/design-systems-slds-apply/assets/README.md` | SLDS Metadata | For project context and documented behavior |
+| `.setup-agents/sf-skills/design-systems-slds-apply/references/README.md` | Bundled Guidance Index | For project context and documented behavior |
+| `.setup-agents/sf-skills/dx-apexguru-scan/examples/README.md` | Examples — dx-apexguru-scan | For project context and documented behavior |
+| `.setup-agents/sf-skills/dx-code-analyzer-run/examples/README.md` | Examples Directory | For project context and documented behavior |
+| `.setup-agents/sf-skills/dx-org-analyze/README.md` | dx-org-analyze | For project context and documented behavior |
+| `.setup-agents/sf-skills/dx-org-analyze/tests/README.md` | dx-org-analyze Tests | For project context and documented behavior |
+| `.setup-agents/sf-skills/dx-org-manage/examples/README.md` | Examples Directory | For project context and documented behavior |
+| `.setup-agents/sf-skills/experience-lwc-generate/README.md` | experience-lwc-generate | For project context and documented behavior |
+| `.setup-agents/sf-skills/external-diagram-mermaid-generate/README.md` | external-diagram-mermaid-generate | For project context and documented behavior |
+| `.setup-agents/sf-skills/external-diagram-mermaid-generate/scripts/README.md` | Mermaid Preview Server | For project context and documented behavior |
+| `.setup-agents/sf-skills/integration-connectivity-connected-app-configure/README.md` | integration-connectivity-connected-app-configure | For project context and documented behavior |
+| `.setup-agents/sf-skills/integration-connectivity-generate/README.md` | integration-connectivity-generate | For project context and documented behavior |
+| `.setup-agents/sf-skills/integration-connectivity-generate/scripts/README.md` | integration-connectivity-generate Helper Scripts | For project context and documented behavior |
+| `.setup-agents/sf-skills/omnistudio-callable-apex-generate/README.md` | omnistudio-callable-apex-generate | For project context and documented behavior |
+| `.setup-agents/sf-skills/omnistudio-datapacks-deploy/README.md` | omnistudio-datapacks-deploy | For project context and documented behavior |
+| `.setup-agents/sf-skills/omnistudio-epc-catalog-generate/README.md` | omnistudio-epc-catalog-generate | For project context and documented behavior |
+| `.setup-agents/sf-skills/platform-apex-logs-debug/README.md` | platform-apex-logs-debug | For project context and documented behavior |
+| `.setup-agents/sf-skills/platform-apex-test-run/README.md` | platform-apex-test-run | For project context and documented behavior |
+| `.setup-agents/sf-skills/platform-data-and-tooling-api-context-get/examples/README.md` | Salesforce Data + Tooling API - Section-Specific Loading Examples | For project context and documented behavior |
+| `.setup-agents/sf-skills/platform-data-manage/README.md` | platform-data-manage | For project context and documented behavior |
+| `.setup-agents/sf-skills/platform-docs-get/README.md` | platform-docs-get | For project context and documented behavior |
+| `.setup-agents/sf-skills/platform-metadata-api-context-get/examples/README.md` | Salesforce Metadata API - Section-Specific Loading Examples | For project context and documented behavior |
+| `.setup-agents/sf-skills/platform-metadata-api-context-get/README.md` | Salesforce Metadata API Skill | For project context and documented behavior |
+| `.setup-agents/sf-skills/platform-metadata-deploy/README.md` | platform-metadata-deploy | For project context and documented behavior |
+| `.setup-agents/sf-skills/platform-soql-query/README.md` | platform-soql-query | For project context and documented behavior |
+| `.setup-agents/sf-skills/sales-agentforce-pipeline-management-configure/scripts/README.md` | Scripts for Pipeline Management Configuration | For project context and documented behavior |
+| `.setup-agents/sf-skills/service-helpagent-coordinate/README.md` | service-helpagent-coordinate | For project context and documented behavior |
+| `.setup-agents/state/README.md` | Setup Agents Local State | For project context and documented behavior |
+| `CONTRIBUTING.md` | Contributing | Before contributing changes |
+| `docs/ai-configuration.md` | AI Configuration | For project context and documented behavior |
+| `docs/architecture/ADR-001-CI-CD-WAVE-CHECKPOINTS.md` | ADR-001: CI/CD-Agnostic Manual Wave Checkpoints | When reviewing historical architecture rationale |
+| `docs/architecture/ARCHITECTURE.md` | 🏗️ Smart Deployment Plugin Architecture | For project context and documented behavior |
+| `docs/architecture/c4-omnistudio-channel-classification.md` | C4: OmniStudio Native vs Managed DataPack Channel Classification | For project context and documented behavior |
+| `docs/architecture/CLI_ARCHITECTURE.md` | CLI Architecture: Validate & Deploy | For project context and documented behavior |
+| `docs/architecture/METADATA_EXTENSIBILITY.md` | Metadata Type Extensibility | For project context and documented behavior |
+| `docs/architecture/PROJECT_AGNOSTIC_DESIGN.md` | 🏗️ Project-Agnostic Design | For project context and documented behavior |
+| `docs/archive/AI_AUTO_APPLY.md` | 🤖 AI Auto-Apply Mode | For project context and documented behavior |
+| `docs/archive/CI_CD_DEPLOYMENT.md` | 🚀 CI/CD Deployment Guide | For project context and documented behavior |
+| `docs/archive/CI_CD_OPTIMIZATION.md` | CI/CD Optimization Strategy | For project context and documented behavior |
+| `docs/archive/ERROR_HANDLING_STATUS.md` | 🛡️ Error Handling - Estado de Implementación | For project context and documented behavior |
+| `docs/archive/guides/AGENTFORCE_INTEGRATION.md` | 🤖 Agentforce Integration | For project context and documented behavior |
+| `docs/archive/README.md` | Archived Documentation | For project context and documented behavior |
+| `docs/archive/TESTING_SUMMARY.md` | 🧪 Testing Infrastructure - Summary | For project context and documented behavior |
+| `docs/archive/TODO_MAPPING.md` | 📋 TODO to User Story Mapping | For project context and documented behavior |
+| `docs/archive/USER_STORIES.md` | 📋 User Stories - Smart Deployment Plugin | For project context and documented behavior |
+| `docs/ci-runner-policy.md` | CI Runner Policy | For project context and documented behavior |
+| `docs/CIRCULAR_DEPENDENCY_REMEDIATION_SPEC.md` | Circular Dependency Remediation | For project context and documented behavior |
+| `docs/cli-reference.md` | CLI Reference | For project context and documented behavior |
+| `docs/ERROR_CATALOG.md` | 🛡️ Error Catalog - US-077 | For project context and documented behavior |
+| `docs/ERROR_HANDLING_INTEGRATION.md` | 🛡️ Error Handling Integration Guide | For project context and documented behavior |
+| `docs/guides/ACCEPTANCE_CRITERIA_TESTING.md` | 🎯 Acceptance Criteria Testing Guide | For project context and documented behavior |
+| `docs/guides/AGENTFORCE_TOKEN_LIMITS.md` | Agentforce Token Limits & Batching Strategy | For project context and documented behavior |
+| `docs/guides/GITHUB_SETUP.md` | ⚙️ GitHub Repository Setup | For project context and documented behavior |
+| `docs/guides/MEMORY_VS_API_COSTS.md` | Memory vs API Costs Trade-off | For project context and documented behavior |
+| `docs/guides/SELF_LEARNING_ANALYZER.md` | 🧠 Self-Learning Dependency Analyzer | For project context and documented behavior |
+| `docs/ISSUE_IMPLEMENTATION_MATRIX.md` | Issue Implementation Matrix | For project context and documented behavior |
+| `docs/known-limitations.md` | Known Limitations | For project context and documented behavior |
+| `docs/methodology/ERROR_DRIVEN_DEVELOPMENT.md` | ⚠️ Error-Driven Development (EDD) | For project context and documented behavior |
+| `docs/methodology/TESTING_STRATEGY.md` | 🧪 Testing Strategy - TDD & BDD | For project context and documented behavior |
+| `docs/owd-sharing-barrier.md` | OWD Sharing Barrier | For project context and documented behavior |
+| `docs/PARSER_SAFETY.md` | Parser Safety & Forward Compatibility | For project context and documented behavior |
+| `docs/proposals/SF_SMART_DEPLOYMENT_PLUGIN_PROPOSAL.md` | SF Smart Deployment Plugin - Proposal | For project context and documented behavior |
+| `docs/README.md` | Documentation Index | For project context and documented behavior |
+| `docs/refactor-epics.md` | Refactor Epics | For project context and documented behavior |
+| `docs/release-candidate-checklist.md` | Release Candidate Checklist | For project context and documented behavior |
+| `docs/release-workflow.md` | Release Workflow | For project context and documented behavior |
+| `docs/releases/SD-DEV-C4-CHANNEL-release-candidate.md` | SD-DEV-C4-CHANNEL — Release Candidate Note | For project context and documented behavior |
+| `docs/required-checks.md` | Required Check Contract | For project context and documented behavior |
+| `docs/research/DATACLOUD_RETRIEVE_VALIDATION.md` | Data Cloud Retrieve Validation | For project context and documented behavior |
+| `docs/research/metadata-catalog/c1-core-crm-channels.md` | C1 Core CRM and Channels Metadata Catalog Research | For project context and documented behavior |
+| `docs/research/metadata-catalog/c2-data-analytics-ai.md` | C2 Data, Analytics, and AI Metadata Catalog Research | For project context and documented behavior |
+| `docs/research/metadata-catalog/c3-commerce-marketing-revenue.md` | C3 Commerce, Marketing, and Revenue Metadata Catalog Research | For project context and documented behavior |
+| `docs/research/metadata-catalog/c4-integration-industries.md` | C4 Integration and Industries Platform Metadata Catalog Research | For project context and documented behavior |
+| `docs/research/metadata-catalog/c5-regulated-social-sectors.md` | C5 Regulated and Social Sectors Metadata Catalog Research | For project context and documented behavior |
+| `docs/research/metadata-catalog/c6-industrial-asset-location.md` | C6 Industrial, Asset, and Location Metadata Catalog Research | For project context and documented behavior |
+| `docs/research/metadata-catalog/c7-communications-media.md` | C7 Communications and Media Metadata Catalog Research | For project context and documented behavior |
+| `docs/research/metadata-catalog/expert-review-contract.md` | Product Expert Metadata Review Contract | For project context and documented behavior |
+| `docs/research/metadata-catalog/object-flexipage-activation-plan.md` | Staged CustomObject FlexiPage Activation | For project context and documented behavior |
+| `docs/research/metadata-catalog/qa-review.md` | Metadata Catalog QA Review | For project context and documented behavior |
+| `docs/research/metadata-catalog/README.md` | Salesforce Metadata Catalog Research | For project context and documented behavior |
+| `docs/research/metadata-catalog/unknown-validation-handoff.md` | Metadata unknown validation handoff | For project context and documented behavior |
+| `docs/research/metadata-catalog/wave-gap-review.md` | Metadata Wave Gap Review | For project context and documented behavior |
+| `docs/reviews/SD-DEV-C4-CHANNEL-security-review.md` | SD-DEV-C4-CHANNEL — Security Review (OmniStudio channel classifier) | For project context and documented behavior |
+| `docs/site-content-workflow.md` | Public Site Content Workflow | For project context and documented behavior |
+| `docs/technical-refactor-backlog.md` | Technical Refactor Backlog | For project context and documented behavior |
+| `docs/testing/SD-DEV-C4-CHANNEL-qa-report.md` | SD-DEV-C4-CHANNEL — QA Report (OmniStudio channel classifier) | For project context and documented behavior |
+| `README.md` | Smart Deployment | For project context and documented behavior |
+| `scripts/README.md` | 📜 Scripts | For project context and documented behavior |
+| `src/types/salesforce/README.md` | Salesforce Metadata Type Models | For project context and documented behavior |

@@ -1,13 +1,10 @@
-<!-- setup-agents: 3.23.0 -->
-
+<!-- setup-agents: 3.23.1 -->
 # Generate Test Report
 
 ## Goal
-
 Produce a QA sign-off report for this story.
 
 ## Steps
-
 1. Run Apex tests:
    ```bash
    sf apex test run --target-org <alias> --code-coverage --result-format human
@@ -17,7 +14,6 @@ Produce a QA sign-off report for this story.
 4. Write a summary: what was tested, results, any known limitations.
 
 ## Evidence
-
 ```bash
 sf setup-agents evidence add --task <id> --role qa --type report --summary "Generate Test Report completed"
 ```

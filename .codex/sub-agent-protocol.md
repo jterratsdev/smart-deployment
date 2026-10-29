@@ -1,4 +1,4 @@
-<!-- setup-agents: 3.23.0 -->
+<!-- setup-agents: 3.23.1 -->
 
 # Sub-agent Orchestration Protocol
 
@@ -7,42 +7,42 @@
 
 ## Active Profiles
 
-| Role                                      | Rule File                   |
-| ----------------------------------------- | --------------------------- |
-| Developer                                 | `.codex/developer.md`       |
-| Salesforce Ecosystem Architect            | `.codex/architect.md`       |
-| Salesforce Solution Architect             | `.codex/sa.md`              |
-| Salesforce Ecosystem Project Manager      | `.codex/pm.md`              |
-| Salesforce Ecosystem UX / UI Designer     | `.codex/ux.md`              |
-| Salesforce Ecosystem QA / Test Automation | `.codex/qa.md`              |
-| Salesforce Ecosystem Release Manager      | `.codex/release-manager.md` |
+| Role | Rule File |
+|------|-----------|
+| Developer | `.codex/developer.md` |
+| Salesforce Ecosystem Architect | `.codex/architect.md` |
+| Salesforce Solution Architect | `.codex/sa.md` |
+| Salesforce Ecosystem Project Manager | `.codex/pm.md` |
+| Salesforce Ecosystem UX / UI Designer | `.codex/ux.md` |
+| Salesforce Ecosystem QA / Test Automation | `.codex/qa.md` |
+| Salesforce Ecosystem Release Manager | `.codex/release-manager.md` |
 
 ## Profile Activation Metadata
 
 **At the START of every task, the parent agent MUST evaluate these Activation Signals and route to the correct profile automatically — WITHOUT waiting for the user to name a profile.** Infer the task's domain from its description, match it against the Activation Signals below, and proactively spawn the matching available specialist, including when exactly one specialist owns the work. When multiple profiles match because they own different phases or deliverables of the same task, spawning each matching specialist for its own phase is mandatory, not optional — never silently pick one profile and execute the others' phases inline. Pick a single profile only when two or more genuinely compete for the exact same deliverable (ambiguous ownership); in that case pick the closest owner or ask the user to disambiguate. Skipping a specialist's phase and running it inline instead of spawning it is a workflow deviation — disclose it rather than presenting the inline result as delegated work. Inline work is otherwise permitted only for small generalist work with no specialist owner, or after disclosing and recording an unavailable-spawn fallback. Expected evidence and gates define what the selected profile must produce or review.
 
-| Profile                                   | Activation Signals                                                                                                                                                                                                                                                                                                                              | Expected Evidence                                                                                                                                                        | Gates                                                             |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
-| Developer                                 | Salesforce ecosystem implementation, source code, defect fix, refactor, or unit test work; declarative setup, permission set, flow, page layout, object manager, or automation work; Salesforce ecosystem dependency, secrets, logging, or application-security implementation concern                                                          | unit test result; build or validation result; static analysis result; configuration note; setup path confirmation; admin validation result                               | code quality; security; test coverage; configuration; permissions |
-| Salesforce Ecosystem Architect            | Salesforce ecosystem architecture decision, ADR, integration pattern, data model, middleware, or cross-cutting concern; Salesforce technical architecture, platform governance, Apex architecture, or org-scale technical leadership; Salesforce ecosystem access control, secrets, threat model, compliance, privacy, or vulnerability concern | ADR or design note; diagram or option comparison; quality attribute assessment; technical spike outcome; security review; threat model note; scan or permission evidence | architecture; security; governance; privacy; compliance           |
-| Salesforce Solution Architect             | Salesforce solution design, business capability mapping, cross-cloud integration, or fit-gap architecture; Salesforce ecosystem requirements, user story, acceptance criteria, process mapping, or stakeholder clarification                                                                                                                    | solution design document; integration architecture; fit-gap analysis; refined story; acceptance criteria; process notes                                                  | architecture; feasibility; scope; traceability                    |
-| Salesforce Ecosystem Project Manager      | Salesforce ecosystem roadmap, milestone, release scope, dependency, risk, or stakeholder status                                                                                                                                                                                                                                                 | priority decision; release or sprint plan; risk and dependency summary                                                                                                   | scope; readiness                                                  |
-| Salesforce Ecosystem UX / UI Designer     | Salesforce ecosystem user interface, design system, accessibility, interaction flow, empty state, or user research work                                                                                                                                                                                                                         | UI checklist; accessibility result; screenshot or flow review                                                                                                            | ux; accessibility                                                 |
-| Salesforce Ecosystem QA / Test Automation | Salesforce ecosystem test strategy, regression, Playwright, acceptance validation, or defect reproduction work                                                                                                                                                                                                                                  | test plan; execution result; defect evidence or trace                                                                                                                    | qa; regression                                                    |
-| Salesforce Ecosystem Release Manager      | production deployment, environment promotion, release validation, monitoring, or rollback planning; Salesforce ecosystem pipeline, deployment, package, scratch org, CI, environment, or release automation work                                                                                                                                | validation evidence; deployment confirmation; smoke test and monitoring results; pipeline result; rollback note                                                          | qa-gate; deploy-approval; release; environment; rollback          |
+| Profile | Activation Signals | Expected Evidence | Gates |
+|---------|--------------------|-------------------|-------|
+| Developer | Salesforce ecosystem implementation, source code, defect fix, refactor, or unit test work; declarative setup, permission set, flow, page layout, object manager, or automation work; Salesforce ecosystem dependency, secrets, logging, or application-security implementation concern | unit test result; build or validation result; static analysis result; configuration note; setup path confirmation; admin validation result | code quality; security; test coverage; configuration; permissions |
+| Salesforce Ecosystem Architect | Salesforce ecosystem architecture decision, ADR, integration pattern, data model, middleware, or cross-cutting concern; Salesforce technical architecture, platform governance, Apex architecture, or org-scale technical leadership; Salesforce ecosystem access control, secrets, threat model, compliance, privacy, or vulnerability concern | ADR or design note; diagram or option comparison; quality attribute assessment; technical spike outcome; security review; threat model note; scan or permission evidence | architecture; security; governance; privacy; compliance |
+| Salesforce Solution Architect | Salesforce solution design, business capability mapping, cross-cloud integration, or fit-gap architecture; Salesforce ecosystem requirements, user story, acceptance criteria, process mapping, or stakeholder clarification | solution design document; integration architecture; fit-gap analysis; refined story; acceptance criteria; process notes | architecture; feasibility; scope; traceability |
+| Salesforce Ecosystem Project Manager | Salesforce ecosystem roadmap, milestone, release scope, dependency, risk, or stakeholder status | priority decision; release or sprint plan; risk and dependency summary | scope; readiness |
+| Salesforce Ecosystem UX / UI Designer | Salesforce ecosystem user interface, design system, accessibility, interaction flow, empty state, or user research work | UI checklist; accessibility result; screenshot or flow review | ux; accessibility |
+| Salesforce Ecosystem QA / Test Automation | Salesforce ecosystem test strategy, regression, Playwright, acceptance validation, or defect reproduction work | test plan; execution result; defect evidence or trace | qa; regression |
+| Salesforce Ecosystem Release Manager | production deployment, environment promotion, release validation, monitoring, or rollback planning; Salesforce ecosystem pipeline, deployment, package, scratch org, CI, environment, or release automation work | validation evidence; deployment confirmation; smoke test and monitoring results; pipeline result; rollback note | qa-gate; deploy-approval; release; environment; rollback |
 
 ## Task-to-Profile Routing
 
 Before doing any work, infer the task type from its description and route to the corresponding profile automatically — do not wait for the user to specify one. Spawn the matching available specialist executor. A tracked task and its workflow phase owner establish scope and accountability; they are not the subagent that executes the phase. Inline execution is limited to small generalist work without a specialist owner, or a disclosed and recorded unavailable-spawn fallback:
 
-| Task Type                                                                                                               | Assigned Role          | Rule File                   |
-| ----------------------------------------------------------------------------------------------------------------------- | ---------------------- | --------------------------- |
-| Architecture decisions, ADRs, pattern selection, cross-cutting concerns                                                 | **Architect**          | `.codex/architect.md`       |
-| Scope analysis, solution design, user stories, acceptance criteria, story templating (OmniStudio/Flow/Experience Cloud) | **Solution Architect** | `.codex/sa.md`              |
-| Apex, LWC, Triggers, SOQL, DML, unit tests, declarative configuration                                                   | **Developer**          | `.codex/developer.md`       |
-| LWC UI components, SLDS styling, accessibility, design tokens                                                           | **UX / UI**            | `.codex/ux.md`              |
-| Pipelines, deployment validation, scratch orgs, package versioning, release promotion                                   | **Release Manager**    | `.codex/release-manager.md` |
-| Playwright tests, Page Objects, accessibility automation, test reports                                                  | **QA Engineer**        | `.codex/qa.md`              |
+| Task Type | Assigned Role | Rule File |
+|-----------|--------------|-----------|
+| Architecture decisions, ADRs, pattern selection, cross-cutting concerns | **Architect** | `.codex/architect.md` |
+| Scope analysis, solution design, user stories, acceptance criteria, story templating (OmniStudio/Flow/Experience Cloud) | **Solution Architect** | `.codex/sa.md` |
+| Apex, LWC, Triggers, SOQL, DML, unit tests, declarative configuration | **Developer** | `.codex/developer.md` |
+| LWC UI components, SLDS styling, accessibility, design tokens | **UX / UI** | `.codex/ux.md` |
+| Pipelines, deployment validation, scratch orgs, package versioning, release promotion | **Release Manager** | `.codex/release-manager.md` |
+| Playwright tests, Page Objects, accessibility automation, test reports | **QA Engineer** | `.codex/qa.md` |
 
 ## Autonomous Multi-Phase Work — Prefer `workflow run --autonomous`
 
@@ -89,7 +89,6 @@ When one profile completes work that feeds into another, follow these handoff ch
 ## Conflict Resolution
 
 When a task could fall under multiple profiles:
-
 - **Architect** takes precedence for design decisions and cross-cutting concerns.
 - **Domain profile** (cgcloud, crma, data360) takes precedence for platform-specific rules.
 - **Developer** handles implementation once design is agreed.
@@ -101,7 +100,6 @@ A single sub-agent cannot reason row-by-row over a large tabular or multi-sectio
 artifact in one pass — it exhausts its time/token budget and returns nothing (a timeout
 with zero output), not a partial file. Before spawning a sub-agent to PRODUCE such a
 deliverable, decompose the work:
-
 - **Threshold:** any deliverable that applies per-row/per-item judgement across more than
   ~50 rows (or spans many sections) — e.g. ERD/object catalogs, story maps, traceability
   matrices, data dictionaries, test-case matrices, large gap analyses.
@@ -112,8 +110,8 @@ deliverable, decompose the work:
   directly from that source instead of delegating open-ended reasoning over every row.
 - **Always validate** the assembled result against the source (row counts, item-by-item)
   and record the count delta as evidence.
-  A timeout here is a decomposition failure, not a tooling failure — recover by claiming the
-  open task and rebuilding by block, never by re-running the same oversized single spawn.
+A timeout here is a decomposition failure, not a tooling failure — recover by claiming the
+open task and rebuilding by block, never by re-running the same oversized single spawn.
 
 ## Branded Document Generation — Tone & Audience Governance (CRITICAL)
 
@@ -124,15 +122,13 @@ is safe to include. This applies to the generating agent, not the rendering code
 
 When the user asks for a document artifact, you MUST render the completed source with
 `sf setup-agents docs`; do not stop after writing Markdown. Choose exactly one format:
-
 - PDF document: `sf setup-agents docs --pdf --input <source.md> --output <document.pdf> --review <review.json>`.
 - Interactive deck: `sf setup-agents docs --deck --input <source.md> --output <deck.html> --review <review.json>`.
-  Deck output is always HTML. Never use the removed `sf setup-agents docs pdf --deck` syntax.
+Deck output is always HTML. Never use the removed `sf setup-agents docs pdf --deck` syntax.
 
 ### Reusable audience profile (capture once, reuse)
 
 Maintain a reusable audience profile at `.agent-workflow/audience-profile.json` with:
-
 - `audience` — who reads this (e.g. exec committee, technical team, end client).
 - `technicalLevel` — how much jargon the audience understands (e.g. business, mixed, technical).
 - `languageRegister` — language + register (e.g. `es-MX` business, `en-US` formal).
@@ -149,7 +145,6 @@ silently — do not re-interrogate the user each time.
 Before rendering a document marked `variant:"final"` (an external/client-facing deliverable),
 surface a confirmation summary to the user covering ALL FOUR categories and get explicit
 confirmation. Do NOT render the PDF/HTML until the user confirms:
-
 1. **Translated technical jargon** — list every technical term (RFC, VIN, FLS, ETL, Shield, …)
    and its business-language rendering, and confirm the translation.
 2. **Figures, commitments & deadlines** — confirm every number, date, duration, and commitment
@@ -195,7 +190,6 @@ This applies to: sa, pm, ux, qa, release-manager.
 ## Context Transmission Rule
 
 Sub-agents must NOT be spawned without:
-
 - An explicit role declaration from the list above.
 - The relevant rule file injected via reading `.codex/<id>.md` (if not always-loaded).
 - The active profiles list (copy the Active Profiles table above).
@@ -204,7 +198,6 @@ Sub-agents must NOT be spawned without:
 ## Sub-agent Handoff — Files Written Manifest
 
 Every sub-agent handoff MUST include:
-
 - **Files Written:** list every file path written to the filesystem during this phase.
 - **Decisions Made:** list key architectural or implementation decisions.
 - **TBDs Raised:** list any open questions that block the next phase.

@@ -1,10 +1,13 @@
 {
   "schemaVersion": 1,
-  "pluginVersion": "3.23.0",
+  "pluginVersion": "3.23.1",
   "setupLevel": "full",
   "scope": {
     "kind": "repository-full",
-    "include": ["force-app", "repository documentation"],
+    "include": [
+      "force-app",
+      "repository documentation"
+    ],
     "exclude": [
       ".claude",
       ".git",
@@ -21,13 +24,15 @@
       "node_modules"
     ]
   },
-  "sourceRoots": ["force-app"],
-  "sourceDigest": "1eef31808d8f948e96ae1b53a8ec9e42de00f549669f5578b62e6c81dac9987e",
+  "sourceRoots": [
+    "force-app"
+  ],
+  "sourceDigest": "091d34a5f182cb235060aa18972ff10b972f9e4fa7c09c06b0fdb566d692ddd6",
   "artifactDigests": {
-    ".setup-agents/project-knowledge.md": "f113c46904c879511463ea11af326dd64ef143b5956b652dd6e92b31c482f548",
+    ".setup-agents/project-knowledge.md": "7eb3e40409b3e8f565bd19b8c07b3d20339b8aa786d1991dc974eb1ee9d13dcb",
     ".setup-agents/class-catalog.md": "cb80c58153cf3a31632fe01f262be595ac95b72e2438074615d0d0329a4ccb44",
-    ".setup-agents/doc-index.md": "a13d2b90ad50d02444b609c86413cd79c4254718fba9a8658c3a74e3ea472a66",
-    ".setup-agents/sf-metadata-index.json": "cb9e67941845d7b91ffa99090c0b58d8d40a1590362aae4cf083ba57c24fec8d"
+    ".setup-agents/doc-index.md": "41e9a81ef08e27bcf5ca804ace039f0cbc5701743e0d3d3fc0707edaf773380a",
+    ".setup-agents/sf-metadata-index.json": "e1eba3a3fd55fc36fe2344e04b9fd9aa595970303ef3641893039bc6b38c1905"
   },
   "degradedReasons": []
 }

@@ -1,13 +1,10 @@
-<!-- setup-agents: 3.23.0 -->
-
+<!-- setup-agents: 3.23.1 -->
 # Wireframe
 
 ## Goal
-
 Produce a lo-fi then hi-fi wireframe that captures component inventory, responsive breakpoints, and interaction states.
 
 ## Steps
-
 1. Clarify: What is the user goal for this screen/flow?
 2. Lo-fi wireframe:
    - Sketch the layout: header, sidebar, main content, footer.
@@ -20,7 +17,6 @@ Produce a lo-fi then hi-fi wireframe that captures component inventory, responsi
 4. Share with team for feedback before implementation handoff.
 
 ## Evidence
-
 ```bash
 sf setup-agents evidence add --task <id> --role ux --type file --summary "Wireframe completed"
 ```

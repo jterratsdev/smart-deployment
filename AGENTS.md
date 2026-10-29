@@ -1,44 +1,38 @@
 # Agent Guidelines
 
-<!-- setup-agents: 3.23.0 -->
+<!-- setup-agents: 3.23.1 -->
 
-<!-- setup-agents:block:start id="codex-root" version="3.23.0" -->
-
-> **These rules are non-negotiable. Follow them on every response.** > **ALWAYS use `sf setup-agents`** — it is the single source of truth for task state,
+<!-- setup-agents:block:start id="codex-root" version="3.23.1" -->
+> **These rules are non-negotiable. Follow them on every response.**
+> **ALWAYS use `sf setup-agents`** — it is the single source of truth for task state,
 > workflow, and evidence. Run the pre-flight check before any work; never manage this manually.
 
 ## General Principles
-
 - Always read existing code before making changes.
 - Prefer editing existing files over creating new ones.
 - Follow the coding conventions already present in this project.
 - Write concise, self-documenting code. Avoid unnecessary comments.
 
 ## Code Quality
-
 - Ensure all new code is covered by tests.
 - Do not introduce linter errors or suppress warnings.
 - Handle errors explicitly; never swallow exceptions silently.
 
 ## Security
-
 - Never hardcode credentials, tokens, or sensitive data.
 - Use environment variables or secret managers for sensitive values.
 
 ## Behavioral Guidelines
-
 > How to reason and edit within a task. These operate inside the workflow contract above,
 > not in place of it.
 
 ### Think before coding
-
 - State the assumptions your solution depends on before you write code.
 - When the request is ambiguous, ask — or present the candidate interpretations and let the
   user choose. Do not silently pick one and proceed.
 - If a simpler approach exists than the one requested, push back and explain the trade-off.
 
 ### Truthfulness and uncertainty
-
 - If requested information is not explicitly available in the provided context, respond exactly:
   "I do not have that information."
 - Never speculate, extrapolate, or fabricate facts, dates, names, or links.
@@ -46,31 +40,26 @@
 - Prioritize accuracy and safety over appearing helpful or producing a longer answer.
 
 ### Simplicity first
-
 - Write the minimum code that solves the stated problem.
 - No speculative features, abstractions, configuration, or error handling that the task did
   not ask for. Build for the requirement in front of you, not an imagined future one.
 
 ### Surgical changes
-
 - Touch only what the task needs. Do not "improve", reformat, or refactor adjacent code.
 - Match the existing style of the file you are editing.
 - Only clean up loose ends that YOUR change created (orphaned imports, dead references).
   This is the project's "No Ninja Edits" rule — leave unrelated code exactly as you found it.
 
 ### Goal-driven execution
-
 - Define a verifiable success criterion before starting, then loop until it is met.
 - "Fix the bug" means: write a test that reproduces it, then make that test pass.
 - Do not declare work done until you have run the check that proves it.
 
 ### Long-running shell work
-
 - Wait for long commands in the foreground. If work must outlive the turn and a bridge is running,
   use `sf setup-agents background run --label "<label>" -- sf <args>`; it follows your permission rules.
 
 ### Assessment depth — grep locates, it does not conclude
-
 - Ground assessments in real metadata and tool output, not narrative or file counts.
 - Treat grep as a locator, verify each match, cover the full domain checklist, and declare missing
   evidence as a gap. Use the applicable analyzer skill rather than claiming manual inspection as SAST.
@@ -83,55 +72,45 @@
   before reporting the discrepancy as a real gap.
 
 ## Action Risk Scale (CRITICAL)
-
 > Classify every action first — also the Approval Policy; rules defer to it.
 
 ### ✅ AUTO — execute without asking
-
 - Read any file, search codebase, run linters or tests
-- Create or edit source files, config files, markdown, JSON
-- Run `yarn`, `npm`, `npx` scripts that are not destructive
+- Create or edit source, config, markdown, or JSON files
+- Run `yarn`/`npm`/`npx` scripts that aren't destructive
 - Run any `sf` command not under 🛑 NEVER or 🔒 Human-only. Subagents: `acceptEdits`.
-- `git commit`/`pull`/`fetch` (scoped to this clone, reversible); add evidence/decisions
+- `git commit`/`pull`/`fetch` (clone-scoped, reversible); add evidence/decisions
 
 ### ⚠️ ASK — show plan, wait for explicit confirmation ("yes")
-
 - Work outside the agreed task scope/design; edits to unrelated code
 - `git push`/`tag`/`checkout`, branches, `stash`/`restore`/`rebase`/`reset --hard`/`clean`
-- Installing/uninstalling non-`sf` tooling; CI/CD changes; non-`sf` writes to shared state
+- (Un)installing non-`sf` tooling; CI/CD changes; non-`sf` writes to shared state
 
 ### 🛑 NEVER — tell the user to run it manually
-
 - `rm -rf`/`sudo` outside a session-owned scratch root
 - `sf org delete`/`refresh sandbox`, `package`/`version`/`bundle delete` (any alias)
-- `--no-verify`/`-n`, `core.hooksPath`, `HUSKY=0` (hook bypass)
+- `--no-verify`/`-n`/`core.hooksPath`/`HUSKY=0` (hook bypass)
 
 ### 🔒 Human-only — refused outside a real terminal
-
-`init`, `import`, `sync --pull`, `workflow permission approve`, `workflow permission trust`
-— never; `local`/`update`: hooks/perms only; `local --reapprove-git-hooks`: always.
-`phase-plan --save`: only gate-removing.
-`abandon --apply`: idle; else `--request-approval`→`--offer <code> --apply`
-`review complete --result approved`: chat-approved
+`init`, `import`, `sync --pull`, `workflow permission approve/trust` — never;
+`local`/`update`: hooks/perms only; `local --reapprove-git-hooks`: always.
+`phase-plan --save`: only gate-removing. `abandon --apply`: idle; else
+`--request-approval`→`--offer <code> --apply`. `review complete --result approved`: chat-approved.
 
 > Gates (`ba→architect`, `document-review→release`, `deploy-approval`, final docs) are
 > human-only, always. Default to ⚠️ ASK when unsure — `.setup-agents/permissions.md` + hooks
 > enforce this (a workflow control, not a security boundary). "No Ninja Edits" = ASK tier only.
 
 ## setup-agents workflow (required)
-
 **CONTRACT:** Task-first, no exceptions.
-
 > Run the setup-agents preflight before reading, researching, editing, or generating artifacts.
 > Task state, workflow progression, evidence, and reviews are managed with `sf setup-agents`.
 
 ### Pre-flight check
-
 ```bash
 sf setup-agents task list --json
 sf setup-agents workflow pending --json
 ```
-
 - Have a phaseTaskId? `workflow context --task <id>` first; overrides your prompt.
 - Resume a matching task/run. Otherwise confirm once, create the task, then
   `sf setup-agents workflow run --story <id> --gates phase` (`--story`, not `--task`).
@@ -139,14 +118,14 @@ sf setup-agents workflow pending --json
   `.setup-agents/skills/<skill>/SKILL.md`; do not load the full skill catalog.
 - Task tracking records the work; workflow phase ownership assigns accountability; a spawned subagent is the executor. Do not treat creating or owning a task/phase as delegation.
 - Before specialist work, evaluate active profiles' Activation Signals in the sub-agent protocol. When one or more profiles match and a matching native subagent is available, proactively spawn it; this includes work owned by exactly one specialist.
-- Inline execution is allowed only for small generalist work with no specialist owner. If spawning is unavailable, disclose the fallback and record why it was unavailable before executing inline.
+- Inline execution is allowed only for small generalist work with no specialist owner. If spawning is unavailable, disclose and record why it was unavailable before executing inline.
 - Route delegated work through an active profile: every spawned executor includes its rule file and applicable skills.
 - Read `.setup-agents/project-knowledge.md` and relevant lessons before changing Salesforce artifacts.
 - Before naming any new class, field, component, permission set, or object, read
   `.setup-agents/project-knowledge.md`'s Naming Conventions section — do not invent a pattern
   the project hasn't already established.
-- If project knowledge is missing, templated, or stale, complete `.setup-agents/skills/project-knowledge-bootstrap/SKILL.md` before architecture or implementation work.
-- Any role may record verified, durable project facts; never record transient task state, guesses, credentials, or sensitive data.
+- If project knowledge is missing, templated, or stale, complete `.setup-agents/skills/project-knowledge-bootstrap/SKILL.md` first.
+- Any role may record verified, durable project facts; never transient state, guesses, credentials, or sensitive data.
 - Prefer `.setup-agents/references/` and the applicable documentation skill before raw web retrieval.
 - Phase task: follow `.setup-agents/playbooks/profiles/<role>/close-phase.md`, then `task done --id <id>`.
 - Disclose missing skills, unavailable evidence, retrieval fallbacks, or workflow deviation.
@@ -154,7 +133,6 @@ sf setup-agents workflow pending --json
   `[prompt:text|q]`; never call `AskUserQuestion` there.
 
 ### Plugin command reference — the task-first loop (every role)
-
 These are the core plugin commands. Flags shown are the real ones; run `sf setup-agents <cmd> --help`
 for the full list. `--story` on `workflow run` is the task id.
 
@@ -172,7 +150,6 @@ sf setup-agents status
 ```
 
 ### Mandatory gate approval
-
 - When a run pauses at a mandatory gate, the main session (never a subagent) runs
   `sf setup-agents review ask-approval --story <id>`, shows its block byte-for-byte in a fenced
   code block — never reformat, summarize, or translate it — and ends the message with exactly
@@ -202,19 +179,20 @@ different flag, or ask a subagent to run it instead — a subagent inherits the 
 - `workflow abandon --apply` (only when the run is not idle: a pending gate review, a blocked
   phase, or QA iterations > 0) and `workflow abandon --offer <code> --apply`
 - `workflow permission approve`, `workflow permission trust`
-- `review preapproval create`, `review preapproval list`, `review preapproval revoke`
+- `review preapproval create`, `review preapproval list`, `review preapproval revoke`,
+  `review preapproval snapshot-legacy-approvals`
 - `review complete --result approved` on a review targeting a mandatory gate (`ba→architect`,
   `document-review→release`) — unless a conversational grant already exists from the user's own
   chat reply (see "Mandatory gate approval" above)
 - `decision update --ids-file --apply`, `decision archive --ids-file --apply`,
   `decision renumber --apply` (bulk forms only — a single `--id` call is not gated)
-- `mcp --install-browser`, `mcp --sign-in`, and any `mcp --third-party` write of a
-  user/project-overlay-sourced integration
+- `mcp --install-browser`/`--sign-in`, any overlay-sourced `--third-party` write
 - `rules inject` when the resolved target lands on a protected agent-frontmatter/settings path
 - `workflow rollback` past an approved mandatory gate or with QA iterations (`qaIterations > 0`);
   a rollback that crosses neither stays agent-usable
 - `auth revoke` (always), and `mcp`'s ordinary `--target-org`/`--all-toolsets` write path (the
   built-in Salesforce MCP server entries)
+- `permissions apply --proposal`/`--prune`/`--target project` (`--safe` is orchestrator-only, below)
 
 ### Orchestrator-executable (main session may run; a role subagent should not)
 
@@ -222,42 +200,39 @@ Read-only or workflow-state commands the main session uses for its own orchestra
 role subagent does not need and should not run on its own initiative: `task:create`,
 `task:delete`, `workflow:run` (starting a run, or any `--resume` the role itself should instead
 report back per the phase-closing protocol), `workflow:abandon` (list form; `--apply` is gated,
-above), `review:ask-approval`, `dashboard`, `export`, `sync` (push).
+above), `review:ask-approval`, `dashboard`, `export`, `sync` (push), `permissions apply --safe`
+(denied for a subagent). Any role may run `permissions suggest` freely (read-only).
+
+Bash style: parse `sf --json` with `jq`, not `python3 -c`. No leading `cd <dir> &&` — use
+`git -C <dir>`/`--source-dir`/absolute paths. One command per call, no loops or `$(…)`.
 
 ## Profile Rules (always loaded)
-
 Read the following files for role-specific standards before generating code:
-
-- `.codex/developer.md` — Developer rules
+- `.setup-agents/profiles/developer/rule.md` — Developer rules
 
 ## Profile Rules (load on demand)
-
 Include the relevant file in the sub-agent prompt when delegating to that role:
-
-- `.codex/architect.md` — Salesforce Ecosystem Architect
-- `.codex/sa.md` — Salesforce Solution Architect
-- `.codex/pm.md` — Salesforce Ecosystem Project Manager
-- `.codex/ux.md` — Salesforce Ecosystem UX / UI Designer
-- `.codex/qa.md` — Salesforce Ecosystem QA / Test Automation
-- `.codex/release-manager.md` — Salesforce Ecosystem Release Manager
+- `.setup-agents/profiles/architect/rule.md` — Salesforce Ecosystem Architect
+- `.setup-agents/profiles/sa/rule.md` — Salesforce Solution Architect
+- `.setup-agents/profiles/pm/rule.md` — Salesforce Ecosystem Project Manager
+- `.setup-agents/profiles/ux/rule.md` — Salesforce Ecosystem UX / UI Designer
+- `.setup-agents/profiles/qa/rule.md` — Salesforce Ecosystem QA / Test Automation
+- `.setup-agents/profiles/release-manager/rule.md` — Salesforce Ecosystem Release Manager
 
 ## Salesforce Source Rules
 
 ### Apex
-
 - Default: `with sharing`. Exception: `@RestResource` classes → `without sharing`.
 - No SOQL or DML inside loops.
 - One trigger per object. Zero logic in triggers — delegate to trigger handler.
 - Always bulkify: handle 1 to N records.
 
 ### LWC
-
 - Prioritize SLDS Styling Hooks over custom CSS.
 - Use LDS 2 and Lightning Data Service whenever possible.
 - User feedback: Toasts with Custom Labels. Never hardcode strings.
 
 ### Testing
-
 - Exactly one Assert per test method using the modern `Assert` class.
 - Use `@TestSetup` for shared test data.
 - Target 90% code coverage.

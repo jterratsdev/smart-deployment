@@ -1,13 +1,10 @@
-<!-- setup-agents: 3.23.0 -->
-
+<!-- setup-agents: 3.23.1 -->
 # Candidate Release
 
 ## Goal
-
 Tag the current commit as a release candidate.
 
 ## Steps
-
 1. Confirm all stories in scope are in `done` status.
 2. Create a git tag:
    ```bash
@@ -17,7 +14,6 @@ Tag the current commit as a release candidate.
 3. Create a GitHub release draft (do not publish yet).
 
 ## Evidence
-
 ```bash
 sf setup-agents evidence add --task <id> --role release-manager --type command --summary "Candidate Release completed"
 ```

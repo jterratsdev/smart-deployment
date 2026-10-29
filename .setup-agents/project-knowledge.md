@@ -112,12 +112,16 @@ confirm each row and add any the scan missed. -->
 | dependency_graph    | _(seeded by refresh — confirm what this shows)_ | `.setup-agents/sf-skills/agentforce-architecture-analyze/assets/mermaid/dependency_graph.mmd`    | _(seeded by refresh)_ |
 | invocation_sequence | _(seeded by refresh — confirm what this shows)_ | `.setup-agents/sf-skills/agentforce-architecture-analyze/assets/mermaid/invocation_sequence.mmd` | _(seeded by refresh)_ |
 | planner_state       | _(seeded by refresh — confirm what this shows)_ | `.setup-agents/sf-skills/agentforce-architecture-analyze/assets/mermaid/planner_state.mmd`       | _(seeded by refresh)_ |
+| action_tree         | _(seeded by refresh — confirm what this shows)_ | `.cursor/skills/agentforce-architecture-analyze/assets/mermaid/action_tree.mmd`                  | _(seeded by refresh)_ |
+| data_flow           | _(seeded by refresh — confirm what this shows)_ | `.cursor/skills/agentforce-architecture-analyze/assets/mermaid/data_flow.mmd`                    | _(seeded by refresh)_ |
+| dependency_graph    | _(seeded by refresh — confirm what this shows)_ | `.cursor/skills/agentforce-architecture-analyze/assets/mermaid/dependency_graph.mmd`             | _(seeded by refresh)_ |
+| invocation_sequence | _(seeded by refresh — confirm what this shows)_ | `.cursor/skills/agentforce-architecture-analyze/assets/mermaid/invocation_sequence.mmd`          | _(seeded by refresh)_ |
+| planner_state       | _(seeded by refresh — confirm what this shows)_ | `.cursor/skills/agentforce-architecture-analyze/assets/mermaid/planner_state.mmd`                | _(seeded by refresh)_ |
 
 <!-- setup-agents:block:end id="project-knowledge-diagrams" -->
 <!-- setup-agents:block:end id="project-knowledge-accepted" -->
 
 <!-- setup-agents:block:start id="project-knowledge-derived" -->
-
 ## Derived Repository Evidence
 
 This block contains observed evidence only. It does not record decisions or conventions.
@@ -126,16 +130,16 @@ This block contains observed evidence only. It does not record decisions or conv
 
 - `force-app`
 
-- Source digest: `1eef31808d8f948e96ae1b53a8ec9e42de00f549669f5578b62e6c81dac9987e`
+- Source digest: `091d34a5f182cb235060aa18972ff10b972f9e4fa7c09c06b0fdb566d692ddd6`
 
 ### Observed Artifact Counts
 
-| Artifact            | Observed count |
-| ------------------- | -------------- |
-| Apex classes        | 0              |
-| Apex triggers       | 0              |
-| LWC components      | 0              |
-| Documentation files | 131            |
+| Artifact | Observed count |
+|----------|----------------|
+| Apex classes | 0 |
+| Apex triggers | 0 |
+| LWC components | 0 |
+| Documentation files | 148 |
 
 ### Naming Candidates (observed, not accepted)
 
@@ -151,11 +155,11 @@ These candidates are observations, not accepted conventions. Human review is req
 
 ### Codebase Map
 
-| Path                             | Observed purpose                          |
-| -------------------------------- | ----------------------------------------- |
-| `force-app`                      | Salesforce source root                    |
+| Path | Observed purpose |
+|------|------------------|
+| `force-app` | Salesforce source root |
 | `.setup-agents/class-catalog.md` | Complete Apex, trigger, and LWC inventory |
-| `.setup-agents/doc-index.md`     | Repository documentation inventory        |
+| `.setup-agents/doc-index.md` | Repository documentation inventory |
 
 ### Search Hints
 

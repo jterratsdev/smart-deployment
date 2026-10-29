@@ -1,18 +1,14 @@
-<!-- setup-agents: 3.23.0 -->
-
+<!-- setup-agents: 3.23.1 -->
 # Release
 
 ## Goal
-
 Deploy validated changes to the target environment.
 
 ## Pre-flight
-
 1. Confirm QA gate is approved (`sf setup-agents workflow gate`).
 2. Confirm no open blockers in `.setup-agents/state/`.
 
 ## Steps
-
 1. Quick deploy (uses last successful validation job):
    ```bash
    sf project deploy quick --job-id <validationJobId> --target-org <alias>
@@ -25,7 +21,6 @@ Deploy validated changes to the target environment.
 3. Run post-deploy smoke tests.
 
 ## Evidence
-
 ```bash
 sf setup-agents evidence add --task <id> --role release-manager --type command --summary "Release completed"
 ```
