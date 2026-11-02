@@ -240,7 +240,10 @@ describe('NUT: validate, status, and resume commands', () => {
     const { tempDir, homeDir } = await createNutContext();
     tempDirs.push(tempDir);
     const projectRoot = await createSalesforceProject(tempDir, 'start-partial-failure-project', {
-      'force-app/main/default/classes/BrokenClass.cls': 'public class BrokenClass { MissingDependency value; }\n',
+      // Locally resolvable so wave planning places it; the fake CLI below simulates the
+      // remote partial failure this test actually exercises (see WaveValidator/e70f7f8:
+      // a dangling local type reference would now be rejected before any `sf` call).
+      'force-app/main/default/classes/BrokenClass.cls': 'public class BrokenClass { Integer value; }\n',
       'force-app/main/default/classes/BrokenClass.cls-meta.xml': [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">',

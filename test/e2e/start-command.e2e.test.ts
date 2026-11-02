@@ -107,7 +107,7 @@ describe('E2E: Start Command - US-067', () => {
         name: 'Component1',
         type: 'ApexClass' as const,
         filePath: 'Component1.cls',
-        dependencies: new Set<string>(['Component0']),
+        dependencies: new Set<string>(['ApexClass:Component0']),
         dependents: new Set<string>(),
         priorityBoost: 0,
       };
@@ -275,11 +275,8 @@ describe('E2E: Start Command - US-067', () => {
 
       // Waves with Apex should be marked for test execution
       expect(waveResult.waves.length).to.be.greaterThan(0);
-      const waveWithApex = waveResult.waves.find((w) =>
-        w.metadata.types.includes('ApexClass')
-      );
+      const waveWithApex = waveResult.waves.find((w) => w.metadata.types.includes('ApexClass'));
       expect(waveWithApex).to.exist;
     });
   });
 });
-

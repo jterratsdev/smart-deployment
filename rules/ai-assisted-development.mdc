@@ -48,6 +48,6 @@ AI-generated work must meet the same engineering bar as human-written work. Spee
 
 - Select authoritative source groups before acting: project instructions, backlog, architecture, codebase, quality/security, DevOps/runtime, vendor docs, and agent memory.
 - Prefer local project sources first and official vendor documentation for current APIs, frameworks, cloud services, providers, and tools.
-- When an action fails in a reusable way, record the lesson in `.agent-workflow/agent-lessons.jsonl` with operation, error signature, root cause, fix, prevention, and verification.
+- When an action fails in a reusable way, record the lesson in setup-agents project knowledge or the relevant skill with operation, error signature, root cause, fix, prevention, and verification.
 - Before repeating risky operations, search prior lessons for matching tool, command, error signature, or operation.
 - Promote repeated lessons into the relevant skill or rule instead of letting agents rediscover the same failure.

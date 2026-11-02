@@ -96,6 +96,43 @@ function providerPlan(overrides: Partial<SpecialDeploymentPlan> = {}): SpecialDe
 }
 
 describe('PlanExplainService', () => {
+  it('reports a non-executable staged activation conflict with the source edge intact', async () => {
+    const object = component('CustomObject', 'Tour__c', ['FlexiPage:Tour_Record_Page']);
+    const page = component('FlexiPage', 'Tour_Record_Page');
+    const blocked = context([object, page], []);
+    blocked.stageConflicts = [
+      {
+        component: 'CustomObject:Tour__c',
+        dependency: 'FlexiPage:Tour_Record_Page',
+        componentStage: 1,
+        dependencyStage: 6,
+      },
+    ];
+    const service = new PlanExplainService({
+      deploymentContextService: {
+        buildContext: async (options) => {
+          expect(options?.explainStageConflicts).to.equal(true);
+          return blocked;
+        },
+      },
+      specialDeploymentPlanService: { buildPlan: async () => providerPlan() },
+    });
+
+    const explanation = await service.explain();
+    expect(explanation.success).to.equal(false);
+    expect(explanation.summary.waves).to.equal(0);
+    expect(explanation.stageConflicts).to.deep.equal(blocked.stageConflicts);
+    expect(explanation.dependencies[0]).to.include({
+      from: 'CustomObject:Tour__c',
+      to: 'FlexiPage:Tour_Record_Page',
+      type: 'hard',
+      source: 'parser',
+      reason: 'Static reference',
+      confidence: 1,
+      resolved: true,
+    });
+  });
+
   it('explains dependency placement and transitive blockers', async () => {
     const base = component('ApexClass', 'Base');
     const helper = component('ApexClass', 'Helper', ['ApexClass:Base']);
@@ -198,6 +235,24 @@ describe('PlanExplainService', () => {
     expect(explanation.components[0].placement.confidence).to.equal(0.55);
   });
 
+  it('does not report success when a scanned component has no wave', async () => {
+    const service = new PlanExplainService({
+      deploymentContextService: {
+        buildContext: async () => context([component('Flow', 'Blocked', ['ApexClass:Missing'])], []),
+      },
+      specialDeploymentPlanService: {
+        buildPlan: async () => providerPlan(),
+      },
+    });
+
+    const explanation = await service.explain();
+
+    expect(explanation.success).to.equal(false);
+    expect(explanation.summary.unplacedComponentCount).to.equal(1);
+    expect(explanation.components[0].wave).to.equal(0);
+    expect(explanation.components[0].placement.unresolvedReferences).to.deep.equal(['ApexClass:Missing']);
+  });
+
   it('returns stable empty plan output', async () => {
     const service = new PlanExplainService({
       deploymentContextService: {
@@ -218,6 +273,7 @@ describe('PlanExplainService', () => {
       componentCount: 0,
       dependencyCount: 0,
       unresolvedReferenceCount: 0,
+      unplacedComponentCount: 0,
       providerDecisionCount: 0,
       waves: 0,
     });

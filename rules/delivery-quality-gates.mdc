@@ -19,7 +19,7 @@ Development work is not complete when code compiles. Every implementation must m
 
 - QA receives the Developer handoff before release approval.
 - Workflow gate approval is not a status shortcut. `po→architect` can be approved only when the issue/task has user-validated scope, non-goals, assumptions, priority, acceptance criteria, and sizing context. `qa→release` can be approved only after real implementation evidence, QA findings, BA/PO acceptance, and Architect review when technical contracts changed.
-- Generated handoffs with `Acceptance Criteria: none` are incomplete for release purposes. Pull the criteria from the linked GitHub issue or Orchestra task, record a review finding, and block release until the criteria/evidence gap is fixed or explicitly risk-accepted by the Product Owner.
+- Generated handoffs with `Acceptance Criteria: none` are incomplete for release purposes. Pull the criteria from the linked GitHub issue or setup-agents task, record a review finding, and block release until the criteria/evidence gap is fixed or explicitly risk-accepted by the Product Owner.
 - QA must produce a test plan covering acceptance criteria, regression areas, edge cases, data setup, and environment assumptions.
 - QA must block test planning when acceptance criteria are fragmented, non-verifiable, or only role/phase headings. Return those findings to PO/BA before release evidence is generated.
 - QA plans must include an AC-to-evidence matrix with expected observable result, actual result, artifact/command, and pass/fail/deferred status for each acceptance criterion.
@@ -28,8 +28,8 @@ Development work is not complete when code compiles. Every implementation must m
 - QA must block when the latest user-approved or user-requested concrete action is only described as the next step, future work, or remaining work instead of completed or blocked with evidence.
 - QA must execute or explicitly defer each test case with a reason.
 - QA findings must include severity, reproduction steps, expected result, actual result, and evidence.
-- QA execution must be reviewable through a sprint-review-style evidence demo before release approval. Analyst/BA compares the executed evidence against the GitHub issue, user story, acceptance criteria, and Orchestra task; Architect reviews whether the tests cover architecture contracts, boundaries, integrations, data flow, and risk areas.
-- Analyst/BA must record comments on the GitHub issue/user story and the Orchestra task when evidence does not prove the requested behavior, acceptance criteria, or business workflow. Those findings block release until fixed or explicitly accepted as risk by the Product Owner.
+- QA execution must be reviewable through a sprint-review-style evidence demo before release approval. Analyst/BA compares the executed evidence against the GitHub issue, user story, acceptance criteria, and setup-agents task; Architect reviews whether the tests cover architecture contracts, boundaries, integrations, data flow, and risk areas.
+- Analyst/BA must record findings on the GitHub issue/user story and setup-agents task when evidence does not prove the requested behavior, acceptance criteria, or business workflow. Those findings block release until fixed or explicitly accepted as risk by the Product Owner.
 - QA approval is incomplete when only QA signs off on execution. Record Analyst/BA and Architect review outcomes, or document why a role is not applicable with Product Owner acceptance.
 
 ## Automation Gate

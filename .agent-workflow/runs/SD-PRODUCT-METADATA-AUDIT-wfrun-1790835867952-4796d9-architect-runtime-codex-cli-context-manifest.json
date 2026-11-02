@@ -1,0 +1,218 @@
+{
+  "taskId": "SD-PRODUCT-METADATA-AUDIT",
+  "phase": "architect",
+  "role": "architect",
+  "generatedAt": "2026-10-01T06:24:28.079Z",
+  "entries": [
+    {
+      "path": ".agent-workflow/playbooks/architect.md",
+      "sha256": "9b4bd19786c501ad458525b664167dc779d52402021fdf2be922c0f61c860225",
+      "loadMode": "full",
+      "source": "phase-playbook",
+      "required": true,
+      "reason": "Required architect phase playbook for architect runtime work.",
+      "missing": false,
+      "excerpt": "# Architect Playbook\n\n- Define boundaries, data flow, integration contracts, and rollback risk.\n- Prefer existing project patterns before adding abstractions.\n- Record sizing and ADR-level decisions when the design has lasting impact."
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "f5eb4c28463c6b8d1f141990feca6b384e1564447103649e97d4a01b2d403441",
+      "loadMode": "excerpt",
+      "source": "runtime-instructions",
+      "required": true,
+      "reason": "Required root runtime instructions for project-wide agent behavior.",
+      "missing": false,
+      "excerpt": "# Architecture Rules\n\nThis repository follows pragmatic Clean Architecture, SOLID, and separation-of-concerns rules.\nThese rules apply to all new code, refactors, and reviews.\n\n## Source Of Truth\n\nThis file is the local engineering contract for agents in this repository.\nGeneric rule sets from other repositories can inform it, but local rules take precedence.\n\n## Operating Mode\n\n- Use this file as the baseline contract for all refactors, bug fixes, and delegated work in this repo.\n- Load only the smallest relevant local context before changing code.\n- Prefer small reviewable slices over broad cross-cutting rewrites.\n\n## Core Principles\n\n1. Prefer small, composable units over large multi-purpose files.\n2. Keep orchestration separate from parsing, domain logic, persistence, and I/O.\n3. Make dependencies point inward toward domain logic, not outward toward frameworks or CLI glue.\n4. Favor explicit data flow over hidden mutation or implicit side effects.\n5. Add behavior in the narrowest layer that can own it correctly.\n\n## Layering\n\n- `commands/` are orchestration adapters.\n\n  - Parse flags\n  - call services/pipelines\n  - format user-facing output\n  - do not embed domain rules, scanning logic, AI heuristics, or persistence-heavy workflows\n\n- `services/`, `deployment/`, `dependencies/`, `waves/` contain application and domain behavior.\n\n  - business rules belong here\n  - keep files focused on one capability\n\n- `parsers/` extract structured facts from source artifacts.\n\n  - parsers should parse, normalize, and return structured information\n  - parsers should not decide deployment"
+    },
+    {
+      "path": "rules/development/semantic-code.md",
+      "sha256": "fd93b7ee2fd98512a9aa14999b9bf5f970a245ebff153f9503821bc10fc7a7fe",
+      "loadMode": "full",
+      "source": "rule",
+      "required": true,
+      "reason": "Required architect rule selected from the neutral rule catalog for role-specific execution quality.",
+      "missing": false,
+      "excerpt": "# Semantic Code\n\nCode must be readable by intent before it is explained by comments.\n\n## Naming\n\n- Use domain language for modules, functions, variables, types, and test names.\n- Prefer names that reveal purpose and observable behavior, such as `validateReleaseGateEvidence`, not vague names such as `processData`.\n- Boolean names must make the predicate clear: `isReady`, `hasEvidence`, `canRetry`, `shouldBlockRelease`.\n\n## Structure\n\n- Keep entry points thin. Move decisions and business rules into focused domain, service, or policy modules.\n- Extract helpers when a reader needs comments to understand a block of code.\n- Avoid generic containers in public APIs when narrow types or explicit models can describe the contract.\n- Avoid hardcoded command lists, statuses, roles, labels, or fixture values when a typed registry or catalog can be the source of truth.\n\n## Comments\n\n- Comments explain why, trade-offs, invariants, or external constraints.\n- Do not add comments that restate what the code already says.\n- If a function needs line-by-line comments to be understandable, refactor the names, types, or helper boundaries.\n\n## Review Checklist\n\n- A reviewer can identify the domain intent from names and file boundaries without tracing every line.\n- New code follows the existing project vocabulary and layering.\n- Tests read like behavior specifications and use meaningful scenario names."
+    },
+    {
+      "path": "rules/architecture-decisions.mdc",
+      "sha256": "cf81f453dda7f9614555c3a45fa039288a06d9dffd45caf5653fbea33e693897",
+      "loadMode": "full",
+      "source": "rule",
+      "required": true,
+      "reason": "Required architect rule selected from the neutral rule catalog for role-specific execution quality.",
+      "missing": false,
+      "excerpt": "---\ndescription: Lightweight architecture decision records and design documentation\nalwaysApply: true\n---\n\n# Architecture Decisions\n\nImportant architecture choices must be recorded briefly. The goal is traceability, not bureaucracy.\n\n## When to Record an ADR\n- Record an ADR when changing system boundaries, data ownership, integration contracts, authentication, authorization, infrastructure, deployment, or storage patterns.\n- Record an ADR when choosing a new framework, library, cloud service, messaging pattern, database, or testing strategy.\n- Record an ADR when a decision has meaningful trade-offs, migration cost, security impact, or rollback complexity.\n\n## ADR Format\n- Title: short decision name.\n- Status: proposed, accepted, superseded, or rejected.\n- Context: problem, constraints, and forces.\n- Decision: chosen approach.\n- Consequences: benefits, costs, risks, and follow-up work.\n- Alternatives considered: at least one reasonable option and why it was not chosen.\n\n## Decision Hygiene\n- Keep ADRs concise and link them from PRs when relevant.\n- Supersede old ADRs instead of rewriting history.\n- If a decision is reversed, record why new information changed the outcome.\n- Architecture decisions must align with security, testing, observability, and delivery quality gates."
+    },
+    {
+      "path": "rules/module-boundaries.mdc",
+      "sha256": "f39eeb5e20d6b8c990d60890a19efaaf2a019914f488a519ff12a38b28eeb9dd",
+      "loadMode": "full",
+      "source": "rule",
+      "required": true,
+      "reason": "Required architect rule selected from the neutral rule catalog for role-specific execution quality.",
+      "missing": false,
+      "excerpt": "---\ndescription: Module boundaries, god-file prevention, and thin adapter standards\nalwaysApply: true\n---\n\n# Module Boundaries\n\nEvery code change must preserve clear ownership boundaries. Before adding code\nto an existing file, check whether the file is already large, multi-purpose, or\nadapter-shaped. If the change would make the file harder to review, create or\nreuse the correct domain, model, service, repository, or adapter module instead.\n\n## Pre-Write Check\n\n- Inspect the target file's current responsibility, exported surface, and size\n  before editing.\n- Treat files over 300 lines, functions over 30 lines, and command/controller\n  files with business logic as god-file risk.\n- A large existing file is not a reason to keep adding to it. If the new change\n  is separable, extract the new behavior into a focused module and wire it from\n  the existing entry point.\n- If extraction is unsafe in the current task, record a follow-up debt task with\n  the reason, affected file, and proposed boundary.\n\n## Expected Layers\n\n- `model` or `types`: narrow public data contracts, discriminated unions,\n  schemas, and DTOs.\n- `domain`: pure invariants, policy decisions, validation rules, state\n  transitions, and calculations.\n- `service` or `use-case`: orchestration of domain logic, repositories, clients,\n  and side effects for one workflow.\n- `repository`, `store`, or `gateway`: persistence, file I/O, network I/O, and\n  external system adapters.\n- `commands`: CLI adapter only. Parse arguments, call services, format output,\n  and convert errors to user-safe messages.\n- `web` or `api`: HTTP/UI adapter only. Parse requests, call services, serialize\n  responses, and map errors.\n\n## Logicless Commands\n\nCommand modules must remain nearly logicless. They may:\n\n- parse flags and positional arguments;\n- choose output format;\n- call one service/use-case function;\n- map expected errors to CLI messages and exit codes.\n\nCommand modules must not:\n\n- own business rules or workflow policy;\n- perform direct persistence when a repository/service should own it;\n- contain repeated hardcoded registries, option lists, status sets, or provider\n  matrices;\n- implement complex loops, joins, retries, or batching;\n- become the primary test target for domain behavior.\n\n## Hardcoded Collections\n\nRepeated hardcoded values must move to a typed source of truth. This applies to\nroles, statuses, providers, commands, option lists, validators, selectors,\nfixtures, CI matrices, and any key/value collection reused by more than one\nconsumer. Load `collection-standards` when this risk appears.\n\n## Review Checklist\n\n- Did the author check target file size and responsibility before writing?\n- Did new logic land in the correct layer?\n- Is the command/controller/route still a thin adapter?\n- Are repeated hardcoded collections extracted to a typed source of truth?\n- Is there a follow-up debt task when extraction was intentionally deferred?"
+    },
+    {
+      "path": "rules/development-engineering.mdc",
+      "sha256": "9d774d70cd61c71590fd24143b776012a381c6041a60ab6523ceba74969f2b90",
+      "loadMode": "excerpt",
+      "source": "rule",
+      "required": true,
+      "reason": "Required architect rule selected from the neutral rule catalog for role-specific execution quality.",
+      "missing": false,
+      "excerpt": "---\ndescription: Stack-agnostic developer implementation standards across common application stacks\nalwaysApply: true\n---\n\n# Development Engineering\n\nDeveloper work must start from the existing project shape, preserve the local architecture, and leave verifiable evidence that the changed production artifact works.\n\n## Project Context First\n- Read the project manifest, build files, framework config, and existing module boundaries before generating code.\n- Infer naming, layering, dependency direction, error style, logging style, and test conventions from nearby code.\n- Do not introduce a new framework pattern, repository style, package layout, or dependency injection approach without a recorded architecture decision.\n- Keep framework-specific adapters at the boundary. Domain and service code should remain portable where the product permits it.\n- Before writing to an existing file, run a module-boundary check: current file size, responsibility, exported surface, and whether the new behavior belongs in domain, model, service, repository, or adapter code.\n- Do not increase god-file risk. If a file is already large, multi-purpose, or adapter-shaped, prefer adding a focused module and wiring it from the existing entry point instead of adding more logic.\n\n## Entry Points And Layers\n- Controllers, routes, commands, triggers, handlers, jobs, and webhooks must stay thin.\n- Delegate business rules to services or domain modules, and delegate I/O to repositories, clients, gateways, or data-access modules.\n- Keep request parsing, authorization, validation, orchestration, and persistence r"
+    }
+  ],
+  "contextPack": {
+    "status": "unavailable",
+    "reason": "context pack requires a fresh context index: context index has not been built"
+  },
+  "preprocessedContext": {
+    "generatedAt": "2026-10-01T06:24:28.079Z",
+    "config": {
+      "maxLinesPerFile": 80,
+      "totalLineBudget": 360
+    },
+    "originalLines": 727,
+    "finalLines": 294,
+    "originalBytes": 34150,
+    "finalBytes": 13403,
+    "omittedContentWarning": "One or more context files were reduced; cite source paths when full files are needed.",
+    "files": [
+      {
+        "path": ".agent-workflow/playbooks/architect.md",
+        "reason": "Required architect phase playbook for architect runtime work.",
+        "required": true,
+        "strategy": "passthrough",
+        "originalLines": 5,
+        "finalLines": 5,
+        "originalBytes": 234,
+        "finalBytes": 234,
+        "omittedContentWarning": null,
+        "content": "# Architect Playbook\n\n- Define boundaries, data flow, integration contracts, and rollback risk.\n- Prefer existing project patterns before adding abstractions.\n- Record sizing and ADR-level decisions when the design has lasting impact.",
+        "missing": false
+      },
+      {
+        "path": "AGENTS.md",
+        "reason": "Required root runtime instructions for project-wide agent behavior.",
+        "required": true,
+        "strategy": "passthrough",
+        "originalLines": 42,
+        "finalLines": 42,
+        "originalBytes": 1600,
+        "finalBytes": 1600,
+        "omittedContentWarning": null,
+        "content": "# Architecture Rules\n\nThis repository follows pragmatic Clean Architecture, SOLID, and separation-of-concerns rules.\nThese rules apply to all new code, refactors, and reviews.\n\n## Source Of Truth\n\nThis file is the local engineering contract for agents in this repository.\nGeneric rule sets from other repositories can inform it, but local rules take precedence.\n\n## Operating Mode\n\n- Use this file as the baseline contract for all refactors, bug fixes, and delegated work in this repo.\n- Load only the smallest relevant local context before changing code.\n- Prefer small reviewable slices over broad cross-cutting rewrites.\n\n## Core Principles\n\n1. Prefer small, composable units over large multi-purpose files.\n2. Keep orchestration separate from parsing, domain logic, persistence, and I/O.\n3. Make dependencies point inward toward domain logic, not outward toward frameworks or CLI glue.\n4. Favor explicit data flow over hidden mutation or implicit side effects.\n5. Add behavior in the narrowest layer that can own it correctly.\n\n## Layering\n\n- `commands/` are orchestration adapters.\n\n  - Parse flags\n  - call services/pipelines\n  - format user-facing output\n  - do not embed domain rules, scanning logic, AI heuristics, or persistence-heavy workflows\n\n- `services/`, `deployment/`, `dependencies/`, `waves/` contain application and domain behavior.\n\n  - business rules belong here\n  - keep files focused on one capability\n\n- `parsers/` extract structured facts from source artifacts.\n\n  - parsers should parse, normalize, and return structured information\n  - parsers should not decide deployment",
+        "missing": false
+      },
+      {
+        "path": "rules/development/semantic-code.md",
+        "reason": "Required architect rule selected from the neutral rule catalog for role-specific execution quality.",
+        "required": true,
+        "strategy": "passthrough",
+        "originalLines": 28,
+        "finalLines": 28,
+        "originalBytes": 1398,
+        "finalBytes": 1398,
+        "omittedContentWarning": null,
+        "content": "# Semantic Code\n\nCode must be readable by intent before it is explained by comments.\n\n## Naming\n\n- Use domain language for modules, functions, variables, types, and test names.\n- Prefer names that reveal purpose and observable behavior, such as `validateReleaseGateEvidence`, not vague names such as `processData`.\n- Boolean names must make the predicate clear: `isReady`, `hasEvidence`, `canRetry`, `shouldBlockRelease`.\n\n## Structure\n\n- Keep entry points thin. Move decisions and business rules into focused domain, service, or policy modules.\n- Extract helpers when a reader needs comments to understand a block of code.\n- Avoid generic containers in public APIs when narrow types or explicit models can describe the contract.\n- Avoid hardcoded command lists, statuses, roles, labels, or fixture values when a typed registry or catalog can be the source of truth.\n\n## Comments\n\n- Comments explain why, trade-offs, invariants, or external constraints.\n- Do not add comments that restate what the code already says.\n- If a function needs line-by-line comments to be understandable, refactor the names, types, or helper boundaries.\n\n## Review Checklist\n\n- A reviewer can identify the domain intent from names and file boundaries without tracing every line.\n- New code follows the existing project vocabulary and layering.\n- Tests read like behavior specifications and use meaningful scenario names.",
+        "missing": false
+      },
+      {
+        "path": "rules/architecture-decisions.mdc",
+        "reason": "Required architect rule selected from the neutral rule catalog for role-specific execution quality.",
+        "required": true,
+        "strategy": "passthrough",
+        "originalLines": 27,
+        "finalLines": 27,
+        "originalBytes": 1292,
+        "finalBytes": 1292,
+        "omittedContentWarning": null,
+        "content": "---\ndescription: Lightweight architecture decision records and design documentation\nalwaysApply: true\n---\n\n# Architecture Decisions\n\nImportant architecture choices must be recorded briefly. The goal is traceability, not bureaucracy.\n\n## When to Record an ADR\n- Record an ADR when changing system boundaries, data ownership, integration contracts, authentication, authorization, infrastructure, deployment, or storage patterns.\n- Record an ADR when choosing a new framework, library, cloud service, messaging pattern, database, or testing strategy.\n- Record an ADR when a decision has meaningful trade-offs, migration cost, security impact, or rollback complexity.\n\n## ADR Format\n- Title: short decision name.\n- Status: proposed, accepted, superseded, or rejected.\n- Context: problem, constraints, and forces.\n- Decision: chosen approach.\n- Consequences: benefits, costs, risks, and follow-up work.\n- Alternatives considered: at least one reasonable option and why it was not chosen.\n\n## Decision Hygiene\n- Keep ADRs concise and link them from PRs when relevant.\n- Supersede old ADRs instead of rewriting history.\n- If a decision is reversed, record why new information changed the outcome.\n- Architecture decisions must align with security, testing, observability, and delivery quality gates.",
+        "missing": false
+      },
+      {
+        "path": "rules/module-boundaries.mdc",
+        "reason": "Required architect rule selected from the neutral rule catalog for role-specific execution quality.",
+        "required": true,
+        "strategy": "passthrough",
+        "originalLines": 71,
+        "finalLines": 71,
+        "originalBytes": 2932,
+        "finalBytes": 2932,
+        "omittedContentWarning": null,
+        "content": "---\ndescription: Module boundaries, god-file prevention, and thin adapter standards\nalwaysApply: true\n---\n\n# Module Boundaries\n\nEvery code change must preserve clear ownership boundaries. Before adding code\nto an existing file, check whether the file is already large, multi-purpose, or\nadapter-shaped. If the change would make the file harder to review, create or\nreuse the correct domain, model, service, repository, or adapter module instead.\n\n## Pre-Write Check\n\n- Inspect the target file's current responsibility, exported surface, and size\n  before editing.\n- Treat files over 300 lines, functions over 30 lines, and command/controller\n  files with business logic as god-file risk.\n- A large existing file is not a reason to keep adding to it. If the new change\n  is separable, extract the new behavior into a focused module and wire it from\n  the existing entry point.\n- If extraction is unsafe in the current task, record a follow-up debt task with\n  the reason, affected file, and proposed boundary.\n\n## Expected Layers\n\n- `model` or `types`: narrow public data contracts, discriminated unions,\n  schemas, and DTOs.\n- `domain`: pure invariants, policy decisions, validation rules, state\n  transitions, and calculations.\n- `service` or `use-case`: orchestration of domain logic, repositories, clients,\n  and side effects for one workflow.\n- `repository`, `store`, or `gateway`: persistence, file I/O, network I/O, and\n  external system adapters.\n- `commands`: CLI adapter only. Parse arguments, call services, format output,\n  and convert errors to user-safe messages.\n- `web` or `api`: HTTP/UI adapter only. Parse requests, call services, serialize\n  responses, and map errors.\n\n## Logicless Commands\n\nCommand modules must remain nearly logicless. They may:\n\n- parse flags and positional arguments;\n- choose output format;\n- call one service/use-case function;\n- map expected errors to CLI messages and exit codes.\n\nCommand modules must not:\n\n- own business rules or workflow policy;\n- perform direct persistence when a repository/service should own it;\n- contain repeated hardcoded registries, option lists, status sets, or provider\n  matrices;\n- implement complex loops, joins, retries, or batching;\n- become the primary test target for domain behavior.\n\n## Hardcoded Collections\n\nRepeated hardcoded values must move to a typed source of truth. This applies to\nroles, statuses, providers, commands, option lists, validators, selectors,\nfixtures, CI matrices, and any key/value collection reused by more than one\nconsumer. Load `collection-standards` when this risk appears.\n\n## Review Checklist\n\n- Did the author check target file size and responsibility before writing?\n- Did new logic land in the correct layer?\n- Is the command/controller/route still a thin adapter?\n- Are repeated hardcoded collections extracted to a typed source of truth?\n- Is there a follow-up debt task when extraction was intentionally deferred?",
+        "missing": false
+      },
+      {
+        "path": "rules/development-engineering.mdc",
+        "reason": "Required architect rule selected from the neutral rule catalog for role-specific execution quality.",
+        "required": true,
+        "strategy": "passthrough",
+        "originalLines": 21,
+        "finalLines": 21,
+        "originalBytes": 1600,
+        "finalBytes": 1600,
+        "omittedContentWarning": null,
+        "content": "---\ndescription: Stack-agnostic developer implementation standards across common application stacks\nalwaysApply: true\n---\n\n# Development Engineering\n\nDeveloper work must start from the existing project shape, preserve the local architecture, and leave verifiable evidence that the changed production artifact works.\n\n## Project Context First\n- Read the project manifest, build files, framework config, and existing module boundaries before generating code.\n- Infer naming, layering, dependency direction, error style, logging style, and test conventions from nearby code.\n- Do not introduce a new framework pattern, repository style, package layout, or dependency injection approach without a recorded architecture decision.\n- Keep framework-specific adapters at the boundary. Domain and service code should remain portable where the product permits it.\n- Before writing to an existing file, run a module-boundary check: current file size, responsibility, exported surface, and whether the new behavior belongs in domain, model, service, repository, or adapter code.\n- Do not increase god-file risk. If a file is already large, multi-purpose, or adapter-shaped, prefer adding a focused module and wiring it from the existing entry point instead of adding more logic.\n\n## Entry Points And Layers\n- Controllers, routes, commands, triggers, handlers, jobs, and webhooks must stay thin.\n- Delegate business rules to services or domain modules, and delegate I/O to repositories, clients, gateways, or data-access modules.\n- Keep request parsing, authorization, validation, orchestration, and persistence r",
+        "missing": false
+      },
+      {
+        "path": "docs/research/metadata-catalog",
+        "reason": "Delegated ownership path; cite this path instead of loading raw file content by default.",
+        "required": false,
+        "strategy": "directory-reference",
+        "originalLines": 0,
+        "finalLines": 2,
+        "originalBytes": 0,
+        "finalBytes": 164,
+        "omittedContentWarning": "Directory source was referenced without reading raw directory contents.",
+        "content": "Directory reference: docs/research/metadata-catalog\nRaw directory contents were not loaded into runtime context. Inspect targeted files under this path when needed.",
+        "missing": false
+      },
+      {
+        "path": "src/analysis/metadata-capability-definitions.ts",
+        "reason": "Delegated ownership path; cite this path instead of loading raw file content by default.",
+        "required": false,
+        "strategy": "schema-extraction",
+        "originalLines": 353,
+        "finalLines": 19,
+        "originalBytes": 17676,
+        "finalBytes": 766,
+        "omittedContentWarning": "Reduced from 353 lines using schema-extraction; full source remains at src/analysis/metadata-capability-definitions.ts.",
+        "content": "import { DEPLOYMENT_ORDER } from '../constants/deployment-order.js';\nimport type {\n  MetadataCapabilities,\n  MetadataCapabilityDefinition,\n  MetadataCapabilityEvidence,\n  MetadataCapabilityEvidenceSource,\n  MetadataCanonicalOwner,\n  MetadataDeploymentChannel,\n} from '../types/metadata-capability.js';\n\nexport const METADATA_CAPABILITY_DEFINITIONS: readonly MetadataCapabilityDefinition[] = [\n  ...Object.keys(DEPLOYMENT_ORDER)\n    .filter((metadataType) => !isExplicitlyDefined(metadataType) && !isLegacyScannerType(metadataType))\n    .map((metadataType) => orderedDefinition(metadataType)),\n  ...LEGACY_SCANNER_TYPES.filter((metadataType) => !isExplicitlyDefined(metadataType)).map((metadataType) =>\n    scannerDefinition(metadataType)\n  ),\n  ...P0_DEFINITIONS,\n];",
+        "missing": false
+      },
+      {
+        "path": "src/constants/deployment-order.ts",
+        "reason": "Delegated ownership path; cite this path instead of loading raw file content by default.",
+        "required": false,
+        "strategy": "schema-extraction",
+        "originalLines": 180,
+        "finalLines": 79,
+        "originalBytes": 7418,
+        "finalBytes": 3417,
+        "omittedContentWarning": "Reduced from 180 lines using schema-extraction; full source remains at src/constants/deployment-order.ts.",
+        "content": "import type { MetadataType } from '../types/metadata.js';\n\nexport const DEPLOYMENT_ORDER: Readonly<Record<MetadataType, number>> = Object.freeze({\n  // ========== Tier 0: Global Configuration (1-5) ==========\n  GlobalValueSet: 1, // Global value sets used by picklists\n  StandardValueSet: 2, // Standard value sets\n  CustomLabels: 3, // Custom labels\n  Translations: 4, // Translation files\n  StandardValueSetTranslation: 5, // Standard value set translations\n\n  // ========== Tier 1: Foundation - Objects & Fields (6-15) ==========\n  CustomObject: 6, // Core data model - must be early\n  CustomSetting: 7, // Custom settings (like custom objects)\n  DataCategoryGroup: 8, // Data category groups\n  CustomMetadata: 9, // Custom metadata types\n  CustomMetadataRecord: 10, // Custom metadata records\n  CustomField: 11, // Fields depend on objects\n  ObjectTranslation: 12, // Object translations\n  RecordType: 13, // Record types depend on objects/fields\n  BusinessProcess: 14, // Business processes depend on record types\n  ValidationRule: 15, // Validation rules depend on fields\n  WorkflowRule: 16, // Workflow rules\n\n  // ========== Tier 2: Security Foundation (17-23) ==========\n  OrgSettings: 17, // Org-wide settings\n  CorsWhitelistOrigin: 18, // CORS settings\n  CspTrustedSite: 19, // CSP trusted sites\n  Role: 20, // Role hierarchy\n  DelegateGroup: 21, // Delegate groups\n  Group: 22, // Public groups\n  CustomPermission: 23, // Custom permissions\n  ExternalCredential: 24, // External credentials\n  NamedCredential: 25, // Named credentials for callouts\n  DataSourceObject: 26, // Data source objects\n\n  // ========== Tier 3: Code & Resources (27-36) ==========\n  StaticResource: 27, // Static resources\n  Document: 28, // Documents\n  ContentAsset: 29, // Content assets\n  EmailTemplate: 30, // Email templates\n  ApexClass: 31, // Apex classes - deploy before triggers\n  VisualforceComponent: 32, // VF components\n  VisualforcePage: 33, // VF pages\n  LightningComponentBundle: 34, // LWC\n  AuraDefinitionBundle: 35, // Aura components\n  ApexTrigger: 36, // Triggers after classes\n\n  // ========== Tier 4: Service Cloud (37-42) ==========\n  ServicePresenceStatus: 37, // Service presence\n  PresenceUserConfig: 38, // Presence config\n  Queue: 39, // Queues\n  ServiceChannel: 40, // Service channels\n  QueueRoutingConfig: 41, // Queue routing\n  ChannelLayout: 42, // Channel layouts\n\n  // ========== Tier 5: Business Logic & AI (43-49) ==========\n  MilestoneType: 43, // Milestone types\n  EntitlementProcess: 44, // Entitlement processes\n  GenAiFunction: 45, // Einstein AI functions\n  GenAiPromptTemplate: 46, // Einstein prompts\n  GenAiPlannerBundle: 47, // Einstein planners\n  Flow: 48, // Flows (after Apex classes)\n  PathAssistant: 49, // Path assistant\n\n  // ========== Tier 6: UI Components (50-59) ==========\n  Layout: 50, // Page layouts\n  Bot: 51, // Einstein Bots\n  BotVersion: 52, // Bot versions\n  AiAuthoringBundle: 53, // Agentforce authoring bundles\n  AiEvaluationDefinition: 54, // AI evaluations deploy in the special phase after agent publish\n  GenAiPlugin: 53, // Einstein plugins\n  FlexiPage: 54, // Lightning pages\n  QuickAction: 55, // Quick actions\n  CompactLayout: 56, // Compact layouts\n  ListView: 57, // List views\n  WebLink: 58, // Web links\n  LightningApp: 59, // Lightning apps\n  SearchCustomization: 60, // Search customizations\n  CustomNotificationType: 61, // Custom notifications",
+        "missing": false
+      }
+    ]
+  },
+  "knowledge": {
+    "contract": "open-orchestra.knowledge-selection.v1",
+    "advisoryOnly": true,
+    "request": {
+      "task": "SD-PRODUCT-METADATA-AUDIT",
+      "phase": "architect",
+      "role": "architect",
+      "risk": "*",
+      "tokenBudget": 500
+    },
+    "selected": [],
+    "diagnostics": ["catalog_missing_or_invalid"],
+    "tokenUsage": 0,
+    "catalogVersion": null
+  }
+}

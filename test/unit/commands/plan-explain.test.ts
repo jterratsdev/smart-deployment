@@ -154,5 +154,6 @@ describe('PlanExplainCommand', () => {
       autoActivate: true,
     });
     expect(logs.join('\n')).to.include('Plan Explain:');
+    expect(logs.join('\n')).to.include('Unplaced Components: 0');
   });
 });

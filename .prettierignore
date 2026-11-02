@@ -1,0 +1,10 @@
+.setup-agents/
+.codex/
+.cursor/
+.claude/
+.generated-prompts/
+.github/copilot-instructions.md
+.github/skills/
+AGENTS.md
+CLAUDE.md
+CLAUDE.local.md

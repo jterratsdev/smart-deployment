@@ -148,9 +148,18 @@ describe('SpecialDeploymentPlanService', () => {
     const community = plan.phases.find((phase) => phase.kind === 'community-publish');
     expect(community?.commands[0]?.args).to.deep.equal(['community', 'publish', '-n', 'CustomerPortal']);
 
+    // AC-001/AC-004: `vlocity/OmniScript/Welcome/Welcome.json` has no `_DataPack.json` sibling, so it is
+    // blocked as unknown-shape rather than routed to a managed VBT command based on directory spelling.
     const omni = plan.phases.find((phase) => phase.kind === 'omnistudio-vlocity');
-    expect(omni?.commands[0]?.tool).to.equal('vlocity');
-    expect(omni?.commands[0]?.args).to.deep.equal(['packDeploy', '--job', '<generated-vlocity-job.yaml>']);
+    expect(omni?.commands).to.deep.equal([]);
+    expect(omni?.classifications?.[0]).to.deep.include({
+      path: 'vlocity/OmniScript/Welcome/Welcome.json',
+      channel: 'blocked',
+      reason: 'unknown-shape',
+    });
+    expect(plan.errors).to.have.length.greaterThan(0);
+    expect(plan.errors[plan.errors.length - 1]).to.include('vlocity/OmniScript/Welcome/Welcome.json');
+    expect(plan.errors[plan.errors.length - 1]).to.include('Remedy:');
   });
 
   it('keeps Agentforce activation skipped by default', async () => {
@@ -275,5 +284,67 @@ describe('SpecialDeploymentPlanService', () => {
 
     const aiEvaluations = plan.phases.find((phase) => phase.kind === 'ai-evaluations');
     expect(aiEvaluations?.components).to.deep.equal(['AiEvaluationDefinition:Alpha', 'AiEvaluationDefinition:Zulu']);
+  });
+
+  describe('OmniStudio channel classification (AC-001..AC-004)', () => {
+    it('classifies native-looking OmniStudio paths as native-metadata with no vlocity command (case 5 / AC-001)', async () => {
+      const nativePaths = [
+        'force-app/main/default/omniDataTransforms/Acct.rpt-meta.xml',
+        'force-app/main/default/omniIntegrationProcedures/Proc.oip-meta.xml',
+        'force-app/main/default/omniScripts/Welcome.os-meta.xml',
+        'force-app/main/default/omniUiCard/Card.ouc-meta.xml',
+      ];
+      const plan = await new SpecialDeploymentPlanService().buildPlan({
+        scanner: { scan: async () => scanResult([]) },
+        changedPathProvider: async () => nativePaths,
+      });
+
+      const omni = plan.phases.find((phase) => phase.kind === 'omnistudio-vlocity');
+      expect(omni?.commands).to.deep.equal([]);
+      expect(omni?.components).to.deep.equal([]);
+      expect(omni?.classifications?.every((entry) => entry.channel === 'native-metadata')).to.equal(true);
+      expect(plan.errors).to.deep.equal([]);
+      const vlocityCommands = plan.phases.flatMap((phase) => phase.commands).filter((cmd) => cmd.tool === 'vlocity');
+      expect(vlocityCommands).to.deep.equal([]);
+    });
+
+    it('never generates an executable VBT job placeholder regardless of input (case 11 / AC-004)', async () => {
+      const dataPackPath = 'vlocity/OmniScript/Welcome_English/Welcome_English_DataPack.json';
+      const plan = await new SpecialDeploymentPlanService().buildPlan({
+        scanner: { scan: async () => scanResult([]) },
+        changedPathProvider: async () => [dataPackPath],
+      });
+
+      const omni = plan.phases.find((phase) => phase.kind === 'omnistudio-vlocity');
+      expect(omni?.commands).to.deep.equal([]);
+      expect(JSON.stringify(plan)).to.not.include('<generated-vlocity-job.yaml>');
+    });
+
+    it('admits no DataPack record into the core metadata manifest (case 12 / AC-002)', async () => {
+      const dataPackPath = 'vlocity/OmniScript/Welcome_English/Welcome_English_DataPack.json';
+      const plan = await new SpecialDeploymentPlanService().buildPlan({
+        scanner: {
+          scan: async () =>
+            scanResult([component('ApexClass', 'AccountService', 'force-app/main/default/classes/AccountService.cls')]),
+        },
+        changedPathProvider: async () => ['force-app/main/default/classes/AccountService.cls', dataPackPath],
+      });
+
+      const corePhase = plan.phases.find((phase) => phase.kind === 'core-metadata');
+      expect(corePhase?.components).to.deep.equal(['ApexClass:AccountService']);
+      expect(corePhase?.components?.some((key) => key.startsWith('DataPack:'))).to.equal(false);
+    });
+
+    it('skips the OmniStudio phase with no errors when no candidate paths are present (case 14)', async () => {
+      const plan = await new SpecialDeploymentPlanService().buildPlan({
+        scanner: { scan: async () => scanResult([]) },
+        changedPathProvider: async () => ['force-app/main/default/classes/AccountService.cls'],
+      });
+
+      const omni = plan.phases.find((phase) => phase.kind === 'omnistudio-vlocity');
+      expect(omni?.skipped).to.equal(true);
+      expect(omni?.errors ?? []).to.deep.equal([]);
+      expect(omni?.commands).to.deep.equal([]);
+    });
   });
 });

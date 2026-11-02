@@ -1,8 +1,27 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { WaveValidator } from '../../../src/waves/wave-validator.js';
+import { WaveBuilder } from '../../../src/waves/wave-builder.js';
 
 describe('WaveValidator', () => {
+  it('rejects a plan missing graph components', () => {
+    const graph = new Map([['ApexClass:Missing', new Set<string>()]]);
+    const result = new WaveValidator().validateWaves([], graph);
+    expect(result.errors).to.include('Component ApexClass:Missing is not assigned to a wave');
+  });
+
+  it('rejects dependencies in the same wave and mixed stages', () => {
+    const graph = new Map([
+      ['ApexClass:Consumer', new Set(['CustomObject:Account'])],
+      ['CustomObject:Account', new Set<string>()],
+    ]);
+    const wave = new WaveBuilder().generateWaves(new Map([['ApexClass:Consumer', new Set<string>()]])).waves[0];
+    wave.components = ['ApexClass:Consumer', 'CustomObject:Account'];
+    const result = new WaveValidator().validateWaves([wave], graph);
+    expect(result.errors.some((error) => error.includes('mixes deployment stages'))).to.equal(true);
+    expect(result.errors.some((error) => error.includes('not in an earlier wave'))).to.equal(true);
+  });
+
   /**
    * @ac US-043-AC-1: Validate dependency order
    * @ac US-043-AC-2: Validate component limits

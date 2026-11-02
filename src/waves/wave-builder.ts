@@ -16,7 +16,7 @@ import { getLogger } from '../utils/logger.js';
 import type { NodeId, DependencyEdge, DependencyGraph, CircularDependency } from '../types/dependency.js';
 import type { MetadataType } from '../types/metadata.js';
 import { assembleWaveMetadata, calculateWaveStats } from './wave-metadata.js';
-import { buildEdgeTypesByFrom, compareWavePriority } from './wave-priority-policy.js';
+import { buildEdgeTypesByFrom, compareWavePriority, getNodeDeploymentStage } from './wave-priority-policy.js';
 import {
   calculateInDegree,
   collectRemainingNodes,
@@ -33,11 +33,6 @@ type WavePlacementState = {
   processed: Set<NodeId>;
   unplacedComponents: NodeId[];
   nextWaveNumber: number;
-};
-
-type CircularWaveResolution = {
-  remaining: NodeId[];
-  fallbackWave?: Wave;
 };
 
 /**
@@ -100,6 +95,30 @@ export type WaveStats = {
   totalEstimatedTime: number;
 };
 
+export type DeploymentOrderConflict = {
+  component: NodeId;
+  dependency: NodeId;
+  componentStage: number;
+  dependencyStage: number;
+};
+
+export function collectDeploymentOrderConflicts(graph: DependencyGraph): DeploymentOrderConflict[] {
+  const conflicts: DeploymentOrderConflict[] = [];
+  for (const [component, dependencies] of graph) {
+    const componentStage = getNodeDeploymentStage(component);
+    for (const dependency of dependencies) {
+      if (!graph.has(dependency)) continue;
+      const dependencyStage = getNodeDeploymentStage(dependency);
+      if (dependencyStage > componentStage) {
+        conflicts.push({ component, dependency, componentStage, dependencyStage });
+      }
+    }
+  }
+  return conflicts.sort(
+    (left, right) => left.component.localeCompare(right.component) || left.dependency.localeCompare(right.dependency)
+  );
+}
+
 /**
  * Wave builder options
  */
@@ -108,7 +127,7 @@ export type WaveBuilderOptions = {
   maxComponentsPerWave?: number;
   /** Respect metadata type deployment order */
   respectTypeOrder?: boolean;
-  /** Handle circular dependencies */
+  /** @deprecated Circular dependencies are never executable. */
   handleCircularDeps?: boolean;
   /** Structured dependency edges for risk-aware ordering inside a wave */
   dependencyEdges?: DependencyEdge[];
@@ -147,7 +166,7 @@ export class WaveBuilder {
     this.options = {
       maxComponentsPerWave: options.maxComponentsPerWave ?? 0,
       respectTypeOrder: options.respectTypeOrder ?? true,
-      handleCircularDeps: options.handleCircularDeps ?? true,
+      handleCircularDeps: false,
       dependencyEdges: options.dependencyEdges ?? [],
       ignoreExternalDependencies: options.ignoreExternalDependencies ?? false,
     };
@@ -166,6 +185,7 @@ export class WaveBuilder {
    */
   public generateWaves(graph: DependencyGraph): WaveResult {
     const startTime = Date.now();
+    this.validateDeploymentOrderContracts(graph);
     const policy = this.getPlacementPolicy();
     const state = this.createPlacementState(graph);
 
@@ -175,13 +195,10 @@ export class WaveBuilder {
         processed: state.processed,
         policy,
         comparePriority: (left, right) => this.compareWavePriority(left, right),
+        getDeploymentStage: getNodeDeploymentStage,
       });
       if (topologyStage.orderedCandidates.length === 0) {
-        const circularResolution = this.resolveCircularWave(graph, state.processed, state.nextWaveNumber, policy);
-        state.unplacedComponents.push(...circularResolution.remaining);
-        if (circularResolution.fallbackWave) {
-          state.waves.push(circularResolution.fallbackWave);
-        }
+        state.unplacedComponents.push(...collectRemainingNodes(graph, state.processed).sort());
         break;
       }
 
@@ -234,7 +251,6 @@ export class WaveBuilder {
     return {
       maxComponentsPerWave: this.options.maxComponentsPerWave,
       respectTypeOrder: this.options.respectTypeOrder,
-      handleCircularDeps: this.options.handleCircularDeps,
     };
   }
 
@@ -252,34 +268,17 @@ export class WaveBuilder {
     }
   }
 
-  private resolveCircularWave(
-    graph: DependencyGraph,
-    processed: ReadonlySet<NodeId>,
-    waveNumber: number,
-    policy: WavePlacementPolicy
-  ): CircularWaveResolution {
-    const remaining = collectRemainingNodes(graph, processed);
-
-    logger.warn('Circular dependencies detected', {
-      remaining: remaining.length,
-    });
-
-    if (policy.handleCircularDeps) {
-      if (policy.respectTypeOrder) {
-        remaining.sort((left, right) => this.compareWavePriority(left, right));
-      }
-
-      return {
-        remaining,
-        fallbackWave: this.createWave(remaining, waveNumber, true),
-      };
-    }
-
-    return { remaining };
-  }
-
   private compareWavePriority(a: NodeId, b: NodeId): number {
     return compareWavePriority(this.edgeTypesByFrom, a, b);
+  }
+
+  private validateDeploymentOrderContracts(graph: DependencyGraph): void {
+    const conflict = collectDeploymentOrderConflicts(graph)[0];
+    if (conflict) {
+      throw new Error(
+        `Deployment-order conflict: ${conflict.component} (stage ${conflict.componentStage}) depends on ${conflict.dependency} (stage ${conflict.dependencyStage})`
+      );
+    }
   }
 
   /**

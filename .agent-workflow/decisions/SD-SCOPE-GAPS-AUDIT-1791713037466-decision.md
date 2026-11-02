@@ -1,0 +1,16 @@
+# Decision SD-SCOPE-GAPS-AUDIT: Story sizing
+
+- Status: accepted
+- Owner: architect
+
+## Context
+
+architect completed architect
+
+## Decision
+
+m [3 points]
+
+## Consequences
+
+Consumed context files recorded. Architecture decision, data flow, risks, and owned implementation-proof deferral recorded. Rationale: implementation files are owned by Developer and do not exist during architecture. Developer must verify the selected route with a focused E2E command and result.

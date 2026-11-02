@@ -104,6 +104,7 @@ const SOURCE_DIRECTORY_TYPES: Record<string, string> = {
 
 const FILE_SUFFIX_TYPES: Array<[suffix: string, metadataType: string]> = [
   ['.cls-meta.xml', 'ApexClass'],
+  ['.page-meta.xml', 'ApexPage'],
   ['.trigger-meta.xml', 'ApexTrigger'],
   ['.flow-meta.xml', 'Flow'],
   ['.flexipage-meta.xml', 'FlexiPage'],
@@ -120,6 +121,8 @@ const FILE_SUFFIX_TYPES: Array<[suffix: string, metadataType: string]> = [
   ['.embeddedServiceConfig-meta.xml', 'EmbeddedServiceConfig'],
   ['.app-meta.xml', 'CustomApplication'],
   ['.matchingRule-meta.xml', 'MatchingRules'],
+  ['.field-meta.xml', 'CustomField'],
+  ['.globalValueSet-meta.xml', 'GlobalValueSet'],
 ];
 
 export class MetadataGapAnalysisService {
@@ -133,10 +136,10 @@ export class MetadataGapAnalysisService {
     }
 
     const evidenceByType = new Map<string, TypeEvidence>();
-    await this.collectManifestTypes(project.projectRoot, evidenceByType);
+    await this.collectManifestTypes(project.projectRoot, project.apiVersion, evidenceByType);
     await Promise.all(
       project.packageDirectories.map((packageDir) =>
-        this.collectSourceTypes(packageDir, project.projectRoot, evidenceByType)
+        this.collectSourceTypes(packageDir, project.projectRoot, project.apiVersion, evidenceByType)
       )
     );
 
@@ -167,7 +170,11 @@ export class MetadataGapAnalysisService {
     return result;
   }
 
-  private async collectManifestTypes(projectRoot: string, evidenceByType: Map<string, TypeEvidence>): Promise<void> {
+  private async collectManifestTypes(
+    projectRoot: string,
+    apiVersion: string,
+    evidenceByType: Map<string, TypeEvidence>
+  ): Promise<void> {
     const manifestFiles = await findFiles(
       projectRoot,
       '**/{package,destructiveChanges,destructiveChangesPre,destructiveChangesPost}.xml'
@@ -185,7 +192,7 @@ export class MetadataGapAnalysisService {
           const memberCount = members.length;
           this.addEvidence(
             evidenceByType,
-            entry.name,
+            this.canonicalType(entry.name, apiVersion),
             `${manifestPath}${memberCount > 0 ? ` (${memberCount} members)` : ''}`,
             'package-manifest'
           );
@@ -197,6 +204,7 @@ export class MetadataGapAnalysisService {
   private async collectSourceTypes(
     packageDir: string,
     projectRoot: string,
+    apiVersion: string,
     evidenceByType: Map<string, TypeEvidence>
   ): Promise<void> {
     if (!(await fileExists(packageDir))) {
@@ -207,7 +215,7 @@ export class MetadataGapAnalysisService {
     for (const filePath of metadataFiles) {
       const inferredType = inferTypeFromFilePath(filePath);
       if (inferredType) {
-        this.addEvidence(evidenceByType, inferredType, filePath, 'source-path');
+        this.addEvidence(evidenceByType, this.canonicalType(inferredType, apiVersion), filePath, 'source-path');
       }
     }
 
@@ -216,9 +224,14 @@ export class MetadataGapAnalysisService {
       const relativeParts = path.relative(projectRoot, directoryPath).split(path.sep);
       const type = relativeParts.map((part) => SOURCE_DIRECTORY_TYPES[part]).find((value) => value !== undefined);
       if (type) {
-        this.addEvidence(evidenceByType, type, directoryPath, 'source-path');
+        this.addEvidence(evidenceByType, this.canonicalType(type, apiVersion), directoryPath, 'source-path');
       }
     }
+  }
+
+  private canonicalType(metadataType: string, apiVersion: string): string {
+    const entry = this.capabilityRegistry.resolve(metadataType, apiVersion);
+    return entry?.vendorType ?? metadataType;
   }
 
   private addEvidence(
@@ -296,16 +309,7 @@ function inferTypeFromFilePath(filePath: string): string | undefined {
     return explicit[1];
   }
 
-  const genericSuffix = /\.([A-Za-z][A-Za-z0-9]*)-meta\.xml$/u.exec(fileName);
-  return genericSuffix ? toMetadataTypeName(genericSuffix[1]) : undefined;
-}
-
-function toMetadataTypeName(rawType: string): string {
-  return rawType
-    .split(/[-_]/u)
-    .filter((part) => part.length > 0)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
+  return undefined;
 }
 
 function getSupportStatus(

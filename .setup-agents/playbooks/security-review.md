@@ -1,4 +1,4 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.1 -->
 # Security Review Playbook
 
 ## Goal
@@ -6,7 +6,7 @@ Perform a security assessment of the deliverable before it proceeds to QA.
 
 ## Cross-References
 - **env-audit.md**: If new environment variables or secrets were introduced, ensure they are documented in `docs/strategy/env-audit.md` and follow the Named Credentials pattern.
-- **Security Profile**: Review `.cursor/rules/security-standards.mdc` for project-specific security gates.
+- **Security Profile**: Review `.cursor/rules/architect-standards.mdc` (security architecture, threat modeling) and `.cursor/rules/developer-standards.mdc` (FLS/CRUD enforcement, secrets, supply chain) for project-specific security gates.
 
 ## Checklist
 - [ ] No hardcoded credentials, tokens, or secrets in source code
@@ -42,5 +42,5 @@ Perform a security assessment of the deliverable before it proceeds to QA.
 
 ## Evidence
 ```bash
-sf setup-agents evidence add --task <id> --role security --type report --summary "Security Review Playbook completed"
+sf setup-agents evidence add --task <id> --role architect --type report --summary "Security Review Playbook completed"
 ```

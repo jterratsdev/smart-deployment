@@ -1,0 +1,121 @@
+{
+  "status": 0,
+  "result": {
+    "success": false,
+    "projectRoot": "/var/folders/sj/9h61n9s102l90188chx01gk40000gp/T/tmp.CufNwKlZss",
+    "apiVersion": "67.0",
+    "components": [
+      {
+        "nodeId": "ApexClass:AccountService",
+        "type": "ApexClass",
+        "name": "AccountService",
+        "filePath": "/var/folders/sj/9h61n9s102l90188chx01gk40000gp/T/tmp.CufNwKlZss/force-app/main/default/classes/AccountService.cls",
+        "wave": 1,
+        "placement": {
+          "rationale": "Placed in wave 1 because it has no deployment dependencies.",
+          "confidence": 1,
+          "directDependencies": [],
+          "transitiveBlockers": [],
+          "unresolvedReferences": []
+        }
+      }
+    ],
+    "dependencies": [],
+    "unresolvedReferences": [],
+    "providerDecisions": [
+      {
+        "kind": "core-metadata",
+        "label": "Phase 1: Core metadata deploy",
+        "decision": "included",
+        "components": ["ApexClass:AccountService"],
+        "excludedTypes": ["AiAuthoringBundle", "AiEvaluationDefinition", "Bot", "BotVersion"],
+        "commands": [
+          {
+            "tool": "sf",
+            "args": ["project", "deploy", "start", "--manifest", "<generated-core-manifest>"],
+            "reason": "Deploy regular Salesforce metadata after excluding lifecycle-owned provider artifacts."
+          }
+        ],
+        "reason": "Deploy regular Salesforce metadata after excluding lifecycle-owned provider artifacts.",
+        "warnings": [],
+        "errors": []
+      },
+      {
+        "kind": "agentforce-publish",
+        "label": "Phase 2: Agentforce authoring bundle publish",
+        "decision": "skipped",
+        "components": [],
+        "excludedTypes": [],
+        "commands": [],
+        "reason": "No changed aiAuthoringBundles detected.",
+        "warnings": [],
+        "errors": []
+      },
+      {
+        "kind": "agentforce-activate",
+        "label": "Phase 3: Agentforce activation",
+        "decision": "skipped",
+        "components": [],
+        "excludedTypes": [],
+        "commands": [],
+        "reason": "Activation is disabled by default.",
+        "warnings": [],
+        "errors": []
+      },
+      {
+        "kind": "ai-evaluations",
+        "label": "Phase 4: AI evaluation metadata deploy",
+        "decision": "skipped",
+        "components": [],
+        "excludedTypes": [],
+        "commands": [],
+        "reason": "No changed AiEvaluationDefinition files detected.",
+        "warnings": [],
+        "errors": []
+      },
+      {
+        "kind": "community-publish",
+        "label": "Phase 5: Experience Cloud community publish",
+        "decision": "skipped",
+        "components": [],
+        "excludedTypes": [],
+        "commands": [],
+        "reason": "No changed digitalExperiences/site directories detected.",
+        "warnings": [],
+        "errors": []
+      },
+      {
+        "kind": "omnistudio-vlocity",
+        "label": "Optional phase: OmniStudio managed DataPack classification (import deferred)",
+        "decision": "blocked",
+        "components": ["DataPack:OmniScript/Welcome_English"],
+        "excludedTypes": [],
+        "commands": [],
+        "reason": "Managed DataPack import is deferred to a separately scoped lifecycle task with target evidence; this phase only classifies.",
+        "warnings": [
+          "Classified 4 OmniStudio path(s) as native-metadata; excluded from the managed DataPack channel. Native deploy enablement is out of scope."
+        ],
+        "errors": [
+          "force-app/main/default/omniScripts/ConflictScript.os-meta.xml: channel-conflict — Logical artifact \"omniscript:conflictscript\" is classified as both native-metadata and managed-datapack across this input. Remedy: Keep the artifact in exactly one format (native Metadata API or managed DataPack) and remove the other.",
+          "vlocity/OmniScript/ConflictScript/ConflictScript_DataPack.json: channel-conflict — Logical artifact \"omniscript:conflictscript\" is classified as both native-metadata and managed-datapack across this input. Remedy: Keep the artifact in exactly one format (native Metadata API or managed DataPack) and remove the other.",
+          "vlocity/OmniScript/Unproven/Unproven_DataPack.json: identity-unproven — \"VlocityRecordSObjectType\" value \"%vlocity_namespace%__OmniScript__c\" in \"vlocity/OmniScript/Unproven/Unproven_DataPack.json\" is not a concrete managed API name, and no project namespace is declared for the unresolved \"%vlocity_namespace%\" token. Remedy: For an unresolved \"%vlocity_namespace%\" token, declare \"namespace: <ns>\" in \"vlocity.yaml\" at the project root; otherwise re-export with VBT so the record carries a concrete \"<ns>__\" prefix (fix or re-export if the DataPack JSON is malformed)."
+        ]
+      }
+    ],
+    "summary": {
+      "componentCount": 1,
+      "dependencyCount": 0,
+      "unresolvedReferenceCount": 0,
+      "unplacedComponentCount": 0,
+      "providerDecisionCount": 6,
+      "waves": 1
+    },
+    "architecturalConcerns": {
+      "inherited": [],
+      "selfImposed": [
+        "Introduces a stable JSON explanation contract over existing deployment analysis outputs without changing wave generation."
+      ]
+    }
+  },
+  "warnings": []
+}

@@ -1,1 +1,5 @@
 *.cjs/
+src/utils/salesforce-api.ts
+src/utils/salesforce-auth.ts
+test/mobile/
+playwright.config.ts

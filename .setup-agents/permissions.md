@@ -1,97 +1,64 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.1 -->
+<!-- runtime-permissions-sha256: 46aa94b6b61c8304f6316f434a849489ee0ea81935bbb571d22f106999cc64f9 -->
 
 # Command Permissions
 
-This file defines which shell commands agents may execute without human approval
-and which are NEVER allowed. Commands not listed require explicit user confirmation.
+This file is rendered from the typed runtime permission policy. Profile capabilities provide
+task context only; they do not silently elevate command permissions.
 
-## Allow (auto-approved)
+Active profile capabilities: deploy, code-analysis, doc-sync, prompt-registry, declare-points, oclif-plugin, org-assessment, story-mapping, adr, decomposition, elements-sync, project-knowledge-bootstrap, story-refinement, audience-tailored-reports, backlog-sync, rom, mobile-appium-testing.
 
-| Pattern | Purpose |
-|---------|---------|
-| `ls` | List directory contents |
-| `pwd` | Print working directory |
-| `echo` | Print text |
-| `cat` | Read file contents |
-| `head` | Read file head |
-| `tail` | Read file tail |
-| `wc` | Count lines/words/bytes |
-| `find` | Find files |
-| `grep` | Search file contents |
-| `rg` | Ripgrep search |
-| `mkdir` | Create directories |
-| `touch` | Create empty files |
-| `cp` | Copy files |
-| `mv` | Move/rename files |
-| `git status` | Show working tree status |
-| `git diff*` | Show changes |
-| `git log*` | Show commit history |
-| `git show*` | Show commit details |
-| `git add*` | Stage changes |
-| `git commit*` | Create commits |
-| `git stash*` | Stash changes |
-| `git branch*` | List/create branches |
-| `git checkout*` | Switch branches/restore files |
-| `git fetch*` | Download remote refs |
-| `git pull*` | Fetch and merge |
-| `git restore*` | Restore working tree files |
-| `git rev-parse*` | Parse git references |
-| `git ls-files*` | List tracked files |
-| `git config --get*` | Read git config |
-| `git reset HEAD*` | Unstage files |
-| `git reset --soft*` | Soft reset (keep changes) |
-| `git reset --mixed*` | Mixed reset (unstage) |
-| `git mv*` | Move tracked files |
-| `git rm*` | Remove tracked files |
-| `node*` | Run Node.js |
-| `npm run*` | Run npm scripts |
-| `npm install*` | Install dependencies |
-| `npm ci*` | Clean install |
-| `npx*` | Run npx commands |
-| `yarn*` | Yarn package manager |
-| `python*` | Run Python |
-| `python3*` | Run Python 3 |
-| `pip install*` | Install Python packages |
-| `pip3 install*` | Install Python 3 packages |
-| `prettier*` | Format code |
-| `eslint*` | Lint code |
-| `jq*` | Process JSON |
-| `curl*` | HTTP requests |
-| `openssl*` | Certificate/crypto utilities |
-| `sf project deploy*` | Deploy Salesforce metadata |
-| `sf project retrieve*` | Retrieve Salesforce metadata |
-| `sf org list*` | List connected orgs |
-| `sf org display*` | Display org details |
-| `sf apex run*` | Execute anonymous Apex |
-| `sf data*` | Query/manipulate org data |
-| `sf scanner*` | Run Salesforce Code Analyzer |
-| `sf code-analyzer*` | Run Code Analyzer (v4) |
-| `mmdc*` | Mermaid CLI diagram rendering |
-| `sf elements*` | Elements.cloud CLI |
-| `gh issue*` | GitHub issue management |
-| `gh pr*` | GitHub PR management |
+## Capability policy
 
-## Deny (NEVER execute)
+| Risk | Decision | Representative argv | Purpose |
+|------|----------|---------------------|---------|
+| read-only | **allow** | `pwd`, `ls`, `cat`, `head`, `tail`, `wc`, `find`, `grep`, `rg`, `jq` | Read and search local files without redirects or shell composition. |
+| read-only | **allow** | `git status`, `git diff`, `git log`, `git show`, `git rev-parse`, `git ls-files`, `git config --get` | Inspect the local Git worktree, history, references, and configuration. |
+| read-only | **allow** | `npm test`, `npm run <safe-script>`, `yarn test`, `yarn run <safe-script>`, `tsc`, `eslint` | Run existing unit, build, typecheck, and lint scripts without install or fix flags. |
+| local-write | **ask** | `mkdir`, `touch`, `cp`, `mv`, `git add`, `git stash`, `git branch`, `git restore`, `git rebase` | Create, change, stage, move, or restore local files or Git state. |
+| network-dependency | **ask** | `npm install`, `npm ci`, `yarn install`, `pip install`, `pip3 install`, `npx`, `curl` | Access the network, download executable content, or install dependencies. |
+| read-only | **allow** | `sf setup-agents`, `sf sfps-adp` | The plugin's own command surface (task/evidence/workflow tracking) — always safe to run. |
+| git-remote-shared | **allow** | `git commit`, `git pull`, `git fetch` | Commit locally, or incorporate remote changes via pull/fetch — scoped to this clone and reversible (revert/reflog), unlike a push or tag that changes shared remote state. |
+| git-remote-shared | **ask** | `git checkout`, `git rm`, `git push`, `git tag`, `npm publish`, `npm unpublish` | Change shared Git history/state, publish packages, or incorporate remote changes. |
+| git-remote-shared | **ask** | `git push --force`, `git push -f`, `git push --force-with-lease` | Force-pushes, overwriting shared remote history — asks, same as a plain push. |
+| destructive | **ask** | `git reset --hard`, `git clean` | Rewrites local history or discards untracked files — reversible via reflog/backup in most cases, so this asks rather than denying outright (user decision, permission-allow-tier-review AC-8). |
+| destructive | **deny** | `rm`, `sudo` | Delete local data or escalate privileges. |
+| destructive | **deny** | `cat ~/.config/setup-agents/tokens/<id>.json`, `cp ~/.config/setup-agents/tokens/<id>.json /tmp`, `base64 ~/.config/setup-agents/tokens/<id>.json`, `tar -cf tokens.tar ~/.config/setup-agents/tokens`, `rg . ~/.config/setup-agents/tokens`, `find ~/.config/setup-agents/tokens -exec cat {} ;` | Denies any command that mentions the MCP integration OAuth token directory (~/.config/setup-agents/tokens), in any spelling — the directory holds live, per-integration refreshable OAuth tokens, not a file an agent session ever needs to read. |
+| destructive | **deny** | `sf org delete`, `sf org delete scratch`, `sf org delete sandbox`, `sf org delete shape`, `sf org delete snapshot`, `sf env delete scratch`, `sf env delete sandbox`, `sf force org shape delete`, `sf force org snapshot delete`, `sf force org delete`, `sf package version delete`, `sf force package version delete`, `sf org refresh sandbox`, `sf package delete`, `sf force package delete`, `sf package bundle delete` | Delete a scratch org, sandbox, org shape/snapshot, package, or package version — including every verified env:*/force:* alias and colon-joined id for the same underlying command. |
+| org-mutate-deploy | **allow** | `sf` | Any other 'sf' command not covered by the explicit deny rules above. |
 
-These commands are **destructive or irreversible**. Never execute them autonomously.
-If the task requires one of these, stop and ask the user for explicit approval.
+Commands are parsed as argv. Shell chains, redirects, substitutions, malformed quoting, and
+unknown commands fail closed. Substring matches never grant permission.
 
-| Pattern | Reason |
-|---------|--------|
-| `git push*` | Push to remote (requires human approval) |
-| `git reset --hard*` | Destructive: discards all local changes |
-| `git clean -f*` | Destructive: removes untracked files |
-| `git clean -d*` | Destructive: removes untracked directories |
-| `git clean -fd*` | Destructive: removes untracked files and dirs |
-| `git rebase -i*` | Interactive rebase (requires TTY) |
-| `rm -rf*` | Destructive: recursive force delete |
-| `rm -fr*` | Destructive: recursive force delete (alt) |
-| `sudo*` | Privilege escalation not allowed |
-| `sf org delete*` | Destructive: deletes Salesforce org |
-| `sf package version delete*` | Destructive: deletes package version |
-| `npm publish*` | Publish to npm (requires human approval) |
-| `npm unpublish*` | Unpublish from npm (requires human approval) |
+## Runtime enforcement support
 
-## Unlisted Commands
+| Runtime | Enforcement | Detail |
+|---------|-------------|--------|
+| opencode | native-command-policy | Generated native rules deny by default and preserve ask decisions. |
+| claude | approval-only | Generated .claude/settings.local.json pre-approves `Bash(sf *)` with no ask tier and denies only the irreversible carve-outs; the PreToolUse hook enforces workflow-gate deny/ask on top. setup-agents cannot express the complete argv policy in CLI flags beyond that. |
+| codex | approval-only | Suggest mode retains approval, but setup-agents cannot express the complete argv policy in CLI flags. |
+| cursor | unsupported | Cursor print mode has no setup-agents command-policy enforcement channel. |
 
-Any command not in Allow or Deny requires user confirmation before execution.
+## Decisions
+
+- **allow**: may run without additional approval.
+- **ask**: requires explicit approval scoped to the exact command and target.
+- **deny**: must not run. Unknown or unrepresentable operations are denied.
+
+## PreToolUse hook exceptions (subagent-approval-friction)
+
+The Claude Code PreToolUse hook (regenerated locally under .setup-agents/hooks/ by
+`sf setup-agents local`/`update` — not committed in customer-repository mode) auto-allows
+four narrow cases beyond the table above, each keyed off a CLI-established fact, never agent
+text, and each fails safe to the pre-existing deny/ask on any ambiguity:
+
+| Case | Condition to auto-allow | Mechanism |
+|------|--------------------------|-----------|
+| Delete a scratch root | `rm`/`rm -r` target resolves (realpath) inside a path THIS session registered via `sf setup-agents scratch register --path`, unexpired (24h) | `sf setup-agents scratch delete --path <path>` — the hook auto-allow alone cannot bypass the native `Bash(rm *)` deny, so use this command, not a raw `rm` |
+| Stop a spawned process | `kill <pid>` targets a pid+start-time THIS session registered via `sf setup-agents scratch register --pid`, unexpired (24h) | `sf setup-agents scratch stop --pid <pid>` |
+| Mention a protected path | A Bash command only READS or MENTIONS a protected state/settings path (e.g. inside a quoted `--summary`, or a `grep`) — no real redirect/mutating verb outside quotes | No action needed — already allowed; only a REAL write is denied |
+| Docs-only rework | A rejection/correction is docs-only AND a fresh `src/`+`test/` digest still matches the digest recorded when `security-review`/`qa` last passed | Automatic — `workflow run`/`review complete` skip re-opening those two phases and record an audit evidence entry |
+
+Everything else — mandatory gates (`ba→architect`, `document-review→release`), `git push`,
+deletes/kills outside an owned scratch root or pid, production deploys, permission/hook
+file changes, and bulk state mutation — stays exactly as strict as the table above.

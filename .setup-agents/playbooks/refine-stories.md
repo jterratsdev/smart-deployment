@@ -1,4 +1,4 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.1 -->
 # Refine Stories
 
 ## Goal
@@ -12,5 +12,5 @@ Ensure stories have clear acceptance criteria before entering development.
 
 ## Evidence
 ```bash
-sf setup-agents evidence add --task <id> --role ba --type file --summary "Refine Stories completed"
+sf setup-agents evidence add --task <id> --role sa --type file --summary "Refine Stories completed"
 ```

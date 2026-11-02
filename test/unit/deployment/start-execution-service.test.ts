@@ -78,6 +78,36 @@ describe('StartExecutionService', () => {
     }
   });
 
+  it('rejects an incomplete deployment plan before creating Salesforce or state clients', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-invalid-wave-'));
+    const context = createDeploymentContext(createComponent(tempDir));
+    context.orderedWaves = [];
+    let clientCreated = false;
+    const service = new StartExecutionService({
+      createSfCli: () => {
+        clientCreated = true;
+        return new FailingSfCli();
+      },
+    });
+
+    try {
+      await service.execute({
+        dryRun: false,
+        validateOnly: false,
+        allowCycleRemediation: false,
+        skipTests: true,
+        targetOrg: 'fixture@example.com',
+        sourcePath: tempDir,
+        deploymentContext: context,
+        log: () => {},
+      });
+      expect.fail('Expected incomplete plan to be rejected');
+    } catch (error) {
+      expect((error as Error).message).to.include('not assigned to a wave');
+    }
+    expect(clientCreated).to.equal(false);
+  });
+
   it('generates a manifest and persists failed wave state for a real deployment attempt', async () => {
     tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-service-'));
     const sfCli = new FailingSfCli();

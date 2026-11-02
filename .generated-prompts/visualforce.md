@@ -1,4 +1,5 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.1 -->
+<!-- setup-agents:block:start id="prompt-register-guidance" version="3.23.1" -->
 # Visualforce Prompts
 
 > AI prompt register for Visualforce pages (.page) and components (.component) in this project.
@@ -34,4 +35,5 @@ for existing controller patterns and styling conventions.
 
 ---
 
+<!-- setup-agents:block:end id="prompt-register-guidance" -->
 <!-- Entries below this line are maintained by the agent -->

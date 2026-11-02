@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "trailhead": {
+      "url": "https://mcp.trailhead.salesforce.com/mcp",
+      "type": "http"
+    },
+    "slack": {
+      "command": "node",
+      "args": [
+        "/Users/jterrats/.config/setup-agents/mcp-proxy.cjs",
+        "--url",
+        "https://mcp.slack.com/mcp",
+        "--token-file",
+        "/Users/jterrats/.config/setup-agents/tokens/slack.json"
+      ]
+    },
+    "setup-agents-metadata": {
+      "command": "node",
+      "args": ["${HOME}/dev/setup-agents/bin/mcp-metadata.js"],
+      "env": {}
+    },
+    "setup-agents-salesforce-docs": {
+      "command": "node",
+      "args": ["${HOME}/dev/setup-agents/bin/mcp-salesforce-docs.js"],
+      "env": {}
+    }
+  }
+}

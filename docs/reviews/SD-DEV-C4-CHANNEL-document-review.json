@@ -1,0 +1,136 @@
+{
+  "story": "SD-DEV-C4-CHANNEL",
+  "run": "wf-1792664256358-7bd912",
+  "phase": "document-review",
+  "phaseTask": "setup-agents-task-1792905394865-be12b45e",
+  "sourceFiles": [
+    "docs/architecture/c4-omnistudio-channel-classification.md",
+    "docs/known-limitations.md",
+    "docs/reviews/SD-DEV-C4-CHANNEL-security-review.md",
+    "docs/testing/SD-DEV-C4-CHANNEL-qa-report.md",
+    "docs/research/metadata-catalog/unknown-validation-handoff.md"
+  ],
+  "sourceDigest": "bcabf377d8cb9b565c36c7f0554870ac2a9fb57439964b4932aaf13c4d7b6803",
+  "digestCommand": "sf setup-agents docs digest --input docs/architecture/c4-omnistudio-channel-classification.md,docs/known-limitations.md,docs/reviews/SD-DEV-C4-CHANNEL-security-review.md,docs/testing/SD-DEV-C4-CHANNEL-qa-report.md,docs/research/metadata-catalog/unknown-validation-handoff.md",
+  "renderTarget": "none — internal engineering documentation set, not a final client-facing PDF/deck. No sf setup-agents docs --pdf|--deck render was produced or required for this phase.",
+  "audienceProfile": {
+    "source": "inline (no .agent-workflow/audience-profile.json found in the repo)",
+    "audience": "internal engineering (Smart Deployment maintainers, developer/QA/architect roles on this story)",
+    "technicalLevel": "technical",
+    "languageRegister": "en-US, technical/internal",
+    "doNotInclude": ["none applicable — internal engineering artifact, no client PII or external commitments"]
+  },
+  "author": {
+    "architecture": "setup-agents:architect (SD-DEV-C4-CHANNEL architect phase)",
+    "knownLimitations": "setup-agents:developer (SD-DEV-C4-CHANNEL developer phase)",
+    "securityReview": "setup-agents:architect (independent reviewer, security-review phase, v1.1 re-review)",
+    "qaReport": "setup-agents:qa (independent of implementation, qa phase, v1.1 re-verified against HEAD fe1b418)",
+    "unknownValidationHandoff": "setup-agents:sa / setup-agents:architect (SD-METADATA-UNKNOWN-VALIDATION research run, prior story)"
+  },
+  "reviewer": "setup-agents:release-manager (independent of all five documents; did not author any of them)",
+  "reviewedAt": "2026-10-24T00:00:00.000Z",
+  "disposition": "approve",
+  "dispositionRationale": "The one substantive finding (G5: architecture doc's identity-rule text and TBD #1 were stale relative to the already-shipped, already-tested, already-security-reviewed identity rule) was trivial factual staleness purely aligning the doc with shipped code, and was fixed in place per this task's explicit authorization — the two edits are listed below. No other finding blocks approval: all grounding, consistency, audience/tone, scope, and integrity checks pass for the 5 reviewed documents. The repo-wide yarn link-check failure (I2) is real but entirely outside this story's file scope (none of the 29 broken links touch any of the 5 reviewed documents) and is flagged as a separate, non-blocking doc-hygiene item rather than grounds to withhold approval of this story's documents.",
+  "findings": {
+    "grounding": [
+      {
+        "id": "G1",
+        "status": "pass",
+        "detail": "docs/known-limitations.md reason table matches code exactly: unknown-shape/identity-unproven/channel-conflict remedies in BLOCKED_REMEDIES (omnistudio-channel-classifier.ts:123-129) are quoted verbatim in the doc's Remedy column. VBT-to-native type mapping table (DataRaptor->OmniDataTransform, IntegrationProcedure->OmniIntegrationProcedure, OmniScript->OmniScript, FlexCard->OmniUiCard) matches VBT_TYPE_TO_NATIVE_TYPE (lines 74-79). Case-insensitive conflict-key claim matches toLogicalKey's .toLowerCase() (lines 459-481)."
+      },
+      {
+        "id": "G2",
+        "status": "pass",
+        "detail": "Size caps verified against source: MAX_DATAPACK_JSON_BYTES = 5 * 1024 * 1024 (5 MB) and MAX_JOB_FILE_BYTES = 64 * 1024 (64 KB) at omnistudio-channel-classifier.ts:116-117. known-limitations.md's identity-unproven row and the security review's F5/N3 entries describe this correctly (stat-based cap checked before read, oversize fails closed to identity-unproven for DataPack JSON; vlocity.yaml has its own smaller cap)."
+      },
+      {
+        "id": "G3",
+        "status": "pass",
+        "detail": "commands: [] claim verified directly in special-deployment-plan.ts:291 (OmniStudioVlocityProvider always emits an empty commands array) and independently in the black-box fixture JSON (docs/testing/SD-DEV-C4-CHANNEL-blackbox-plan-explain.json), where no vlocity tool entry appears in any providerDecisions[].commands[]. Matches AC-004 claims in the architecture doc, known-limitations, security review, and QA report."
+      },
+      {
+        "id": "G4",
+        "status": "pass",
+        "detail": "tryReadFile's three-layer root confinement (lexical escapesRoot check, stat-based size cap, then dual realpath check on both absPath and projectRoot) was read line-by-line at omnistudio-channel-classifier.ts:364-402 and matches the security review's F4/N2 fix description and known-limitations' unknown-shape row (resolves outside project root / symlink escape -> unknown-shape)."
+      },
+      {
+        "id": "G5",
+        "status": "stale (fixed, see Edits Made)",
+        "detail": "Architecture doc's managed-datapack identity rule (row (b) in the Required Evidence table and TBD #1) still stated the pre-amendment rule ('VlocityRecordSObjectType carries a concrete managed namespace prefix <ns>__<Object>__c') as current, with no reference to the later human-approved amendment (decision setup-agents-decision-1792797587729-cc2725) that the strict pattern is <ns>__<Name>__(c|mdt|e|x|b) OR the %vlocity_namespace% token resolved via a root-level vlocity.yaml namespace: key. The code (MANAGED_API_NAME_PATTERN, omnistudio-channel-classifier.ts:92-93; JOB_NAMESPACE_LINE_PATTERN, line 109) and known-limitations.md (which already states the amended rule correctly) were both already consistent with the amendment; only the architecture doc's design-contract table and TBD #1 had not been updated to reflect it. This is exactly the staleness the task instructed me to check for and permitted me to fix."
+      }
+    ],
+    "consistency": [
+      {
+        "id": "C1",
+        "status": "pass",
+        "detail": "Test counts cross-checked against real command output, not just doc prose: 47 passing / 0 failing reproduced live (npx mocha ... omnistudio-channel-classifier.test.ts special-deployment-plan.test.ts -> 47 passing (41ms)), matching docs/testing/SD-DEV-C4-CHANNEL-focused-tests.log:63 and the QA report. Full suite 1820 passing / 8 pending / 0 failing matches docs/testing/SD-DEV-C4-CHANNEL-full-suite.log:7020-7021 and the QA report verbatim."
+      },
+      {
+        "id": "C2",
+        "status": "pass",
+        "detail": "The security review's own internal count progression (28 passing at v1.0 draft -> 42 passing at v1.1 re-review -> 47 passing at QA/this review) is consistent as a timeline, not a contradiction: each number is scoped to a different point in the rework sequence (v1.0 before F1/F2 fixes, v1.1 after F1-F4 fixes, final after N1-N3 hardening tests were added). The QA report and the committed HEAD fe1b418 state (47 passing) is what matters for release and is independently reproduced above."
+      },
+      {
+        "id": "C3",
+        "status": "pass",
+        "detail": "Finding statuses across the two review documents agree: security review v1.1 states F1/F2 Fixed, F3/F4 Fixed, F5 Partially fixed (N3 follow-up), F6/F7 accepted info, plus new N1-N4 from rework. QA report's 'Residual Risks' section and 'Defects: None found... beyond what the architect's security re-review already disclosed' statement are consistent with this and do not re-litigate or contradict any finding ID or severity."
+      },
+      {
+        "id": "C4",
+        "status": "pass",
+        "detail": "known-limitations.md explicitly cross-references the 'Open assumption on channel-conflict naming (F2)' as architecture doc TBD #2, and the QA report's Residual Risk #1 restates the same open item with the same framing (fails closed, not independently verified against real VBT export). No drift between the three documents on this specific open question."
+      }
+    ],
+    "audienceAndTone": [
+      {
+        "id": "A1",
+        "status": "pass",
+        "detail": "All five documents are written for an internal, technical maintainer audience (file paths, line-number citations, regex patterns, AC numbers). No blame language, no unsupported certainty presented as fact (claims are evidenced with probe results or test names), and internal process commentary (gate state, decision IDs, workflow-run IDs) is appropriate here since this is explicitly an internal engineering doc set, not a client deliverable."
+      }
+    ],
+    "scopeAndDecisionReadiness": [
+      {
+        "id": "S1",
+        "status": "pass",
+        "detail": "Out-of-scope section in the architecture doc (DataPack import, executable VBT job generation, native deploy enablement, org calls, executor changes) is explicit and matches AC-004 and the 'Required rework' / 'Residual risk' framing in the security review and QA report, all of which repeat that classifications[] must not be consumed by an executable lifecycle task until further evidence exists."
+      },
+      {
+        "id": "S2",
+        "status": "pass",
+        "detail": "Open TBDs (architecture doc TBDs #2, #3, #4) remain genuinely open and are carried forward consistently into known-limitations.md's 'Open assumption on channel-conflict naming (F2)' and the QA report's Residual Risk #1 — decision ownership (PO for TBD #3, Developer/VBT docs for TBD #2) is named, not left implicit."
+      }
+    ],
+    "integrity": [
+      {
+        "id": "I1",
+        "status": "pass",
+        "detail": "Every local path referenced across the 5 reviewed documents and the architecture doc's File Ownership Boundaries table was checked for existence directly on disk: all resolve (src/deployment/omnistudio-channel-classifier.ts, special-deployment-plan.ts, special-deployment-executor.ts, metadata-capability-definitions.ts, metadata-gap-analysis-service.ts, metadata-scanner-service.ts, deployment-order.ts, types/metadata.ts, apex-class-names.ts, both test files, all 5 docs/testing/* evidence files, and docs/CIRCULAR_DEPENDENCY_REMEDIATION_SPEC.md referenced from known-limitations.md). No broken local path was found inside the reviewed document set."
+      },
+      {
+        "id": "I2",
+        "status": "non-blocking, out-of-scope",
+        "detail": "`yarn link-check` was run project-wide (no narrower target exists) and reports 29 broken links / 403s across the whole repo (CONTRIBUTING.md, docs/technical-refactor-backlog.md, README.md, several docs/archive/* and docs/guides/* files, and some dead external URLs). None of the 29 broken links are inside the 5 documents in this review's scope (docs/architecture/c4-omnistudio-channel-classification.md, docs/known-limitations.md, docs/reviews/SD-DEV-C4-CHANNEL-security-review.md, docs/testing/SD-DEV-C4-CHANNEL-qa-report.md, docs/research/metadata-catalog/unknown-validation-handoff.md). This is pre-existing repo-wide link rot unrelated to SD-DEV-C4-CHANNEL and is not fixed here per 'touch only what the task needs' — flagged for a separate doc-hygiene task, not a blocker for this story's document-review gate."
+      },
+      {
+        "id": "I3",
+        "status": "pass",
+        "detail": "The security review and QA report both compute file-scope deltas (git diff --stat / git status --porcelain) independently and agree on the exact file set touched by this story; no stale claim about which files changed."
+      }
+    ]
+  },
+  "edits": [
+    {
+      "file": "docs/architecture/c4-omnistudio-channel-classification.md",
+      "change": "Updated the managed-datapack 'Package/runtime identity' requirement in the Required Evidence table (row (b)) to state the amended rule: strict <ns>__<Name>__(c|mdt|e|x|b) VlocityRecordSObjectType pattern, OR the %vlocity_namespace% token resolved via a root-level namespace: key in vlocity.yaml. Added an inline note that this supersedes the original design text per decision setup-agents-decision-1792797587729-cc2725.",
+      "reason": "Pure staleness fix aligning the design doc with already-shipped, already-reviewed, already-tested code (MANAGED_API_NAME_PATTERN / JOB_NAMESPACE_LINE_PATTERN). No behavior, scope, or recommendation changed by this edit — only the doc's own description of behavior that was already true."
+    },
+    {
+      "file": "docs/architecture/c4-omnistudio-channel-classification.md",
+      "change": "Struck through TBD #1 ('Namespace identity rule...') with ~~strikethrough~~ and appended a '(SUPERSEDED — see v1.1)' note resolving it per the same decision, citing the implementing symbols in omnistudio-channel-classifier.ts.",
+      "reason": "TBD #1 asked exactly the question the project decision already answered after this doc was authored. Leaving it listed as open would mislead a reader into thinking the identity rule is still undecided, when the code, known-limitations.md, and the security review all already reflect the resolved rule."
+    }
+  ],
+  "blockingChecklistResult": "All blocking checklist items pass except the two staleness items in G5 (fixed in place) and the out-of-scope repo-wide link-check finding in I2 (non-blocking, not in this story's file scope).",
+  "evidenceNote": "47 focused tests and 1820/8/0 full-suite numbers independently reproduced live during this review (not merely read from the QA report); yarn link-check run live; all referenced local paths independently verified to exist on disk.",
+  "nextStep": "Resume the workflow run so it can present the mandatory document-review->release human gate. No sf setup-agents review complete/ask-approval was run by this phase."
+}

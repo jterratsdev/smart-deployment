@@ -1,4 +1,4 @@
-<!-- setup-agents: 3.16.0 -->
+<!-- setup-agents: 3.23.1 -->
 # Scope Assessment & Split Decision
 
 ## Goal

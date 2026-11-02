@@ -1,15 +1,12 @@
-<!-- setup-agents: 2.0.2 -->
+<!-- setup-agents: 3.23.1 -->
 
-## <!-- setup-agents:block:start id="doc-sync-skill" version="2.0.2" -->
-
+## <!-- setup-agents:block:start id="doc-sync-skill" version="3.23.1" -->
 ---
-
 name: doc-sync
 description: >-
-Update project documentation after task completion. USE FOR: sync docs, update ADR,
-update changelog, post-task doc update, sf setup-agents task done, doc sync.
-pluginVersion: "2.0.2"
-
+  Update project documentation after task completion. USE FOR: sync docs, update ADR,
+  update changelog, post-task doc update, task done, doc sync.
+pluginVersion: "3.23.1"
 ---
 
 # doc-sync Skill
@@ -17,8 +14,7 @@ pluginVersion: "2.0.2"
 Run this skill after every `sf setup-agents task done` to keep project docs in sync with actual implementation.
 
 ## Trigger
-
-After any `sf setup-agents task done` or `orchestra task done` call completes successfully.
+After any `sf setup-agents task done` call completes successfully.
 
 ## Protocol
 
@@ -33,26 +29,28 @@ After any `sf setup-agents task done` or `orchestra task done` call completes su
 ## Doc Target Checklist by Profile
 
 ### Architect
-
-- [ ] `docs/adr/` — create or update ADR for any decision record with `kind: 'decision'`
+- [ ] `.setup-agents/state/decisions.jsonl` — record any decision with `kind: 'decision'` via `decision add` (canonical); `docs/adr/*.md` is a generated render (`decision render`, #598), never hand-edited
 - [ ] `docs/architecture.md` — update integration points section if new integrations were added
 - [ ] `docs/diagrams/` — reference new Mermaid diagrams produced in this task
 - [ ] `docs/reviews/` — append architecture review findings if a review record exists
 
-### QA
+### Developer
+- [ ] `CHANGELOG.md` — append entry under [Unreleased] for new commands, flags, or breaking changes
+- [ ] `docs/commands.html` or equivalent — update if a new command or flag was added
+- [ ] `docs/api/` — update API reference if public interfaces changed
+- [ ] Note new environment variables or dependencies in `README.md`
 
+### QA
 - [ ] `docs/testing/` — append test coverage delta and any new test patterns introduced
 - [ ] `docs/testing/known-failures.md` — document any known failures or flaky tests discovered
 - [ ] `docs/testing/regression-notes.md` — note regressions caught and how they were resolved
 
-### DevOps
-
+### Release Manager
 - [ ] `docs/deployment/runbook.md` — update deployment steps if pipeline changed
 - [ ] `docs/deployment/env-vars.md` — document new environment variables introduced
 - [ ] `docs/deployment/cicd.md` — update CI/CD workflow descriptions if changed
 
 ## Rules
-
 - Keep each update under 20 lines per managed block — link to ADRs for detail.
 - Use `should` not `must` — missing docs do not block task completion.
 - Do not modify content outside managed blocks.

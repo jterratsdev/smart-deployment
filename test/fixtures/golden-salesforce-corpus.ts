@@ -76,7 +76,8 @@ export const GOLDEN_SALESFORCE_CORPUS: GoldenSalesforceFixture[] = [
       ],
       waves: [
         ['CustomObject:Account'],
-        ['ApexClass:NormalizeAccountAction', 'Flow:Subflow_UpdateAccount'],
+        ['ApexClass:NormalizeAccountAction'],
+        ['Flow:Subflow_UpdateAccount'],
         ['Flow:Main_Account_Onboarding'],
       ],
     },

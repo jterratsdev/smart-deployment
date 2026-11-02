@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>smart-deployment — Delivery Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <style>
+      :root {
+        --slds-blue: #0176d3;
+        --slds-blue-light: #e3effc;
+        --slds-green: #2e844a;
+        --slds-green-light: #e3f5e1;
+        --slds-orange: #dd7a01;
+        --slds-orange-light: #fef1e2;
+        --slds-red: #c23934;
+        --slds-gray: #706e6b;
+        --slds-bg: #f3f2f2;
+        --slds-white: #fff;
+        --slds-border: #dddbda;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: 'Salesforce Sans', Arial, sans-serif;
+        background: var(--slds-bg);
+        color: #3e3e3c;
+        font-size: 14px;
+      }
+      header {
+        background: var(--slds-blue);
+        color: #fff;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      header h1 {
+        font-size: 20px;
+        font-weight: 600;
+      }
+      header span {
+        font-size: 12px;
+        opacity: 0.85;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+        padding: 20px 24px;
+      }
+      .grid-wide {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        padding: 0 24px 20px;
+      }
+      .grid-full {
+        padding: 0 24px 20px;
+      }
+      .card {
+        background: var(--slds-white);
+        border: 1px solid var(--slds-border);
+        border-radius: 8px;
+        padding: 16px;
+      }
+      .card h2 {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--slds-gray);
+        margin-bottom: 12px;
+      }
+      .kpi {
+        font-size: 36px;
+        font-weight: 700;
+        color: var(--slds-blue);
+      }
+      .kpi-sub {
+        font-size: 13px;
+        color: var(--slds-gray);
+        margin-top: 2px;
+      }
+      .progress-bar {
+        height: 8px;
+        background: var(--slds-border);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 8px;
+      }
+      .progress-fill {
+        height: 100%;
+        background: var(--slds-blue);
+        border-radius: 4px;
+      }
+      canvas {
+        max-height: 260px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th {
+        text-align: left;
+        padding: 6px 8px;
+        background: var(--slds-bg);
+        font-weight: 600;
+        border-bottom: 2px solid var(--slds-border);
+      }
+      td {
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--slds-border);
+      }
+      .tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .tag-blue {
+        background: var(--slds-blue-light);
+        color: var(--slds-blue);
+      }
+      .tag-green {
+        background: var(--slds-green-light);
+        color: var(--slds-green);
+      }
+      .tag-orange {
+        background: var(--slds-orange-light);
+        color: var(--slds-orange);
+      }
+      footer {
+        text-align: center;
+        padding: 16px;
+        font-size: 11px;
+        color: var(--slds-gray);
+      }
+      .note {
+        font-size: 11px;
+        color: var(--slds-gray);
+        margin-top: 8px;
+        padding: 8px 12px;
+        background: var(--slds-bg);
+        border-radius: 4px;
+        border-left: 3px solid var(--slds-blue);
+      }
+      .savings-pos {
+        color: var(--slds-green);
+        font-weight: 600;
+      }
+      .savings-neg {
+        color: var(--slds-red);
+        font-weight: 600;
+      }
+      .no-data {
+        color: var(--slds-gray);
+        font-style: italic;
+      }
+      @media (max-width: 700px) {
+        .grid-wide {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>smart-deployment — Delivery Dashboard</h1>
+      <span>Generated 23 oct 2026, 01:38 p.m. · Data through 22 oct 2026, 09:58 a.m.</span>
+    </header>
+
+    <!-- KPI row -->
+    <div class="grid">
+      <div class="card">
+        <h2>Stories completed</h2>
+        <div class="kpi">34</div>
+        <div class="kpi-sub">68% of 50 stories · 17/18 workflow phases</div>
+        <div class="progress-bar"><div class="progress-fill" style="width: 68%"></div></div>
+      </div>
+      <div class="card">
+        <h2>Sprint status</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px">
+          <span class="tag tag-green">✓ 34 done</span>
+          <span class="tag tag-blue">⚡ 1 active</span>
+          <span class="tag tag-orange">○ 15 open</span>
+        </div>
+        <canvas id="statusDonut" style="max-height: 160px; margin-top: 12px"></canvas>
+      </div>
+      <div class="card">
+        <h2>
+          Total effort <span style="font-size: 10px; font-weight: 400; color: var(--slds-orange)">★ estimated</span>
+        </h2>
+        <div class="kpi">0.7h</div>
+        <div class="kpi-sub">AI ratio: 29%</div>
+        <canvas id="effortDonut" style="max-height: 160px; margin-top: 12px"></canvas>
+        <p class="note">
+          AI Autonomous / AI Supervised are measured from workflow-runs.jsonl phase durations (gates=none vs gated).
+          Human review is ★ estimated from gate/review/clarify events; Human manual is from recorded manual-effort
+          evidence. Telemetry-driven precision pending #230.
+        </p>
+      </div>
+      <div class="card">
+        <h2>
+          Effort by mode <span style="font-size: 10px; font-weight: 400; color: var(--slds-orange)">★ estimated</span>
+        </h2>
+        <table>
+          <tr>
+            <th>Mode</th>
+            <th>Hours</th>
+          </tr>
+          <tr>
+            <td>AI Autonomous (no-gate phases)</td>
+            <td>0h</td>
+          </tr>
+          <tr>
+            <td>AI Supervised (gated phases)</td>
+            <td>0.2h</td>
+          </tr>
+          <tr>
+            <td>Human review (gates, direction, reviews)</td>
+            <td>0.5h</td>
+          </tr>
+          <tr>
+            <td>Human manual (Setup UI, data fixes, manual config)</td>
+            <td>0h</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Sizing estimates</h2>
+        <table>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
+          </tr>
+          <tr>
+            <td>Stories estimated</td>
+            <td>4</td>
+          </tr>
+          <tr>
+            <td>Solo estimate (days)</td>
+            <td>6.5</td>
+          </tr>
+          <tr>
+            <td>AI-unguided estimate (days)</td>
+            <td>3.75</td>
+          </tr>
+          <tr>
+            <td>AI savings ratio</td>
+            <td>42%</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Charts row 1 -->
+    <div class="grid-wide">
+      <div class="card">
+        <h2>Burndown</h2>
+        <canvas id="burndown"></canvas>
+      </div>
+      <div class="card">
+        <h2>Daily velocity (tasks closed)</h2>
+        <canvas id="velocity"></canvas>
+      </div>
+    </div>
+
+    <!-- Charts row 2 -->
+    <div class="grid-wide">
+      <div class="card">
+        <h2>Tasks by profile</h2>
+        <canvas id="byProfile"></canvas>
+      </div>
+      <div class="card">
+        <h2>Avg cycle time by phase (h)</h2>
+        <canvas id="phaseTime"></canvas>
+      </div>
+    </div>
+
+    <!-- Story cycle times -->
+
+    <!-- Profile table -->
+
+    <div class="grid-full">
+      <div class="card">
+        <h2>Profile distribution</h2>
+        <table>
+          <tr>
+            <th>Profile</th>
+            <th>Total</th>
+            <th>Done</th>
+            <th>Completion</th>
+          </tr>
+          <tr>
+            <td>developer</td>
+            <td>25</td>
+            <td>16</td>
+            <td>
+              <div class="progress-bar"><div class="progress-fill" style="width: 64%"></div></div>
+              64%
+            </td>
+          </tr>
+          <tr>
+            <td>architect</td>
+            <td>12</td>
+            <td>7</td>
+            <td>
+              <div class="progress-bar"><div class="progress-fill" style="width: 58%"></div></div>
+              58%
+            </td>
+          </tr>
+          <tr>
+            <td>qa</td>
+            <td>3</td>
+            <td>2</td>
+            <td>
+              <div class="progress-bar"><div class="progress-fill" style="width: 67%"></div></div>
+              67%
+            </td>
+          </tr>
+          <tr>
+            <td>ba</td>
+            <td>1</td>
+            <td>0</td>
+            <td>
+              <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+              0%
+            </td>
+          </tr>
+          <tr>
+            <td>omnistudio</td>
+            <td>1</td>
+            <td>1</td>
+            <td>
+              <div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>
+              100%
+            </td>
+          </tr>
+          <tr>
+            <td>sfmc</td>
+            <td>1</td>
+            <td>1</td>
+            <td>
+              <div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>
+              100%
+            </td>
+          </tr>
+          <tr>
+            <td>crma</td>
+            <td>1</td>
+            <td>1</td>
+            <td>
+              <div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>
+              100%
+            </td>
+          </tr>
+          <tr>
+            <td>data360</td>
+            <td>1</td>
+            <td>1</td>
+            <td>
+              <div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>
+              100%
+            </td>
+          </tr>
+          <tr>
+            <td>tableau</td>
+            <td>1</td>
+            <td>1</td>
+            <td>
+              <div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>
+              100%
+            </td>
+          </tr>
+          <tr>
+            <td>security</td>
+            <td>1</td>
+            <td>1</td>
+            <td>
+              <div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>
+              100%
+            </td>
+          </tr>
+          <tr>
+            <td>service</td>
+            <td>1</td>
+            <td>1</td>
+            <td>
+              <div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>
+              100%
+            </td>
+          </tr>
+          <tr>
+            <td>ai</td>
+            <td>1</td>
+            <td>1</td>
+            <td>
+              <div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>
+              100%
+            </td>
+          </tr>
+          <tr>
+            <td>devops</td>
+            <td>1</td>
+            <td>1</td>
+            <td>
+              <div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>
+              100%
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid-full">
+      <div class="card">
+        <h2>Story benchmark detail</h2>
+        <table>
+          <tr>
+            <th>Story</th>
+            <th>Sizing</th>
+            <th>Solo Est.</th>
+            <th>AI Unguided Est.</th>
+            <th>AI Guided Est.</th>
+            <th>Actual</th>
+            <th>Savings vs Solo</th>
+            <th>Savings vs Unguided</th>
+          </tr>
+          <tr>
+            <td>FEAT-218</td>
+            <td>m</td>
+            <td>3d</td>
+            <td>2d</td>
+            <td>—</td>
+            <td><span class="no-data">no run data</span></td>
+            <td><span class="no-data">—</span></td>
+            <td><span class="no-data">—</span></td>
+          </tr>
+          <tr>
+            <td>BUG-216</td>
+            <td>m</td>
+            <td>2d</td>
+            <td>1d</td>
+            <td>—</td>
+            <td><span class="no-data">no run data</span></td>
+            <td><span class="no-data">—</span></td>
+            <td><span class="no-data">—</span></td>
+          </tr>
+          <tr>
+            <td>BUG-217</td>
+            <td>s</td>
+            <td>1d</td>
+            <td>0.5d</td>
+            <td>—</td>
+            <td><span class="no-data">no run data</span></td>
+            <td><span class="no-data">—</span></td>
+            <td><span class="no-data">—</span></td>
+          </tr>
+          <tr>
+            <td>REV-219</td>
+            <td>xs</td>
+            <td>0.5d</td>
+            <td>0.25d</td>
+            <td>—</td>
+            <td><span class="no-data">no run data</span></td>
+            <td><span class="no-data">—</span></td>
+            <td><span class="no-data">—</span></td>
+          </tr>
+        </table>
+        <p class="note">
+          Actual = wall-clock time from workflow-runs.jsonl. Estimates declared via `sf setup-agents workflow estimate`.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid-full">
+      <div class="card">
+        <h2>Recent Handoffs</h2>
+        <table>
+          <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Summary</th>
+            <th>Task</th>
+            <th>Date</th>
+          </tr>
+          <tr>
+            <td>developer</td>
+            <td>architect</td>
+            <td title="BA scope and acceptance contract reviewed; Mandatory architecture gate cannot...">
+              BA scope and acceptance contract reviewed; Mandatory architecture gate cannot...
+            </td>
+            <td>SD-METADATA-UNKNOWN-VALIDATION</td>
+            <td>2026-10-22</td>
+          </tr>
+          <tr>
+            <td>architect</td>
+            <td>developer</td>
+            <td title="BA scope and acceptance contract reviewed; Mandatory architecture gate cannot...">
+              BA scope and acceptance contract reviewed; Mandatory architecture gate cannot...
+            </td>
+            <td>SD-METADATA-UNKNOWN-VALIDATION</td>
+            <td>2026-10-22</td>
+          </tr>
+          <tr>
+            <td>sa</td>
+            <td>architect</td>
+            <td title="BA scope and acceptance contract reviewed">BA scope and acceptance contract reviewed</td>
+            <td>SD-METADATA-UNKNOWN-VALIDATION</td>
+            <td>2026-10-22</td>
+          </tr>
+          <tr>
+            <td>ba</td>
+            <td>qa</td>
+            <td title="Product refinement: start --source-path should be verified as one-step deploy...">
+              Product refinement: start --source-path should be verified as one-step deploy...
+            </td>
+            <td>REV-219</td>
+            <td>2026-05-13</td>
+          </tr>
+          <tr>
+            <td>ba</td>
+            <td>architect</td>
+            <td title="Product refinement: Agentforce .agent files must deploy as AiAuthoringBundle ...">
+              Product refinement: Agentforce .agent files must deploy as AiAuthoringBundle ...
+            </td>
+            <td>BUG-216</td>
+            <td>2026-05-13</td>
+          </tr>
+          <tr>
+            <td>ba</td>
+            <td>architect</td>
+            <td title="Product refinement: scanner ignore behavior should match Salesforce CLI expec...">
+              Product refinement: scanner ignore behavior should match Salesforce CLI expec...
+            </td>
+            <td>BUG-217</td>
+            <td>2026-05-13</td>
+          </tr>
+          <tr>
+            <td>architect</td>
+            <td>developer</td>
+            <td title="Implement focused scanner support for issue-listed Salesforce metadata types ...">
+              Implement focused scanner support for issue-listed Salesforce metadata types ...
+            </td>
+            <td>FEAT-218</td>
+            <td>2026-05-13</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <footer>setup-agents delivery dashboard · source: .setup-agents/state/ · 23 oct 2026, 01:38 p.m.</footer>
+
+    <script>
+      const SLDS = {
+        blue: '#0176d3',
+        blueLight: '#e3effc',
+        green: '#2e844a',
+        greenLight: '#e3f5e1',
+        orange: '#dd7a01',
+        orangeLight: '#fef1e2',
+        red: '#c23934',
+        gray: '#706e6b',
+        teal: '#0d9dda',
+        purple: '#9050e9',
+      };
+
+      new Chart(document.getElementById('statusDonut'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Done', 'Active', 'Open'],
+          datasets: [{ data: [34, 1, 15], backgroundColor: [SLDS.green, SLDS.blue, SLDS.orange], borderWidth: 0 }],
+        },
+        options: { plugins: { legend: { position: 'bottom' } }, cutout: '65%' },
+      });
+
+      new Chart(document.getElementById('effortDonut'), {
+        type: 'doughnut',
+        data: {
+          labels: ['AI Autonomous', 'AI Supervised', 'Human review', 'Human manual'],
+          datasets: [
+            { data: [0, 0.2, 0.5, 0], backgroundColor: [SLDS.teal, SLDS.blue, SLDS.orange, SLDS.gray], borderWidth: 0 },
+          ],
+        },
+        options: { plugins: { legend: { position: 'bottom' } }, cutout: '65%' },
+      });
+
+      new Chart(document.getElementById('burndown'), {
+        type: 'line',
+        data: {
+          labels: [
+            '2026-05-13',
+            '2026-05-14',
+            '2026-05-19',
+            '2026-05-20',
+            '2026-05-21',
+            '2026-05-22',
+            '2026-05-26',
+            '2026-05-30',
+            '2026-06-03',
+            '2026-06-04',
+            '2026-06-09',
+            '2026-06-10',
+            '2026-06-12',
+          ],
+          datasets: [
+            {
+              label: 'Done',
+              data: [7, 16, 19, 22, 23, 26, 27, 28, 30, 31, 32, 33, 34],
+              borderColor: SLDS.green,
+              backgroundColor: 'rgba(46,132,74,.1)',
+              fill: true,
+              tension: 0.3,
+            },
+            {
+              label: 'Remaining',
+              data: [43, 34, 31, 28, 27, 24, 23, 22, 20, 19, 18, 17, 16],
+              borderColor: SLDS.blue,
+              backgroundColor: 'rgba(1,118,211,.08)',
+              fill: true,
+              tension: 0.3,
+            },
+          ],
+        },
+        options: { plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } },
+      });
+
+      new Chart(document.getElementById('velocity'), {
+        type: 'bar',
+        data: {
+          labels: [
+            '2026-05-13',
+            '2026-05-14',
+            '2026-05-19',
+            '2026-05-20',
+            '2026-05-21',
+            '2026-05-22',
+            '2026-05-26',
+            '2026-05-30',
+            '2026-06-03',
+            '2026-06-04',
+            '2026-06-09',
+            '2026-06-10',
+            '2026-06-12',
+          ],
+          datasets: [{ label: 'Tasks/day', data: [7, 9, 3, 3, 1, 3, 1, 1, 2, 1, 1, 1, 1], backgroundColor: SLDS.blue }],
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+        },
+      });
+
+      new Chart(document.getElementById('byProfile'), {
+        type: 'bar',
+        data: {
+          labels: [
+            'developer',
+            'architect',
+            'qa',
+            'ba',
+            'omnistudio',
+            'sfmc',
+            'crma',
+            'data360',
+            'tableau',
+            'security',
+            'service',
+            'ai',
+            'devops',
+          ],
+          datasets: [
+            { label: 'Total', data: [25, 12, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], backgroundColor: SLDS.blueLight },
+            { label: 'Done', data: [16, 7, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1], backgroundColor: SLDS.green },
+          ],
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { position: 'bottom' } },
+          scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } },
+        },
+      });
+
+      new Chart(document.getElementById('phaseTime'), {
+        type: 'bar',
+        data: {
+          labels: [],
+          datasets: [{ label: 'Avg (h)', data: [], backgroundColor: SLDS.teal }],
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
+      });
+    </script>
+  </body>
+</html>

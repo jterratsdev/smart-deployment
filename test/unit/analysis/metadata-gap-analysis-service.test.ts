@@ -90,6 +90,39 @@ describe('MetadataGapAnalysisService', () => {
     expect(result.gaps.map((gap) => gap.metadataType)).not.to.include('SharingRules');
   });
 
+  it('merges manifest aliases with source evidence using vendor identities', async () => {
+    const projectRoot = await createProject();
+    await writePackageXml(projectRoot, ['ApexPage', 'CustomMetadataRecord', 'CustomMetadata']);
+    await mkdir(path.join(projectRoot, 'force-app/main/default/pages'), { recursive: true });
+    await mkdir(path.join(projectRoot, 'force-app/main/default/customMetadata'), { recursive: true });
+    await writeFile(path.join(projectRoot, 'force-app/main/default/pages/Home.page-meta.xml'), '<ApexPage />');
+
+    const result = await new MetadataGapAnalysisService().analyze({ sourcePath: projectRoot });
+
+    expect(result.detectedTypes.filter((entry) => entry.metadataType === 'ApexPage')).to.have.length(1);
+    expect(result.detectedTypes.find((entry) => entry.metadataType === 'ApexPage')?.detectedFrom).to.deep.equal([
+      'package-manifest',
+      'source-path',
+    ]);
+    expect(result.detectedTypes.filter((entry) => entry.metadataType === 'CustomMetadata')).to.have.length(1);
+    expect(result.detectedTypes.find((entry) => entry.metadataType === 'CustomMetadata')?.detectedFrom).to.deep.equal([
+      'package-manifest',
+      'source-path',
+    ]);
+  });
+
+  it('does not invent types from unknown metadata suffixes', async () => {
+    const projectRoot = await createProject();
+    await writeFile(
+      path.join(projectRoot, 'force-app/main/default/applications/Unknown.mystery-meta.xml'),
+      '<Mystery />'
+    );
+
+    const result = await new MetadataGapAnalysisService().analyze({ sourcePath: projectRoot });
+
+    expect(result.detectedTypes.map((entry) => entry.metadataType)).not.to.include('Mystery');
+  });
+
   async function createProject(): Promise<string> {
     const projectRoot = await mkdtemp(path.join(tmpdir(), 'metadata-gaps-'));
     tempDirs.push(projectRoot);

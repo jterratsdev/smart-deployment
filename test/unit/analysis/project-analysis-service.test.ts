@@ -21,6 +21,50 @@ function buildScanResult(components: MetadataComponent[]): ScanResult {
 }
 
 describe('ProjectAnalysisService', () => {
+  it('explains a stage conflict without producing executable waves', async () => {
+    const scanResult = buildScanResult([
+      {
+        name: 'Tour__c',
+        type: 'CustomObject',
+        filePath: '/tmp/Tour__c.object-meta.xml',
+        dependencies: new Set(['FlexiPage:Tour_Record_Page']),
+        dependents: new Set(),
+        priorityBoost: 0,
+      },
+      {
+        name: 'Tour_Record_Page',
+        type: 'FlexiPage',
+        filePath: '/tmp/Tour_Record_Page.flexipage-meta.xml',
+        dependencies: new Set(),
+        dependents: new Set(),
+        priorityBoost: 0,
+      },
+    ]);
+    const service = new ProjectAnalysisService({ scanner: { scan: async () => scanResult } as never });
+
+    const analysis = await service.buildAnalysis({ explainStageConflicts: true });
+    expect(analysis.orderedWaves).to.deep.equal([]);
+    expect(analysis.waveResult.unplacedComponents).to.deep.equal([
+      'CustomObject:Tour__c',
+      'FlexiPage:Tour_Record_Page',
+    ]);
+    expect(analysis.stageConflicts).to.deep.equal([
+      {
+        component: 'CustomObject:Tour__c',
+        dependency: 'FlexiPage:Tour_Record_Page',
+        componentStage: 1,
+        dependencyStage: 6,
+      },
+    ]);
+    expect(scanResult.dependencyResult.graph.get('CustomObject:Tour__c')).to.include('FlexiPage:Tour_Record_Page');
+    try {
+      await service.buildAnalysis();
+      expect.fail('Executable analysis must reject the conflict');
+    } catch (error) {
+      expect((error as Error).message).to.include('Deployment-order conflict');
+    }
+  });
+
   it('builds analysis results without AI enrichment', async () => {
     const scanResult = buildScanResult([
       {
@@ -99,9 +143,7 @@ describe('ProjectAnalysisService', () => {
     );
 
     expect(plannerWave).to.exist;
-    expect(analysis.waveResult.unplacedComponents).to.not.include(
-      'GenAiPlannerBundle:PHP_Ops_Copilot_Agent'
-    );
+    expect(analysis.waveResult.unplacedComponents).to.not.include('GenAiPlannerBundle:PHP_Ops_Copilot_Agent');
     expect(analysis.orderedWaves.at(-1)?.components).to.include('GenAiPlannerBundle:PHP_Ops_Copilot_Agent');
   });
 

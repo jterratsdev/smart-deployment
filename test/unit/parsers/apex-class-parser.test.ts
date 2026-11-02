@@ -177,6 +177,31 @@ describe('Apex Class Parser', () => {
       expect(staticCalls).to.have.lengthOf(0);
     });
 
+    it('does not treat instance calls, platform namespace members, or SOQL strings as Apex classes', () => {
+      const code = `
+        public class MyController {
+          public void run() {
+            String query = 'SELECT WHERE.someMethod() FROM Account';
+            Database.BatchableContext context;
+            context.getJobId();
+            List<Account> records = new List<Account>();
+            records.add(new Account());
+            for (Account c : records) {
+              c.get('Id');
+            }
+            Database.BatchableContext.getJobId();
+            Assert.areEqual(1, 1);
+            MyUtility.process();
+            lowerCaseUtility.process();
+          }
+        }
+      `;
+
+      const result = parseApexClass('MyController.cls', code);
+      const staticCalls = result.dependencies.filter((dependency) => dependency.type === 'static_method');
+      expect(staticCalls.map((dependency) => dependency.className)).to.deep.equal(['MyUtility', 'lowerCaseUtility']);
+    });
+
     it('should handle namespaced static calls', () => {
       const code = `
         public class MyController {
@@ -249,6 +274,22 @@ describe('Apex Class Parser', () => {
       // List and Map are standard classes, should be ignored
       const instantiations = result.dependencies.filter((d) => d.type === 'instantiation');
       expect(instantiations).to.have.lengthOf(0);
+    });
+
+    it('does not identify a namespaced custom object constructor as an Apex class', () => {
+      const result = parseApexClass(
+        'MyController.cls',
+        `
+        public class MyController {
+          public void run() {
+            cgcloud__Account_Set_Account__c membership = new cgcloud__Account_Set_Account__c();
+          }
+        }
+      `
+      );
+
+      expect(result.dependencies.some((dependency) => dependency.className === 'c')).to.equal(false);
+      expect(result.dependencies.some((dependency) => dependency.type === 'instantiation')).to.equal(false);
     });
   });
 
@@ -335,6 +376,29 @@ describe('Apex Class Parser', () => {
 
       expect(result.innerClasses).to.have.lengthOf(1);
       expect(result.innerClasses).to.not.include('MyController');
+    });
+
+    it('does not emit external dependencies for types declared as inner classes', () => {
+      const result = parseApexClass(
+        'Container.cls',
+        `
+        public class Container {
+          public class RunSettings {}
+          private RunSettings settings;
+          public void run() { RunSettings next = new RunSettings(); OtherService.run(); External.RunSettings.run(); }
+        }
+      `
+      );
+
+      expect(
+        result.dependencies.some((dependency) => !dependency.namespace && dependency.className === 'RunSettings')
+      ).to.equal(false);
+      expect(result.dependencies.map((dependency) => dependency.className)).to.include('OtherService');
+      expect(
+        result.dependencies.some(
+          (dependency) => dependency.namespace === 'External' && dependency.className === 'RunSettings'
+        )
+      ).to.equal(true);
     });
   });
 

@@ -1,5 +1,5 @@
-<!-- setup-agents: 2.0.2 -->
-
+<!-- setup-agents: 3.23.1 -->
+<!-- setup-agents:block:start id="prompt-register-guidance" version="3.23.1" -->
 # Generated Documentation Prompts
 
 > AI prompt register for ADRs, architecture review docs, runbooks, data model docs, user guides, release notes in this project.
@@ -19,7 +19,6 @@
 
 ### Prompt
 ```
-
 <the final prompt that produced or substantially changed this component>
 ```
 ---
@@ -29,7 +28,6 @@
 Minor fixes (typos, formatting, single-line corrections) do NOT update the prompt entry.
 
 ---
-
 ## Usage
 
 When generating documentation, the agent reads this file to understand the existing
@@ -38,7 +36,28 @@ Always updates rather than duplicates an existing doc.
 
 ---
 
+<!-- setup-agents:block:end id="prompt-register-guidance" -->
 <!-- Entries below this line are maintained by the agent -->
+
+## Field Migration CLI Reference
+
+- **Created:** 2026-10-09
+- **Updated:** 2026-10-09
+- **Iterations:** 1
+- **Task:** SD-FIELD-MIGRATION-PLAN
+
+### Key decisions
+
+- Document the read-only assessment separately from `start` behavior so it cannot be mistaken for automatic pre-destructive deployment or reference rewriting.
+- State the need for complete org observation, data backup and reviewed consumer changes before field deletion.
+
+### Prompt
+
+```
+In docs/cli-reference.md explain that CustomField type, formula and global value set migrations are not yet executable through start, and that the new pure assessment does not query the org, edit consumers or authorize deletion.
+```
+
+---
 
 ## CLI Reference Impact Command
 
@@ -131,6 +150,33 @@ Document the new smart-deployment retrieve command in README.md and docs/cli-ref
 
 ```
 Document destructive and rollback start modes in README.md and docs/cli-reference.md, including release-tag rollback guidance and the fact that destructive mode remains part of the start command.
+```
+
+---
+
+<!-- Entries below this line are maintained by agents -->
+
+## docs/research/metadata-catalog/object-flexipage-activation-plan.md
+
+- **Created:** 2026-10-20
+- **Updated:** 2026-10-21
+- **Iterations:** 2
+- **Task:** SD-ACCOUNT-OMISSION-DEMO-EXPERIMENT
+- **Role:** qa
+- **Paths:** docs/research/metadata-catalog/object-flexipage-activation-plan.md
+
+### Key decisions
+
+- Prompt registry update recorded.
+
+### Evidence
+
+- Pending verification evidence.
+
+### Prompt
+
+```
+Document the user-approved disposable cg-demo Account Metadata API 67.0 minimal omission test, precise payload, validation/deploy IDs, identical before/after object XML hash and REST overrides, and scope limitations without authorizing production or runner changes.
 ```
 
 ---
