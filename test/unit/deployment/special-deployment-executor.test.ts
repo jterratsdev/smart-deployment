@@ -72,6 +72,47 @@ describe('SpecialDeploymentPlanExecutor', () => {
     }
   });
 
+  it('refuses to run any command when the plan already failed (AC-004, security review F1)', async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), 'smart-deployment-special-exec-'));
+    const calls: string[] = [];
+    const executor = new SpecialDeploymentPlanExecutor(async (command, cwd) => {
+      calls.push(`${cwd}:${command.tool} ${command.args.join(' ')}`);
+      return { stdout: 'ok', stderr: '' };
+    });
+    const failedPlan: SpecialDeploymentPlan = {
+      ...plan(tempDir),
+      success: false,
+      errors: [
+        'MatchingRules and DuplicateRule cannot be deployed yet: target-org retrieve, validate, and rule-behavior evidence is required before enabling deployment for: MatchingRules:Account',
+      ],
+    };
+
+    const result = await executor.execute(failedPlan);
+
+    expect(result.success).to.equal(false);
+    expect(result.completedPhases).to.deep.equal([]);
+    expect(result.errors).to.deep.equal(failedPlan.errors);
+    expect(calls).to.deep.equal([]);
+  });
+
+  it('refuses to run any command when the plan reports errors even if success was left true', async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), 'smart-deployment-special-exec-'));
+    const calls: string[] = [];
+    const executor = new SpecialDeploymentPlanExecutor(async (command, cwd) => {
+      calls.push(`${cwd}:${command.tool} ${command.args.join(' ')}`);
+      return { stdout: 'ok', stderr: '' };
+    });
+    const inconsistentPlan: SpecialDeploymentPlan = {
+      ...plan(tempDir),
+      errors: ['DuplicateRule Account.Rule references missing local matching rule Account.Rule'],
+    };
+
+    const result = await executor.execute(inconsistentPlan);
+
+    expect(result.success).to.equal(false);
+    expect(calls).to.deep.equal([]);
+  });
+
   it('executes non-skipped phases sequentially and records skipped phases', async () => {
     tempDir = await mkdtemp(path.join(tmpdir(), 'smart-deployment-special-exec-'));
     const calls: string[] = [];

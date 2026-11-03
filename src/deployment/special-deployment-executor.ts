@@ -60,6 +60,21 @@ export class SpecialDeploymentPlanExecutor {
   }
 
   public async execute(plan: SpecialDeploymentPlan): Promise<SpecialDeploymentExecutionResult> {
+    // AC-004 / security review F1: a plan the scanner or a provider already marked as failed
+    // (e.g. a scanner `local-missing` error, or the core-metadata phase error for a
+    // MatchingRules/DuplicateRule node) must never reach a command. This is a minimal,
+    // fail-closed check scoped to this one entry point — it does not alter any other
+    // success/failure semantics below.
+    if (!plan.success || plan.errors.length > 0) {
+      return {
+        success: false,
+        completedPhases: [],
+        skippedPhases: [],
+        errors: [...plan.errors],
+        commands: [],
+      };
+    }
+
     const result: SpecialDeploymentExecutionResult = {
       success: true,
       completedPhases: [],

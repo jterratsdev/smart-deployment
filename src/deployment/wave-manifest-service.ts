@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import { RECOMMENDED_API_VERSION } from '../constants/api-version.js';
 import type { NodeId } from '../types/dependency.js';
 import type { MetadataComponent, MetadataType } from '../types/metadata.js';
+import { buildDataQualityRuleGuardError, isDataQualityRuleType } from './data-quality-rule-guard.js';
 
 export type WaveManifestParams = {
   baseDir: string;
@@ -16,8 +17,6 @@ export type DestructiveWaveManifestResult = {
   packagePath: string;
   destructiveChangesPath: string;
 };
-
-const DATA_QUALITY_RULE_TYPES: ReadonlySet<MetadataType> = new Set(['MatchingRules', 'DuplicateRule']);
 
 export class WaveManifestService {
   public async generateManifest(params: WaveManifestParams): Promise<string> {
@@ -55,13 +54,10 @@ export class WaveManifestService {
   private assertNoDataQualityRules(params: WaveManifestParams): void {
     const blocked = params.components.filter((nodeId) => {
       const type = params.componentMap.get(nodeId)?.type;
-      return type !== undefined && DATA_QUALITY_RULE_TYPES.has(type);
+      return type !== undefined && isDataQualityRuleType(type);
     });
     if (blocked.length > 0) {
-      throw new Error(
-        'MatchingRules and DuplicateRule cannot be deployed yet: target-org retrieve, validate, and ' +
-          `rule-behavior evidence is required before enabling deployment for: ${blocked.join(', ')}`
-      );
+      throw new Error(buildDataQualityRuleGuardError(blocked));
     }
   }
 

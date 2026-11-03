@@ -4,6 +4,11 @@ import { promisify } from 'node:util';
 import { glob } from 'glob';
 import { MetadataScannerService } from '../services/metadata-scanner-service.js';
 import type { AiEvaluationDefinition, MetadataComponent } from '../types/metadata.js';
+import {
+  buildDataQualityRuleGuardError,
+  findDataQualityRuleComponentKeys,
+  isDataQualityRuleType,
+} from './data-quality-rule-guard.js';
 import { classifyOmniStudioChannels, type OmniStudioChannelClassification } from './omnistudio-channel-classifier.js';
 import {
   SfCliSpecialDeploymentTargetLookup,
@@ -131,8 +136,14 @@ export class SpecialDeploymentPlanService {
 
 class CoreMetadataProvider implements SpecialDeploymentProvider {
   public async plan(context: ProviderContext): Promise<SpecialDeploymentPhase> {
+    // AC-004 / security review F1: `ci-publish` builds its own core-metadata manifest and
+    // never calls WaveManifestService, so that guard alone does not cover this path.
+    // MatchingRules/DuplicateRule are excluded from the core phase here, and detecting any
+    // becomes a phase error that blocks the plan (`success: false`), reusing the same
+    // WaveManifestService guard message so both paths fail with the same evidence requirement.
+    const dataQualityRuleKeys = findDataQualityRuleComponentKeys(context.components);
     const components = context.components
-      .filter((component) => !CORE_EXCLUDED_TYPES.includes(component.type))
+      .filter((component) => !CORE_EXCLUDED_TYPES.includes(component.type) && !isDataQualityRuleType(component.type))
       .map(toComponentKey)
       .sort();
 
@@ -150,6 +161,7 @@ class CoreMetadataProvider implements SpecialDeploymentProvider {
       ],
       skipped: components.length === 0,
       skipReason: components.length === 0 ? 'No core metadata components detected.' : undefined,
+      errors: dataQualityRuleKeys.length > 0 ? [buildDataQualityRuleGuardError(dataQualityRuleKeys)] : undefined,
     };
   }
 }
