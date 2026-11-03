@@ -577,3 +577,21 @@ node_modules
 /.cursor/skills/
 /.github/skills/
 /.codex/skills/
+
+# Generated setup-agents scaffolding; regenerate with sf setup-agents local.
+/CLAUDE.md
+/AGENTS.md
+/.codex/
+/.generated-prompts/
+/.agent-workflow/
+/.github/copilot-instructions.md
+/.cursor/rules/
+/.setup-agents/docs/
+/.setup-agents/open-orchestra/
+/.setup-agents/OFFLINE.md
+/.setup-agents/artifacts.json
+/.setup-agents/class-catalog.md
+/.setup-agents/doc-index.md
+/.setup-agents/env-audit.md
+/.setup-agents/knowledge-manifest.json
+/.setup-agents/setup-manifest.json
