@@ -53,6 +53,7 @@ const main = async () => {
   const latestTag = runGit('describe', '--tags', '--abbrev=0', '--match', 'v[0-9]*');
   const lastVersion = parseVersion(latestTag)?.join('.');
   assert(lastVersion, `Latest tag ${latestTag} is not a semantic version`);
+  const packageJson = JSON.parse(await readFile(new URL('../../package.json', import.meta.url), 'utf8'));
 
   const records = runGit('log', '--format=%H%x00%B%x00', `${latestTag}..HEAD`);
   const fields = records ? records.split('\0') : [];
@@ -62,6 +63,11 @@ const main = async () => {
   }
 
   const result = await analyzeRelease({ commits, lastVersion, analyzerOptions: await readAnalyzerOptions() });
+  assert.equal(
+    packageJson.version,
+    result.version,
+    `package.json version ${packageJson.version} must match the next release ${result.version}`
+  );
 
   console.log(`Commit analysis executed for ${commits.length} commit(s) since ${latestTag}.`);
   console.log(`Expected next release: type=${result.type ?? 'none'} version=${result.version}.`);

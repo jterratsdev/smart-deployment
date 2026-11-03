@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - package.json
+      - npm-shrinkwrap.json
 
 permissions:
   contents: write
@@ -37,6 +40,9 @@ jobs:
         uses: salesforcecli/github-workflows/.github/actions/retry@main
         with:
           command: yarn install --frozen-lockfile --network-timeout 600000
+
+      - name: Verify package release version
+        run: yarn release:analyze
 
       - name: Build plugin
         run: yarn build
