@@ -31,6 +31,11 @@ import {
   parseCustomObjectComponent,
 } from './scanners/data-metadata-scanner.js';
 import {
+  addDataQualityReferenceOutcomes,
+  parseDuplicateRuleComponent,
+  parseMatchingRulesComponent,
+} from './scanners/data-quality-rule-scanner.js';
+import {
   parseEmailTemplateComponent,
   parseFlexiPageComponent,
   parseLayoutComponent,
@@ -176,7 +181,7 @@ export class MetadataScannerService {
       })
     );
 
-    return scannedPackages.flat();
+    return addDataQualityReferenceOutcomes(scannedPackages.flat(), errors);
   }
 
   /**
@@ -264,7 +269,31 @@ export class MetadataScannerService {
       (directoryPath) => path.basename(directoryPath)
     );
 
-    return [...objectComponents, ...fieldComponents, ...customMetadataComponents];
+    const matchingRulesComponents = await scanMetadataFiles(
+      packagePath,
+      '**/matchingRules/*.matchingRule-meta.xml',
+      errors,
+      'MatchingRules',
+      this.shouldIgnorePath,
+      (filePath) => parseMatchingRulesComponent(filePath)
+    );
+
+    const duplicateRuleComponents = await scanMetadataFiles(
+      packagePath,
+      '**/duplicateRules/*.duplicateRule-meta.xml',
+      errors,
+      'DuplicateRule',
+      this.shouldIgnorePath,
+      (filePath) => parseDuplicateRuleComponent(filePath)
+    );
+
+    return [
+      ...objectComponents,
+      ...fieldComponents,
+      ...customMetadataComponents,
+      ...matchingRulesComponents,
+      ...duplicateRuleComponents,
+    ];
   }
 
   private async scanSecurityMetadata(packagePath: string, errors: string[]): Promise<MetadataComponent[]> {

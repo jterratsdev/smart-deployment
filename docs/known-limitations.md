@@ -7,6 +7,35 @@ This document tracks important current limitations of the Smart Deployment plugi
 - The command layer is usable, but live deployment coverage against real orgs is still narrower than the local test coverage.
 - `status` and `resume` are driven by persisted local state and are not yet a full remote deployment polling system.
 
+## `ci-publish` Coordinated Execution Is All-Or-Nothing
+
+`sf smart-deployment ci-publish --no-dry-run` runs `SpecialDeploymentPlanExecutor.execute()`
+against the whole plan built by `SpecialDeploymentPlanService`. Since the AC-004 deploy guard
+(`src/deployment/data-quality-rule-guard.ts`) was closed on this path, the executor refuses to
+run **any** command whenever the plan already has `success: false` or a non-empty `errors`
+array (`src/deployment/special-deployment-executor.ts`) — not just the phase that produced the
+error.
+
+**Behavior change:** before that fix, a phase error (for example an OmniStudio `blocked`
+classification, or an AI-evaluation `subjectName` precheck failure) was reported, but the core
+metadata phase and other unaffected phases still ran. Now, any provider's phase error stops the
+entire coordinated run, including core metadata that has nothing to do with the error. This is
+intentionally more fail-closed and consistent with AC-004 (MatchingRules/DuplicateRule must
+never deploy without org evidence), but a CI pipeline that relied on getting a partial core
+deploy alongside a known, tolerated OmniStudio or AI-evaluation issue will now get no deploy at
+all until that issue is resolved.
+
+The command reports this case distinctly ("Coordinated publish was blocked before any command
+ran", listing every plan error) rather than claiming a phase ran and failed, since no command
+was actually attempted (see `reportBlockedBeforeExecution` in `src/commands/ci-publish.ts`).
+
+**To unblock a run:** either fix the blocking condition (resolve the `local-missing`/inactive
+matching-rule reference, add the missing AI-evaluation subject, or correct the OmniStudio
+path/VBT shape), or exclude the blocked path from this `ci-publish` run (e.g. via
+`.forceignore`, a narrower `--source-path`, or a different `--since` revision) so the plan no
+longer contains the error. There is currently no flag to downgrade a specific phase's error to
+a warning and still run the rest of the plan.
+
 ## Circular Dependency Remediation
 
 - automatic remediation is intentionally conservative

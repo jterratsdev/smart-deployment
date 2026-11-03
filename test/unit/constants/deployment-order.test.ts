@@ -84,6 +84,18 @@ describe('DEPLOYMENT_ORDER', () => {
     // Object should be immutable
     expect(Object.isFrozen(DEPLOYMENT_ORDER)).to.be.true;
   });
+
+  /**
+   * C1-RULES: MatchingRules/DuplicateRule are an order-entry hint only (required by the
+   * Record<MetadataType, number> typing), never ordering proof — see
+   * metadata-capability-registry.test.ts "never marks ... proven from a DEPLOYMENT_ORDER entry".
+   */
+  it('places MatchingRules after CustomField and DuplicateRule after MatchingRules', () => {
+    expect(DEPLOYMENT_ORDER.MatchingRules).to.equal(11.1);
+    expect(DEPLOYMENT_ORDER.DuplicateRule).to.equal(11.2);
+    expect(DEPLOYMENT_ORDER.MatchingRules).to.be.greaterThan(DEPLOYMENT_ORDER.CustomField);
+    expect(DEPLOYMENT_ORDER.DuplicateRule).to.be.greaterThan(DEPLOYMENT_ORDER.MatchingRules);
+  });
 });
 
 describe('getDeploymentPriority', () => {

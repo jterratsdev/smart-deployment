@@ -52,6 +52,9 @@ export const DEPLOYMENT_ORDER: Readonly<Record<MetadataType, number>> = Object.f
   CustomMetadata: 9, // Custom metadata types
   CustomMetadataRecord: 10, // Custom metadata records
   CustomField: 11, // Fields depend on objects
+  // C1-RULES: an order-entry hint only, never ordering proof (see metadata-capability-definitions.ts).
+  MatchingRules: 11.1, // Matching rule containers depend on object/field schema
+  DuplicateRule: 11.2, // Duplicate rules depend on a local matching rule container
   ObjectTranslation: 12, // Object translations
   RecordType: 13, // Record types depend on objects/fields
   BusinessProcess: 14, // Business processes depend on record types

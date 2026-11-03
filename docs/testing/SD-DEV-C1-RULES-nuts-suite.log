@@ -1,0 +1,329 @@
+yarn run v1.22.21
+$ c8 --check-coverage=false mocha "**/*.nut.ts" --slow 4500 --timeout 600000 --parallel
+(node:99996) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:99996) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:99997) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:99998) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:105) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:99997) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:99998) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:101) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:102) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:105) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:106) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:101) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:102) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:104) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:106) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:100) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:104) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:103) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:100) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:103) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+  NUT: Smart Deployment root help
+    ✔ resolves the root command and preserves subcommand help (2598ms)
+
+
+  NUT: destructive rollback start CLI
+    ✔ plans rollback from release tags through the start command (5842ms)
+
+
+  NUT: resume command
+    ✔ updates persisted state and reports the resume point for a failed deployment (3234ms)
+    ✔ fails with a command error when there is no failed deployment to resume (3087ms)
+
+
+  NUT: metadata gaps capability registry
+    ✔ preserves JSON and human output while reporting registry-backed support deterministically (6793ms)
+
+
+  NUT: release report
+    ✔ renders release-owner output and persists stable JSON without scraping logs (6835ms)
+
+
+  NUT: commit-scoped deployments
+    ✔ plans only scoped commit metadata and required dependencies from a story manifest (10481ms)
+
+
+  NUT: validate command
+    ✔ returns a successful validation summary for a valid project without creating deployment state (2338ms)
+    ✔ returns a failed validation summary for corrupted metadata without attempting deployment (2356ms)
+
+
+  NUT: production-like deployment command validation harness
+    ✔ validate remains local-only while deterministic sf fixtures expose report and resume responses (4007ms)
+    ✔ status refreshes remote deployment state and prints real command JSON output (3673ms)
+    ✔ resume invokes remote sf resume and prints real command JSON output (3414ms)
+
+
+  NUT: status command
+    ✔ reports not-started status when no deployment state exists for the source path
+    ✔ renders failed deployment details and cycle remediation status from persisted state
+    ✔ reports a stable automatic OWD postcondition contract
+
+
+  NUT: start command
+    ✔ runs successfully in dry-run mode for a standard project (2400ms)
+    ✔ runs successfully in dry-run mode with AI prioritization enabled (2820ms)
+    ✔ start help exposes AI prioritization context flags
+    ✔ fails fast for circular dependencies when remediation is not enabled (2363ms)
+    ✔ requires a target org before attempting a real cycle remediation deployment
+
+{"timestamp":"2026-11-03T08:50:51.236Z","level":"INFO","component":"StateManager","message":"Saving deployment state","context":{"state":{"deploymentId":"deploy-status-1","targetOrg":"status@example.com","timestamp":"2026-04-22T00:00:00.000Z","totalWaves":4,"completedWaves":[1],"currentWave":2,"failedWave":{"waveNumber":2,"error":"UNABLE_TO_LOCK_ROW","timestamp":"2026-04-22T00:01:00.000Z"},"metadata":{"testStatus":"Blocked by previous failure","aiProvider":"openai","aiModel":"gpt-4o-mini","aiFallback":true,"aiAdjustments":2,"aiUnknownTypes":["BotVersion"],"aiInferenceFallback":false,"aiInferredDependencies":1}}}}
+{"timestamp":"2026-11-03T08:50:52.618Z","level":"INFO","component":"StateManager","message":"Saving deployment state","context":{"state":{"deploymentId":"deploy-resume-1","targetOrg":"resume@example.com","timestamp":"2026-04-22T00:00:00.000Z","totalWaves":5,"completedWaves":[1,2],"currentWave":3,"failedWave":{"waveNumber":3,"error":"REQUEST_LIMIT_EXCEEDED","timestamp":"2026-04-22T00:01:00.000Z"},"metadata":{"testStatus":"Blocked by previous failure"}}}}
+{"timestamp":"2026-11-03T08:50:59.400Z","level":"INFO","component":"StateManager","message":"Saving deployment state","context":{"state":{"deploymentId":"0AfFakeReportInProgress","targetOrg":"fake-org","timestamp":"2026-04-22T00:00:00.000Z","totalWaves":2,"completedWaves":[],"currentWave":1,"failedWave":{"waveNumber":1,"error":"Previous timeout","timestamp":"2026-04-22T00:01:00.000Z"}}}}
+{"timestamp":"2026-11-03T08:51:01.333Z","level":"INFO","component":"StateManager","message":"Saving deployment state","context":{"state":{"deploymentId":"0AfFakeResumeStart","targetOrg":"fake-org","timestamp":"2026-04-22T00:00:00.000Z","totalWaves":3,"completedWaves":[1],"currentWave":2,"failedWave":{"waveNumber":2,"error":"Timeout waiting for deploy result","timestamp":"2026-04-22T00:01:00.000Z"}}}}
+
+  NUT: validate, status, and resume commands
+    ✔ validate succeeds against a standard project wave plan (3158ms)
+    ✔ validate can run with AI validation enabled and report AI summary fields (3197ms)
+    ✔ validate help exposes AI validation flags clearly
+    ✔ validate reports XML problems as validation issues (2264ms)
+    ✔ status reports not-started when no deployment state exists
+    ✔ status reports resumable failed state for a project
+    ✔ resume updates persisted state from the failed wave
+    ✔ start persists remote deployment id and generated manifest when sf deploy reports partial failure
+    ✔ start pauses at a configured checkpoint and resume approves it with JSON output (3427ms)
+    ✔ status refreshes persisted state from sf project deploy report when target org is provided
+    ✔ resume delegates to sf project deploy resume before updating local state when target org is provided
+    ✔ resume fails when there is no failed deployment state to resume
+
+
+  NUT: analyze, config, and help coverage
+    ✔ analyze scans metadata, generates waves, and does not create deployment state (2682ms)
+    ✔ analyze saves a deployment plan when requested (2303ms)
+    ✔ analyze can save a deployment plan and write a report in the same run (2956ms)
+    ✔ analyze persists AI priority overrides in the saved plan when AI is enabled
+    ✔ analyze writes a JSON report when output is requested
+    ✔ analyze writes an HTML report when requested
+    ✔ analyze writes AI report context when AI output is requested
+    ✔ analyze writes AI transparency details into HTML reports when AI output is requested
+    ✔ config sets, gets, lists, and persists configuration values (6789ms)
+    ✔ config persists repo-level LLM settings and can read them back (6836ms)
+    ✔ command help output exposes examples and key flags
+
+
+  43 passing (36s)
+
+---------------------------------------|---------|----------|---------|---------|-------------------
+File                                   | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+---------------------------------------|---------|----------|---------|---------|-------------------
+All files                              |   63.67 |    68.48 |    57.2 |   63.67 |                   
+ bin                                   |     100 |      100 |     100 |     100 |                   
+  dev.js                               |     100 |      100 |     100 |     100 |                   
+ src/ai                                |   58.09 |    65.33 |   43.75 |   58.09 |                   
+  agentforce-priority-service.ts       |   88.15 |    66.66 |     100 |   88.15 | ...22-323,325-326 
+  agentforce-service.ts                |   42.85 |    71.42 |   31.25 |   42.85 | ...60-369,372-377 
+  dependency-inference-service.ts      |   69.25 |    57.14 |      60 |   69.25 | ...74-275,281-282 
+  llm-provider-factory.ts              |   80.39 |       25 |     100 |   80.39 | 39-43,45-49       
+  openai-service.ts                    |   24.19 |      100 |       0 |   24.19 | ...18-119,122-123 
+  wave-validation-prompt.ts            |     100 |      100 |     100 |     100 |                   
+  wave-validation-report.ts            |     7.5 |      100 |       0 |     7.5 | ...03-116,118-120 
+  wave-validation-response-parser.ts   |   19.46 |      100 |       0 |   19.46 | ...43-145,147-149 
+  wave-validation-result-synthesis.ts  |   45.61 |      100 |      40 |   45.61 | 17-28,31-36,45-57 
+  wave-validation-service.ts           |   81.66 |    64.28 |   69.23 |   81.66 | ...61-168,178-179 
+  wave-validation-transport.ts         |     100 |      100 |     100 |     100 |                   
+ src/analysis                          |   86.36 |    67.88 |   83.78 |   86.36 |                   
+  analysis-reporter.ts                 |   89.81 |       50 |   69.23 |   89.81 | ...80-292,297-308 
+  analyze-artifact-service.ts          |    90.9 |       75 |     100 |    90.9 | 77-84             
+  analyze-context-service.ts           |     100 |      100 |     100 |     100 |                   
+  metadata-capability-definitions.ts   |     100 |    95.65 |     100 |     100 | 288               
+  metadata-capability-registry.ts      |   84.61 |    73.33 |   81.25 |   84.61 | ...93-194,203-208 
+  metadata-gap-analysis-service.ts     |   77.79 |    64.17 |    82.6 |   77.79 | ...40,542,552-553 
+  project-analysis-service.ts          |   75.76 |    58.33 |      75 |   75.76 | ...78-179,215-259 
+ src/commands                          |   96.31 |     74.1 |     100 |   96.31 |                   
+  analyze.ts                           |   97.67 |    91.66 |     100 |   97.67 | 125-127           
+  config.ts                            |   95.67 |    90.32 |     100 |   95.67 | 127-134           
+  resume.ts                            |      90 |    65.38 |     100 |      90 | ...,87-89,116-118 
+  start.ts                             |   97.39 |    64.76 |     100 |   97.39 | ...83-384,395-397 
+  status.ts                            |   96.64 |    85.71 |     100 |   96.64 | 162-164,173-175   
+  validate.ts                          |   97.98 |    65.21 |     100 |   97.98 | 144-146           
+ src/commands/ci                       |   81.25 |     23.8 |   83.33 |   81.25 |                   
+  preset.ts                            |   81.25 |     23.8 |   83.33 |   81.25 | ...25-130,133-143 
+ src/commands/metadata                 |   93.81 |       75 |   83.33 |   93.81 |                   
+  gaps.ts                              |   93.81 |       75 |   83.33 |   93.81 | 48-50,93-95       
+ src/config                            |   96.09 |    66.66 |     100 |   96.09 |                   
+  config-mutation-service.ts           |    93.1 |    72.72 |     100 |    93.1 | 31-32,49-50,74-75 
+  repo-config.ts                       |    98.3 |     62.5 |     100 |    98.3 | 89,97             
+ src/constants                         |   77.15 |       60 |      40 |   77.15 |                   
+  api-version.ts                       |      50 |      100 |       0 |      50 | 65-121,129-142    
+  deployment-order.ts                  |   96.92 |       60 |   66.66 |   96.92 | ...76-177,194-195 
+ src/dependencies                      |   78.29 |     75.3 |   74.72 |   78.29 |                   
+  cycle-remediation-planner.ts         |    89.6 |       80 |   93.75 |    89.6 | ...30-231,270-278 
+  dependency-graph-builder.ts          |   80.72 |    79.41 |   70.96 |   80.72 | ...97-398,409-413 
+  dependency-graph-intake.ts           |     100 |      100 |     100 |     100 |                   
+  dependency-graph-stats.ts            |     100 |    90.47 |     100 |     100 | 87-92             
+  dependency-graph-validation.ts       |    96.8 |       75 |     100 |    96.8 | 45-46,61-62       
+  dependency-semantics.ts              |   49.43 |    85.71 |   28.57 |   49.43 | ...46,49-63,80-87 
+  ...ic-query-dependency-references.ts |   28.84 |       50 |   33.33 |   28.84 | 11-30,35-41,43-52 
+  graph-visualizer.ts                  |   65.64 |    41.66 |    62.5 |   65.64 | ...65-377,383-389 
+ src/deployment                        |   68.56 |    68.25 |   71.08 |   68.56 |                   
+  ci-preset-service.ts                 |   98.43 |    71.42 |     100 |   98.43 | 107-108           
+  commit-scope-service.ts              |   92.23 |    71.26 |   96.29 |   92.23 | ...89-391,427-438 
+  cycle-remediation-runner.ts          |   14.73 |      100 |      25 |   14.73 | ...31-341,344-352 
+  cycle-source-editor.ts               |   26.92 |      100 |       0 |   26.92 | ...20-151,154-181 
+  data-quality-rule-guard.ts           |   62.96 |      100 |   33.33 |   62.96 | 16-20,23-27       
+  deployment-context-service.ts        |     100 |      100 |     100 |     100 |                   
+  deployment-error-diagnostics.ts      |   76.49 |    68.42 |      90 |   76.49 | ...07-213,270-273 
+  deployment-postcondition.ts          |    67.9 |      100 |       0 |    67.9 | 54-63,65-67,69-81 
+  deployment-runner.ts                 |   74.67 |    55.35 |   77.77 |   74.67 | ...18-375,455-465 
+  deployment-state-summary.ts          |   90.15 |    75.53 |     100 |   90.15 | ...24-330,359-373 
+  deployment-status-service.ts         |   87.02 |    67.74 |   91.66 |   87.02 | ...63,281-282,296 
+  deployment-tracker.ts                |    79.8 |       75 |      60 |    79.8 | ...9,83-84,87-103 
+  deployment-validation-service.ts     |   81.22 |    72.97 |     100 |   81.22 | ...13-228,264-265 
+  dynamic-query-target-validator.ts    |   50.49 |    66.66 |   66.66 |   50.49 | ...2,87-89,91-101 
+  forceignore-staging-service.ts       |    42.4 |     62.5 |   38.46 |    42.4 | ...46-154,156-158 
+  owd-barrier-planner.ts               |   62.78 |     62.5 |      90 |   62.78 | ...26-232,238-252 
+  postcondition-poller.ts              |   33.66 |      100 |      25 |   33.66 | ...4,67-82,86-101 
+  resume-deployment-service.ts         |   69.23 |       50 |   54.54 |   69.23 | ...48-254,263-273 
+  rollback-planning-service.ts         |   98.43 |    82.69 |     100 |   98.43 | 233-236           
+  sf-cli-integration.ts                |   86.86 |    43.33 |     100 |   86.86 | ...76-179,195-197 
+  sf-cli-metadata-lookup.ts            |   42.85 |      100 |       0 |   42.85 | 15-34             
+  sf-cli-org-query.ts                  |   24.56 |      100 |   22.22 |   24.56 | ...08-110,112-114 
+  start-execution-service.ts           |   67.09 |    74.41 |   66.66 |   67.09 | ...99-301,304-312 
+  state-manager.ts                     |   93.96 |    78.78 |      80 |   93.96 | ...35-137,140-146 
+  test-executor.ts                     |   39.16 |       70 |   30.76 |   39.16 | ...30-372,375-382 
+  test-plan-service.ts                 |   90.62 |     87.5 |     100 |   90.62 | 24-26             
+  wave-graph-state.ts                  |   46.82 |    46.66 |      50 |   46.82 | ...88-100,102-122 
+  wave-manifest-service.ts             |   81.48 |    66.66 |   83.33 |   81.48 | 31-46,60-61,89-90 
+ src/errors                            |   39.75 |      100 |       0 |   39.75 |                   
+  base-error.ts                        |   33.78 |      100 |       0 |   33.78 | ...32,38-47,53-73 
+  parsing-error.ts                     |   44.82 |      100 |       0 |   44.82 | ...61,69-73,81-86 
+ src/parsers                           |   36.83 |    67.53 |   13.26 |   36.83 |                   
+  ai-authoring-bundle-parser.ts        |   48.57 |      100 |       0 |   48.57 | 18-35             
+  apex-class-dependencies.ts           |      90 |    79.16 |     100 |      90 | ...20-121,124-127 
+  apex-class-lexical.ts                |   74.16 |    59.09 |     100 |   74.16 | ...67,70-73,84-88 
+  apex-class-names.ts                  |   92.98 |    78.57 |     100 |   92.98 | 74-75,94-99       
+  apex-class-parser.ts                 |   89.28 |    66.66 |     100 |   89.28 | 75-83             
+  apex-class-symbols.ts                |   83.56 |       50 |     100 |   83.56 | 14-15,31-38,57-58 
+  apex-dynamic-query-analysis.ts       |   22.87 |       50 |    37.5 |   22.87 | ...69-176,178-188 
+  apex-trigger-parser.ts               |   31.96 |      100 |       0 |   31.96 | ...67-294,314-366 
+  aura-parser.ts                       |   32.22 |      100 |       0 |   32.22 | ...60-171,197-301 
+  bot-parser.ts                        |   25.65 |      100 |       0 |   25.65 | ...77-219,238-343 
+  ...etadata-dynamic-query-analysis.ts |   11.42 |      100 |       0 |   11.42 | ...62,64-66,68-70 
+  custom-metadata-parser.ts            |   36.25 |      100 |       0 |   36.25 | ...02-255,279-320 
+  custom-object-dependency-builder.ts  |   12.21 |      100 |       0 |   12.21 | ...03-124,126-131 
+  custom-object-parser.ts              |   41.46 |      100 |       0 |   41.46 | ...03-316,342-381 
+  custom-object-reference-helpers.ts   |   14.28 |      100 |       0 |   14.28 | ...94-111,113-126 
+  duplicate-rule-parser.ts             |    42.3 |      100 |       0 |    42.3 | 32-67,69-74,76-78 
+  dynamic-query-reference.ts           |   21.55 |      100 |       0 |   21.55 | ...10-112,114-116 
+  email-template-parser.ts             |   25.82 |      100 |       0 |   25.82 | ...45-299,329-395 
+  flexipage-parser.ts                  |   31.66 |      100 |       0 |   31.66 | ...97-217,236-300 
+  flow-parser.ts                       |   29.08 |      100 |       0 |   29.08 | ...67-279,303-392 
+  genai-prompt-parser.ts               |   35.51 |      100 |       0 |   35.51 | ...98-118,137-245 
+  layout-action-analysis.ts            |      22 |      100 |       0 |      22 | 10-14,16-34,36-50 
+  layout-parser.ts                     |   72.09 |      100 |       0 |   72.09 | ...80-102,121-129 
+  layout-reference-analysis.ts         |   14.87 |      100 |       0 |   14.87 | ...91-113,115-121 
+  layout-result-assembly.ts            |   15.21 |      100 |       0 |   15.21 | 8-46              
+  layout-section-analysis.ts           |    62.5 |      100 |       0 |    62.5 | 11-16             
+  legacy-agentforce-parser.ts          |   26.66 |      100 |       0 |   26.66 | 15-45,47-49,51-60 
+  lwc-code-analysis.ts                 |   14.88 |      100 |       0 |   14.88 | ...86-203,205-215 
+  lwc-metadata-analysis.ts             |    40.1 |      100 |       0 |    40.1 | ...74-184,186-197 
+  lwc-parser.ts                        |   58.46 |      100 |       0 |   58.46 | 39-65             
+  lwc-result-assembly.ts               |   10.71 |      100 |       0 |   10.71 | 6-24,26-56        
+  matching-rules-parser.ts             |    40.5 |      100 |       0 |    40.5 | 31-64,66-75,77-79 
+  parser-utils.ts                      |   40.98 |      100 |       0 |   40.98 | ...19,30-47,58-61 
+  permission-set-parser.ts             |   40.78 |      100 |       0 |   40.78 | ...95-111,129-255 
+  profile-parser.ts                    |   41.08 |      100 |       0 |   41.08 | ...97-113,131-258 
+  sharing-rules-parser.ts              |   28.57 |      100 |       0 |   28.57 | ...60,62-64,66-70 
+  visualforce-parser.ts                |   38.84 |      100 |       0 |   38.84 | ...27-139,163-242 
+ src/presentation                      |   67.55 |    50.74 |   67.74 |   67.55 |                   
+  analyze-command-presenter.ts         |   90.24 |       60 |     100 |   90.24 | 17-18,25-26       
+  config-command-presenter.ts          |   92.42 |    61.53 |   88.88 |   92.42 | 9-10,17-19        
+  ...oyment-postcondition-projector.ts |   27.27 |      100 |       0 |   27.27 | 7-22              
+  project-analysis-presenter.ts        |     100 |      100 |     100 |     100 |                   
+  release-report-presenter.ts          |     100 |    84.61 |     100 |     100 | 34,42             
+  resume-command-presenter.ts          |   31.57 |      100 |       0 |   31.57 | 10-23,26-37       
+  resume-result-projector.ts           |   83.92 |    15.38 |     100 |   83.92 | 36-40,49-50,52-53 
+  start-command-presenter.ts           |   46.05 |    66.66 |   28.57 |   46.05 | ...60,64-67,70-75 
+  status-command-presenter.ts          |   51.06 |    66.66 |      50 |   51.06 | 10-12,24-25,29-46 
+  validate-command-presenter.ts        |   55.84 |    16.66 |     100 |   55.84 | ...46,49-60,63-73 
+ src/reports                           |   82.83 |    70.76 |   82.19 |   82.83 |                   
+  deployment-plan-report-service.ts    |   97.68 |    57.89 |     100 |   97.68 | 157-163,244       
+  release-report-builder.ts            |   82.85 |    84.37 |    92.3 |   82.85 | 72-78,86,92-107   
+  release-report-command-adapter.ts    |   86.36 |       75 |     100 |   86.36 | 31-36             
+  release-report-facts-factory.ts      |   65.19 |    66.66 |   44.44 |   65.19 | ...91-201,203-207 
+  release-report-sanitizer.ts          |   67.68 |    76.92 |   58.33 |   67.68 | ...34-136,138-140 
+  release-report-service.ts            |   79.23 |    61.11 |   88.88 |   79.23 | ...20-121,128-130 
+  release-report-store.ts              |   87.65 |     90.9 |    87.5 |   87.65 | 64-70,74-76       
+  resume-release-report-coordinator.ts |     100 |       75 |     100 |     100 | 18                
+  start-release-report-coordinator.ts  |     100 |       80 |     100 |     100 | 41                
+ src/scanner                           |    66.1 |    41.37 |      60 |    66.1 |                   
+  forceignore-parser.ts                |   62.03 |    54.54 |   54.54 |   62.03 | ...26-227,233-265 
+  sfdx-project-detector.ts             |   69.44 |    33.33 |   66.66 |   69.44 | ...13-315,321-323 
+ src/services                          |   93.89 |    73.91 |   93.33 |   93.89 |                   
+  metadata-scanner-service.ts          |   93.89 |    73.91 |   93.33 |   93.89 | ...63-464,473-475 
+ src/services/scanners                 |   37.06 |       75 |   28.16 |   37.06 |                   
+  additional-metadata-scanner.ts       |   50.45 |      100 |   17.64 |   50.45 | ...96-311,313-329 
+  automation-ai-metadata-scanner.ts    |   16.25 |      100 |       0 |   16.25 | ...78-185,188-203 
+  code-metadata-scanner.ts             |   50.21 |    76.92 |   55.55 |   50.21 | ...26-163,166-205 
+  data-metadata-scanner.ts             |   12.66 |      100 |       0 |   12.66 | ...76-135,137-150 
+  data-quality-rule-scanner.ts         |   33.48 |    53.84 |   22.22 |   33.48 | ...03-205,207-218 
+  experience-metadata-scanner.ts       |   11.34 |      100 |       0 |   11.34 | ...69-105,108-141 
+  scanner-runtime.ts                   |   84.02 |       85 |   81.81 |   84.02 | ...,81-88,109-121 
+  security-metadata-scanner.ts         |   16.77 |       60 |      20 |   16.77 | ...23-138,141-144 
+ src/types                             |   85.85 |    57.14 |   66.66 |   85.85 |                   
+  manual-checkpoint.ts                 |   71.42 |    57.14 |   66.66 |   71.42 | ...21-134,136-147 
+  release-report.ts                    |     100 |      100 |     100 |     100 |                   
+ src/utils                             |   58.11 |     80.3 |   37.14 |   58.11 |                   
+  deployment-plan-manager.ts           |   51.08 |       70 |   42.85 |   51.08 | ...41-174,180-223 
+  error-aggregator.ts                  |   41.31 |      100 |   16.66 |   41.31 | ...27-328,350-351 
+  logger.ts                            |    78.5 |    82.35 |   57.57 |    78.5 | ...30-441,455-456 
+  xml.ts                               |   51.63 |       50 |    8.33 |   51.63 | ...28-262,268-275 
+ src/validators                        |   81.99 |    72.72 |   83.33 |   81.99 |                   
+  xml-metadata-validator.ts            |   81.99 |    72.72 |   83.33 |   81.99 | ...81-185,192-193 
+ src/validators/xml                    |   53.79 |    44.44 |   55.55 |   53.79 |                   
+  xml-reference-rules.ts               |   76.21 |    44.44 |   66.66 |   76.21 | ...63-173,177-185 
+  xml-report-formatter.ts              |    5.55 |      100 |       0 |    5.55 | 4-54              
+  xml-schema-rules.ts                  |   33.76 |    44.44 |      60 |   33.76 | ...32,43-67,69-77 
+ src/waves                             |   88.81 |    66.66 |   89.83 |   88.81 |                   
+  priority-wave-generator-ai.ts        |   87.24 |    60.86 |     100 |   87.24 | ...05-206,234-242 
+  priority-wave-generator.ts           |     100 |       70 |     100 |     100 | 92-98             
+  wave-builder.ts                      |   95.03 |    81.81 |   84.61 |   95.03 | ...88-289,295-301 
+  wave-executor.ts                     |   85.71 |    83.33 |      60 |   85.71 | 32-34,42-44,52-53 
+  wave-graph.ts                        |   72.98 |    47.36 |     100 |   72.98 | ...94,203,205,207 
+  wave-metadata.ts                     |     100 |      100 |     100 |     100 |                   
+  wave-priority-policy.ts              |   88.67 |    64.28 |   88.88 |   88.67 | ...,98-99,102-103 
+  wave-topology.ts                     |   93.02 |    80.95 |   85.71 |   93.02 | 117-118,123-129   
+  wave-validator.ts                    |   84.84 |    33.33 |     100 |   84.84 | ...46-48,52,54-55 
+---------------------------------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 63.67% ( 17328/27215 )
+Branches     : 68.48% ( 1508/2202 )
+Functions    : 57.2% ( 635/1110 )
+Lines        : 63.67% ( 17328/27215 )
+================================================================================
+Done in 41.96s.

@@ -1,0 +1,220 @@
+{"timestamp":"2026-11-03T08:56:40.031Z","level":"INFO","component":"CiPublishCommand","message":"Building CI publish plan","context":{"sourcePath":"/var/folders/sj/9h61n9s102l90188chx01gk40000gp/T/c1rules-qa.b6wH5WfXI9","dryRun":true,"autoActivate":false}}
+{"timestamp":"2026-11-03T08:56:40.031Z","level":"INFO","component":"SfdxProjectDetector","message":"Detecting SFDX project","context":{"startPath":"/var/folders/sj/9h61n9s102l90188chx01gk40000gp/T/c1rules-qa.b6wH5WfXI9"}}
+{"timestamp":"2026-11-03T08:56:40.032Z","level":"INFO","component":"SfdxProjectDetector","message":"SFDX project detected","context":{"projectRoot":"/var/folders/sj/9h61n9s102l90188chx01gk40000gp/T/c1rules-qa.b6wH5WfXI9","packages":1,"apiVersion":"67.0"}}
+{"timestamp":"2026-11-03T08:56:40.032Z","level":"INFO","component":"MetadataScannerService","message":"Project detected","context":{"root":"/var/folders/sj/9h61n9s102l90188chx01gk40000gp/T/c1rules-qa.b6wH5WfXI9","packageDirs":1}}
+{"timestamp":"2026-11-03T08:56:40.056Z","level":"INFO","component":"DependencyGraphBuilder","message":"Building dependency analysis result","context":{"components":7,"edges":5}}
+{"timestamp":"2026-11-03T08:56:40.057Z","level":"INFO","component":"DependencyGraphBuilder","message":"Dependency graph built successfully","context":{"totalComponents":7,"totalDependencies":5,"circularDeps":0,"isolated":2,"durationMs":1}}
+{"timestamp":"2026-11-03T08:56:40.057Z","level":"INFO","component":"MetadataScannerService","message":"Scan complete","context":{"components":7,"dependencies":5,"executionTime":26,"errors":2,"warnings":0}}
+{
+  "status": 0,
+  "result": {
+    "success": false,
+    "projectRoot": "/var/folders/sj/9h61n9s102l90188chx01gk40000gp/T/c1rules-qa.b6wH5WfXI9",
+    "apiVersion": "67.0",
+    "dryRun": true,
+    "autoActivate": false,
+    "phases": [
+      {
+        "kind": "core-metadata",
+        "label": "Phase 1: Core metadata deploy",
+        "components": [
+          "CustomField:Account.Email__c",
+          "CustomObject:Account"
+        ],
+        "excludedTypes": [
+          "Bot",
+          "BotVersion",
+          "AiAuthoringBundle",
+          "AiEvaluationDefinition"
+        ],
+        "commands": [
+          {
+            "tool": "sf",
+            "args": [
+              "project",
+              "deploy",
+              "start",
+              "--manifest",
+              "<generated-core-manifest>"
+            ],
+            "reason": "Deploy regular Salesforce metadata after excluding lifecycle-owned provider artifacts."
+          }
+        ],
+        "skipped": false,
+        "errors": [
+          "MatchingRules and DuplicateRule cannot be deployed yet: target-org retrieve, validate, and rule-behavior evidence is required before enabling deployment for: DuplicateRule:Account.DupRule1, DuplicateRule:Account.MissingRuleRef, DuplicateRule:Case.StandardRef, MatchingRules:Account, MatchingRules:Contact"
+        ]
+      },
+      {
+        "kind": "agentforce-publish",
+        "label": "Phase 2: Agentforce authoring bundle publish",
+        "components": [],
+        "changedPaths": [],
+        "commands": [],
+        "skipped": true,
+        "skipReason": "No changed aiAuthoringBundles detected."
+      },
+      {
+        "kind": "agentforce-activate",
+        "label": "Phase 3: Agentforce activation",
+        "components": [],
+        "changedPaths": [],
+        "commands": [],
+        "skipped": true,
+        "skipReason": "Activation is disabled by default."
+      },
+      {
+        "kind": "ai-evaluations",
+        "label": "Phase 4: AI evaluation metadata deploy",
+        "components": [],
+        "changedPaths": [],
+        "commands": [],
+        "skipped": true,
+        "skipReason": "No changed AiEvaluationDefinition files detected.",
+        "errors": []
+      },
+      {
+        "kind": "community-publish",
+        "label": "Phase 5: Experience Cloud community publish",
+        "components": [],
+        "changedPaths": [],
+        "commands": [],
+        "skipped": true,
+        "skipReason": "No changed digitalExperiences/site directories detected."
+      },
+      {
+        "kind": "omnistudio-vlocity",
+        "label": "Optional phase: OmniStudio managed DataPack classification (import deferred)",
+        "components": [],
+        "changedPaths": [],
+        "commands": [],
+        "skipped": true,
+        "skipReason": "No OmniStudio candidate paths detected.",
+        "errors": [],
+        "classifications": []
+      }
+    ],
+    "warnings": [],
+    "errors": [
+      "Failed to parse MatchingRules /var/folders/sj/9h61n9s102l90188chx01gk40000gp/T/c1rules-qa.b6wH5WfXI9/force-app/main/default/matchingRules/Lead.matchingRule-meta.xml: Expected MatchingRules XML root",
+      "DuplicateRule Account.MissingRuleRef references missing local matching rule Account.NoSuchRule",
+      "MatchingRules and DuplicateRule cannot be deployed yet: target-org retrieve, validate, and rule-behavior evidence is required before enabling deployment for: DuplicateRule:Account.DupRule1, DuplicateRule:Account.MissingRuleRef, DuplicateRule:Case.StandardRef, MatchingRules:Account, MatchingRules:Contact"
+    ],
+    "releaseReport": {
+      "schemaVersion": "1.1",
+      "generatedAt": "2026-11-03T08:56:40.060Z",
+      "command": "smart-deployment ci-publish",
+      "analysisMode": "deterministic",
+      "enrichment": {
+        "status": "skipped"
+      },
+      "outcome": "failed",
+      "summary": {
+        "total": 2,
+        "succeeded": 0,
+        "failed": 2,
+        "skipped": 0,
+        "needsReview": 0
+      },
+      "phases": [
+        {
+          "id": "core-metadata",
+          "route": "salesforce-metadata",
+          "operation": "deploy",
+          "status": "failed",
+          "evidence": [
+            {
+              "tool": "sf",
+              "operationId": "core-metadata:1"
+            }
+          ],
+          "remediation": [
+            "MatchingRules and DuplicateRule cannot be deployed yet: target-org retrieve, validate, and rule-behavior evidence is required before enabling deployment for: DuplicateRule:Account.DupRule1, DuplicateRule:Account.MissingRuleRef, DuplicateRule:Case.StandardRef, MatchingRules:Account, MatchingRules:Contact"
+          ]
+        },
+        {
+          "id": "agentforce-publish",
+          "route": "agentforce",
+          "operation": "publish",
+          "status": "skipped",
+          "evidence": [],
+          "remediation": [
+            "No changed aiAuthoringBundles detected."
+          ]
+        },
+        {
+          "id": "agentforce-activate",
+          "route": "agentforce",
+          "operation": "activate",
+          "status": "skipped",
+          "evidence": [],
+          "remediation": [
+            "Activation is disabled by default."
+          ]
+        },
+        {
+          "id": "ai-evaluations",
+          "route": "ai-evaluation",
+          "operation": "deploy",
+          "status": "skipped",
+          "evidence": [],
+          "remediation": [
+            "No changed AiEvaluationDefinition files detected."
+          ]
+        },
+        {
+          "id": "community-publish",
+          "route": "experience-cloud",
+          "operation": "publish",
+          "status": "skipped",
+          "evidence": [],
+          "remediation": [
+            "No changed digitalExperiences/site directories detected."
+          ]
+        },
+        {
+          "id": "omnistudio-vlocity",
+          "route": "omnistudio",
+          "operation": "publish",
+          "status": "skipped",
+          "evidence": [],
+          "remediation": [
+            "No OmniStudio candidate paths detected."
+          ]
+        }
+      ],
+      "items": [
+        {
+          "phaseId": "core-metadata",
+          "metadataType": "CustomField",
+          "fullName": "Account.Email__c",
+          "route": "salesforce-metadata",
+          "operation": "deploy",
+          "status": "failed"
+        },
+        {
+          "phaseId": "core-metadata",
+          "metadataType": "CustomObject",
+          "fullName": "Account",
+          "route": "salesforce-metadata",
+          "operation": "deploy",
+          "status": "failed"
+        }
+      ],
+      "reportWarnings": [
+        "DuplicateRule Account.MissingRuleRef references missing local matching rule Account.NoSuchRule",
+        "Failed to parse MatchingRules /var/folders/sj/9h61n9s102l90188chx01gk40000gp/T/c1rules-qa.b6wH5WfXI9/force-app/main/default/matchingRules/Lead.matchingRule-meta.xml: Expected MatchingRules XML root",
+        "MatchingRules and DuplicateRule cannot be deployed yet: target-org retrieve, validate, and rule-behavior evidence is required before enabling deployment for: DuplicateRule:Account.DupRule1, DuplicateRule:Account.MissingRuleRef, DuplicateRule:Case.StandardRef, MatchingRules:Account, MatchingRules:Contact"
+      ]
+    },
+    "releaseReportPath": "/var/folders/sj/9h61n9s102l90188chx01gk40000gp/T/c1rules-qa.b6wH5WfXI9/.smart-deployment/reports/release-report.json"
+  },
+  "warnings": [
+    "Report: DuplicateRule Account.MissingRuleRef references missing local matching rule Account.NoSuchRule",
+    "Report: Failed to parse MatchingRules /var/folders/sj/9h61n9s102l90188chx01gk40000gp/T/c1rules-qa.b6wH5WfXI9/force-app/main/default/matchingRules/Lead.matchingRule-meta.xml: Expected MatchingRules XML root",
+    "Report: MatchingRules and DuplicateRule cannot be deployed yet: target-org retrieve, validate, and rule-behavior evidence is required before enabling deployment for: DuplicateRule:Account.DupRule1, DuplicateRule:Account.MissingRuleRef, DuplicateRule:Case.StandardRef, MatchingRules:Account, MatchingRules:Contact",
+    "Failed phase: core-metadata",
+    "Failed item: CustomField:Account.Email__c",
+    "Failed item: CustomObject:Account"
+  ]
+}

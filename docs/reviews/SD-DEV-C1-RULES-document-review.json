@@ -1,0 +1,103 @@
+{
+  "story": "SD-DEV-C1-RULES",
+  "run": "wf-1793266575987-0bc63f",
+  "phase": "document-review",
+  "phaseTask": "setup-agents-task-1793696593473-5303a577",
+  "digest": "b6e294783dee",
+  "sourceFiles": [
+    "docs/research/metadata-catalog/c1-rules-refinement.md",
+    "docs/architecture/c1-rules-matching-duplicate-design.md",
+    "docs/reviews/SD-DEV-C1-RULES-security-review.md",
+    "docs/testing/SD-DEV-C1-RULES-qa-report.md",
+    "docs/known-limitations.md"
+  ],
+  "sourceDigest": "a77192ff63c8ddb4c0a327148e4ea0cf17344b67c9aba7c5a4b13e17033e0ed7",
+  "renderRequired": false,
+  "renderNote": "Internal engineering documentation only (markdown + a reviewer JSON record); no PDF/deck render is required for this review.",
+  "audienceProfile": {
+    "source": "inline (no .agent-workflow/audience-profile.json present in this repo)",
+    "audience": "internal engineering (developer, architect, qa, release-manager profiles on this project)",
+    "technicalLevel": "technical",
+    "languageRegister": "en-US, technical/precise",
+    "doNotInclude": []
+  },
+  "author": "various (sa/ba, architect, developer, qa profiles across prior phases)",
+  "reviewer": "setup-agents:release-manager (independent document reviewer for the document-review phase; did not author any of the reviewed documents)",
+  "reviewedAt": "2026-11-03T09:10:00Z",
+  "disposition": "approve",
+  "editsMade": [
+    {
+      "file": "docs/architecture/c1-rules-matching-duplicate-design.md",
+      "change": "Bumped version 1.0 -> 1.1 and added a dated note in the frontmatter pointing to the new superseded section.",
+      "reason": "Design doc predates the security-review rework (commits a3d271c, 67420cc) and no longer reflected the shipped guard architecture without a correction."
+    },
+    {
+      "file": "docs/architecture/c1-rules-matching-duplicate-design.md",
+      "change": "In section 6 (Deployment enablement stays blocked), struck through the claim that WaveManifestService is 'the only deployment choke point the prior art shares' and appended a 'Superseded / as shipped' paragraph describing the shared src/deployment/data-quality-rule-guard.ts module, its consumption by wave-manifest-service.ts, special-deployment-plan.ts, and special-deployment-executor.ts, the all-or-nothing executor behavior, and the ci-publish 'blocked before any command ran' reporting -- citing security-review finding F1/N2 and docs/known-limitations.md.",
+      "reason": "The design doc's section 6 described the AC-004 guard as living solely in WaveManifestService. Security review finding F1 (docs/reviews/SD-DEV-C1-RULES-security-review.md) found and the rework fixed a bypass via the ci-publish/SpecialDeploymentPlan path, which the original design text did not anticipate and now contradicts. This is the exact kind of shipped deviation the reviewing brief asked to be checked and, if stale, corrected with a superseded note rather than left silently wrong."
+    },
+    {
+      "file": "docs/architecture/c1-rules-matching-duplicate-design.md",
+      "change": "In the section 7 file-level ownership table, added four new rows (as-shipped, not in the original plan) for src/deployment/data-quality-rule-guard.ts (new shared guard module), src/deployment/special-deployment-plan.ts, src/deployment/special-deployment-executor.ts, and src/parsers/parser-utils.ts (shared root/identity helpers extracted during the F2-F5 rework).",
+      "reason": "The original table only listed src/deployment/wave-manifest-service.ts for the enablement guard and did not list parser-utils.ts at all; both are real files touched by the shipped code (confirmed via git show a3d271c / 67420cc --stat) and material to understanding the as-shipped architecture."
+    }
+  ],
+  "findings": [
+    {
+      "dimension": "grounding",
+      "severity": "info",
+      "finding": "DEPLOYMENT_ORDER decimal priorities 11.1 (MatchingRules) / 11.2 (DuplicateRule) are correctly reflected in src/constants/deployment-order.ts and match decision setup-agents-decision-1793690390215-2de451 and the design doc's section 5/8 (T15).",
+      "resolution": "No action needed; verified by direct read of src/constants/deployment-order.ts lines 56-57."
+    },
+    {
+      "dimension": "grounding",
+      "severity": "info",
+      "finding": "The shared data-quality-rule-guard.ts module (isDataQualityRuleType, buildDataQualityRuleGuardError, findDataQualityRuleComponentKeys) is used by both wave-manifest-service.ts and special-deployment-plan.ts as claimed in the security re-review and known-limitations.md, and special-deployment-executor.ts's early-return guard (plan.success === false || plan.errors.length > 0) matches the all-or-nothing behavior documented in docs/known-limitations.md.",
+      "resolution": "Confirmed by direct read of src/deployment/data-quality-rule-guard.ts, wave-manifest-service.ts, special-deployment-plan.ts, and special-deployment-executor.ts. No edit needed to known-limitations.md or the security review -- both already accurately describe shipped behavior."
+    },
+    {
+      "dimension": "grounding",
+      "severity": "changes (resolved by edit)",
+      "finding": "docs/architecture/c1-rules-matching-duplicate-design.md section 6 claimed WaveManifestService was 'the only deployment choke point the prior art shares,' and the section 7 file-ownership table listed only wave-manifest-service.ts for the enablement guard. This was true of the design as proposed (2026-10-29) but not of the code as shipped after the security-review F1 rework, which added a shared guard module and two additional consuming files (special-deployment-plan.ts, special-deployment-executor.ts) plus a parser-utils.ts helper module not listed at all.",
+      "resolution": "Fixed in this review per the brief's allowance for trivial factual-staleness edits: added a dated 'Superseded / as shipped' paragraph in section 6 and four new rows in the section 7 table. See editsMade above. This is now consistent with the shipped src/ tree, the security review, the QA report, and known-limitations.md."
+    },
+    {
+      "dimension": "grounding",
+      "severity": "info",
+      "finding": "metadata-capability-definitions.ts rows for MatchingRules and DuplicateRule (discovery/parsing proven, dependencies/ordering partial, lifecycle absent, fixtures proven, minApiVersion 61.0) exactly match the design doc section 5 table and TBD-2's note that minimumApiVersion needs vendor/org confirmation.",
+      "resolution": "No action needed; verified by direct read of src/analysis/metadata-capability-definitions.ts lines 100-115."
+    },
+    {
+      "dimension": "integrity",
+      "severity": "info",
+      "finding": "All file paths referenced in docs/testing/SD-DEV-C1-RULES-qa-report.md resolve on disk, including the two captures that were renamed from .json to .log (SD-DEV-C1-RULES-blackbox-ci-publish-dryrun.log and SD-DEV-C1-RULES-blackbox-ci-publish-no-dry-run-blocked.log) because they are multi-line streams rather than single JSON documents. The qa report's own prose already refers to them with the correct .log extension throughout (verified: no stale .json reference to either file exists anywhere under docs/).",
+      "resolution": "No action needed."
+    },
+    {
+      "dimension": "consistency",
+      "severity": "info",
+      "finding": "Test-count numbers across documents are consistent and verified against the raw log files: security review v1.1 (post a3d271c/67420cc, pre-N1/N2) reports 1865 passing/8 pending/0 failing; the QA report (post N1/N2 fix) reports 1866 passing/8 pending/0 failing and 43 passing/0 failing for NUTs. docs/testing/SD-DEV-C1-RULES-full-suite.log and SD-DEV-C1-RULES-nuts-suite.log confirm '1866 passing (35s) / 8 pending' and '43 passing (36s)' respectively with no failing-tests section printed. These are sequential snapshots at different points in the rework timeline, not a contradiction.",
+      "resolution": "No action needed."
+    },
+    {
+      "dimension": "consistency",
+      "severity": "info",
+      "finding": "Lint warning counts (0 errors, 63 pre-existing warnings) are consistently reported by developer evidence (setup-agents-evidence-1793695535370-1a5d5b) and the QA report, and both attribute the 63 warnings to pre-existing, untouched files.",
+      "resolution": "No action needed."
+    },
+    {
+      "dimension": "scope",
+      "severity": "info",
+      "finding": "docs/known-limitations.md's 'ci-publish Coordinated Execution Is All-Or-Nothing' section accurately and specifically documents the behavior change flagged by security-review finding N2, including the exact file/function references (SpecialDeploymentPlanExecutor.execute(), special-deployment-executor.ts, reportBlockedBeforeExecution in ci-publish.ts) and gives a concrete 'how to unblock' path. No MatchingRules/DuplicateRule-specific limitation is missing from this document relative to the design, security review, or QA report.",
+      "resolution": "No action needed."
+    },
+    {
+      "dimension": "audience/tone",
+      "severity": "info",
+      "finding": "All five documents are written for an internal engineering audience (developer/architect/qa/release-manager profiles), consistent file-path and commit-SHA grounding throughout, and no client-facing or externally-shareable claims, PII, or business-sensitive figures appear in any of them. This is an internal release-pipeline deliverable, not a branded client artifact, so the CLAUDE.md 'variant:final' four-category confirmation gate does not apply.",
+      "resolution": "No action needed."
+    }
+  ],
+  "overallAssessment": "Four of five documents required no edits: docs/research/metadata-catalog/c1-rules-refinement.md (BA fit-gap of prior art, correctly scoped as historical/prior-art analysis, not a shipped-state claim), docs/reviews/SD-DEV-C1-RULES-security-review.md (independent, probe-verified, matches shipped code line references), docs/testing/SD-DEV-C1-RULES-qa-report.md (traceability matrix matches actual test names and shipped behavior; all referenced evidence files resolve; the two renamed .log captures are already correctly linked), and docs/known-limitations.md (the new all-or-nothing section accurately reflects the shipped executor guard). The architecture design doc (docs/architecture/c1-rules-matching-duplicate-design.md) was the one genuinely stale document: it was written and approved before the security-review rework closed finding F1, and its section 6 / file-ownership table no longer matched the as-shipped guard architecture (a new shared module plus two additional consuming files). Per this review's charter, that staleness was corrected in place with an explicit, dated 'Superseded / as shipped' note and additional file-ownership rows rather than being left as a silent contradiction or escalated as a 'changes' disposition, since the correction is a small, verifiable factual alignment and does not change any acceptance-criteria conclusion already reached by the architect/security-review/qa phases.",
+  "mandatoryGateNote": "Approving this review opens the document-review -> release mandatory gate per MANDATORY_GATE_EDGES. Per AGENTS.md and the release-manager close-phase playbook, review complete/approval on a mandatory gate requires a human-confirmed grant; this reviewer (an agent) does not and must not run review complete. The phase close below only runs the plain workflow resume, which is expected to pause at that gate for human approval."
+}

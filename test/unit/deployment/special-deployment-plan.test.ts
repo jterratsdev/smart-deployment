@@ -286,6 +286,56 @@ describe('SpecialDeploymentPlanService', () => {
     expect(aiEvaluations?.components).to.deep.equal(['AiEvaluationDefinition:Alpha', 'AiEvaluationDefinition:Zulu']);
   });
 
+  describe('MatchingRules/DuplicateRule deploy guard (AC-004, security review F1)', () => {
+    it('excludes MatchingRules/DuplicateRule from the core manifest and blocks the plan with a phase error', async () => {
+      const plan = await new SpecialDeploymentPlanService().buildPlan({
+        scanner: {
+          scan: async () =>
+            scanResult([
+              component('ApexClass', 'AccountService', 'force-app/main/default/classes/AccountService.cls'),
+              component(
+                'MatchingRules',
+                'Account',
+                'force-app/main/default/matchingRules/Account.matchingRule-meta.xml'
+              ),
+              component(
+                'DuplicateRule',
+                'Account.Dup1',
+                'force-app/main/default/duplicateRules/Account.Dup1.duplicateRule-meta.xml'
+              ),
+            ]),
+        },
+        changedPathProvider: async () => [],
+      });
+
+      const corePhase = plan.phases.find((phase) => phase.kind === 'core-metadata');
+      expect(corePhase?.components).to.deep.equal(['ApexClass:AccountService']);
+      expect(
+        corePhase?.components?.some((key) => key.startsWith('MatchingRules:') || key.startsWith('DuplicateRule:'))
+      ).to.equal(false);
+      expect(corePhase?.errors).to.have.length(1);
+      expect(corePhase?.errors?.[0]).to.include('MatchingRules and DuplicateRule cannot be deployed yet');
+      expect(corePhase?.errors?.[0]).to.include('DuplicateRule:Account.Dup1');
+      expect(corePhase?.errors?.[0]).to.include('MatchingRules:Account');
+      expect(plan.success).to.equal(false);
+      expect(plan.errors).to.deep.equal(corePhase?.errors);
+    });
+
+    it('keeps the core manifest unguarded when no MatchingRules/DuplicateRule component is present', async () => {
+      const plan = await new SpecialDeploymentPlanService().buildPlan({
+        scanner: {
+          scan: async () =>
+            scanResult([component('ApexClass', 'AccountService', 'force-app/main/default/classes/AccountService.cls')]),
+        },
+        changedPathProvider: async () => [],
+      });
+
+      const corePhase = plan.phases.find((phase) => phase.kind === 'core-metadata');
+      expect(corePhase?.errors ?? []).to.deep.equal([]);
+      expect(plan.success).to.equal(true);
+    });
+  });
+
   describe('OmniStudio channel classification (AC-001..AC-004)', () => {
     it('classifies native-looking OmniStudio paths as native-metadata with no vlocity command (case 5 / AC-001)', async () => {
       const nativePaths = [
