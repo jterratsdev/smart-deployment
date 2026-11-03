@@ -291,28 +291,6 @@ node_modules
 /.setup-agents/skills/**
 /CLAUDE.local.md
 
-# >>> setup-agents (managed) >>>
-# Regenerable / heavy / per-user setup-agents artifacts — safe to delete and re-generate.
-# The shared state/ record (tasks, evidence, decisions, reviews, workflow-runs, handoffs,
-# clarifications, lessons, estimates, sprints), config.json, project-knowledge.md, and insights/
-# stay tracked so the team shares them. A few state/ files are per-person/per-machine runtime
-# state, not part of that shared record, and are ignored individually below.
-# rules/, skills/, sf-skills/, playbooks/, and profiles/ are NOT ignored by default, but ARE added
-# below as proprietary generated files in customer-repository mode (see the heading below).
-.setup-agents/references/
-.setup-agents/sf-metadata-index.json
-.setup-agents/chat-history/
-.setup-agents/chat-debug.jsonl
-.setup-agents/chat-permission-audit.jsonl
-.setup-agents/tmp/
-*.user-backup-*
-.setup-agents/state/gate-approvals.jsonl
-.setup-agents/state/spawn-sessions.jsonl
-.setup-agents/state/permission-denials.jsonl
-.setup-agents/state/phase-context/
-.setup-agents/state/*.bak
-
-# Proprietary setup-agents generated files (customer repository policy).
 /.claude/agents/ai.md
 /.claude/agents/architect.md
 /.claude/agents/automotive.md
@@ -472,6 +450,112 @@ node_modules
 /.setup-agents/sf-skills/**
 /.setup-agents/skills/**
 /CLAUDE.local.md
+
+# >>> setup-agents (managed) >>>
+# Regenerable / heavy / per-user setup-agents artifacts — safe to delete and re-generate.
+# The shared state/ record (tasks, evidence, decisions, reviews, workflow-runs, handoffs,
+# clarifications, lessons, estimates, sprints), config.json, project-knowledge.md, and insights/
+# stay tracked so the team shares them. A few state/ files are per-person/per-machine runtime
+# state, not part of that shared record, and are ignored individually below.
+# rules/, skills/, sf-skills/, playbooks/, and profiles/ are NOT ignored by default, but ARE added
+# below as proprietary generated files in customer-repository mode (see the heading below).
+.setup-agents/references/
+.setup-agents/sf-metadata-index.json
+.setup-agents/chat-history/
+.setup-agents/chat-debug.jsonl
+.setup-agents/chat-permission-audit.jsonl
+.setup-agents/tmp/
+*.user-backup-*
+.setup-agents/state/gate-approvals.jsonl
+.setup-agents/state/spawn-sessions.jsonl
+.setup-agents/state/permission-denials.jsonl
+.setup-agents/state/phase-context/
+.setup-agents/state/*.bak
+
+# Proprietary setup-agents generated files (customer repository policy).
+/.claude/agents/ai.md
+/.claude/agents/architect.md
+/.claude/agents/automotive.md
+/.claude/agents/cgcloud.md
+/.claude/agents/commerce.md
+/.claude/agents/communications.md
+/.claude/agents/cpq.md
+/.claude/agents/crma.md
+/.claude/agents/data360.md
+/.claude/agents/developer.md
+/.claude/agents/education.md
+/.claude/agents/energy.md
+/.claude/agents/experience-cloud.md
+/.claude/agents/fsc.md
+/.claude/agents/fsl.md
+/.claude/agents/health.md
+/.claude/agents/industries.md
+/.claude/agents/loyalty.md
+/.claude/agents/manufacturing.md
+/.claude/agents/maps.md
+/.claude/agents/media.md
+/.claude/agents/mulesoft.md
+/.claude/agents/netzero.md
+/.claude/agents/nonprofit.md
+/.claude/agents/omnistudio.md
+/.claude/agents/pm.md
+/.claude/agents/public-sector.md
+/.claude/agents/release-manager.md
+/.claude/agents/revenue.md
+/.claude/agents/sa.md
+/.claude/agents/salescloud.md
+/.claude/agents/service.md
+/.claude/agents/sfmc.md
+/.claude/agents/slack.md
+/.claude/agents/tableau.md
+/.claude/agents/ux.md
+/.claude/rules/ai.md
+/.claude/rules/architect.md
+/.claude/rules/automotive.md
+/.claude/rules/cgcloud.md
+/.claude/rules/commerce.md
+/.claude/rules/communications.md
+/.claude/rules/cpq.md
+/.claude/rules/crma.md
+/.claude/rules/data360.md
+/.claude/rules/developer.md
+/.claude/rules/doc-sync.md
+/.claude/rules/education.md
+/.claude/rules/energy.md
+/.claude/rules/experience-cloud.md
+/.claude/rules/fsc.md
+/.claude/rules/fsl.md
+/.claude/rules/health.md
+/.claude/rules/industries.md
+/.claude/rules/loyalty.md
+/.claude/rules/manufacturing.md
+/.claude/rules/maps.md
+/.claude/rules/media.md
+/.claude/rules/mulesoft.md
+/.claude/rules/netzero.md
+/.claude/rules/nonprofit.md
+/.claude/rules/omnistudio.md
+/.claude/rules/pm.md
+/.claude/rules/public-sector.md
+/.claude/rules/release-manager.md
+/.claude/rules/revenue.md
+/.claude/rules/sa.md
+/.claude/rules/salescloud.md
+/.claude/rules/service.md
+/.claude/rules/sfmc.md
+/.claude/rules/slack.md
+/.claude/rules/sub-agent-protocol.md
+/.claude/rules/tableau.md
+/.claude/rules/ux.md
+/.claude/settings.local.json
+/.setup-agents/hooks/**
+/.setup-agents/playbooks/**
+/.setup-agents/profiles/**
+/.setup-agents/rules/**
+/.setup-agents/sf-skills/**
+/.setup-agents/skills/**
+/AGENTS.md
+/CLAUDE.local.md
 # <<< setup-agents (managed) <<<
 
 # setup-agents QA scaffolds kept at generated paths for setup-health; excluded from build/lint/test
@@ -483,3 +567,13 @@ node_modules
 # setup-agents generated skills (regenerable via sf setup-agents local)
 /.cursor/skills/
 /.github/skills/
+
+# Agent tooling is generated or local-only; never track skills or playbooks.
+/skills/
+/.agent-workflow/playbooks/
+/.setup-agents/playbooks/
+/.setup-agents/skills/
+/.setup-agents/sf-skills/
+/.cursor/skills/
+/.github/skills/
+/.codex/skills/
