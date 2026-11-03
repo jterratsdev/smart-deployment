@@ -203,4 +203,58 @@ describe('WaveManifestService', () => {
     expect(destructiveChanges).to.include('<members>DeletedService</members>');
     expect(destructiveChanges).to.include('<name>ApexClass</name>');
   });
+
+  for (const dataQualityType of ['MatchingRules', 'DuplicateRule'] as const) {
+    it(`rejects ${dataQualityType} in generateManifest until target-org evidence is attached (T14, AC-004)`, async () => {
+      const component: MetadataComponent = {
+        name: 'Account',
+        type: dataQualityType,
+        filePath: `force-app/main/default/x/${dataQualityType}.xml`,
+        dependencies: new Set(),
+        dependents: new Set(),
+        priorityBoost: 0,
+      };
+
+      let error: Error | undefined;
+      try {
+        await new WaveManifestService().generateManifest({
+          baseDir: 'unused',
+          waveNumber: 1,
+          components: [`${dataQualityType}:Account`],
+          componentMap: new Map([[`${dataQualityType}:Account`, component]]),
+        });
+      } catch (caught) {
+        error = caught as Error;
+      }
+
+      expect(error?.message).to.include('MatchingRules and DuplicateRule cannot be deployed yet');
+      expect(error?.message).to.include(`${dataQualityType}:Account`);
+    });
+
+    it(`rejects ${dataQualityType} in generateDestructiveManifest until target-org evidence is attached (T14, AC-004)`, async () => {
+      const component: MetadataComponent = {
+        name: 'Account',
+        type: dataQualityType,
+        filePath: `force-app/main/default/x/${dataQualityType}.xml`,
+        dependencies: new Set(),
+        dependents: new Set(),
+        priorityBoost: 0,
+      };
+
+      let error: Error | undefined;
+      try {
+        await new WaveManifestService().generateDestructiveManifest({
+          baseDir: 'unused',
+          waveNumber: 1,
+          components: [`${dataQualityType}:Account`],
+          componentMap: new Map([[`${dataQualityType}:Account`, component]]),
+        });
+      } catch (caught) {
+        error = caught as Error;
+      }
+
+      expect(error?.message).to.include('MatchingRules and DuplicateRule cannot be deployed yet');
+      expect(error?.message).to.include(`${dataQualityType}:Account`);
+    });
+  }
 });
