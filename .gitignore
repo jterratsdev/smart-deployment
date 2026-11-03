@@ -595,3 +595,4 @@ node_modules
 /.setup-agents/env-audit.md
 /.setup-agents/knowledge-manifest.json
 /.setup-agents/setup-manifest.json
+/.setup-agents/permissions.md
