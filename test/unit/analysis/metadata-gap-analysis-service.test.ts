@@ -47,6 +47,32 @@ describe('MetadataGapAnalysisService', () => {
     });
   });
 
+  it('reports MatchingRules as supported only when every detected container parses (AC-001)', async () => {
+    const projectRoot = await createProject();
+    await writeFile(
+      path.join(projectRoot, 'force-app/main/default/matchingRules/Account.matchingRule-meta.xml'),
+      '<MatchingRules><matchingRules><fullName>Email_Rule</fullName><ruleStatus>Active</ruleStatus></matchingRules></MatchingRules>'
+    );
+
+    const result = await new MetadataGapAnalysisService().analyze({ sourcePath: projectRoot });
+
+    expect(result.detectedTypes.find((entry) => entry.metadataType === 'MatchingRules')?.supportStatus).to.equal(
+      'supported'
+    );
+    expect(result.gaps.map((gap) => gap.metadataType)).not.to.include('MatchingRules');
+  });
+
+  it('reports MatchingRules as unsupported from manifest-only evidence with no source to parse (AC-001, AC-003)', async () => {
+    const projectRoot = await createProject();
+    await writePackageXml(projectRoot, ['MatchingRules']);
+
+    const result = await new MetadataGapAnalysisService().analyze({ sourcePath: projectRoot });
+
+    const detected = result.detectedTypes.find((entry) => entry.metadataType === 'MatchingRules');
+    expect(detected?.supportStatus).to.equal('unsupported');
+    expect(detected?.evidence.some((item) => item.includes('manifest-only evidence'))).to.equal(true);
+  });
+
   it('derives aliases, partial support, and unknown types from capability evidence', async () => {
     const projectRoot = await createProject();
     await writePackageXml(projectRoot, ['ApexPage', 'CustomApplication', 'UnknownType']);

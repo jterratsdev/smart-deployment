@@ -153,7 +153,8 @@ describe('MetadataCapabilityRegistry', () => {
       row('CustomMetadata', 'metadata-api', 'C1', ['proven', 'proven', 'proven', 'proven', 'not-applicable', 'proven']),
       row('CustomObject', 'metadata-api', 'C1', ['proven', 'proven', 'partial', 'proven', 'not-applicable', 'proven']),
       row('Flow', 'metadata-api', 'C1', ['proven', 'proven', 'partial', 'proven', 'not-applicable', 'proven']),
-      row('MatchingRules', 'metadata-api', 'C1', ['partial', 'absent', 'absent', 'absent', 'not-applicable', 'absent']),
+      row('MatchingRules', 'metadata-api', 'C1', ['proven', 'proven', 'partial', 'partial', 'absent', 'proven']),
+      row('DuplicateRule', 'metadata-api', 'C1', ['proven', 'proven', 'partial', 'partial', 'absent', 'proven']),
       row('PermissionSet', 'metadata-api', 'C1', ['proven', 'proven', 'partial', 'proven', 'not-applicable', 'proven']),
       row('SharingRules', 'metadata-api', 'C1', ['proven', 'proven', 'proven', 'proven', 'partial', 'proven']),
       row('OrderManagementSettings', 'metadata-api', 'C1', [
@@ -219,6 +220,14 @@ describe('MetadataCapabilityRegistry', () => {
       for (const capability of Object.values(entry?.capabilities ?? {})) {
         expect(capability.evidence.length, contract.vendorType).to.be.greaterThan(0);
       }
+    }
+  });
+
+  it('never marks MatchingRules/DuplicateRule ordering or lifecycle proven from a DEPLOYMENT_ORDER entry (AC-003)', () => {
+    for (const vendorType of ['MatchingRules', 'DuplicateRule']) {
+      const entry = metadataCapabilityRegistry.resolve(vendorType, '67.0', 'metadata-api');
+      expect(entry?.capabilities.ordering.status, vendorType).not.to.equal('proven');
+      expect(entry?.capabilities.lifecycle.status, vendorType).not.to.equal('proven');
     }
   });
 

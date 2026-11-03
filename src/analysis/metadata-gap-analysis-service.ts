@@ -2,6 +2,8 @@ import * as path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { SfdxProjectDetector } from '../scanner/sfdx-project-detector.js';
 import { findDirectories, findFiles, fileExists } from '../services/scanners/scanner-runtime.js';
+import { parseDuplicateRule } from '../parsers/duplicate-rule-parser.js';
+import { parseMatchingRules } from '../parsers/matching-rules-parser.js';
 import { parseXml } from '../utils/xml.js';
 import { MetadataCapabilityRegistry, metadataCapabilityRegistry } from './metadata-capability-registry.js';
 
@@ -60,6 +62,11 @@ type TypeEvidence = {
   metadataType: string;
   evidence: Set<string>;
   detectedFrom: Set<'package-manifest' | 'source-path'>;
+};
+
+type ParseVerificationState = {
+  detectedFileCount: number;
+  failures: Array<{ filePath: string; message: string }>;
 };
 
 type PackageXml = {
@@ -121,9 +128,33 @@ const FILE_SUFFIX_TYPES: Array<[suffix: string, metadataType: string]> = [
   ['.embeddedServiceConfig-meta.xml', 'EmbeddedServiceConfig'],
   ['.app-meta.xml', 'CustomApplication'],
   ['.matchingRule-meta.xml', 'MatchingRules'],
+  ['.duplicateRule-meta.xml', 'DuplicateRule'],
   ['.field-meta.xml', 'CustomField'],
   ['.globalValueSet-meta.xml', 'GlobalValueSet'],
 ];
+
+/**
+ * Types whose `supported` gap status requires every detected source file to parse
+ * successfully, not just a suffix match plus registry evidence (AC-001, AC-003; design §5).
+ * Verifier functions reuse the real scanner parsers so "supported" only ever reflects a
+ * successful parse, never a manifest member or a registry row alone.
+ */
+const PARSE_VERIFIED_TYPES: ReadonlyMap<string, (filePath: string, content: string) => void> = new Map([
+  [
+    'MatchingRules',
+    (filePath: string, content: string): void => {
+      parseMatchingRules(path.basename(filePath, '.matchingRule-meta.xml'), content);
+    },
+  ],
+  [
+    'DuplicateRule',
+    (filePath: string, content: string): void => {
+      const basename = path.basename(filePath, '.duplicateRule-meta.xml');
+      const separator = basename.indexOf('.');
+      parseDuplicateRule(separator > 0 ? basename.slice(0, separator) : basename, content);
+    },
+  ],
+]);
 
 export class MetadataGapAnalysisService {
   public constructor(private readonly capabilityRegistry: MetadataCapabilityRegistry = metadataCapabilityRegistry) {}
@@ -136,15 +167,29 @@ export class MetadataGapAnalysisService {
     }
 
     const evidenceByType = new Map<string, TypeEvidence>();
+    const parseVerificationByType = new Map<string, ParseVerificationState>();
     await this.collectManifestTypes(project.projectRoot, project.apiVersion, evidenceByType);
     await Promise.all(
       project.packageDirectories.map((packageDir) =>
-        this.collectSourceTypes(packageDir, project.projectRoot, project.apiVersion, evidenceByType)
+        this.collectSourceTypes(
+          packageDir,
+          project.projectRoot,
+          project.apiVersion,
+          evidenceByType,
+          parseVerificationByType
+        )
       )
     );
 
     const detectedTypes = [...evidenceByType.values()]
-      .map((entry) => this.toDetectedType(project.projectRoot, project.apiVersion, entry))
+      .map((entry) =>
+        this.toDetectedType(
+          project.projectRoot,
+          project.apiVersion,
+          entry,
+          parseVerificationByType.get(entry.metadataType)
+        )
+      )
       .sort((left, right) => left.metadataType.localeCompare(right.metadataType));
     const gaps = detectedTypes.filter((type) => type.supportStatus !== 'supported').map((type) => this.toGap(type));
 
@@ -205,19 +250,37 @@ export class MetadataGapAnalysisService {
     packageDir: string,
     projectRoot: string,
     apiVersion: string,
-    evidenceByType: Map<string, TypeEvidence>
+    evidenceByType: Map<string, TypeEvidence>,
+    parseVerificationByType: Map<string, ParseVerificationState>
   ): Promise<void> {
     if (!(await fileExists(packageDir))) {
       return;
     }
 
     const metadataFiles = await findFiles(packageDir, '**/*-meta.xml');
-    for (const filePath of metadataFiles) {
-      const inferredType = inferTypeFromFilePath(filePath);
-      if (inferredType) {
-        this.addEvidence(evidenceByType, this.canonicalType(inferredType, apiVersion), filePath, 'source-path');
-      }
-    }
+    await Promise.all(
+      metadataFiles.map(async (filePath) => {
+        const inferredType = inferTypeFromFilePath(filePath);
+        if (!inferredType) {
+          return;
+        }
+        const canonicalType = this.canonicalType(inferredType, apiVersion);
+        this.addEvidence(evidenceByType, canonicalType, filePath, 'source-path');
+
+        const verifier = PARSE_VERIFIED_TYPES.get(canonicalType);
+        if (!verifier) {
+          return;
+        }
+        const state = parseVerificationByType.get(canonicalType) ?? { detectedFileCount: 0, failures: [] };
+        state.detectedFileCount += 1;
+        try {
+          verifier(filePath, await readFile(filePath, 'utf-8'));
+        } catch (error) {
+          state.failures.push({ filePath, message: error instanceof Error ? error.message : String(error) });
+        }
+        parseVerificationByType.set(canonicalType, state);
+      })
+    );
 
     const directories = await findDirectories(packageDir, '**/*');
     for (const directoryPath of directories) {
@@ -252,11 +315,28 @@ export class MetadataGapAnalysisService {
     evidenceByType.set(metadataType, entry);
   }
 
-  private toDetectedType(projectRoot: string, apiVersion: string, entry: TypeEvidence): MetadataGapDetectedType {
+  private toDetectedType(
+    projectRoot: string,
+    apiVersion: string,
+    entry: TypeEvidence,
+    parseVerification: ParseVerificationState | undefined
+  ): MetadataGapDetectedType {
+    const evidence = [...entry.evidence].map((item) => relativizeEvidence(projectRoot, item)).sort();
+    const supportStatus = getSupportStatus(this.capabilityRegistry, entry.metadataType, apiVersion, parseVerification);
+    if (PARSE_VERIFIED_TYPES.has(entry.metadataType)) {
+      if (!parseVerification) {
+        evidence.push(`${entry.metadataType}: manifest-only evidence, no source file detected to parse`);
+      } else {
+        for (const failure of parseVerification.failures) {
+          evidence.push(`${relativizeEvidence(projectRoot, failure.filePath)}: ${failure.message}`);
+        }
+      }
+    }
+
     return {
       metadataType: entry.metadataType,
-      supportStatus: getSupportStatus(this.capabilityRegistry, entry.metadataType, apiVersion),
-      evidence: [...entry.evidence].map((evidence) => relativizeEvidence(projectRoot, evidence)).sort(),
+      supportStatus,
+      evidence: evidence.sort(),
       detectedFrom: [...entry.detectedFrom].sort(),
     };
   }
@@ -315,10 +395,22 @@ function inferTypeFromFilePath(filePath: string): string | undefined {
 function getSupportStatus(
   registry: MetadataCapabilityRegistry,
   metadataType: string,
-  apiVersion: string
+  apiVersion: string,
+  parseVerification: ParseVerificationState | undefined
 ): MetadataGapSupportStatus {
   const entry = registry.resolve(metadataType, apiVersion);
-  if (entry?.capabilities.discovery.status === 'proven') {
+  const discoveryProven = entry?.capabilities.discovery.status === 'proven';
+
+  if (PARSE_VERIFIED_TYPES.has(metadataType)) {
+    const hasDetectedSource = (parseVerification?.detectedFileCount ?? 0) > 0;
+    const allParsed = (parseVerification?.failures.length ?? 0) === 0;
+    if (discoveryProven && hasDetectedSource && allParsed) {
+      return 'supported';
+    }
+    return entry?.capabilities.ordering.status === 'proven' ? 'ordered-only' : 'unsupported';
+  }
+
+  if (discoveryProven) {
     return 'supported';
   }
 
