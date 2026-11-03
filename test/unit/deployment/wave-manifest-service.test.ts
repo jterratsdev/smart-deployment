@@ -7,6 +7,52 @@ import { WaveManifestService } from '../../../src/deployment/wave-manifest-servi
 import type { MetadataComponent } from '../../../src/types/metadata.js';
 
 describe('WaveManifestService', () => {
+  it('deploys the CustomLabels container without enumerating child labels', async () => {
+    const baseDir = await mkdtemp(path.join(os.tmpdir(), 'wave-manifest-labels-'));
+    const component: MetadataComponent = {
+      name: 'CustomLabels',
+      type: 'CustomLabels',
+      filePath: 'force-app/main/default/labels/CustomLabels.labels-meta.xml',
+      dependencies: new Set(),
+      dependents: new Set(),
+      priorityBoost: 0,
+    };
+    const manifestPath = await new WaveManifestService().generateManifest({
+      baseDir,
+      waveNumber: 1,
+      components: ['CustomLabels:CustomLabels'],
+      componentMap: new Map([['CustomLabels:CustomLabels', component]]),
+    });
+    const content = await readFile(manifestPath, 'utf8');
+
+    expect(content).to.include('<name>CustomLabels</name>');
+    expect(content).to.include('<members>*</members>');
+    expect(content).to.not.include('<members>CustomLabels</members>');
+  });
+
+  it('rejects a destructive manifest for the CustomLabels container', async () => {
+    const component: MetadataComponent = {
+      name: 'CustomLabels',
+      type: 'CustomLabels',
+      filePath: 'force-app/main/default/labels/CustomLabels.labels-meta.xml',
+      dependencies: new Set(),
+      dependents: new Set(),
+      priorityBoost: 0,
+    };
+
+    try {
+      await new WaveManifestService().generateDestructiveManifest({
+        baseDir: 'unused',
+        waveNumber: 1,
+        components: ['CustomLabels:CustomLabels'],
+        componentMap: new Map([['CustomLabels:CustomLabels', component]]),
+      });
+      expect.fail('Expected destructive CustomLabels manifest to be rejected');
+    } catch (error) {
+      expect((error as Error).message).to.equal('CustomLabels container cannot be used in a destructive manifest');
+    }
+  });
+
   it('uses the recommended API version when no version is provided', async () => {
     const baseDir = await mkdtemp(path.join(os.tmpdir(), 'wave-manifest-default-version-'));
     const manifestPath = await new WaveManifestService().generateManifest({
@@ -157,4 +203,58 @@ describe('WaveManifestService', () => {
     expect(destructiveChanges).to.include('<members>DeletedService</members>');
     expect(destructiveChanges).to.include('<name>ApexClass</name>');
   });
+
+  for (const dataQualityType of ['MatchingRules', 'DuplicateRule'] as const) {
+    it(`rejects ${dataQualityType} in generateManifest until target-org evidence is attached (T14, AC-004)`, async () => {
+      const component: MetadataComponent = {
+        name: 'Account',
+        type: dataQualityType,
+        filePath: `force-app/main/default/x/${dataQualityType}.xml`,
+        dependencies: new Set(),
+        dependents: new Set(),
+        priorityBoost: 0,
+      };
+
+      let error: Error | undefined;
+      try {
+        await new WaveManifestService().generateManifest({
+          baseDir: 'unused',
+          waveNumber: 1,
+          components: [`${dataQualityType}:Account`],
+          componentMap: new Map([[`${dataQualityType}:Account`, component]]),
+        });
+      } catch (caught) {
+        error = caught as Error;
+      }
+
+      expect(error?.message).to.include('MatchingRules and DuplicateRule cannot be deployed yet');
+      expect(error?.message).to.include(`${dataQualityType}:Account`);
+    });
+
+    it(`rejects ${dataQualityType} in generateDestructiveManifest until target-org evidence is attached (T14, AC-004)`, async () => {
+      const component: MetadataComponent = {
+        name: 'Account',
+        type: dataQualityType,
+        filePath: `force-app/main/default/x/${dataQualityType}.xml`,
+        dependencies: new Set(),
+        dependents: new Set(),
+        priorityBoost: 0,
+      };
+
+      let error: Error | undefined;
+      try {
+        await new WaveManifestService().generateDestructiveManifest({
+          baseDir: 'unused',
+          waveNumber: 1,
+          components: [`${dataQualityType}:Account`],
+          componentMap: new Map([[`${dataQualityType}:Account`, component]]),
+        });
+      } catch (caught) {
+        error = caught as Error;
+      }
+
+      expect(error?.message).to.include('MatchingRules and DuplicateRule cannot be deployed yet');
+      expect(error?.message).to.include(`${dataQualityType}:Account`);
+    });
+  }
 });

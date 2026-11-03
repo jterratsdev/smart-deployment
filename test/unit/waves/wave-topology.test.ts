@@ -35,7 +35,6 @@ describe('wave topology policy', () => {
       policy: {
         maxComponentsPerWave: 1,
         respectTypeOrder: true,
-        handleCircularDeps: true,
       },
       comparePriority: (left, right) => left.localeCompare(right),
     });

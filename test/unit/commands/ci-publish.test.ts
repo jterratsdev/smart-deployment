@@ -225,4 +225,63 @@ describe('CiPublishCommand', () => {
     });
     await rm(projectRoot, { recursive: true, force: true });
   });
+
+  it('reports a plan blocked before execution distinctly, listing every error (security review N1)', async () => {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'ci-publish-blocked-'));
+    SpecialDeploymentPlanService.prototype.buildPlan = async function buildPlanMock() {
+      return plan({ projectRoot, dryRun: false });
+    };
+    SpecialDeploymentPlanExecutor.prototype.execute = async function executeMock() {
+      return {
+        success: false,
+        completedPhases: [],
+        skippedPhases: [],
+        errors: [
+          'MatchingRules and DuplicateRule cannot be deployed yet: target-org retrieve, validate, and rule-behavior evidence is required before enabling deployment for: MatchingRules:Account',
+          'DuplicateRule Account.Rule references missing local matching rule Account.Rule',
+        ],
+        commands: [],
+        blockedBeforeExecution: true,
+      };
+    };
+
+    const command = new CiPublish([], {} as never);
+    const logs: string[] = [];
+    (command as unknown as CiPublishCommandTestDouble).parse = async () => ({
+      flags: { 'dry-run': false, 'auto-activate': false },
+      args: {},
+      argv: [],
+      raw: [],
+      metadata: { flags: {}, args: {} },
+      nonExistentFlags: [],
+      _runtime: {},
+    });
+    (command as unknown as CiPublishCommandTestDouble).log = (message?: string) => {
+      if (message) logs.push(message);
+    };
+    (command as unknown as CiPublishCommandTestDouble).warn = (message?: string | Error) => {
+      logs.push(String(message));
+    };
+    (command as unknown as CiPublishCommandTestDouble).error = (message: string) => {
+      throw new Error(message);
+    };
+
+    let thrownError: Error | undefined;
+    try {
+      await command.run();
+    } catch (error) {
+      thrownError = error as Error;
+    }
+
+    // Never claims a phase ran or an exit code exists for a plan blocked before any command.
+    expect(logs.some((message) => message.includes('blocked before any command ran'))).to.equal(true);
+    expect(logs.some((message) => message.includes('phase unknown'))).to.equal(false);
+    expect(logs.some((message) => message.includes('exit code unknown'))).to.equal(false);
+    expect(logs.some((message) => message.includes('MatchingRules:Account'))).to.equal(true);
+    expect(logs.some((message) => message.includes('references missing local matching rule'))).to.equal(true);
+    expect(thrownError?.message).to.include('blocked before any command ran');
+    expect(thrownError?.message).to.include('MatchingRules:Account');
+    expect(thrownError?.message).to.include('references missing local matching rule');
+    await rm(projectRoot, { recursive: true, force: true });
+  });
 });

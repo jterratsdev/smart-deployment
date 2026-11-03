@@ -72,14 +72,20 @@ export default class CiPublish extends SfCommand<CiPublishResult> {
     if (!dryRun) {
       execution = await new SpecialDeploymentPlanExecutor().execute(plan);
       if (!execution.success) {
-        const message = execution.errors[0] ?? 'Coordinated publish failed.';
+        const message = execution.blockedBeforeExecution
+          ? buildBlockedBeforeExecutionMessage(execution.errors)
+          : execution.errors[0] ?? 'Coordinated publish failed.';
         executionFailure = message;
         resultPlan = {
           ...plan,
           success: false,
           errors: [...plan.errors, message],
         };
-        this.reportExecutionFailure(execution.failedPhase, execution.exitCode, message);
+        if (execution.blockedBeforeExecution) {
+          this.reportBlockedBeforeExecution(execution.errors);
+        } else {
+          this.reportExecutionFailure(execution.failedPhase, execution.exitCode, message);
+        }
       } else {
         this.log('');
         this.log('Coordinated publish execution completed successfully.');
@@ -142,4 +148,22 @@ export default class CiPublish extends SfCommand<CiPublishResult> {
       }: ${message}`
     );
   }
+
+  /**
+   * Reports the AC-004 "blocked before execution" case distinctly from a phase that actually
+   * ran a command and failed (security review N1): no command ran, so there is no phase or
+   * exit code to report, and every plan error is listed rather than just the first.
+   */
+  private reportBlockedBeforeExecution(errors: readonly string[]): void {
+    this.log('');
+    this.warn('Coordinated publish was blocked before any command ran:');
+    for (const error of errors) {
+      this.warn(`  ${error}`);
+    }
+  }
+}
+
+function buildBlockedBeforeExecutionMessage(errors: readonly string[]): string {
+  const list = errors.length > 0 ? errors.join('; ') : 'Coordinated publish failed.';
+  return `Coordinated publish was blocked before any command ran: ${list}`;
 }

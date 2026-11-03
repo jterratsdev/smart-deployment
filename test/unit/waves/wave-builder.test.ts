@@ -272,7 +272,7 @@ describe('WaveBuilder', () => {
       expect(result.unplacedComponents.length).to.be.greaterThan(0);
     });
 
-    it('should place circular components in final wave', () => {
+    it('keeps hard cycles unplaced rather than creating an executable fallback wave', () => {
       const graph = createGraph([
         ['ApexClass:A', 'ApexClass:B'],
         ['ApexClass:B', 'ApexClass:A'],
@@ -281,12 +281,33 @@ describe('WaveBuilder', () => {
       const builder = new WaveBuilder({ handleCircularDeps: true });
       const result = builder.generateWaves(graph);
 
-      const finalWave = result.waves[result.waves.length - 1];
-      expect(finalWave.metadata.hasCircularDeps).to.be.true;
+      expect(result.waves).to.be.empty;
+      expect(result.unplacedComponents).to.deep.equal(['ApexClass:A', 'ApexClass:B']);
     });
   });
 
   describe('Type Order', () => {
+    it('places independent types from different deployment stages in separate waves', () => {
+      const graph: DependencyGraph = new Map([
+        ['ApexClass:A', new Set()],
+        ['CustomObject:Account', new Set()],
+      ]);
+
+      const result = new WaveBuilder().generateWaves(graph);
+
+      expect(result.waves.map((wave) => wave.components)).to.deep.equal([['CustomObject:Account'], ['ApexClass:A']]);
+    });
+
+    it('rejects an unclassified type before planning executable waves', () => {
+      const graph: DependencyGraph = new Map([['UnknownType:New', new Set()]]);
+      expect(() => new WaveBuilder().generateWaves(graph)).to.throw('has no deployment-order contract');
+    });
+
+    it('rejects a local dependency that requires moving backward across stages', () => {
+      const graph = createGraph([['CustomObject:Account', 'ApexClass:Helper']]);
+      expect(() => new WaveBuilder().generateWaves(graph)).to.throw('Deployment-order conflict');
+    });
+
     it('should respect metadata type order when configured', () => {
       const graph: DependencyGraph = new Map();
       graph.set('ApexClass:A', new Set());

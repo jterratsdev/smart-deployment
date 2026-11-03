@@ -1,0 +1,91 @@
+{
+  "status": 0,
+  "result": {
+    "success": true,
+    "analysisMode": "deterministic",
+    "projectRoot": "/var/folders/sj/9h61n9s102l90188chx01gk40000gp/T/c1rules-qa.b6wH5WfXI9",
+    "apiVersion": "67.0",
+    "detectedTypes": [
+      {
+        "metadataType": "CustomField",
+        "supportStatus": "ordered-only",
+        "evidence": ["force-app/main/default/objects/Account/fields/Email__c.field-meta.xml"],
+        "detectedFrom": ["source-path"]
+      },
+      {
+        "metadataType": "CustomObject",
+        "supportStatus": "supported",
+        "evidence": [
+          "force-app/main/default/objects",
+          "force-app/main/default/objects/Account",
+          "force-app/main/default/objects/Account/fields"
+        ],
+        "detectedFrom": ["source-path"]
+      },
+      {
+        "metadataType": "DuplicateRule",
+        "supportStatus": "supported",
+        "evidence": [
+          "force-app/main/default/duplicateRules/Account.DupRule1.duplicateRule-meta.xml",
+          "force-app/main/default/duplicateRules/Account.MissingRuleRef.duplicateRule-meta.xml",
+          "force-app/main/default/duplicateRules/Case.StandardRef.duplicateRule-meta.xml"
+        ],
+        "detectedFrom": ["source-path"]
+      },
+      {
+        "metadataType": "MatchingRules",
+        "supportStatus": "unsupported",
+        "evidence": [
+          "force-app/main/default/matchingRules/Account.matchingRule-meta.xml",
+          "force-app/main/default/matchingRules/Contact.matchingRule-meta.xml",
+          "force-app/main/default/matchingRules/Lead.matchingRule-meta.xml",
+          "force-app/main/default/matchingRules/Lead.matchingRule-meta.xml: Expected MatchingRules XML root"
+        ],
+        "detectedFrom": ["source-path"]
+      }
+    ],
+    "gaps": [
+      {
+        "metadataType": "CustomField",
+        "supportStatus": "ordered-only",
+        "evidence": ["force-app/main/default/objects/Account/fields/Email__c.field-meta.xml"],
+        "detectedFrom": ["source-path"],
+        "classification": "dependency-rule",
+        "reason": "CustomField has deployment ordering but no scanner/parser coverage, so dependency behavior is not proven.",
+        "suggestedImplementation": [
+          "Add CustomField fixtures covering package.xml and source-path detection.",
+          "Add metadata gap analysis unit coverage before marking the type supported.",
+          "Add parser or dependency extraction rules for referenced metadata."
+        ],
+        "requiresHumanReview": false
+      },
+      {
+        "metadataType": "MatchingRules",
+        "supportStatus": "unsupported",
+        "evidence": [
+          "force-app/main/default/matchingRules/Account.matchingRule-meta.xml",
+          "force-app/main/default/matchingRules/Contact.matchingRule-meta.xml",
+          "force-app/main/default/matchingRules/Lead.matchingRule-meta.xml",
+          "force-app/main/default/matchingRules/Lead.matchingRule-meta.xml: Expected MatchingRules XML root"
+        ],
+        "detectedFrom": ["source-path"],
+        "classification": "dependency-rule",
+        "reason": "MatchingRules likely references other metadata and needs parser or dependency rules before it is safe.",
+        "suggestedImplementation": [
+          "Add MatchingRules fixtures covering package.xml and source-path detection.",
+          "Add metadata gap analysis unit coverage before marking the type supported.",
+          "Add deployment ordering only after fixture validation proves safe ordering.",
+          "Add parser or dependency extraction rules for referenced metadata."
+        ],
+        "requiresHumanReview": false
+      }
+    ],
+    "summary": {
+      "detectedTypeCount": 4,
+      "supportedTypeCount": 2,
+      "gapCount": 2,
+      "humanReviewCount": 0
+    }
+  },
+  "warnings": []
+}

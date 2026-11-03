@@ -46,6 +46,9 @@ const STANDARD_APEX_CLASSES = new Set([
   'TypeException',
   'CalloutException',
   'LimitException',
+  'Assert',
+  'Crypto',
+  'Type',
 ]);
 
 /**
@@ -54,9 +57,10 @@ const STANDARD_APEX_CLASSES = new Set([
  * @ac US-013-AC-7: Ignore standard classes (System.*, etc.)
  */
 export function isStandardClass(className: string): boolean {
+  const [rootName] = className.split('.');
   const cleanName = className.includes('.') ? className.split('.').pop()! : className;
 
-  if (STANDARD_APEX_CLASSES.has(cleanName)) {
+  if (STANDARD_APEX_CLASSES.has(rootName) || STANDARD_APEX_CLASSES.has(cleanName)) {
     return true;
   }
 
@@ -83,7 +87,7 @@ export function extractNamespace(className: string): {
   cleanName: string;
   isManagedPackage: boolean;
 } {
-  const namespacePattern = /^([a-zA-Z][a-zA-Z0-9_]*(?:__|\.))(.+)$/;
+  const namespacePattern = /^([a-zA-Z][a-zA-Z0-9_]*?(?:__|\.))(.+)$/;
   const match = className.match(namespacePattern);
 
   if (match) {

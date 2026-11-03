@@ -3,7 +3,6 @@ import type { NodeId, DependencyGraph } from '../types/dependency.js';
 export type WavePlacementPolicy = {
   maxComponentsPerWave: number;
   respectTypeOrder: boolean;
-  handleCircularDeps: boolean;
 };
 
 export type WaveTopologyStage = {
@@ -35,16 +34,23 @@ export function planTopologyStage({
   processed,
   policy,
   comparePriority,
+  getDeploymentStage,
 }: {
   inDegree: ReadonlyMap<NodeId, number>;
   processed: ReadonlySet<NodeId>;
   policy: WavePlacementPolicy;
   comparePriority: (left: NodeId, right: NodeId) => number;
+  getDeploymentStage?: (nodeId: NodeId) => number;
 }): WaveTopologyStage {
   const orderedCandidates = collectWaveCandidates(inDegree, processed);
 
   if (policy.respectTypeOrder) {
     orderedCandidates.sort(comparePriority);
+    if (getDeploymentStage && orderedCandidates.length > 0) {
+      const earliestStage = getDeploymentStage(orderedCandidates[0]);
+      const sameStage = orderedCandidates.filter((candidate) => getDeploymentStage(candidate) === earliestStage);
+      orderedCandidates.splice(0, orderedCandidates.length, ...sameStage);
+    }
   }
 
   return {

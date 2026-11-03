@@ -29,6 +29,13 @@ export type SpecialDeploymentExecutionResult = {
   exitCode?: number;
   errors: string[];
   commands: SpecialDeploymentCommandResult[];
+  /**
+   * `true` when {@link SpecialDeploymentPlanExecutor.execute} refused the plan before running
+   * any command (AC-004 / security review F1: the incoming plan already had `success: false`
+   * or a non-empty `errors` array). Distinguishes this case from a command that actually ran
+   * and failed, so a caller does not report a phase/exit code that never existed (N1).
+   */
+  blockedBeforeExecution?: boolean;
 };
 
 export type SpecialDeploymentCommandRunner = (
@@ -60,6 +67,22 @@ export class SpecialDeploymentPlanExecutor {
   }
 
   public async execute(plan: SpecialDeploymentPlan): Promise<SpecialDeploymentExecutionResult> {
+    // AC-004 / security review F1: a plan the scanner or a provider already marked as failed
+    // (e.g. a scanner `local-missing` error, or the core-metadata phase error for a
+    // MatchingRules/DuplicateRule node) must never reach a command. This is a minimal,
+    // fail-closed check scoped to this one entry point — it does not alter any other
+    // success/failure semantics below.
+    if (!plan.success || plan.errors.length > 0) {
+      return {
+        success: false,
+        completedPhases: [],
+        skippedPhases: [],
+        errors: [...plan.errors],
+        commands: [],
+        blockedBeforeExecution: true,
+      };
+    }
+
     const result: SpecialDeploymentExecutionResult = {
       success: true,
       completedPhases: [],

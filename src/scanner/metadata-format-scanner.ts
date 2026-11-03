@@ -222,13 +222,14 @@ export class MetadataFormatScanner {
 
       for (const file of files) {
         // Skip meta.xml files
-        if (file.endsWith('-meta.xml')) continue;
+        if (metadataType === 'CustomLabels' && file !== 'CustomLabels.labels-meta.xml') continue;
+        if (file.endsWith('-meta.xml') && metadataType !== 'CustomLabels') continue;
 
         const filePath = path.join(typeDir, file);
         const stat = fs.statSync(filePath);
 
         if (stat.isFile()) {
-          const name = this.extractComponentName(file, metadataType);
+          const name = metadataType === 'CustomLabels' ? 'CustomLabels' : this.extractComponentName(file, metadataType);
 
           components.push({
             name,

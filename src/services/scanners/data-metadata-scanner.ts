@@ -9,6 +9,25 @@ import {
 import { buildDynamicQueryDependencyReferences } from '../../dependencies/dynamic-query-dependency-references.js';
 import { parseCustomObject } from '../../parsers/custom-object-parser.js';
 import type { MetadataComponent, MetadataDependencyReference } from '../../types/metadata.js';
+import { parseSalesforceMetadata } from '../../utils/xml.js';
+
+export async function parseCustomFieldComponent(filePath: string): Promise<MetadataComponent> {
+  const objectName = path.basename(path.dirname(path.dirname(filePath)));
+  const fieldName = path.basename(filePath, '.field-meta.xml');
+  const parsed = await parseSalesforceMetadata<{ CustomField?: { fullName?: string } }>(filePath);
+  if (parsed.CustomField?.fullName !== fieldName) {
+    throw new Error(`CustomField fullName does not match file name: ${fieldName}`);
+  }
+
+  return {
+    name: `${objectName}.${fieldName}`,
+    type: 'CustomField',
+    filePath,
+    dependencies: new Set<string>(),
+    dependents: new Set<string>(),
+    priorityBoost: 0,
+  };
+}
 
 export async function parseCustomObjectComponent(objectDir: string): Promise<MetadataComponent | undefined> {
   const objectName = path.basename(objectDir);
@@ -32,6 +51,11 @@ export async function parseCustomObjectComponent(objectDir: string): Promise<Met
       deps.add(dependency.referencedObject);
     }
   });
+  for (const override of parsed.actionOverrides ?? []) {
+    if (override.type === 'Flexipage' && typeof override.content === 'string' && override.content.trim()) {
+      deps.add(`FlexiPage:${override.content.trim()}`);
+    }
+  }
 
   return {
     name: objectName,

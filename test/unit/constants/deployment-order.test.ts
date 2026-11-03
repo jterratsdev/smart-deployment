@@ -84,6 +84,18 @@ describe('DEPLOYMENT_ORDER', () => {
     // Object should be immutable
     expect(Object.isFrozen(DEPLOYMENT_ORDER)).to.be.true;
   });
+
+  /**
+   * C1-RULES: MatchingRules/DuplicateRule are an order-entry hint only (required by the
+   * Record<MetadataType, number> typing), never ordering proof — see
+   * metadata-capability-registry.test.ts "never marks ... proven from a DEPLOYMENT_ORDER entry".
+   */
+  it('places MatchingRules after CustomField and DuplicateRule after MatchingRules', () => {
+    expect(DEPLOYMENT_ORDER.MatchingRules).to.equal(11.1);
+    expect(DEPLOYMENT_ORDER.DuplicateRule).to.equal(11.2);
+    expect(DEPLOYMENT_ORDER.MatchingRules).to.be.greaterThan(DEPLOYMENT_ORDER.CustomField);
+    expect(DEPLOYMENT_ORDER.DuplicateRule).to.be.greaterThan(DEPLOYMENT_ORDER.MatchingRules);
+  });
 });
 
 describe('getDeploymentPriority', () => {
@@ -92,14 +104,13 @@ describe('getDeploymentPriority', () => {
     expect(getDeploymentPriority('ApexClass')).to.equal(31);
   });
 
-  it('should return default priority (99) for unknown metadata type', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    expect(getDeploymentPriority('UnknownType' as any)).to.equal(99);
+  it('rejects unknown metadata types', () => {
+    expect(() => getDeploymentPriority('UnknownType')).to.throw('has no deployment-order contract');
+    expect(() => getDeploymentPriority('toString')).to.throw('has no deployment-order contract');
   });
 
   it('should handle case-sensitive metadata types', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    expect(getDeploymentPriority('customobject' as any)).to.equal(99); // Case matters
+    expect(() => getDeploymentPriority('customobject')).to.throw('has no deployment-order contract');
     expect(getDeploymentPriority('CustomObject')).to.equal(6);
   });
 });

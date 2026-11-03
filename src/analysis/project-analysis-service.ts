@@ -14,7 +14,14 @@ import type { PriorityOverride } from '../types/deployment-plan.js';
 import type { MetadataComponent } from '../types/metadata.js';
 import { AIEnhancedPriorityWaveGenerator } from '../waves/priority-wave-generator-ai.js';
 import { getWavesInExecutionOrder } from '../waves/wave-executor.js';
-import { WaveBuilder, type Wave, type WaveResult } from '../waves/wave-builder.js';
+import {
+  WaveBuilder,
+  collectDeploymentOrderConflicts,
+  type DeploymentOrderConflict,
+  type Wave,
+  type WaveResult,
+} from '../waves/wave-builder.js';
+import { calculateWaveStats } from '../waves/wave-metadata.js';
 import { hydrateWaveActionScripts, mergeWaveActionRules, WaveActionPlanner } from '../waves/wave-action-planner.js';
 
 export type ProjectAnalysisAIContext = {
@@ -43,6 +50,7 @@ export type ProjectAnalysisResult = {
   aiContext?: ProjectAnalysisAIContext;
   commitScope?: CommitScopeSummary;
   messages: ProjectAnalysisMessages;
+  stageConflicts?: DeploymentOrderConflict[];
 };
 
 export type ProjectAnalysisBuildOptions = {
@@ -51,6 +59,7 @@ export type ProjectAnalysisBuildOptions = {
   orgType?: string;
   industry?: string;
   commitScope?: CommitScopeOptions;
+  explainStageConflicts?: boolean;
 };
 
 type ProjectAnalysisServiceDependencies = {
@@ -138,12 +147,22 @@ export class ProjectAnalysisService {
     const waveBuilder = new WaveBuilder({
       dependencyEdges: dependencyResult.edges,
     });
-    let waveResult = waveBuilder.generateWaves(dependencyResult.graph);
+    const stageConflicts = options.explainStageConflicts ? collectDeploymentOrderConflicts(dependencyResult.graph) : [];
+    let waveResult =
+      stageConflicts.length > 0
+        ? {
+            waves: [],
+            totalComponents: dependencyResult.graph.size,
+            unplacedComponents: [...dependencyResult.graph.keys()].sort(),
+            circularDependencies: [],
+            stats: calculateWaveStats([]),
+          }
+        : waveBuilder.generateWaves(dependencyResult.graph);
     let orderedWaves = getWavesInExecutionOrder(waveResult);
     let priorityOverrides: Record<string, PriorityOverride> = {};
     let aiContext: ProjectAnalysisAIContext | undefined;
 
-    if (options.useAI) {
+    if (options.useAI && stageConflicts.length === 0) {
       messages.logs.push('  🤖 Using AI priority weighting for wave ordering...');
       const priorityService = this.createPriorityService(options.sourcePath ?? process.cwd());
       const aiWaveGenerator = new AIEnhancedPriorityWaveGenerator({
@@ -210,6 +229,7 @@ export class ProjectAnalysisService {
       aiContext,
       commitScope,
       messages,
+      stageConflicts: stageConflicts.length > 0 ? stageConflicts : undefined,
     };
   }
 
