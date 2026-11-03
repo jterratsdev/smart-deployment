@@ -88,14 +88,17 @@ export default class Validate extends SfCommand<ValidateResult> {
     const sourcePath = typeof flags['source-path'] === 'string' ? flags['source-path'] : undefined;
     const useAI = flags['use-ai'] === true;
     const commitScope = this.getCommitScopeOptions(flags);
+    const targetOrg = this.getTargetOrgIdentifier(flags['target-org']);
 
-    logger.info('Validating wave plan', { flags });
+    logger.info('Validating wave plan', {
+      flags: { ...flags, 'target-org': targetOrg },
+    });
 
     const summary = await validationService.validateProject(sourcePath, {
       useAI,
       commitScope,
     });
-    presenter.reportValidationResult(this, summary);
+    if (!this.jsonEnabled()) presenter.reportValidationResult(this, summary);
 
     const result: ValidateResult = {
       success: summary.valid,
@@ -115,7 +118,6 @@ export default class Validate extends SfCommand<ValidateResult> {
           }
         : undefined,
     };
-    const targetOrg = this.getTargetOrgIdentifier(flags['target-org']);
     const releaseReport = await releaseReportAdapter.finalize(
       this,
       { kind: 'succeeded', value: result },

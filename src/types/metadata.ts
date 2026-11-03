@@ -55,6 +55,7 @@ export type MetadataType =
   | 'ServicePresenceStatus'
   | 'PresenceUserConfig'
   | 'Queue'
+  | 'Territory2'
   | 'ServiceChannel'
   | 'QueueRoutingConfig'
   | 'ChannelLayout'
@@ -140,7 +141,25 @@ export type MetadataComponent = {
   dependents: Set<string>;
   /** Priority boost for heuristics (negative = deploy earlier) */
   priorityBoost: number;
+  /** Parser-owned semantic facts used by focused deployment planners. */
+  facts?: MetadataFacts;
 };
+
+export type MetadataFacts =
+  | {
+      kind: 'custom-object-sharing-model';
+      sharingModel?: string;
+      externalSharingModel?: string;
+    }
+  | {
+      kind: 'sharing-rules';
+      objectName: string;
+      criteriaFields: string[];
+      principals: Array<{
+        type: 'Role' | 'Group' | 'Queue' | 'RoleAndSubordinates' | 'Territory2' | 'Territory2AndSubordinates';
+        name: string;
+      }>;
+    };
 
 /**
  * Specialized metadata types

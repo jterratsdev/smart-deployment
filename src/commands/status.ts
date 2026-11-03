@@ -41,6 +41,19 @@ type StatusResult = {
     inferenceFallback?: boolean;
     inferredDependencies?: number;
   };
+  postcondition?: {
+    code: 'OWD_PROPAGATION_PENDING';
+    status: 'timed-out' | 'observation-unavailable' | 'blocked-before-deploy';
+    objectName: string;
+    expectedInternalSharingModel: string;
+    observedInternalSharingModel?: string;
+    observedExternalSharingModel?: string;
+    expectedExternalSharingModel?: string;
+    attempts: number;
+    waitedMs: number;
+    errorCategory?: 'authentication' | 'network' | 'query' | 'entity-not-found' | 'invalid-response';
+    resumedPhase?: number;
+  };
 };
 
 export default class Status extends SfCommand<StatusResult> {
@@ -71,7 +84,7 @@ export default class Status extends SfCommand<StatusResult> {
       const summary = await statusService.getStatus({ refreshRemote: targetOrg !== undefined, targetOrg });
       const formattedStatus = statusService.formatStatus(summary);
 
-      presenter.reportStatus(this, summary, formattedStatus);
+      if (!this.jsonEnabled()) presenter.reportStatus(this, summary, formattedStatus);
 
       if (!summary.hasState) {
         return {
@@ -96,9 +109,26 @@ export default class Status extends SfCommand<StatusResult> {
             ? 'Failed'
             : summary.status === 'completed'
             ? 'Completed'
+            : summary.status === 'paused'
+            ? 'Paused'
             : 'Not Started',
         canResume: summary.resumable,
         waveGraph: summary.waveGraph,
+        postcondition: summary.pausedPostcondition
+          ? {
+              code: 'OWD_PROPAGATION_PENDING',
+              status: summary.pausedPostcondition.status,
+              objectName: summary.pausedPostcondition.objectName,
+              expectedInternalSharingModel: summary.pausedPostcondition.expectedInternalSharingModel,
+              observedInternalSharingModel: summary.pausedPostcondition.observedInternalSharingModel,
+              observedExternalSharingModel: summary.pausedPostcondition.observedExternalSharingModel,
+              expectedExternalSharingModel: summary.pausedPostcondition.expectedExternalSharingModel,
+              attempts: summary.pausedPostcondition.attempts,
+              waitedMs: summary.pausedPostcondition.waitedMs,
+              errorCategory: summary.pausedPostcondition.errorCategory,
+              resumedPhase: summary.pausedPostcondition.resumedPhase,
+            }
+          : undefined,
       };
 
       if (summary.hasState && summary.status !== 'not-started') {

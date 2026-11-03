@@ -39,7 +39,7 @@ describe('NUT: release report', () => {
       'force-app/main/default/classes/ReportFixture.cls-meta.xml': [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">',
-        '  <apiVersion>61.0</apiVersion>',
+        '  <apiVersion>67.0</apiVersion>',
         '  <status>Active</status>',
         '</ApexClass>',
         '',
@@ -58,7 +58,7 @@ describe('NUT: release report', () => {
 
     expect(output.success).to.equal(true);
     expect(output.releaseReport).to.deep.include({
-      schemaVersion: '1.0',
+      schemaVersion: '1.1',
       outcome: 'succeeded',
       analysisMode: 'deterministic',
     });

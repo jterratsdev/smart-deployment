@@ -314,7 +314,7 @@ describe('StartCommand', () => {
     expect(result.reports).to.deep.equal({ jsonPath, htmlPath });
     expect(result.releaseReportPath).to.equal(releaseReportPath);
     expect(releaseReport).to.deep.include({
-      schemaVersion: '1.0',
+      schemaVersion: '1.1',
       outcome: 'skipped',
       analysisMode: 'deterministic',
     });

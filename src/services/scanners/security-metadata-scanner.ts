@@ -1,6 +1,8 @@
 import * as path from 'node:path';
+import * as fs from 'node:fs/promises';
 import { parsePermissionSet } from '../../parsers/permission-set-parser.js';
 import { parseProfile } from '../../parsers/profile-parser.js';
+import { parseSharingRules } from '../../parsers/sharing-rules-parser.js';
 import type { MetadataComponent } from '../../types/metadata.js';
 
 function addAll(target: Set<string>, values: Iterable<string>, defaultType?: string): void {
@@ -75,4 +77,73 @@ export async function parsePermissionSetComponent(filePath: string): Promise<Met
     dependents: new Set<string>(),
     priorityBoost: 0,
   };
+}
+
+export async function parseSharingRulesComponent(filePath: string): Promise<MetadataComponent> {
+  const objectName = path.basename(filePath, '.sharingRules-meta.xml');
+  const parsed = parseSharingRules(objectName, await fs.readFile(filePath, 'utf8'));
+  const dependencyDetails = [
+    {
+      nodeId: `CustomObject:${objectName}`,
+      kind: 'hard' as const,
+      source: 'parser' as const,
+      reason: 'Sharing rules require their owning object',
+    },
+    ...parsed.criteriaFields
+      .filter((field) => field.includes('__'))
+      .map((field) => ({
+        nodeId: `CustomField:${field.includes('.') ? field : `${objectName}.${field}`}`,
+        kind: 'hard' as const,
+        source: 'parser' as const,
+        reason: 'Criteria-based sharing rule field',
+      })),
+  ];
+
+  return {
+    name: objectName,
+    type: 'SharingRules',
+    filePath,
+    dependencies: new Set(dependencyDetails.map((dependency) => dependency.nodeId)),
+    dependencyDetails,
+    dependents: new Set(),
+    priorityBoost: 0,
+    facts: {
+      kind: 'sharing-rules',
+      objectName,
+      criteriaFields: parsed.criteriaFields,
+      principals: parsed.principals,
+    },
+  };
+}
+
+export function addLocalSharingPrincipalDependencies(components: MetadataComponent[]): MetadataComponent[] {
+  const localNodeIds = new Set(components.map((component) => `${component.type}:${component.name}`));
+  return components.map((component) => {
+    if (component.facts?.kind !== 'sharing-rules') return component;
+    const localPrincipals = component.facts.principals
+      .map((principal) =>
+        principal.type === 'Territory2AndSubordinates'
+          ? `Territory2:${principal.name}`
+          : principal.type === 'RoleAndSubordinates'
+          ? undefined
+          : `${principal.type}:${principal.name}`
+      )
+      .filter((nodeId): nodeId is string => nodeId !== undefined)
+      .filter((nodeId) => localNodeIds.has(nodeId));
+    if (localPrincipals.length === 0) return component;
+
+    return {
+      ...component,
+      dependencies: new Set([...component.dependencies, ...localPrincipals]),
+      dependencyDetails: [
+        ...(component.dependencyDetails ?? []),
+        ...localPrincipals.map((nodeId) => ({
+          nodeId,
+          kind: 'hard' as const,
+          source: 'parser' as const,
+          reason: 'Locally discovered sharing rule principal',
+        })),
+      ],
+    };
+  });
 }

@@ -342,6 +342,15 @@ describe('WaveBuilder', () => {
         'ApexClass:InferredConsumer',
       ]);
     });
+
+    it('places a Data Kit definition before its content object', () => {
+      const graph = createGraph([['DataPackageKitObject:Store_Kit_123', 'DataPackageKitDefinition:Store_Kit']]);
+
+      const result = new WaveBuilder({ respectTypeOrder: true }).generateWaves(graph);
+
+      expect(result.waves[0].components).to.deep.equal(['DataPackageKitDefinition:Store_Kit']);
+      expect(result.waves[1].components).to.deep.equal(['DataPackageKitObject:Store_Kit_123']);
+    });
   });
 
   describe('Max Components Per Wave', () => {

@@ -4,6 +4,8 @@ import type { DeploymentContext } from '../deployment/deployment-context-service
 import type { NodeId } from '../types/dependency.js';
 import type { MetadataType } from '../types/metadata.js';
 import type { Wave } from '../waves/wave-builder.js';
+import type { ManualCheckpoint } from '../types/manual-checkpoint.js';
+import type { ResolvedWaveAction } from '../types/wave-action.js';
 
 export type DeploymentPlanReportOptions = {
   reportDir?: string;
@@ -13,6 +15,7 @@ export type DeploymentPlanReportOptions = {
   validateOnly: boolean;
   destructive?: boolean;
   skipTests: boolean;
+  checkpoints?: ManualCheckpoint[];
 };
 
 export type DeploymentPlanReportResult = {
@@ -54,12 +57,15 @@ export type DeploymentPlanReport = {
   }>;
   blockers: string[];
   warnings: string[];
+  checkpoints: ManualCheckpoint[];
   waves: Array<{
     number: number;
     componentCount: number;
     types: MetadataType[];
     estimatedTimeSeconds: number;
     hasCircularDependencies: boolean;
+    requiresAction: boolean;
+    requiredActions: ResolvedWaveAction[];
     components: Array<{
       id: NodeId;
       type: string;
@@ -125,6 +131,7 @@ export class DeploymentPlanReportService {
       providerPhases: this.createProviderPhases(context, mode, validationPassed),
       blockers,
       warnings,
+      checkpoints: [...(options.checkpoints ?? [])],
       waves: context.orderedWaves.map((wave) => this.createWaveReport(wave)),
     };
   }
@@ -146,7 +153,18 @@ export class DeploymentPlanReportService {
     const waveRows =
       report.waves.length > 0
         ? report.waves.map((wave) => this.toWaveRow(wave)).join('')
-        : '<tr><td colspan="6">No deployment waves generated.</td></tr>';
+        : '<tr><td colspan="7">No deployment waves generated.</td></tr>';
+    const checkpointItems =
+      report.checkpoints.length > 0
+        ? report.checkpoints
+            .map(
+              (checkpoint) =>
+                `<li><code>${escapeHtml(checkpoint.id)}</code>: ${escapeHtml(checkpoint.phase)} wave ${
+                  checkpoint.waveNumber
+                }${checkpoint.message ? ` - ${escapeHtml(checkpoint.message)}` : ''}</li>`
+            )
+            .join('')
+        : '<li>No manual checkpoints configured.</li>';
 
     return `
 <!DOCTYPE html>
@@ -200,6 +218,9 @@ export class DeploymentPlanReportService {
   <h2>Warnings</h2>
   <ul>${warningItems}</ul>
 
+  <h2>Manual Checkpoints</h2>
+  <ul>${checkpointItems}</ul>
+
   <h2>Waves</h2>
   <table>
     <thead>
@@ -209,6 +230,7 @@ export class DeploymentPlanReportService {
         <th>Types</th>
         <th>Estimated Time</th>
         <th>Circular</th>
+        <th>Required Actions</th>
         <th>Component List</th>
       </tr>
     </thead>
@@ -240,9 +262,15 @@ export class DeploymentPlanReportService {
   private collectWarnings(context: DeploymentContext): string[] {
     return [
       ...context.scanResult.warnings,
+      ...context.messages.warnings,
       ...context.scanResult.dependencyResult.circularDependencies
         .filter((cycle) => cycle.severity === 'warning')
         .map((cycle) => cycle.message),
+      ...context.orderedWaves.flatMap((wave) =>
+        (wave.metadata.requiredActions ?? []).map(
+          (action) => `Wave ${wave.number} requires ${this.describeAction(action)} (${action.phase}).`
+        )
+      ),
     ];
   }
 
@@ -287,6 +315,8 @@ export class DeploymentPlanReportService {
       types: [...wave.metadata.types],
       estimatedTimeSeconds: wave.metadata.estimatedTime,
       hasCircularDependencies: wave.metadata.hasCircularDeps,
+      requiresAction: wave.metadata.requiresAction === true,
+      requiredActions: [...(wave.metadata.requiredActions ?? [])],
       components: wave.components.map((component) => {
         const [type, ...nameParts] = component.split(':');
         return {
@@ -306,6 +336,12 @@ export class DeploymentPlanReportService {
 
   private toWaveRow(wave: DeploymentPlanReport['waves'][number]): string {
     const components = wave.components.map((component) => `<code>${escapeHtml(component.id)}</code>`).join('<br>');
+    const requiredActions =
+      wave.requiredActions.length > 0
+        ? wave.requiredActions
+            .map((action) => `<code>${escapeHtml(action.id)}</code>: ${escapeHtml(this.describeAction(action))}`)
+            .join('<br>')
+        : 'None';
     return `
       <tr>
         <td>${wave.number}</td>
@@ -313,8 +349,15 @@ export class DeploymentPlanReportService {
         <td>${escapeHtml(wave.types.join(', ') || 'Unknown')}</td>
         <td>${wave.estimatedTimeSeconds}s</td>
         <td>${wave.hasCircularDependencies ? 'Yes' : 'No'}</td>
+        <td>${requiredActions}</td>
         <td>${components}</td>
       </tr>`;
+  }
+
+  private describeAction(action: ResolvedWaveAction): string {
+    return action.action.kind === 'apex-anonymous'
+      ? `anonymous Apex script ${action.action.script}`
+      : action.action.instruction;
   }
 }
 

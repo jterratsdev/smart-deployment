@@ -1,7 +1,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import type { DependencyAnalysisResult } from '../../../src/types/dependency.js';
-import { DeploymentRunner, type DeploymentRunnerParams } from '../../../src/deployment/deployment-runner.js';
+import {
+  DeploymentRunner,
+  type DeploymentRunnerParams,
+  type DeploymentRunnerResult,
+} from '../../../src/deployment/deployment-runner.js';
 import type { DeploymentContext } from '../../../src/deployment/deployment-context-service.js';
 import {
   DynamicQueryTargetValidator,
@@ -23,7 +27,7 @@ class BlockingDynamicQueryValidator extends DynamicQueryTargetValidator {
 }
 
 class UnexpectedDeploymentRunner extends DeploymentRunner {
-  public override async execute(params: DeploymentRunnerParams): Promise<void> {
+  public override async execute(params: DeploymentRunnerParams): Promise<DeploymentRunnerResult> {
     void params;
     throw new Error('deployment runner should not be called');
   }

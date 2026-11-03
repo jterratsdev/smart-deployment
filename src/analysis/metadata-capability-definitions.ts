@@ -113,6 +113,16 @@ const P0_DEFINITIONS: readonly MetadataCapabilityDefinition[] = [
     lifecycle: notApplicable(),
     fixtures: proven('Focused PermissionSet parser and scanner fixtures exist.'),
   }),
+  metadataDefinition('SharingRules', 'SharingRules', 'C1', '61.0', {
+    discovery: proven('security-metadata-scanner.ts discovers standalone SharingRules metadata.'),
+    parsing: proven('sharing-rules-parser.ts parses criteria fields and principals.'),
+    dependencies: proven(
+      'Owning objects, custom criteria fields, and deployable principals produce typed dependencies.'
+    ),
+    ordering: proven('SharingRules is present in DEPLOYMENT_ORDER and OWD barriers isolate changed objects.'),
+    lifecycle: partial('Internal sharing-model propagation is observed through a resumable org postcondition.'),
+    fixtures: proven('Focused parser, scanner, planner, poller, runner, and command fixtures exist.'),
+  }),
   metadataDefinition('OrderManagementSettings', 'OrderManagementSettings', 'C1', '67.0', {
     discovery: partial('Manifest discovery preserves the vendor type; source inference remains generic.'),
     parsing: absent('No OrderManagementSettings parser is registered.'),
@@ -128,8 +138,10 @@ const P0_DEFINITIONS: readonly MetadataCapabilityDefinition[] = [
     '66.0',
     {
       discovery: proven('automation-ai-metadata-scanner.ts discovers AiAuthoringBundle source.'),
-      parsing: partial('Bundle descriptor and Agent Script references are not fully parsed.'),
-      dependencies: absent('No complete AiAuthoringBundle dependency graph is emitted.'),
+      parsing: partial(
+        'Agent Script action targets are parsed; non-action bundle semantics remain intentionally unsupported.'
+      ),
+      dependencies: partial('Deterministic Flow, Apex, prompt, and nested agent targets are emitted.'),
       ordering: proven('AiAuthoringBundle has explicit special deployment ordering.'),
       lifecycle: proven('special-deployment executor publishes and optionally activates authoring bundles.'),
       fixtures: proven('API 66 authoring bundle and special deployment fixtures exist.'),
@@ -159,6 +171,30 @@ const P0_DEFINITIONS: readonly MetadataCapabilityDefinition[] = [
     ordering: proven('Evaluations are excluded from core deployment and owned by the ordered special phase.'),
     lifecycle: partial('Connect API execution is separate from metadata deployment.'),
     fixtures: proven('Evaluation definition validation fixtures exist.'),
+  }),
+  metadataDefinition('DataSourceObject', 'DataSourceObject', 'C2', '50.0', {
+    discovery: proven('additional-metadata-scanner.ts discovers dataSourceObjects source files.'),
+    parsing: partial('The component identity is parsed; Data Source lifecycle fields are not yet projected.'),
+    dependencies: absent('No schema-proven DataSource dependency is emitted yet.'),
+    ordering: proven('DataSourceObject is present in DEPLOYMENT_ORDER and wave priority uses that registry.'),
+    lifecycle: partial('Target connections and authorization can require post-deployment operations.'),
+    fixtures: proven('Focused API 66 source-format DataSourceObject fixtures exist.'),
+  }),
+  metadataDefinition('DataPackageKitDefinition', 'DataPackageKitDefinition', 'C2', '53.0', {
+    discovery: proven('additional-metadata-scanner.ts discovers dataPackageKitDefinitions source files.'),
+    parsing: partial('Definition identity is parsed; publishing sequence and lifecycle fields are not yet projected.'),
+    dependencies: absent('No external Data Kit definition dependency is emitted.'),
+    ordering: proven('DataPackageKitDefinition is present in DEPLOYMENT_ORDER and wave priority uses that registry.'),
+    lifecycle: partial('Data Kit deployment can require post-install deployment and activation operations.'),
+    fixtures: proven('Focused source-format DataPackageKitDefinition fixtures exist.'),
+  }),
+  metadataDefinition('DataPackageKitObject', 'DataPackageKitObject', 'C2', '53.0', {
+    discovery: proven('additional-metadata-scanner.ts discovers DataPackageKitObjects source files.'),
+    parsing: proven('The parent Data Kit relationship is parsed from source metadata.'),
+    dependencies: proven('parentDataPackageKitDefinitionName is emitted as a hard parser dependency.'),
+    ordering: proven('The parent dependency places the Data Kit definition in an earlier wave.'),
+    lifecycle: partial('Contained Data Cloud component activation remains an explicit post-deployment concern.'),
+    fixtures: proven('Focused source-format DataPackageKitObject dependency fixtures exist.'),
   }),
   externalDefinition('BotVersion', 'BotVersion', 'C2', 'provider-lifecycle', {
     discovery: absent('No independent BotVersion scanner exists.'),

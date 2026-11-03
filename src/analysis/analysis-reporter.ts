@@ -5,6 +5,7 @@ import type { WaveResult } from '../waves/wave-builder.js';
 import { buildWaveGraph, type WaveGraph } from '../waves/wave-graph.js';
 import type { DependencyEdge } from '../types/dependency.js';
 import type { MetadataDependencyKind } from '../types/metadata.js';
+import type { ResolvedWaveAction } from '../types/wave-action.js';
 
 export type AnalysisAIContext = {
   enabled: boolean;
@@ -85,6 +86,8 @@ export type AnalysisReport = {
       maxDepth: number;
       hasCircularDeps: boolean;
       estimatedTime: number;
+      requiresAction: boolean;
+      requiredActions: ResolvedWaveAction[];
     };
   }>;
   waveGraph: WaveGraph;
@@ -147,6 +150,8 @@ export class AnalysisReporter {
           maxDepth: wave.metadata.maxDepth,
           hasCircularDeps: wave.metadata.hasCircularDeps,
           estimatedTime: wave.metadata.estimatedTime,
+          requiresAction: wave.metadata.requiresAction === true,
+          requiredActions: [...(wave.metadata.requiredActions ?? [])],
         },
       })),
       waveGraph: buildWaveGraph(waveResult.waves, scanResult.dependencyResult.graph),
@@ -270,6 +275,7 @@ export class AnalysisReporter {
         <td>${wave.metadata.types.join(', ') || 'Unknown'}</td>
         <td>${wave.metadata.estimatedTime}s</td>
         <td>${wave.metadata.hasCircularDeps ? 'Yes' : 'No'}</td>
+        <td>${formatRequiredActions(wave.metadata.requiredActions)}</td>
       </tr>
     `
       )
@@ -373,6 +379,7 @@ export class AnalysisReporter {
         <th>Types</th>
         <th>Estimated Time</th>
         <th>Circular</th>
+        <th>Required Actions</th>
       </tr>
     </thead>
     <tbody>${waveRows}</tbody>
@@ -430,6 +437,17 @@ export class AnalysisReporter {
     const content = format === 'html' ? this.toHTML(report) : this.toJSON(report);
     await writeFile(outputPath, content, 'utf8');
   }
+}
+
+function formatRequiredActions(actions: readonly ResolvedWaveAction[]): string {
+  if (actions.length === 0) return 'None';
+  return actions
+    .map((requirement) => {
+      const detail =
+        requirement.action.kind === 'apex-anonymous' ? requirement.action.script : requirement.action.instruction;
+      return `<code>${escapeHtml(requirement.id)}</code>: ${escapeHtml(detail)}`;
+    })
+    .join('<br>');
 }
 
 function escapeHtml(value: string): string {

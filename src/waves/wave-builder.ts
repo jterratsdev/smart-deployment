@@ -15,6 +15,7 @@
 import { getLogger } from '../utils/logger.js';
 import type { NodeId, DependencyEdge, DependencyGraph, CircularDependency } from '../types/dependency.js';
 import type { MetadataType } from '../types/metadata.js';
+import type { ResolvedWaveAction } from '../types/wave-action.js';
 import { assembleWaveMetadata, calculateWaveStats } from './wave-metadata.js';
 import { buildEdgeTypesByFrom, compareWavePriority } from './wave-priority-policy.js';
 import {
@@ -66,6 +67,10 @@ export type WaveMetadata = {
   hasCircularDeps: boolean;
   /** Estimated deployment time (seconds) */
   estimatedTime: number;
+  /** Whether deployment must pause for a non-Metadata-API action at this wave. */
+  requiresAction?: boolean;
+  /** Typed actions resolved from repository rules. */
+  requiredActions?: ResolvedWaveAction[];
 };
 
 /**
@@ -112,6 +117,8 @@ export type WaveBuilderOptions = {
   handleCircularDeps?: boolean;
   /** Structured dependency edges for risk-aware ordering inside a wave */
   dependencyEdges?: DependencyEdge[];
+  /** Treat dependencies absent from the scanned graph as already available externally. */
+  ignoreExternalDependencies?: boolean;
 };
 
 /**
@@ -147,6 +154,7 @@ export class WaveBuilder {
       respectTypeOrder: options.respectTypeOrder ?? true,
       handleCircularDeps: options.handleCircularDeps ?? true,
       dependencyEdges: options.dependencyEdges ?? [],
+      ignoreExternalDependencies: options.ignoreExternalDependencies ?? false,
     };
     this.edgeTypesByFrom = buildEdgeTypesByFrom(this.options.dependencyEdges);
 
@@ -219,7 +227,7 @@ export class WaveBuilder {
 
   private createPlacementState(graph: DependencyGraph): WavePlacementState {
     return {
-      inDegree: calculateInDegree(graph),
+      inDegree: calculateInDegree(graph, this.options.ignoreExternalDependencies),
       waves: [],
       processed: new Set<NodeId>(),
       unplacedComponents: [],

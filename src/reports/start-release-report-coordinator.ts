@@ -8,6 +8,7 @@ export type StartReleaseReportOptions = {
   dryRun: boolean;
   validateOnly: boolean;
   reportDir?: string;
+  postcondition?: import('../deployment/deployment-postcondition.js').PausedPostcondition;
 };
 
 export class StartReleaseReportCoordinator {

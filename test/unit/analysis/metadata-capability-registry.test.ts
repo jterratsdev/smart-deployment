@@ -119,7 +119,7 @@ describe('MetadataCapabilityRegistry', () => {
     expect(capabilityStatuses(authoringBundle)).to.deep.equal([
       'proven',
       'partial',
-      'absent',
+      'partial',
       'proven',
       'proven',
       'proven',
@@ -155,6 +155,7 @@ describe('MetadataCapabilityRegistry', () => {
       row('Flow', 'metadata-api', 'C1', ['proven', 'proven', 'partial', 'proven', 'not-applicable', 'proven']),
       row('MatchingRules', 'metadata-api', 'C1', ['partial', 'absent', 'absent', 'absent', 'not-applicable', 'absent']),
       row('PermissionSet', 'metadata-api', 'C1', ['proven', 'proven', 'partial', 'proven', 'not-applicable', 'proven']),
+      row('SharingRules', 'metadata-api', 'C1', ['proven', 'proven', 'proven', 'proven', 'partial', 'proven']),
       row('OrderManagementSettings', 'metadata-api', 'C1', [
         'partial',
         'absent',
@@ -166,7 +167,7 @@ describe('MetadataCapabilityRegistry', () => {
       row('AiAuthoringBundle', 'source-format-composite', 'C2', [
         'proven',
         'partial',
-        'absent',
+        'partial',
         'proven',
         'proven',
         'proven',

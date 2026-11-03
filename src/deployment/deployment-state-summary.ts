@@ -1,3 +1,4 @@
+import type { ResolvedWaveAction } from '../types/wave-action.js';
 import type { DeploymentState } from './state-manager.js';
 
 export type CycleRemediationStatusSummary = {
@@ -13,7 +14,7 @@ export type CycleRemediationStatusSummary = {
 export type DeploymentStatusSummary = {
   deploymentId: string;
   targetOrg: string;
-  status: 'Not Started' | 'In Progress' | 'Failed' | 'Completed';
+  status: 'Not Started' | 'In Progress' | 'Paused' | 'Failed' | 'Completed';
   currentWave: number;
   totalWaves: number;
   completedWaves: number[];
@@ -24,6 +25,26 @@ export type DeploymentStatusSummary = {
   lastUpdated: string;
   failedWaveNumber?: number;
   failureReason?: string;
+  pausedCheckpoint?: {
+    id: string;
+    phase: 'before' | 'after';
+    waveNumber: number;
+    message?: string;
+    requiredActions?: ResolvedWaveAction[];
+  };
+  pausedPostcondition?: {
+    id: string;
+    status: 'timed-out' | 'observation-unavailable' | 'blocked-before-deploy';
+    objectName: string;
+    expectedInternalSharingModel: string;
+    observedInternalSharingModel?: string;
+    observedExternalSharingModel?: string;
+    attempts: number;
+    waitedMs: number;
+    expectedExternalSharingModel?: string;
+    errorCategory?: 'authentication' | 'network' | 'query' | 'entity-not-found' | 'invalid-response';
+    resumedPhase?: number;
+  };
   cycleRemediation?: CycleRemediationStatusSummary;
   ai?: {
     provider?: string;
@@ -61,7 +82,7 @@ function normalizeCompletedWaves(state: DeploymentState): number[] {
     .filter((wave) => Number.isInteger(wave) && wave > 0 && wave <= state.totalWaves)
     .sort((a, b) => a - b);
 
-  if (!state.failedWave) {
+  if (!state.failedWave || state.execution !== undefined) {
     return rawCompleted;
   }
 
@@ -80,6 +101,14 @@ function normalizeCompletedWaves(state: DeploymentState): number[] {
 function inferCurrentWave(state: DeploymentState, completedWaves: number[]): number {
   if (state.failedWave) {
     return state.failedWave.waveNumber;
+  }
+
+  if (state.pausedCheckpoint) {
+    return state.currentWave ?? state.pausedCheckpoint.waveNumber;
+  }
+
+  if (state.pausedPostcondition) {
+    return state.currentWave ?? state.pausedPostcondition.afterWaveNumber;
   }
 
   if (state.currentWave && state.currentWave > 0) {
@@ -184,18 +213,21 @@ export function summarizeDeploymentState(state: DeploymentState, nowTimestamp = 
   const metadata = state.metadata ?? {};
   const completedWaves = normalizeCompletedWaves(state);
   const currentWave = inferCurrentWave(state, completedWaves);
-  const canResume = state.failedWave !== undefined;
+  const canResume =
+    state.failedWave !== undefined || state.pausedCheckpoint !== undefined || state.pausedPostcondition !== undefined;
 
   let status: DeploymentStatusSummary['status'] = 'In Progress';
-  if (canResume) {
+  if (state.failedWave !== undefined) {
     status = 'Failed';
+  } else if (state.pausedCheckpoint !== undefined) {
+    status = 'Paused';
+  } else if (state.pausedPostcondition !== undefined) {
+    status = 'Paused';
   } else if (state.totalWaves > 0 && completedWaves.length >= state.totalWaves) {
     status = 'Completed';
   }
 
-  const remainingWaves = canResume
-    ? Math.max(0, state.totalWaves - currentWave + 1)
-    : Math.max(0, state.totalWaves - completedWaves.length);
+  const remainingWaves = Math.max(0, state.totalWaves - completedWaves.length);
   const etaSeconds = calculateEtaSeconds(metadata, state, remainingWaves, completedWaves, nowTimestamp);
   const testStatus = buildTestStatus(metadata);
   const cycleRemediation = describeCycleRemediationStatus(state);
@@ -216,6 +248,32 @@ export function summarizeDeploymentState(state: DeploymentState, nowTimestamp = 
     lastUpdated: state.failedWave?.timestamp ?? state.timestamp,
     failedWaveNumber: state.failedWave?.waveNumber,
     failureReason: state.failedWave?.error,
+    pausedCheckpoint:
+      state.pausedCheckpoint === undefined
+        ? undefined
+        : {
+            id: state.pausedCheckpoint.id,
+            phase: state.pausedCheckpoint.phase,
+            waveNumber: state.pausedCheckpoint.waveNumber,
+            message: state.pausedCheckpoint.message,
+            requiredActions: state.pausedCheckpoint.requiredActions,
+          },
+    pausedPostcondition:
+      state.pausedPostcondition === undefined
+        ? undefined
+        : {
+            id: state.pausedPostcondition.id,
+            status: state.pausedPostcondition.status,
+            objectName: state.pausedPostcondition.objectName,
+            expectedInternalSharingModel: state.pausedPostcondition.expectedInternalSharingModel,
+            observedInternalSharingModel: state.pausedPostcondition.observedInternalSharingModel,
+            observedExternalSharingModel: state.pausedPostcondition.observedExternalSharingModel,
+            expectedExternalSharingModel: state.pausedPostcondition.expectedExternalSharingModel,
+            attempts: state.pausedPostcondition.attempts,
+            waitedMs: state.pausedPostcondition.waitedMs,
+            errorCategory: state.pausedPostcondition.observationError?.category,
+            resumedPhase: state.pausedPostcondition.resumedPhase,
+          },
     cycleRemediation,
     ai: hasAIContext ? ai : undefined,
   };
@@ -263,6 +321,28 @@ export function formatDeploymentStatus(summary: DeploymentStatusSummary): string
 
   if (summary.failedWaveNumber !== undefined && summary.failureReason) {
     lines.push(`Failure: Wave ${summary.failedWaveNumber} - ${summary.failureReason}`);
+  }
+
+  if (summary.pausedCheckpoint) {
+    lines.push(
+      `Checkpoint: ${summary.pausedCheckpoint.id} (${summary.pausedCheckpoint.phase} wave ${summary.pausedCheckpoint.waveNumber})`
+    );
+    if (summary.pausedCheckpoint.message) {
+      lines.push(`Manual Action: ${summary.pausedCheckpoint.message}`);
+    }
+  }
+
+  if (summary.pausedPostcondition) {
+    const postcondition = summary.pausedPostcondition;
+    lines.push('Postcondition Code: OWD_PROPAGATION_PENDING');
+    lines.push(`Postcondition: ${postcondition.id} (${postcondition.status})`);
+    lines.push(
+      `OWD Internal: ${postcondition.observedInternalSharingModel ?? 'unavailable'} -> ${
+        postcondition.expectedInternalSharingModel
+      }`
+    );
+    lines.push(`OWD External Observed: ${postcondition.observedExternalSharingModel ?? 'unavailable'}`);
+    if (postcondition.errorCategory) lines.push(`Observation Error: ${postcondition.errorCategory}`);
   }
 
   if (summary.cycleRemediation !== undefined) {

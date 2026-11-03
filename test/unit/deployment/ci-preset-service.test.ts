@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import { expect } from 'chai';
@@ -83,6 +83,10 @@ describe('CiPresetService', () => {
     const tempDir = await mkdtemp(path.join(tmpdir(), 'ci-preset-service-'));
     tempDirs.push(tempDir);
     DeploymentContextService.prototype.buildContext = async () => createBlockedContext(tempDir);
+    await writeFile(
+      path.join(tempDir, '.smart-deployment.json'),
+      JSON.stringify({ checkpoints: [{ id: 'approve-flow', phase: 'before', waveNumber: 1 }] })
+    );
 
     const reportDir = path.join(tempDir, 'reports');
     const result = await new CiPresetService().run({
@@ -95,6 +99,7 @@ describe('CiPresetService', () => {
     });
     const report = JSON.parse(await readFile(result.artifacts.jsonPath, 'utf8')) as {
       summary: { status: string; blockers: number };
+      checkpoints: Array<{ id: string }>;
     };
 
     expect(result.exitCode).to.equal(2);
@@ -113,6 +118,8 @@ describe('CiPresetService', () => {
       ['deployment_exit_code']: '2',
     });
     expect(report.summary).to.deep.include({ status: 'blocked', blockers: 1 });
+    expect(result.checkpoints).to.deep.equal([{ id: 'approve-flow', phase: 'before', waveNumber: 1 }]);
+    expect(report.checkpoints).to.deep.equal(result.checkpoints);
   });
 
   it('keeps warn-only and local-only modes at exit code zero for plan blockers', async () => {
@@ -137,5 +144,41 @@ describe('CiPresetService', () => {
     expect(warnOnly.success).to.equal(true);
     expect(localOnly.exitCode).to.equal(0);
     expect(localOnly.success).to.equal(true);
+  });
+
+  it('includes generated wave-action checkpoints in CI artifacts', async () => {
+    const tempDir = await mkdtemp(path.join(tmpdir(), 'ci-preset-wave-action-'));
+    tempDirs.push(tempDir);
+    const context = createBlockedContext(tempDir);
+    context.orderedWaves[0].metadata.requiredActions = [
+      {
+        id: 'authorize-flow',
+        phase: 'before',
+        action: { kind: 'manual', instruction: 'Authorize the provider.' },
+        matchedComponents: ['Flow:BlockedFlow'],
+      },
+    ];
+    context.orderedWaves[0].metadata.requiresAction = true;
+    DeploymentContextService.prototype.buildContext = async () => context;
+
+    const result = await new CiPresetService().run({
+      reportDir: path.join(tempDir, 'reports'),
+      validationMode: 'local-only',
+      skipTests: true,
+      useAI: false,
+    });
+    const report = JSON.parse(await readFile(result.artifacts.jsonPath, 'utf8')) as {
+      checkpoints: Array<{ id: string; requiredActions?: Array<{ id: string }> }>;
+    };
+
+    const generatedCheckpoint = result.checkpoints.find(
+      (checkpoint) => checkpoint.id === 'required-actions-before-wave-1'
+    );
+    expect(generatedCheckpoint).to.deep.include({
+      phase: 'before',
+      waveNumber: 1,
+    });
+    expect(generatedCheckpoint?.requiredActions?.[0].id).to.equal('authorize-flow');
+    expect(report.checkpoints).to.deep.equal(result.checkpoints);
   });
 });

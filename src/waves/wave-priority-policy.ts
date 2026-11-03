@@ -1,5 +1,6 @@
 import type { NodeId, DependencyEdge } from '../types/dependency.js';
 import type { MetadataType } from '../types/metadata.js';
+import { getDeploymentPriority } from '../constants/deployment-order.js';
 
 type DependencyRiskProfile = {
   hard: number;
@@ -11,30 +12,6 @@ type WavePriorityProfile = {
   typeOrder: number;
   riskProfile: DependencyRiskProfile;
 };
-
-const TYPE_DEPLOYMENT_ORDER: MetadataType[] = [
-  'CustomObject',
-  'CustomField',
-  'RecordType',
-  'BusinessProcess',
-  'Queue',
-  'CompactLayout',
-  'Layout',
-  'ApexClass',
-  'ApexTrigger',
-  'Flow',
-  'ValidationRule',
-  'WorkflowRule',
-  'EmailTemplate',
-  'BrandingSet',
-  'CustomSite',
-  'Network',
-  'DigitalExperienceBundle',
-  'EmbeddedServiceConfig',
-  'FlexiPage',
-  'Profile',
-  'PermissionSet',
-];
 
 export function buildEdgeTypesByFrom(
   dependencyEdges: readonly DependencyEdge[]
@@ -86,8 +63,7 @@ function createWavePriorityProfile(
 }
 
 function getMetadataTypeDeploymentOrder(type: MetadataType): number {
-  const order = TYPE_DEPLOYMENT_ORDER.indexOf(type);
-  return order === -1 ? 9999 : order;
+  return getDeploymentPriority(type);
 }
 
 function getDependencyRiskProfile(

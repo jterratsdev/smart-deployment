@@ -86,6 +86,7 @@ export const DEPLOYMENT_ORDER: Readonly<Record<MetadataType, number>> = Object.f
   ServicePresenceStatus: 37, // Service presence
   PresenceUserConfig: 38, // Presence config
   Queue: 39, // Queues
+  Territory2: 39, // Enterprise territory records referenced by sharing rules
   ServiceChannel: 40, // Service channels
   QueueRoutingConfig: 41, // Queue routing
   ChannelLayout: 42, // Channel layouts

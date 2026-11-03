@@ -80,6 +80,16 @@ describe('MetadataGapAnalysisService', () => {
     expect(result.aiContext?.prompt).to.include('Do not call provider APIs from the plugin runtime.');
   });
 
+  it('recognizes SharingRules as supported metadata', async () => {
+    const projectRoot = await createProject();
+    await writePackageXml(projectRoot, ['SharingRules']);
+    const result = await new MetadataGapAnalysisService().analyze({ sourcePath: projectRoot });
+    expect(result.detectedTypes.find((entry) => entry.metadataType === 'SharingRules')?.supportStatus).to.equal(
+      'supported'
+    );
+    expect(result.gaps.map((gap) => gap.metadataType)).not.to.include('SharingRules');
+  });
+
   async function createProject(): Promise<string> {
     const projectRoot = await mkdtemp(path.join(tmpdir(), 'metadata-gaps-'));
     tempDirs.push(projectRoot);

@@ -1,6 +1,7 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { parseBot } from '../../parsers/bot-parser.js';
+import { parseAiAuthoringBundle } from '../../parsers/ai-authoring-bundle-parser.js';
 import { parseFlow } from '../../parsers/flow-parser.js';
 import { parseGenAiPrompt } from '../../parsers/genai-prompt-parser.js';
 import type { AiEvaluationDefinition, MetadataComponent } from '../../types/metadata.js';
@@ -61,14 +62,14 @@ export async function parseBotComponent(filePath: string): Promise<MetadataCompo
   };
 }
 
-export function parseAiAuthoringBundleComponent(filePath: string): MetadataComponent {
-  const bundleName = path.basename(filePath, '.agent');
+export async function parseAiAuthoringBundleComponent(filePath: string): Promise<MetadataComponent> {
+  const parsed = parseAiAuthoringBundle(filePath, await fs.readFile(filePath, 'utf-8'));
 
   return {
-    name: bundleName,
+    name: parsed.bundleName,
     type: 'AiAuthoringBundle',
     filePath,
-    dependencies: new Set<string>(),
+    dependencies: parsed.dependencies,
     dependents: new Set<string>(),
     priorityBoost: 0,
   };

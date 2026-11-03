@@ -1,6 +1,8 @@
 import { AgentforcePriorityService } from '../ai/agentforce-priority-service.js';
 import { DependencyInferenceService, type InferredDependency } from '../ai/dependency-inference-service.js';
 import { DependencyGraphBuilder } from '../dependencies/dependency-graph-builder.js';
+import { loadRepoConfigStrict, type DeploymentConfig } from '../config/repo-config.js';
+import { discoverApexActionRules } from '../parsers/apex-action-script-parser.js';
 import {
   CommitScopeService,
   type CommitScopeOptions,
@@ -13,6 +15,7 @@ import type { MetadataComponent } from '../types/metadata.js';
 import { AIEnhancedPriorityWaveGenerator } from '../waves/priority-wave-generator-ai.js';
 import { getWavesInExecutionOrder } from '../waves/wave-executor.js';
 import { WaveBuilder, type Wave, type WaveResult } from '../waves/wave-builder.js';
+import { hydrateWaveActionScripts, mergeWaveActionRules, WaveActionPlanner } from '../waves/wave-action-planner.js';
 
 export type ProjectAnalysisAIContext = {
   enabled: boolean;
@@ -55,6 +58,8 @@ type ProjectAnalysisServiceDependencies = {
   createInferenceService?: (baseDir: string) => Pick<DependencyInferenceService, 'inferDependencies'>;
   createPriorityService?: (baseDir: string) => AgentforcePriorityService;
   commitScopeService?: Pick<CommitScopeService, 'apply'>;
+  loadConfig?: (baseDir: string) => Promise<DeploymentConfig>;
+  waveActionPlanner?: Pick<WaveActionPlanner, 'plan'>;
 };
 
 export class ProjectAnalysisService {
@@ -62,6 +67,8 @@ export class ProjectAnalysisService {
   private readonly createInferenceService: NonNullable<ProjectAnalysisServiceDependencies['createInferenceService']>;
   private readonly createPriorityService: NonNullable<ProjectAnalysisServiceDependencies['createPriorityService']>;
   private readonly commitScopeService: Pick<CommitScopeService, 'apply'>;
+  private readonly loadConfig: NonNullable<ProjectAnalysisServiceDependencies['loadConfig']>;
+  private readonly waveActionPlanner: Pick<WaveActionPlanner, 'plan'>;
 
   public constructor(dependencies: ProjectAnalysisServiceDependencies = {}) {
     this.scanner = dependencies.scanner ?? new MetadataScannerService();
@@ -72,6 +79,8 @@ export class ProjectAnalysisService {
       dependencies.createPriorityService ??
       ((baseDir): AgentforcePriorityService => new AgentforcePriorityService({ baseDir }));
     this.commitScopeService = dependencies.commitScopeService ?? new CommitScopeService();
+    this.loadConfig = dependencies.loadConfig ?? loadRepoConfigStrict;
+    this.waveActionPlanner = dependencies.waveActionPlanner ?? new WaveActionPlanner();
   }
 
   public async buildAnalysis(options: ProjectAnalysisBuildOptions = {}): Promise<ProjectAnalysisResult> {
@@ -178,6 +187,19 @@ export class ProjectAnalysisService {
         waveChangesApplied: true,
         rejectedSuggestions: 0,
       };
+    }
+
+    const repoConfig = await this.loadConfig(scanResult.projectRoot);
+    const discoveredActions = await discoverApexActionRules(scanResult.projectRoot);
+    const actionRules = mergeWaveActionRules(repoConfig.waveActions ?? [], discoveredActions);
+    const actionPlan = this.waveActionPlanner.plan(waveResult.waves, actionRules);
+    const hydratedWaves = await hydrateWaveActionScripts(actionPlan.waves, scanResult.projectRoot);
+    waveResult = { ...waveResult, waves: hydratedWaves };
+    orderedWaves = getWavesInExecutionOrder(waveResult);
+    if (actionPlan.unmatchedRuleIds.length > 0) {
+      messages.warnings.push(
+        `Wave action rule(s) did not match any planned component: ${actionPlan.unmatchedRuleIds.join(', ')}.`
+      );
     }
 
     return {

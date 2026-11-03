@@ -1,0 +1,23 @@
+---
+description: Authoring contract for self-describing Apex deployment actions
+alwaysApply: true
+---
+
+# Wave Action Authoring
+
+When creating or modifying a deployment Apex script:
+
+- Put the script under `scripts/apex/actions/**/*.apex`.
+- Include exactly one single-line `smart-deployment-action` JSON header.
+- Declare a stable `id`, `phase` (`before` or `after`), and a non-empty `when.components` or `when.types` selector.
+- Keep auxiliary Apex without deployment metadata under `scripts/apex/library/`.
+- Do not infer or document the dependency only in prose; the header is the plugin contract.
+- Run the repository validation command before handing off the change.
+
+Canonical header:
+
+```apex
+// smart-deployment-action: {"id":"seed-account-data","phase":"after","when":{"components":["CustomObject:Account"]},"description":"Create records needed by later automation."}
+```
+
+The plugin validates this contract, resolves the action to a wave, hashes the script, and pauses at a durable checkpoint. Agents must not execute the script automatically.

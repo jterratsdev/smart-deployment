@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
+import { RECOMMENDED_API_VERSION } from '../constants/api-version.js';
 import type { NodeId } from '../types/dependency.js';
 import type { MetadataComponent, MetadataType } from '../types/metadata.js';
 
@@ -50,7 +51,7 @@ export class WaveManifestService {
       '<?xml version="1.0" encoding="UTF-8"?>',
       '<Package xmlns="http://soap.sforce.com/2006/04/metadata">',
       ...typeBlocks,
-      `    <version>${params.apiVersion ?? '66.0'}</version>`,
+      `    <version>${params.apiVersion ?? RECOMMENDED_API_VERSION.toFixed(1)}</version>`,
       '</Package>',
       '',
     ];

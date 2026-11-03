@@ -1,0 +1,5 @@
+{
+  "targetBranch": "main",
+  "rulesetName": "main",
+  "requiredContexts": ["nuts"]
+}

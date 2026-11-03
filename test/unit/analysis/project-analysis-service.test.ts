@@ -1,3 +1,4 @@
+import { mkdir, writeFile } from 'node:fs/promises';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { DependencyGraphBuilder } from '../../../src/dependencies/dependency-graph-builder.js';
@@ -99,10 +100,44 @@ describe('ProjectAnalysisService', () => {
     );
 
     expect(plannerWave).to.exist;
-    expect(analysis.waveResult.unplacedComponents).to.not.include(
-      'GenAiPlannerBundle:PHP_Ops_Copilot_Agent'
-    );
+    expect(analysis.waveResult.unplacedComponents).to.not.include('GenAiPlannerBundle:PHP_Ops_Copilot_Agent');
     expect(analysis.orderedWaves.at(-1)?.components).to.include('GenAiPlannerBundle:PHP_Ops_Copilot_Agent');
+  });
+
+  it('resolves repo-configured actions to their generated wave', async () => {
+    await mkdir('/tmp/project-analysis-service/scripts/apex', { recursive: true });
+    await writeFile('/tmp/project-analysis-service/scripts/apex/seed-account.apex', "System.debug('seed');\n");
+    const scanResult = buildScanResult([
+      {
+        name: 'Account',
+        type: 'CustomObject',
+        filePath: '/tmp/project-analysis-service/objects/Account.object-meta.xml',
+        dependencies: new Set(),
+        dependents: new Set(),
+        priorityBoost: 0,
+      },
+    ]);
+    const service = new ProjectAnalysisService({
+      scanner: { scan: async () => scanResult } as never,
+      loadConfig: async () => ({
+        waveActions: [
+          {
+            id: 'seed-account',
+            phase: 'after',
+            when: { components: ['CustomObject:Account'] },
+            action: { kind: 'apex-anonymous', script: 'scripts/apex/seed-account.apex' },
+          },
+        ],
+      }),
+    });
+
+    const analysis = await service.buildAnalysis();
+
+    expect(analysis.orderedWaves[0].metadata.requiresAction).to.equal(true);
+    expect(analysis.orderedWaves[0].metadata.requiredActions?.[0]).to.deep.include({
+      id: 'seed-account',
+      matchedComponents: ['CustomObject:Account'],
+    });
   });
 
   it('applies AI inference and priority metadata through the shared pipeline', async () => {

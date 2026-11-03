@@ -84,6 +84,15 @@ function createContext(projectRoot: string): DeploymentContext {
           maxDepth: 1,
           hasCircularDeps: false,
           estimatedTime: 5,
+          requiresAction: true,
+          requiredActions: [
+            {
+              id: 'verify-service',
+              phase: 'after',
+              action: { kind: 'apex-anonymous', script: 'scripts/apex/verify-service.apex' },
+              matchedComponents: ['ApexClass:Service'],
+            },
+          ],
         },
       },
     ],
@@ -114,7 +123,7 @@ describe('DeploymentPlanReportService', () => {
     const jsonReport = JSON.parse(await readFile(result.jsonPath, 'utf8')) as {
       summary: { status: string; waves: number; warnings: number };
       providerPhases: Array<{ name: string; status: string }>;
-      waves: Array<{ components: Array<{ id: string }> }>;
+      waves: Array<{ components: Array<{ id: string }>; requiredActions: Array<{ id: string }> }>;
     };
     const htmlReport = await readFile(result.htmlPath, 'utf8');
 
@@ -124,7 +133,7 @@ describe('DeploymentPlanReportService', () => {
     expect(result.htmlPath).to.equal(
       path.join(tempDir, '.smart-deployment/reports/start-dry-run/deployment-plan.html')
     );
-    expect(jsonReport.summary).to.deep.include({ status: 'warning', waves: 2, warnings: 1 });
+    expect(jsonReport.summary).to.deep.include({ status: 'warning', waves: 2, warnings: 2 });
     expect(jsonReport.providerPhases).to.deep.include({
       name: 'deployment-execution',
       provider: 'sf-cli',
@@ -132,8 +141,10 @@ describe('DeploymentPlanReportService', () => {
       detail: 'Skipped because --dry-run was requested',
     });
     expect(jsonReport.waves[1].components[0].id).to.equal('ApexClass:Service');
+    expect(jsonReport.waves[1].requiredActions[0].id).to.equal('verify-service');
     expect(htmlReport).to.include('Deployment Plan Report');
     expect(htmlReport).to.include('ApexClass:Service');
+    expect(htmlReport).to.include('scripts/apex/verify-service.apex');
   });
 
   it('reports empty and blocked plans without throwing', () => {

@@ -12,6 +12,7 @@
  */
 
 import { promises as fs } from 'node:fs';
+import { MIN_API_VERSION, RECOMMENDED_API_VERSION } from '../constants/api-version.js';
 import { getLogger } from '../utils/logger.js';
 import { generateSuggestions, validateReferences } from './xml/xml-reference-rules.js';
 import { formatValidationReport } from './xml/xml-report-formatter.js';
@@ -30,8 +31,8 @@ const logger = getLogger('XmlMetadataValidator');
  * @ac US-091-AC-1: Validate XML syntax
  */
 export class XmlMetadataValidator {
-  private readonly minApiVersion = 40.0;
-  private readonly maxApiVersion = 66.0;
+  private readonly minApiVersion = MIN_API_VERSION;
+  private readonly maxApiVersion = RECOMMENDED_API_VERSION;
 
   /**
    * @ac US-091-AC-1: Validate XML syntax

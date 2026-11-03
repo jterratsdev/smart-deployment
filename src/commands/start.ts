@@ -30,6 +30,11 @@ import type { ReleaseReportV1 } from '../types/release-report.js';
 import { DeploymentPlanReportService } from '../reports/deployment-plan-report-service.js';
 import { RollbackPlanningService, type RollbackExecutionPlan } from '../deployment/rollback-planning-service.js';
 import type { CommitScopeOptions } from '../deployment/commit-scope-service.js';
+import { loadRepoConfigStrict } from '../config/repo-config.js';
+import type { ReachedManualCheckpoint } from '../types/manual-checkpoint.js';
+import type { PausedPostcondition } from '../deployment/deployment-postcondition.js';
+import { addWaveActionCheckpoints } from '../waves/wave-action-planner.js';
+import { projectDeploymentPostcondition } from '../presentation/deployment-postcondition-projector.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('@jterrats/smart-deployment', 'start');
@@ -84,6 +89,9 @@ type StartResult = {
   releaseReport?: ReleaseReportV1;
   releaseReportPath?: string;
   releaseReportWarning?: string;
+  outcome?: 'completed' | 'paused' | 'skipped';
+  checkpoint?: ReachedManualCheckpoint;
+  postcondition?: import('../presentation/deployment-postcondition-projector.js').DeploymentPostconditionView;
 };
 
 export default class Start extends SfCommand<StartResult> {
@@ -185,11 +193,12 @@ export default class Start extends SfCommand<StartResult> {
     const rollbackOptions = this.getRollbackOptions(flags);
     let rollbackPlan: RollbackExecutionPlan | undefined;
     let deploymentContext: DeploymentContext | undefined;
+    const reportLog = this.jsonEnabled() ? (): void => undefined : this.log.bind(this);
 
     try {
       logger.info('Starting smart deployment', { flags: this.toLoggableFlags(flags) });
 
-      this.log('📊 Analyzing metadata...');
+      reportLog('📊 Analyzing metadata...');
       const activeContext = await deploymentContextService.buildContext({
         sourcePath,
         useAI: Boolean(flags['use-ai']),
@@ -213,14 +222,17 @@ export default class Start extends SfCommand<StartResult> {
             }),
         });
       }
-      projectAnalysisPresenter.reportDiagnostics(this, activeContext.scanResult, activeContext.messages);
+      if (!this.jsonEnabled())
+        projectAnalysisPresenter.reportDiagnostics(this, activeContext.scanResult, activeContext.messages);
       const metadataCount = activeContext.scanResult.components.length;
       const waves = activeContext.orderedWaves.length;
-      presenter.reportAnalysisSummary(this, {
-        metadataCount,
-        waves,
-        aiEnabled: Boolean(flags['use-ai']),
-      });
+      if (!this.jsonEnabled()) {
+        presenter.reportAnalysisSummary(this, {
+          metadataCount,
+          waves,
+          aiEnabled: Boolean(flags['use-ai']),
+        });
+      }
 
       const executionTargets = rollbackPlan
         ? [
@@ -230,9 +242,15 @@ export default class Start extends SfCommand<StartResult> {
             Boolean(target.deploymentContext)
           )
         : [{ deploymentContext: activeContext, destructive: flags.destructive === true }];
+      const repoConfig = await loadRepoConfigStrict(activeContext.scanResult.projectRoot);
+      const reportCheckpoints = addWaveActionCheckpoints(activeContext.orderedWaves, repoConfig.checkpoints);
+      if (rollbackPlan && reportCheckpoints.length > 0) {
+        throw new Error('Manual wave checkpoints are not supported during rollback deployments.');
+      }
+      let reachedCheckpoint: ReachedManualCheckpoint | undefined;
+      let pausedPostcondition: PausedPostcondition | undefined;
 
-      await executionTargets.reduce<Promise<void>>(async (previous, target) => {
-        await previous;
+      for (const target of executionTargets) {
         const executionOptions = {
           dryRun: flags['dry-run'] === true,
           validateOnly: flags['validate-only'] === true,
@@ -242,17 +260,38 @@ export default class Start extends SfCommand<StartResult> {
           targetOrg: this.getTargetOrgIdentifier(flags['target-org']),
           sourcePath: target.deploymentContext.scanResult.projectRoot,
           deploymentContext: target.deploymentContext,
-          log: this.log.bind(this),
+          log: reportLog,
+          checkpoints: repoConfig.checkpoints,
+          postconditionOptions: {
+            timeoutMs: repoConfig.owdBarrier?.timeoutMs ?? 120_000,
+            initialDelayMs: repoConfig.owdBarrier?.initialDelayMs ?? 1000,
+            maximumDelayMs: repoConfig.owdBarrier?.maximumDelayMs ?? 10_000,
+          },
+          contextOptions: {
+            useAI: Boolean(flags['use-ai']),
+            orgType: typeof flags['org-type'] === 'string' ? flags['org-type'] : undefined,
+            industry: typeof flags.industry === 'string' ? flags.industry : undefined,
+            commitScope,
+          },
         } as const;
 
         if (!executionOptions.dryRun && !executionOptions.validateOnly) {
-          presenter.reportExecutionStart(this);
+          if (!this.jsonEnabled()) presenter.reportExecutionStart(this);
         }
         const executionResult = await startExecutionService.execute(executionOptions);
         if (executionResult.kind === 'skipped') {
-          presenter.reportExecutionSkipped(this, executionResult.reason);
+          if (!this.jsonEnabled()) presenter.reportExecutionSkipped(this, executionResult.reason);
         }
-      }, Promise.resolve());
+        if (executionResult.kind === 'paused') {
+          reachedCheckpoint = executionResult.checkpoint;
+          break;
+        }
+        if (executionResult.kind === 'postcondition-paused' || executionResult.kind === 'precondition-blocked') {
+          pausedPostcondition = executionResult.postcondition;
+          if (!this.jsonEnabled()) presenter.reportPostconditionPaused(this, executionResult.postcondition);
+          break;
+        }
+      }
 
       const reportOptions = {
         reportDir: typeof flags['report-dir'] === 'string' ? flags['report-dir'] : undefined,
@@ -262,20 +301,21 @@ export default class Start extends SfCommand<StartResult> {
         validateOnly: flags['validate-only'] === true,
         destructive: flags.destructive === true || rollbackPlan !== undefined,
         skipTests: flags['skip-tests'] === true,
+        checkpoints: reportCheckpoints,
       };
 
-      presenter.reportReportGenerationStart(this);
+      if (!this.jsonEnabled()) presenter.reportReportGenerationStart(this);
       const reportResult =
         reportOptions.dryRun || reportOptions.validateOnly
           ? await deploymentPlanReportService.generate(activeContext, reportOptions)
           : undefined;
-      presenter.reportDeploymentReport(this, waves);
+      if (!this.jsonEnabled()) presenter.reportDeploymentReport(this, waves);
       if (reportResult) {
-        presenter.reportPlanReportsSaved(this, reportResult);
+        if (!this.jsonEnabled()) presenter.reportPlanReportsSaved(this, reportResult);
       }
 
       const result: StartResult = {
-        success: true,
+        success: pausedPostcondition === undefined,
         waves,
         reports: reportResult ? { jsonPath: reportResult.jsonPath, htmlPath: reportResult.htmlPath } : undefined,
         commitScope: activeContext.commitScope,
@@ -289,12 +329,24 @@ export default class Start extends SfCommand<StartResult> {
             }
           : undefined,
         ai: activeContext.aiContext,
+        outcome:
+          reachedCheckpoint || pausedPostcondition
+            ? 'paused'
+            : flags['dry-run'] || flags['validate-only']
+            ? 'skipped'
+            : 'completed',
+        checkpoint: reachedCheckpoint,
+        postcondition: pausedPostcondition ? projectDeploymentPostcondition(pausedPostcondition) : undefined,
       };
+      if (reachedCheckpoint) {
+        return result;
+      }
       return await startReleaseReportCoordinator.finalizeSuccess(this, result, activeContext, {
         targetOrg: this.getTargetOrgIdentifier(flags['target-org']),
         dryRun: flags['dry-run'] === true,
         validateOnly: flags['validate-only'] === true,
         reportDir: typeof flags['report-dir'] === 'string' ? flags['report-dir'] : undefined,
+        postcondition: pausedPostcondition,
       });
     } catch (error) {
       // AC-10: Handle failures gracefully

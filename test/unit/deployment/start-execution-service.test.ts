@@ -183,7 +183,7 @@ describe('StartExecutionService', () => {
       log: () => {},
     });
 
-    expect(result.kind).to.equal('executed');
+    expect(result.kind).to.equal('completed');
     expect(sfCli.deployCalls).to.have.lengthOf(2);
     expect(sfCli.deployCalls.map((call) => path.basename(call.manifestPath))).to.deep.equal([
       'wave-001.xml',
@@ -191,6 +191,52 @@ describe('StartExecutionService', () => {
     ]);
     expect(sfCli.deployCalls.map((call) => call.workingDirectory)).to.deep.equal([tempDir, tempDir]);
     await expectMissingFile(path.join(tempDir, '.smart-deployment/deployment-state.json'));
+  });
+
+  it('returns a blocked diagnostic without deploying when OWD observation is unavailable', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-service-owd-'));
+    const sfCli = new SequencedSfCli([]);
+    const object = createComponent(tempDir, 'Case', 'CustomObject');
+    object.facts = { kind: 'custom-object-sharing-model', sharingModel: 'Private' };
+    const rules = createComponent(tempDir, 'Case', 'SharingRules');
+    rules.facts = { kind: 'sharing-rules', objectName: 'Case', criteriaFields: [], principals: [] };
+    const service = new StartExecutionService({
+      createSfCli: () => sfCli,
+      owdBarrierPlanner: new (await import('../../../src/deployment/owd-barrier-planner.js')).OwdBarrierPlanner({
+        query: async () => ({
+          kind: 'unavailable',
+          error: { category: 'authentication', message: 'EntityDefinition authentication unavailable' },
+        }),
+      }),
+    });
+
+    const result = await service.execute({
+      dryRun: false,
+      validateOnly: false,
+      allowCycleRemediation: false,
+      skipTests: true,
+      targetOrg: 'fixture@example.com',
+      sourcePath: tempDir,
+      deploymentContext: createDeploymentContext([object, rules], [['CustomObject:Case'], ['SharingRules:Case']]),
+      log: () => undefined,
+    });
+
+    expect(result.kind).to.equal('precondition-blocked');
+    expect(sfCli.deployCalls).to.have.length(0);
+    const state = await new StateManager({ baseDir: tempDir }).loadState();
+    expect(state).to.deep.include({ status: 'paused', completedWaves: [], currentWave: 1 });
+    expect(state?.execution?.nextExecutionIndex).to.equal(0);
+    expect(state?.pausedPostcondition).to.deep.include({
+      status: 'blocked-before-deploy',
+      observationError: { category: 'authentication', message: 'EntityDefinition authentication unavailable' },
+    });
+    if (result.kind === 'precondition-blocked') {
+      expect(result.postcondition).to.deep.include({
+        status: 'blocked-before-deploy',
+        attempts: 1,
+        waitedMs: 0,
+      });
+    }
   });
 
   it('persists completed waves when a later wave fails', async () => {
@@ -286,13 +332,60 @@ describe('StartExecutionService', () => {
       log: () => {},
     });
 
-    expect(result.kind).to.equal('executed');
+    expect(result.kind).to.equal('completed');
     expect(sfCli.deployCalls).to.have.lengthOf(2);
     expect(sfCli.deployCalls.map((call) => path.basename(call.destructiveChangesPath ?? ''))).to.deep.equal([
       'wave-002-destructiveChanges.xml',
       'wave-001-destructiveChanges.xml',
     ]);
     expect(sfCli.deployCalls.every((call) => call.testLevel === 'NoTestRun')).to.equal(true);
+  });
+  it('pauses automatically for a required wave action before invoking Salesforce', async () => {
+    tempDir = await mkdtemp(path.join(os.tmpdir(), 'start-execution-wave-action-'));
+    const sfCli = new SequencedSfCli([]);
+    const component = createComponent(tempDir, 'AccountSeed');
+    const context = createDeploymentContext(component);
+    context.orderedWaves[0].metadata.requiresAction = true;
+    context.orderedWaves[0].metadata.requiredActions = [
+      {
+        id: 'seed-account',
+        phase: 'before',
+        action: { kind: 'apex-anonymous', script: 'scripts/apex/seed-account.apex' },
+        matchedComponents: ['ApexClass:AccountSeed'],
+      },
+    ];
+    const service = new StartExecutionService({
+      createSfCli: () => sfCli,
+      createStateManager: (baseDir?: string) => new StateManager({ baseDir }),
+      createDeploymentId: () => 'deployment-wave-action',
+    });
+
+    const result = await service.execute({
+      dryRun: false,
+      validateOnly: false,
+      allowCycleRemediation: false,
+      skipTests: true,
+      targetOrg: 'fixture@example.com',
+      sourcePath: tempDir,
+      deploymentContext: context,
+      log: () => undefined,
+    });
+
+    expect(result.kind).to.equal('paused');
+    expect(sfCli.deployCalls).to.have.lengthOf(0);
+    if (result.kind === 'paused') {
+      expect(result.checkpoint).to.deep.include({
+        id: 'required-actions-before-wave-1',
+        phase: 'before',
+        waveNumber: 1,
+      });
+      expect(result.checkpoint.requiredActions?.[0]).to.deep.include({ id: 'seed-account' });
+    }
+    const state = await new StateManager({ baseDir: tempDir }).loadState();
+    expect(state?.pausedCheckpoint?.requiredActions?.[0].action).to.deep.equal({
+      kind: 'apex-anonymous',
+      script: 'scripts/apex/seed-account.apex',
+    });
   });
 });
 

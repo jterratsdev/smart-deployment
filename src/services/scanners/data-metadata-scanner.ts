@@ -40,6 +40,11 @@ export async function parseCustomObjectComponent(objectDir: string): Promise<Met
     dependencies: deps,
     dependents: new Set<string>(),
     priorityBoost: 0,
+    facts: {
+      kind: 'custom-object-sharing-model',
+      sharingModel: parsed.sharingModel,
+      externalSharingModel: parsed.externalSharingModel,
+    },
   };
 }
 

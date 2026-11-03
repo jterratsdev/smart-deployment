@@ -1,4 +1,11 @@
 import { CycleRemediationPlanner } from '../dependencies/cycle-remediation-planner.js';
+import {
+  createDeploymentPlanFingerprint,
+  createSourceFingerprint,
+  type ManualCheckpoint,
+  type ReachedManualCheckpoint,
+} from '../types/manual-checkpoint.js';
+import { addWaveActionCheckpoints } from '../waves/wave-action-planner.js';
 import { CycleRemediationRunner } from './cycle-remediation-runner.js';
 import { DeploymentContext } from './deployment-context-service.js';
 import { DeploymentRunner } from './deployment-runner.js';
@@ -11,6 +18,9 @@ import { SfCliIntegration } from './sf-cli-integration.js';
 import { SfCliMetadataLookup } from './sf-cli-metadata-lookup.js';
 import { StateManager } from './state-manager.js';
 import { TestPlanService } from './test-plan-service.js';
+import { OwdBarrierPlanner } from './owd-barrier-planner.js';
+import { SfCliOrgQuery } from './sf-cli-org-query.js';
+import type { OwdPostcondition } from './deployment-postcondition.js';
 
 export type StartExecutionOptions = {
   dryRun: boolean;
@@ -22,9 +32,24 @@ export type StartExecutionOptions = {
   sourcePath?: string;
   deploymentContext: DeploymentContext;
   log: (message: string) => void;
+  checkpoints?: ManualCheckpoint[];
+  approvedCheckpointIds?: ReadonlySet<string>;
+  startExecutionIndex?: number;
+  deploymentId?: string;
+  planFingerprint?: string;
+  contextOptions?: Omit<import('./deployment-context-service.js').DeploymentContextBuildOptions, 'sourcePath'>;
+  postconditions?: OwdPostcondition[];
+  satisfiedPostconditions?: Array<import('./deployment-postcondition.js').SatisfiedPostcondition>;
+  pendingPostconditionId?: string;
+  postconditionOptions?: { timeoutMs: number; initialDelayMs: number; maximumDelayMs: number };
 };
 
-export type StartExecutionResult = { kind: 'skipped'; reason: 'dry-run' | 'validate-only' } | { kind: 'executed' };
+export type StartExecutionResult =
+  | { kind: 'skipped'; reason: 'dry-run' | 'validate-only' }
+  | { kind: 'completed'; postconditions: Array<import('./deployment-postcondition.js').SatisfiedPostcondition> }
+  | { kind: 'paused'; checkpoint: ReachedManualCheckpoint }
+  | { kind: 'postcondition-paused'; postcondition: import('./deployment-postcondition.js').PausedPostcondition }
+  | { kind: 'precondition-blocked'; postcondition: import('./deployment-postcondition.js').PausedPostcondition };
 
 type StartExecutionServiceDependencies = {
   testPlanService?: TestPlanService;
@@ -35,6 +60,7 @@ type StartExecutionServiceDependencies = {
   createStateManager?: (baseDir?: string) => StateManager;
   createTracker?: () => DeploymentTracker;
   createDeploymentId?: () => string;
+  owdBarrierPlanner?: OwdBarrierPlanner;
 };
 
 export class StartExecutionService {
@@ -46,6 +72,7 @@ export class StartExecutionService {
   private readonly createStateManager: NonNullable<StartExecutionServiceDependencies['createStateManager']>;
   private readonly createTracker: NonNullable<StartExecutionServiceDependencies['createTracker']>;
   private readonly createDeploymentId: NonNullable<StartExecutionServiceDependencies['createDeploymentId']>;
+  private readonly owdBarrierPlanner: OwdBarrierPlanner;
 
   public constructor(dependencies: StartExecutionServiceDependencies = {}) {
     this.testPlanService = dependencies.testPlanService ?? new TestPlanService();
@@ -59,6 +86,13 @@ export class StartExecutionService {
       ((baseDir?: string): StateManager => new StateManager({ baseDir: baseDir ?? process.cwd() }));
     this.createTracker = dependencies.createTracker ?? ((): DeploymentTracker => new DeploymentTracker());
     this.createDeploymentId = dependencies.createDeploymentId ?? ((): string => `deployment-${Date.now()}`);
+    const orgQuery = new SfCliOrgQuery();
+    this.owdBarrierPlanner =
+      dependencies.owdBarrierPlanner ??
+      new OwdBarrierPlanner({
+        query: (targetOrg, objectName): ReturnType<SfCliOrgQuery['getEntitySharingModels']> =>
+          orgQuery.getEntitySharingModels(targetOrg, objectName),
+      });
   }
 
   public async execute(options: StartExecutionOptions): Promise<StartExecutionResult> {
@@ -72,7 +106,7 @@ export class StartExecutionService {
 
     const { scanResult, orderedWaves, aiContext } = options.deploymentContext;
     const destructive = options.destructive === true;
-    const executionWaves = destructive ? [...orderedWaves].reverse() : orderedWaves;
+    let executionWaves = destructive ? [...orderedWaves].reverse() : orderedWaves;
     const testExecutor = this.testPlanService.createExecutor(scanResult.components);
     const remediationPlan = destructive
       ? undefined
@@ -102,10 +136,93 @@ export class StartExecutionService {
     const sfCli = this.createSfCli();
     const stateManager = this.createStateManager(options.sourcePath);
     const tracker = this.createTracker();
-    const deploymentId = this.createDeploymentId();
+    const deploymentId = options.deploymentId ?? this.createDeploymentId();
 
     if (!options.targetOrg) {
       throw new Error('The --target-org flag is required for real deployments.');
+    }
+
+    let postconditions = options.postconditions ?? [];
+    let checkpoints = options.checkpoints ?? [];
+    if (!destructive) {
+      const barrierPlan = options.postconditions
+        ? this.owdBarrierPlanner.restorePlan(
+            executionWaves,
+            scanResult.dependencyResult.components,
+            postconditions,
+            checkpoints,
+            scanResult.dependencyResult.graph
+          )
+        : await this.owdBarrierPlanner.createPlan(
+            executionWaves,
+            scanResult.dependencyResult.components,
+            options.targetOrg,
+            checkpoints,
+            scanResult.dependencyResult.graph
+          );
+      executionWaves = barrierPlan.waves;
+      postconditions = barrierPlan.postconditions;
+      checkpoints = barrierPlan.checkpoints;
+      checkpoints = addWaveActionCheckpoints(executionWaves, checkpoints);
+      for (const transition of barrierPlan.transitions) {
+        if (
+          transition.sharingModel?.changed ||
+          transition.externalSharingModel?.changed ||
+          transition.observationError
+        ) {
+          options.log(
+            `OWD transition ${transition.objectName}: internal=${
+              transition.sharingModel?.observed ?? 'unavailable'
+            } -> ${transition.sharingModel?.source ?? 'unchanged'}, external=${
+              transition.externalSharingModel?.observed ?? 'unavailable'
+            } -> ${transition.externalSharingModel?.source ?? 'unchanged'}`
+          );
+        }
+      }
+      if (barrierPlan.blockedPostconditions.length > 0) {
+        const postcondition = barrierPlan.blockedPostconditions[0];
+        const planFingerprint = createDeploymentPlanFingerprint({
+          waves: executionWaves,
+          checkpoints,
+          destructive,
+          skipTests: options.skipTests,
+          apiVersion: scanResult.apiVersion,
+          sourceFingerprint: await createSourceFingerprint(scanResult.dependencyResult.components),
+          postconditions: [postcondition],
+        });
+        await stateManager.saveState({
+          deploymentId,
+          targetOrg: options.targetOrg,
+          timestamp: postcondition.pausedAt,
+          totalWaves: executionWaves.length,
+          completedWaves: [],
+          currentWave: executionWaves[0]?.number ?? 0,
+          status: 'paused',
+          pausedPostcondition: postcondition,
+          satisfiedPostconditions: options.satisfiedPostconditions ?? [],
+          approvedCheckpointIds: [...(options.approvedCheckpointIds ?? [])],
+          execution: {
+            sourcePath: options.sourcePath ?? process.cwd(),
+            orderedWaveNumbers: executionWaves.map((wave) => wave.number),
+            nextExecutionIndex: 0,
+            destructive,
+            skipTests: options.skipTests,
+            apiVersion: scanResult.apiVersion,
+            planFingerprint,
+            checkpoints,
+            postconditions: [postcondition],
+            postconditionOptions: options.postconditionOptions,
+            contextOptions: options.contextOptions,
+          },
+          metadata: { lastKnownStatus: 'PreconditionBlocked', destructive },
+        });
+        options.log(
+          `Deployment blocked before mutation: ${postcondition.objectName} sharing-model observation is unavailable (${
+            postcondition.observationError?.category ?? 'query'
+          }).`
+        );
+        return { kind: 'precondition-blocked', postcondition };
+      }
     }
 
     if (!destructive) {
@@ -113,6 +230,9 @@ export class StartExecutionService {
     }
 
     if (remediationPlan && remediationPlan.cycles.length > 0) {
+      if ((options.checkpoints?.length ?? 0) > 0) {
+        throw new Error('Manual wave checkpoints are not supported during cycle remediation deployments.');
+      }
       await this.cycleRemediationRunner.execute({
         deploymentId,
         targetOrg: options.targetOrg,
@@ -127,10 +247,10 @@ export class StartExecutionService {
         log: options.log,
       });
 
-      return { kind: 'executed' };
+      return { kind: 'completed', postconditions: [] };
     }
 
-    await this.deploymentRunner.execute({
+    const result = await this.deploymentRunner.execute({
       deploymentId,
       targetOrg: options.targetOrg,
       sourcePath: options.sourcePath,
@@ -146,9 +266,18 @@ export class StartExecutionService {
       sfCli,
       aiContext,
       log: options.log,
+      checkpoints,
+      approvedCheckpointIds: options.approvedCheckpointIds,
+      startExecutionIndex: options.startExecutionIndex,
+      planFingerprint: options.planFingerprint,
+      contextOptions: options.contextOptions,
+      postconditions,
+      satisfiedPostconditions: options.satisfiedPostconditions,
+      pendingPostconditionId: options.pendingPostconditionId,
+      postconditionOptions: options.postconditionOptions,
     });
 
-    return { kind: 'executed' };
+    return result;
   }
 
   private async assertDynamicQueryFieldsAreSafe(

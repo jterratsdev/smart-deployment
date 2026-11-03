@@ -9,6 +9,18 @@ import {
 import type { DependencyGraph } from '../../../src/types/dependency.js';
 
 describe('wave topology policy', () => {
+  it('does not block a component on a dependency outside the scanned graph', () => {
+    const graph: DependencyGraph = new Map([['AiAuthoringBundle:SupportAgent', new Set(['Flow:ManagedFlow'])]]);
+
+    expect(calculateInDegree(graph, true).get('AiAuthoringBundle:SupportAgent')).to.equal(0);
+  });
+
+  it('keeps strict dependency accounting by default', () => {
+    const graph: DependencyGraph = new Map([['ApexClass:A', new Set(['ApexClass:B'])]]);
+
+    expect(calculateInDegree(graph).get('ApexClass:A')).to.equal(1);
+  });
+
   it('plans candidates and chunks without changing placement semantics', () => {
     const graph: DependencyGraph = new Map([
       ['ApexClass:A', new Set(['ApexClass:B'])],
