@@ -29,6 +29,8 @@ export type MetadataType =
   | 'BusinessProcess'
   | 'ValidationRule'
   | 'WorkflowRule'
+  | 'MatchingRules'
+  | 'DuplicateRule'
   // Tier 2: Security Foundation
   | 'OrgSettings'
   | 'CorsWhitelistOrigin'
@@ -145,6 +147,23 @@ export type MetadataComponent = {
   facts?: MetadataFacts;
 };
 
+/**
+ * Outcome of resolving a DuplicateRule reference (object, field, or matching rule) against
+ * the locally scanned metadata graph. `local` becomes a hard dependency edge. `local-missing`
+ * is a fail-closed scan error (the local container is the complete deployable set and does not
+ * contain what is referenced). `target-unknown` is a fact only: the reference is not local
+ * (standard or org-owned), is never an edge, and is never a readiness or dependency claim.
+ */
+export type DataQualityReferenceOutcome = 'local' | 'local-missing' | 'target-unknown';
+
+export type DataQualityReference = {
+  kind: 'object' | 'field' | 'matching-rule';
+  /** Target node identity, e.g. CustomObject:X, CustomField:X.F, MatchingRules:X#Rule */
+  identity: string;
+  outcome: DataQualityReferenceOutcome;
+  reason: string;
+};
+
 export type MetadataFacts =
   | {
       kind: 'custom-object-sharing-model';
@@ -159,6 +178,17 @@ export type MetadataFacts =
         type: 'Role' | 'Group' | 'Queue' | 'RoleAndSubordinates' | 'Territory2' | 'Territory2AndSubordinates';
         name: string;
       }>;
+    }
+  | {
+      kind: 'matching-rules';
+      objectName: string;
+      rules: Array<{ name: string; fields: string[]; isActive: boolean }>;
+    }
+  | {
+      kind: 'duplicate-rule';
+      objectName: string;
+      isActive: boolean;
+      references: DataQualityReference[];
     };
 
 /**

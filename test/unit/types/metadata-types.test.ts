@@ -74,7 +74,7 @@ describe('Metadata Type Definitions', () => {
     const metadataTypes = Object.keys(DEPLOYMENT_ORDER);
 
     expect(metadataTypes.length).to.be.at.least(50);
-    expect(metadataTypes.length).to.equal(83); // Current count
+    expect(metadataTypes.length).to.equal(85); // Current count
 
     // Verify some key types exist
     expect(metadataTypes).to.include('CustomObject');
@@ -151,6 +151,40 @@ describe('Metadata Type Definitions', () => {
     expect(component).to.exist;
     expect(node).to.exist;
     expect(wave).to.exist;
+  });
+});
+
+describe('C1-RULES data quality types', () => {
+  it('should export MatchingRules and DuplicateRule MetadataFacts variants and DataQualityReference', () => {
+    const matchingFacts: Types.MetadataFacts = {
+      kind: 'matching-rules',
+      objectName: 'Account',
+      rules: [{ name: 'Email_Rule', fields: ['Email__c'], isActive: true }],
+    };
+    const reference: Types.DataQualityReference = {
+      kind: 'matching-rule',
+      identity: 'MatchingRules:Account#Email_Rule',
+      outcome: 'target-unknown',
+      reason: 'DuplicateRule matching rule reference',
+    };
+    const duplicateFacts: Types.MetadataFacts = {
+      kind: 'duplicate-rule',
+      objectName: 'Account',
+      isActive: true,
+      references: [reference],
+    };
+
+    expect(matchingFacts.kind).to.equal('matching-rules');
+    expect(duplicateFacts.kind).to.equal('duplicate-rule');
+    expect(reference.outcome).to.equal('target-unknown');
+  });
+
+  it('should include MatchingRules and DuplicateRule in the MetadataType union', () => {
+    const matchingType: Types.MetadataType = 'MatchingRules';
+    const duplicateType: Types.MetadataType = 'DuplicateRule';
+
+    expect(matchingType).to.equal('MatchingRules');
+    expect(duplicateType).to.equal('DuplicateRule');
   });
 });
 
