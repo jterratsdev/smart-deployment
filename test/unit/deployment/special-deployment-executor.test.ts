@@ -93,6 +93,12 @@ describe('SpecialDeploymentPlanExecutor', () => {
     expect(result.completedPhases).to.deep.equal([]);
     expect(result.errors).to.deep.equal(failedPlan.errors);
     expect(calls).to.deep.equal([]);
+    // Security review N1: callers must be able to distinguish "blocked before any command
+    // ran" from a phase that actually ran a command and failed, since there is no
+    // failedPhase/exitCode to report in this case.
+    expect(result.blockedBeforeExecution).to.equal(true);
+    expect(result.failedPhase).to.equal(undefined);
+    expect(result.exitCode).to.equal(undefined);
   });
 
   it('refuses to run any command when the plan reports errors even if success was left true', async () => {
@@ -158,6 +164,7 @@ describe('SpecialDeploymentPlanExecutor', () => {
     expect(result.failedPhase).to.equal('agentforce-publish');
     expect(result.exitCode).to.equal(17);
     expect(result.errors[0]).to.include('Phase 2: Agentforce authoring bundle publish failed with exit code 17');
+    expect(result.blockedBeforeExecution).to.equal(undefined);
     expect(calls).to.deep.equal([
       `project deploy start --manifest ${manifestPath}`,
       'agent publish authoring-bundle -n SupportAgent --skip-retrieve',
