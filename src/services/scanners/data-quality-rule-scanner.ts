@@ -5,16 +5,41 @@ import { parseMatchingRules } from '../../parsers/matching-rules-parser.js';
 import type { DataQualityReference, MetadataComponent, MetadataDependencyReference } from '../../types/metadata.js';
 
 /**
+ * Validates a `.matchingRule-meta.xml` filename identity: the basename must be a bare
+ * object API name (non-empty, no `.`). Shared by the scanner component builder and the
+ * gap-analysis parse verifier so "supported" always follows the same identity rule the
+ * scanner enforces (F3).
+ */
+export function validateMatchingRulesFileName(filePath: string): string {
+  const objectName = path.basename(filePath, '.matchingRule-meta.xml');
+  if (!objectName || objectName.includes('.')) {
+    throw new Error(`MatchingRules filename must be a bare object API name: ${path.basename(filePath)}`);
+  }
+  return objectName;
+}
+
+/**
+ * Validates a `.duplicateRule-meta.xml` filename identity: the basename must split at the
+ * first `.` into two non-empty parts (`Object.RuleName`). Shared by the scanner component
+ * builder and the gap-analysis parse verifier (F3).
+ */
+export function validateDuplicateRuleFileName(filePath: string): { basename: string; objectName: string } {
+  const basename = path.basename(filePath, '.duplicateRule-meta.xml');
+  const separator = basename.indexOf('.');
+  if (separator <= 0 || separator === basename.length - 1) {
+    throw new Error(`DuplicateRule filename must be Object.RuleName: ${basename}`);
+  }
+  return { basename, objectName: basename.slice(0, separator) };
+}
+
+/**
  * Builds the `MatchingRules:<Object>` container component. The basename must be a bare
  * object API name (non-empty, no `.`), otherwise this throws and `scanMetadataFiles` records
  * a scan error instead of a component. A valid container with zero `<matchingRules>` children
  * still returns a component with `rules: []` — it is never dropped (design §2).
  */
 export async function parseMatchingRulesComponent(filePath: string): Promise<MetadataComponent> {
-  const objectName = path.basename(filePath, '.matchingRule-meta.xml');
-  if (!objectName || objectName.includes('.')) {
-    throw new Error(`MatchingRules filename must be a bare object API name: ${path.basename(filePath)}`);
-  }
+  const objectName = validateMatchingRulesFileName(filePath);
   const parsed = parseMatchingRules(objectName, await readFile(filePath, 'utf8'));
 
   return {
@@ -40,12 +65,7 @@ export async function parseMatchingRulesComponent(filePath: string): Promise<Met
  * first, so that happens later in {@link addDataQualityReferenceOutcomes}.
  */
 export async function parseDuplicateRuleComponent(filePath: string): Promise<MetadataComponent> {
-  const basename = path.basename(filePath, '.duplicateRule-meta.xml');
-  const separator = basename.indexOf('.');
-  if (separator <= 0 || separator === basename.length - 1) {
-    throw new Error(`DuplicateRule filename must be Object.RuleName: ${basename}`);
-  }
-  const objectName = basename.slice(0, separator);
+  const { basename, objectName } = validateDuplicateRuleFileName(filePath);
   const parsed = parseDuplicateRule(objectName, await readFile(filePath, 'utf8'));
 
   const references: DataQualityReference[] = [

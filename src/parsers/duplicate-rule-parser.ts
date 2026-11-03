@@ -1,5 +1,10 @@
 import { parseXml, validateXml } from '../utils/xml.js';
-import { normalizeArray, uniqueDefinedStrings } from './parser-utils.js';
+import {
+  assertNoIdentitySeparators,
+  extractSingleXmlRoot,
+  normalizeArray,
+  uniqueDefinedStrings,
+} from './parser-utils.js';
 
 type XmlNode = Record<string, unknown>;
 
@@ -24,12 +29,11 @@ export type ParsedDuplicateRule = {
  * `isActive` is required and must be a boolean literal `true`/`false`.
  */
 export function parseDuplicateRule(objectName: string, content: string): ParsedDuplicateRule {
+  assertNoIdentitySeparators(objectName, 'DuplicateRule object name');
   const validation = validateXml(content);
   if (validation !== true) throw new Error(`Invalid DuplicateRule XML: ${validation.err.msg}`);
   const parsed = parseXml<XmlNode>(content);
-  if (!Object.hasOwn(parsed, 'DuplicateRule')) throw new Error('Expected DuplicateRule XML root');
-  const rawRoot = parsed.DuplicateRule;
-  const root: XmlNode = typeof rawRoot === 'object' && rawRoot !== null ? (rawRoot as XmlNode) : {};
+  const root = extractSingleXmlRoot<XmlNode>(parsed, 'DuplicateRule');
 
   const matchReferences = normalizeArray(root.duplicateRuleMatchRules as XmlNode | XmlNode[] | undefined)
     .map((reference) => {
@@ -38,6 +42,8 @@ export function parseDuplicateRule(objectName: string, content: string): ParsedD
       if (!matchObjectName || !matchingRuleName) {
         throw new Error('DuplicateRule matching references require matchRuleSObjectType and matchingRule');
       }
+      assertNoIdentitySeparators(matchObjectName, 'DuplicateRule matchRuleSObjectType');
+      assertNoIdentitySeparators(matchingRuleName, 'DuplicateRule matchingRule');
       return { matchObjectName, matchingRuleName };
     })
     .sort((left, right) =>

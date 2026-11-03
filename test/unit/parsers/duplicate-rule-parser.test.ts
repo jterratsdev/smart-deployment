@@ -52,4 +52,31 @@ describe('duplicate-rule-parser', () => {
       'DuplicateRule isActive must be true or false'
     );
   });
+
+  it('rejects an extra top-level sibling element alongside the DuplicateRule root (F4)', () => {
+    expect(() =>
+      parseDuplicateRule('Account', '<X/><DuplicateRule><isActive>true</isActive></DuplicateRule>')
+    ).to.throw('Expected DuplicateRule XML root');
+  });
+
+  it('rejects a text-only root instead of accepting it as empty (F4)', () => {
+    expect(() => parseDuplicateRule('Account', '<DuplicateRule>hello</DuplicateRule>')).to.throw(
+      'Expected DuplicateRule XML root'
+    );
+  });
+
+  it('rejects a matching reference containing an identity separator character (F5)', () => {
+    expect(() =>
+      parseDuplicateRule(
+        'Account',
+        '<DuplicateRule><duplicateRuleMatchRules><matchRuleSObjectType>Account</matchRuleSObjectType><matchingRule>R#x</matchingRule></duplicateRuleMatchRules><isActive>true</isActive></DuplicateRule>'
+      )
+    ).to.throw("DuplicateRule matchingRule \"R#x\" must not contain ':' or '#'");
+    expect(() =>
+      parseDuplicateRule(
+        'Account',
+        '<DuplicateRule><duplicateRuleMatchRules><matchRuleSObjectType>Acc#ount</matchRuleSObjectType><matchingRule>Rule</matchingRule></duplicateRuleMatchRules><isActive>true</isActive></DuplicateRule>'
+      )
+    ).to.throw("DuplicateRule matchRuleSObjectType \"Acc#ount\" must not contain ':' or '#'");
+  });
 });

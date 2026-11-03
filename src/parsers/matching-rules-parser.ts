@@ -1,5 +1,10 @@
 import { parseXml, validateXml } from '../utils/xml.js';
-import { normalizeArray, uniqueDefinedStrings } from './parser-utils.js';
+import {
+  assertNoIdentitySeparators,
+  extractSingleXmlRoot,
+  normalizeArray,
+  uniqueDefinedStrings,
+} from './parser-utils.js';
 
 type XmlNode = Record<string, unknown>;
 
@@ -23,12 +28,11 @@ export type ParsedMatchingRules = {
  * array); the caller still emits a component for it (design §2, "empty container").
  */
 export function parseMatchingRules(objectName: string, content: string): ParsedMatchingRules {
+  assertNoIdentitySeparators(objectName, 'MatchingRules object name');
   const validation = validateXml(content);
   if (validation !== true) throw new Error(`Invalid MatchingRules XML: ${validation.err.msg}`);
   const parsed = parseXml<XmlNode>(content);
-  if (!Object.hasOwn(parsed, 'MatchingRules')) throw new Error('Expected MatchingRules XML root');
-  const rawRoot = parsed.MatchingRules;
-  const root: XmlNode = typeof rawRoot === 'object' && rawRoot !== null ? (rawRoot as XmlNode) : {};
+  const root = extractSingleXmlRoot<XmlNode>(parsed, 'MatchingRules');
 
   const seenNames = new Set<string>();
   const rules = normalizeArray(root.matchingRules as XmlNode | XmlNode[] | undefined)
@@ -36,6 +40,7 @@ export function parseMatchingRules(objectName: string, content: string): ParsedM
       const rawName = asString(rule.fullName);
       if (!rawName) throw new Error('Matching rule fullName is required');
       const name = stripObjectPrefix(rawName, objectName);
+      assertNoIdentitySeparators(name, 'Matching rule name');
       if (seenNames.has(name)) throw new Error(`Duplicate matching rule name: ${name}`);
       seenNames.add(name);
 

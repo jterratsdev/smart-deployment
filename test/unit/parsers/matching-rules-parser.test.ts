@@ -90,4 +90,40 @@ describe('matching-rules-parser', () => {
       )
     ).to.throw('Matching rule fullName Contact.Rule does not belong to object Account');
   });
+
+  it('rejects an extra top-level sibling element alongside the MatchingRules root (F4)', () => {
+    expect(() => parseMatchingRules('Account', '<X/><MatchingRules/>')).to.throw('Expected MatchingRules XML root');
+  });
+
+  it('rejects a text-only or numeric root instead of accepting it as an empty container (F4)', () => {
+    expect(() => parseMatchingRules('Account', '<MatchingRules>hello</MatchingRules>')).to.throw(
+      'Expected MatchingRules XML root'
+    );
+    expect(() => parseMatchingRules('Account', '<MatchingRules>123</MatchingRules>')).to.throw(
+      'Expected MatchingRules XML root'
+    );
+  });
+
+  it('still accepts an empty element or an element with only attributes as an empty container', () => {
+    expect(parseMatchingRules('Account', '<MatchingRules/>')).to.deep.equal({ objectName: 'Account', rules: [] });
+    expect(parseMatchingRules('Account', '<MatchingRules xmlns="a"></MatchingRules>')).to.deep.equal({
+      objectName: 'Account',
+      rules: [],
+    });
+  });
+
+  it('rejects a rule name containing an identity separator character (F5)', () => {
+    expect(() =>
+      parseMatchingRules(
+        'Account',
+        '<MatchingRules><matchingRules><fullName>R#x</fullName><ruleStatus>Active</ruleStatus></matchingRules></MatchingRules>'
+      )
+    ).to.throw("Matching rule name \"R#x\" must not contain ':' or '#'");
+    expect(() =>
+      parseMatchingRules(
+        'Account',
+        '<MatchingRules><matchingRules><fullName>R:x</fullName><ruleStatus>Active</ruleStatus></matchingRules></MatchingRules>'
+      )
+    ).to.throw("Matching rule name \"R:x\" must not contain ':' or '#'");
+  });
 });

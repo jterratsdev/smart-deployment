@@ -62,6 +62,36 @@ describe('MetadataGapAnalysisService', () => {
     expect(result.gaps.map((gap) => gap.metadataType)).not.to.include('MatchingRules');
   });
 
+  it('reports MatchingRules unsupported deterministically with one invalid file among several valid ones (F2)', async () => {
+    const projectRoot = await createProject();
+    await writeFile(
+      path.join(projectRoot, 'force-app/main/default/matchingRules/Bad.matchingRule-meta.xml'),
+      '<MatchingRule />'
+    );
+    await Promise.all(
+      ['Account', 'Contact', 'Lead', 'Opportunity', 'Case'].map(async (objectName) =>
+        writeFile(
+          path.join(projectRoot, `force-app/main/default/matchingRules/${objectName}.matchingRule-meta.xml`),
+          '<MatchingRules><matchingRules><fullName>Rule</fullName><ruleStatus>Active</ruleStatus></matchingRules></MatchingRules>'
+        )
+      )
+    );
+
+    // Run several times: a lost-update race on concurrent readFile callbacks would only
+    // surface intermittently, so a single pass is not sufficient to prove the fix (F2).
+    const attempts = await Promise.all(
+      Array.from({ length: 10 }, async () => new MetadataGapAnalysisService().analyze({ sourcePath: projectRoot }))
+    );
+    attempts.forEach((result, attempt) => {
+      const detected = result.detectedTypes.find((entry) => entry.metadataType === 'MatchingRules');
+      expect(detected?.supportStatus, `attempt ${attempt}`).to.equal('unsupported');
+      expect(
+        detected?.evidence.some((item) => item.includes('Expected MatchingRules XML root')),
+        `attempt ${attempt}`
+      ).to.equal(true);
+    });
+  });
+
   it('reports MatchingRules as unsupported from manifest-only evidence with no source to parse (AC-001, AC-003)', async () => {
     const projectRoot = await createProject();
     await writePackageXml(projectRoot, ['MatchingRules']);

@@ -4,6 +4,10 @@ import { SfdxProjectDetector } from '../scanner/sfdx-project-detector.js';
 import { findDirectories, findFiles, fileExists } from '../services/scanners/scanner-runtime.js';
 import { parseDuplicateRule } from '../parsers/duplicate-rule-parser.js';
 import { parseMatchingRules } from '../parsers/matching-rules-parser.js';
+import {
+  validateDuplicateRuleFileName,
+  validateMatchingRulesFileName,
+} from '../services/scanners/data-quality-rule-scanner.js';
 import { parseXml } from '../utils/xml.js';
 import { MetadataCapabilityRegistry, metadataCapabilityRegistry } from './metadata-capability-registry.js';
 
@@ -143,15 +147,15 @@ const PARSE_VERIFIED_TYPES: ReadonlyMap<string, (filePath: string, content: stri
   [
     'MatchingRules',
     (filePath: string, content: string): void => {
-      parseMatchingRules(path.basename(filePath, '.matchingRule-meta.xml'), content);
+      const objectName = validateMatchingRulesFileName(filePath);
+      parseMatchingRules(objectName, content);
     },
   ],
   [
     'DuplicateRule',
     (filePath: string, content: string): void => {
-      const basename = path.basename(filePath, '.duplicateRule-meta.xml');
-      const separator = basename.indexOf('.');
-      parseDuplicateRule(separator > 0 ? basename.slice(0, separator) : basename, content);
+      const { objectName } = validateDuplicateRuleFileName(filePath);
+      parseDuplicateRule(objectName, content);
     },
   ],
 ]);
@@ -258,29 +262,27 @@ export class MetadataGapAnalysisService {
     }
 
     const metadataFiles = await findFiles(packageDir, '**/*-meta.xml');
-    await Promise.all(
-      metadataFiles.map(async (filePath) => {
-        const inferredType = inferTypeFromFilePath(filePath);
-        if (!inferredType) {
-          return;
-        }
-        const canonicalType = this.canonicalType(inferredType, apiVersion);
-        this.addEvidence(evidenceByType, canonicalType, filePath, 'source-path');
-
-        const verifier = PARSE_VERIFIED_TYPES.get(canonicalType);
-        if (!verifier) {
-          return;
-        }
-        const state = parseVerificationByType.get(canonicalType) ?? { detectedFileCount: 0, failures: [] };
-        state.detectedFileCount += 1;
-        try {
-          verifier(filePath, await readFile(filePath, 'utf-8'));
-        } catch (error) {
-          state.failures.push({ filePath, message: error instanceof Error ? error.message : String(error) });
-        }
-        parseVerificationByType.set(canonicalType, state);
-      })
-    );
+    // Collect each file's outcome in isolation and reduce into the shared maps only after every
+    // `await` has settled (F2). A get-or-create-then-set on `parseVerificationByType` across an
+    // `await readFile` would let concurrent callbacks each create their own state object and
+    // overwrite one another's detectedFileCount/failures (last writer wins), silently dropping a
+    // parse failure and making `supported` depend on scheduling order.
+    const fileResults = await Promise.all(metadataFiles.map((filePath) => this.verifySourceFile(filePath, apiVersion)));
+    for (const result of fileResults) {
+      if (!result) {
+        continue;
+      }
+      this.addEvidence(evidenceByType, result.canonicalType, result.filePath, 'source-path');
+      if (!result.parseVerified) {
+        continue;
+      }
+      const state = parseVerificationByType.get(result.canonicalType) ?? { detectedFileCount: 0, failures: [] };
+      state.detectedFileCount += 1;
+      if (result.failure) {
+        state.failures.push(result.failure);
+      }
+      parseVerificationByType.set(result.canonicalType, state);
+    }
 
     const directories = await findDirectories(packageDir, '**/*');
     for (const directoryPath of directories) {
@@ -295,6 +297,46 @@ export class MetadataGapAnalysisService {
   private canonicalType(metadataType: string, apiVersion: string): string {
     const entry = this.capabilityRegistry.resolve(metadataType, apiVersion);
     return entry?.vendorType ?? metadataType;
+  }
+
+  /**
+   * Infers the canonical type for one source file and, for a `PARSE_VERIFIED_TYPES` type,
+   * parses it. Returns a self-contained result with no shared mutable state, so callers can
+   * run this across every file concurrently and reduce the results afterward (F2).
+   */
+  private async verifySourceFile(
+    filePath: string,
+    apiVersion: string
+  ): Promise<
+    | {
+        filePath: string;
+        canonicalType: string;
+        parseVerified: boolean;
+        failure?: { filePath: string; message: string };
+      }
+    | undefined
+  > {
+    const inferredType = inferTypeFromFilePath(filePath);
+    if (!inferredType) {
+      return undefined;
+    }
+    const canonicalType = this.canonicalType(inferredType, apiVersion);
+    const verifier = PARSE_VERIFIED_TYPES.get(canonicalType);
+    if (!verifier) {
+      return { filePath, canonicalType, parseVerified: false };
+    }
+
+    try {
+      verifier(filePath, await readFile(filePath, 'utf-8'));
+      return { filePath, canonicalType, parseVerified: true };
+    } catch (error) {
+      return {
+        filePath,
+        canonicalType,
+        parseVerified: true,
+        failure: { filePath, message: error instanceof Error ? error.message : String(error) },
+      };
+    }
   }
 
   private addEvidence(
